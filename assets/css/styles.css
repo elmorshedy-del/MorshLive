@@ -234,6 +234,8 @@ img { max-width: 100%; display: block; }
 .info-item .k { color: var(--muted); font-size: .78rem; }
 .info-item .v { font-weight: 700; margin-top: 2px; }
 
+.player-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
+
 .side-panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; }
 .side-panel h3 { font-size: 1.1rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
 .side-channel { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; transition: .2s; }

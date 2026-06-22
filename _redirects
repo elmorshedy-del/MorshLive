@@ -1,4 +1,6 @@
 # Pretty URLs for korazero (Cloudflare Pages / Netlify compatible)
 /watch/:channel     /watch.html?ch=:channel     200
+/vip                /watch-embed.html?ch=bein-sports-1  200
+/vip/:channel       /watch-embed.html?ch=:channel     200
 /live               /watch.html?ch=live         200
 /bein               /watch.html?ch=bein-sports-1  200

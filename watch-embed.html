@@ -3,17 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>مشاهدة مباشرة | MorshLive</title>
-  <meta name="description" content="مشاهدة البث المباشر للقناة المختارة بدون إعلانات." />
+  <title>مشاهدة VIP | MorshLive</title>
+  <meta name="description" content="مشاهدة البث المباشر عبر مشغّل VIP." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css" />
-  <!-- hls.js for HLS playback on non-Safari browsers -->
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
 </head>
 <body>
-  <!-- Header -->
   <header class="site-header">
     <div class="container nav">
       <a class="logo" href="index.html"><span class="mark"></span> Morsh<b>Live</b></a>
@@ -22,30 +19,32 @@
         <a href="index.html">الرئيسية</a>
         <a href="index.html#matches">مباريات اليوم</a>
         <a href="index.html#channels">القنوات</a>
-        <a href="watch.html?ch=bein-sports-1" class="active">المشغّل</a>
-        <a href="watch-embed.html?ch=bein-sports-1" target="_blank" rel="noopener">VIP ↗</a>
+        <a href="watch.html?ch=bein-sports-1">المشغّل</a>
+        <a href="watch-embed.html?ch=bein-sports-1" class="active">VIP</a>
       </nav>
     </div>
   </header>
 
   <main class="watch-wrap">
     <div class="container">
-      <span class="no-ads-badge">✓ مشاهدة نظيفة بدون إعلانات</span>
+      <span class="no-ads-badge">✓ مشغّل VIP مضمّن</span>
 
-      <!-- Player -->
       <div class="player-shell" id="player-shell">
-        <video id="video" controls playsinline poster=""></video>
-        <div class="player-overlay" id="overlay">
-          <div>
-            <div class="play-btn">▶</div>
-            <h3 id="overlay-title">القناة</h3>
-            <p id="overlay-sub">اضغط للتشغيل</p>
-          </div>
-        </div>
+        <iframe
+          id="vip-frame"
+          class="embed-frame"
+          src="https://vip.worldkoora.com/albaplayer/vip1/?serv=0"
+          width="100%"
+          height="100%"
+          frameborder="0"
+          scrolling="yes"
+          allowfullscreen="true"
+          allow="autoplay; encrypted-media; fullscreen"
+          referrerpolicy="no-referrer"
+        ></iframe>
       </div>
 
       <div class="watch-grid">
-        <!-- Main column -->
         <div>
           <div class="now-playing">
             <h1><span id="ch-name">القناة</span> <span id="ch-status"></span></h1>
@@ -61,17 +60,12 @@
             </div>
 
             <div class="player-tabs">
-              <a class="btn btn-primary" href="watch.html?ch=bein-sports-1">المشغّل الأصلي</a>
-              <a class="btn btn-ghost" href="watch-embed.html?ch=bein-sports-1" target="_blank" rel="noopener">فتح VIP في تبويب جديد ↗</a>
-            </div>
-
-            <div class="disclaimer">
-              ⚠️ رابط البث المعروض تجريبي ومجاني (Mux / Apple demo). استبدله في <code>assets/js/data.js</code> برابط بث مُرخّص تملك حقوقه لتشغيل قناة فعلية.
+              <a class="btn btn-ghost" href="watch.html?ch=bein-sports-1">المشغّل الأصلي</a>
+              <a class="btn btn-primary" href="watch-embed.html?ch=bein-sports-1">VIP (هذه الصفحة)</a>
             </div>
           </div>
         </div>
 
-        <!-- Sidebar -->
         <aside class="side-panel">
           <h3>📺 قنوات أخرى</h3>
           <div id="side-channels"></div>
@@ -82,11 +76,11 @@
 
   <footer class="site-footer">
     <div class="container">
-      <div class="footer-bottom">© 2026 MorshLive · واجهة بدون إعلانات.</div>
+      <div class="footer-bottom">© 2026 MorshLive · مشغّل VIP.</div>
     </div>
   </footer>
 
   <script src="assets/js/data.js"></script>
-  <script src="assets/js/watch.js"></script>
+  <script src="assets/js/watch-embed.js"></script>
 </body>
 </html>
