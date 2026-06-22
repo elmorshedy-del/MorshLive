@@ -1,0 +1,7 @@
+# Cloudflare Pages — korazero
+# Deploy: npx wrangler pages deploy . --project-name=korazero
+# API token: put in .env locally (see .env.example), never commit it.
+
+name = "korazero"
+compatibility_date = "2024-06-01"
+pages_build_output_dir = "."

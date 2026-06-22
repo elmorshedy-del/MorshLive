@@ -58,13 +58,24 @@ node scripts/fetch-matches.js          # today (UTC)
 node scripts/fetch-matches.js 2026-06-20 # specific date
 ```
 
-## Deploy
+## Deploy (korazero + Cloudflare)
 
-Host as a static site on any provider:
+Full guide: **[docs/CLOUDFLARE.md](docs/CLOUDFLARE.md)**
 
-- **GitHub Pages** — push repo, enable Pages from `main`
-- **Netlify / Vercel / Cloudflare Pages** — point at this folder
-- **raw.githack.com** — `https://raw.githack.com/<user>/MorshLive/main/watch.html?ch=bein-sports-1`
+**Where your Cloudflare API goes:**
+
+| Method | Put token here |
+|--------|----------------|
+| Cloudflare Git connect | Nowhere — use dashboard OAuth |
+| GitHub Actions deploy | GitHub → **Settings → Secrets** → `CLOUDFLARE_API_TOKEN` |
+| Local `wrangler` deploy | `.env` file (copy from `.env.example`) |
+
+**Never** put the API token in website code.
+
+Target URLs:
+
+- `https://korazero.com`
+- `https://korazero.com/watch/bein-sports-1`
 
 ## Streams & legality
 
