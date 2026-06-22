@@ -1,0 +1,39 @@
+name: Update today's matches
+
+# Refreshes assets/data/today.json with REAL fixtures from TheSportsDB so the
+# site always shows the current day's matches. Runs a few times a day and can
+# be triggered manually from the Actions tab.
+on:
+  schedule:
+    - cron: "0 */4 * * *"   # every 4 hours
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Fetch today's fixtures
+        env:
+          SPORTSDB_KEY: ${{ secrets.SPORTSDB_KEY }}   # optional; falls back to free key
+        run: node scripts/fetch-matches.js
+
+      - name: Commit if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet -- assets/data/today.json; then
+            git add assets/data/today.json
+            git commit -m "chore: refresh today's matches"
+            git push
+          else
+            echo "No changes."
+          fi

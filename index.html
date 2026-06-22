@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MorshLive — بث مباشر للمباريات والقنوات الرياضية بدون إعلانات</title>
+  <meta name="description" content="MorshLive — مشاهدة بث مباشر للمباريات وأهم القنوات الرياضية بجودة عالية وبدون إعلانات." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav">
+      <a class="logo" href="index.html"><span class="mark"></span> Morsh<b>Live</b></a>
+      <button class="nav-toggle" aria-label="القائمة">☰</button>
+      <nav class="nav-links">
+        <a href="index.html" class="active">الرئيسية</a>
+        <a href="#matches">مباريات اليوم</a>
+        <a href="#channels">القنوات</a>
+        <a href="watch.html?ch=bein-sports-1">المشغّل</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <span class="no-ads-badge">✓ بدون إعلانات نهائياً</span>
+      <h1>بث مباشر <span>للمباريات والقنوات الرياضية</span><br />بجودة عالية وبدون انقطاع</h1>
+      <p>تابع أهم مباريات اليوم وأبرز القنوات الرياضية في مكان واحد — تجربة نظيفة وسريعة بلا نوافذ منبثقة ولا إعلانات مزعجة.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="watch.html?ch=live">🔴 شاهد المباشر الآن</a>
+        <a class="btn btn-ghost" href="#channels">تصفّح القنوات</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured live (auto-detected) -->
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div id="featured-live"></div>
+    </div>
+  </section>
+
+  <!-- Matches -->
+  <section class="section" id="matches">
+    <div class="container">
+      <div class="section-head">
+        <span class="bar"></span>
+        <h2>مباريات اليوم</h2>
+        <span class="count" id="matches-count"></span>
+      </div>
+      <div class="updated-line" id="updated-at"></div>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">الكل</button>
+        <button class="filter-btn" data-filter="live">مباشر الآن</button>
+        <button class="filter-btn" data-filter="upcoming">قادمة</button>
+        <button class="filter-btn" data-filter="ended">منتهية</button>
+      </div>
+      <div class="matches" id="matches-grid"></div>
+    </div>
+  </section>
+
+  <!-- Channels -->
+  <section class="section" id="channels">
+    <div class="container">
+      <div class="section-head">
+        <span class="bar"></span>
+        <h2>القنوات الرياضية</h2>
+        <span class="count" id="channels-count"></span>
+      </div>
+      <div class="channels" id="channels-grid"></div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <h4>MorshLive</h4>
+          <p>منصة لعرض مواعيد المباريات والقنوات الرياضية بواجهة نظيفة وسريعة وبدون إعلانات. تجربة مشاهدة مريحة على جميع الأجهزة.</p>
+          <div class="disclaimer">
+            ⚠️ هذا المشروع قالب واجهة فقط. روابط البث المرفقة هي روابط تجريبية مجانية. لتشغيل قنوات فعلية يجب استخدام مصادر بث مُرخّصة قانونياً تملك حقوقها.
+          </div>
+        </div>
+        <div>
+          <h4>روابط سريعة</h4>
+          <ul>
+            <li><a href="#matches">مباريات اليوم</a></li>
+            <li><a href="#channels">القنوات</a></li>
+            <li><a href="watch.html?ch=bein-sports-1">المشغّل المباشر</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>الأبطال</h4>
+          <ul>
+            <li><a href="#">الدوري الإنجليزي</a></li>
+            <li><a href="#">دوري أبطال أوروبا</a></li>
+            <li><a href="#">الدوري السعودي</a></li>
+            <li><a href="#">الدوري الإسباني</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">© 2026 MorshLive · صُمم بواجهة نظيفة وبدون إعلانات.</div>
+    </div>
+  </footer>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>

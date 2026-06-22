@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>اختبار التضمين | Embed test</title>
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; margin: 0; }
+    body { font-family: system-ui, "Segoe UI", Tahoma, sans-serif; background: #0a0e17; color: #e8edf5; padding: 16px; }
+    h1 { font-size: 1.1rem; margin-bottom: 4px; }
+    p { color: #93a1bd; font-size: .85rem; margin-bottom: 12px; }
+    .frame-box { position: relative; aspect-ratio: 16/9; background:#000; border:1px solid #283349; border-radius:12px; overflow:hidden; }
+    iframe { width:100%; height:100%; border:0; display:block; }
+    .row { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+    button, .opt { background:#1d2638; border:1px solid #283349; color:#e8edf5; padding:8px 14px; border-radius:9px; cursor:pointer; font-weight:700; font-size:.85rem; }
+    button.active { background:linear-gradient(135deg,#7b2ff7,#c026d3); border-color:transparent; }
+    label { display:flex; align-items:center; gap:6px; font-size:.82rem; color:#93a1bd; }
+    code { background:#161d2b; padding:2px 6px; border-radius:6px; font-size:.78rem; }
+    .note { margin-top:14px; font-size:.8rem; color:#ffc94d; background:rgba(255,201,77,.08); border:1px solid rgba(255,201,77,.25); padding:10px 14px; border-radius:10px; }
+  </style>
+</head>
+<body>
+  <h1>اختبار التضمين — Embed test</h1>
+  <p>صفحة معزولة لاختبار عمل رابط المشغّل المضمّن مباشرةً. / Isolated page to verify the embedded player works.</p>
+
+  <div class="row" id="servers"></div>
+  <div class="row">
+    <label><input type="checkbox" id="ref" checked /> إخفاء المُحيل (referrerpolicy=no-referrer)</label>
+    <label><input type="checkbox" id="sbx" /> 🛡️ حظر النوافذ المنبثقة (sandbox)</label>
+  </div>
+
+  <div class="frame-box"><iframe id="f" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen></iframe></div>
+
+  <div class="note" id="status">يجري التحميل… إن ظهرت الصفحة فارغة فقد يكون المصدر يحظر التضمين أو يتطلب نقرة لبدء التشغيل.</div>
+  <p style="margin-top:10px">الرابط الحالي: <code id="cur"></code></p>
+
+  <script>
+    // Edit this to point at any embedded player URL you want to test.
+    const BASE = "https://dsfsdfsdf654sdf654sd65fs5df.blogspot.com/p/bein1.html";
+    const PARAM = "";   // empty = single fixed page (no ?serv= query)
+    const SERVERS = 1;
+
+    const f = document.getElementById("f");
+    const cur = document.getElementById("cur");
+    const ref = document.getElementById("ref");
+    const serversEl = document.getElementById("servers");
+    let active = 0;
+
+    function url(i) {
+      if (!PARAM) return BASE;
+      const u = new URL(BASE);
+      u.searchParams.set(PARAM, i);
+      return u.toString();
+    }
+    const sbx = document.getElementById("sbx");
+    function load(i) {
+      active = i;
+      f.referrerPolicy = ref.checked ? "no-referrer" : "strict-origin-when-cross-origin";
+      // Blocks pop-ups/redirects while keeping the player scripts alive.
+      if (sbx.checked) f.setAttribute("sandbox", "allow-scripts allow-same-origin allow-forms allow-presentation");
+      else f.removeAttribute("sandbox");
+      const src = url(i);
+      f.src = src;
+      cur.textContent = src;
+      [...serversEl.children].forEach((b, idx) => b.classList.toggle("active", idx === i));
+    }
+    for (let i = 0; i < SERVERS; i++) {
+      const b = document.createElement("button");
+      b.textContent = "سيرفر " + (i + 1);
+      b.onclick = () => load(i);
+      serversEl.appendChild(b);
+    }
+    ref.onchange = () => load(active);
+    sbx.onchange = () => load(active);
+    f.addEventListener("load", () => {
+      document.getElementById("status").textContent =
+        "✅ تم تحميل إطار المشغّل. إن لم يبدأ الفيديو اضغط داخل المشغّل (التشغيل التلقائي قد يكون محظوراً).";
+    });
+    load(0);
+  </script>
+</body>
+</html>

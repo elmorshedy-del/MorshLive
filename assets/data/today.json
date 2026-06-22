@@ -1,0 +1,60 @@
+{
+  "date": "2026-06-19",
+  "updatedAt": "2026-06-19T20:24:56.848Z",
+  "matches": [
+    {
+      "id": "e2391750",
+      "status": "live",
+      "minute": "1H",
+      "home": "USA",
+      "away": "Australia",
+      "homeAbbr": "U",
+      "awayAbbr": "A",
+      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/21f0oi1597948195.png",
+      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/lark6k1661780848.png",
+      "score": "1 - 0",
+      "time": "19:00",
+      "league": "FIFA World Cup",
+      "venue": "Lumen Field · Seattle, WA",
+      "channel": null,
+      "channelId": "bein-sports-1",
+      "commentator": null
+    },
+    {
+      "id": "e2391749",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Scotland",
+      "away": "Morocco",
+      "homeAbbr": "S",
+      "awayAbbr": "M",
+      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/3691i11552945146.png",
+      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/hbmwkj1731791275.png",
+      "score": "VS",
+      "time": "22:00",
+      "league": "FIFA World Cup",
+      "venue": "Gillette Stadium · Foxborough, MA",
+      "channel": null,
+      "channelId": "bein-sports-1",
+      "commentator": null
+    },
+    {
+      "id": "e2391747",
+      "status": "ended",
+      "minute": "",
+      "home": "Mexico",
+      "away": "South Korea",
+      "homeAbbr": "M",
+      "awayAbbr": "SK",
+      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/3rmosi1748525208.png",
+      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/a8nqfs1589564916.png",
+      "score": "1 - 0",
+      "time": "01:00",
+      "league": "FIFA World Cup",
+      "venue": "Estadio Akron · Zapopan, JA",
+      "channel": null,
+      "channelId": "bein-sports-1",
+      "commentator": null
+    }
+  ]
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>مشاهدة مباشرة | MorshLive</title>
+  <meta name="description" content="مشاهدة البث المباشر للقناة المختارة بدون إعلانات." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <!-- hls.js for HLS playback on non-Safari browsers -->
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="site-header">
+    <div class="container nav">
+      <a class="logo" href="index.html"><span class="mark"></span> Morsh<b>Live</b></a>
+      <button class="nav-toggle" aria-label="القائمة">☰</button>
+      <nav class="nav-links">
+        <a href="index.html">الرئيسية</a>
+        <a href="index.html#matches">مباريات اليوم</a>
+        <a href="index.html#channels">القنوات</a>
+        <a href="watch.html?ch=bein-sports-1" class="active">المشغّل</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="watch-wrap">
+    <div class="container">
+      <span class="no-ads-badge">✓ مشاهدة نظيفة بدون إعلانات</span>
+
+      <!-- Player -->
+      <div class="player-shell" id="player-shell">
+        <video id="video" controls playsinline poster=""></video>
+        <div class="player-overlay" id="overlay">
+          <div>
+            <div class="play-btn">▶</div>
+            <h3 id="overlay-title">القناة</h3>
+            <p id="overlay-sub">اضغط للتشغيل</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="watch-grid">
+        <!-- Main column -->
+        <div>
+          <div class="now-playing">
+            <h1><span id="ch-name">القناة</span> <span id="ch-status"></span></h1>
+            <div class="sub" id="now-sub"></div>
+
+            <div class="server-row" id="servers"></div>
+
+            <div class="info-grid">
+              <div class="info-item"><div class="k">الجودة</div><div class="v" id="info-quality">—</div></div>
+              <div class="info-item"><div class="k">الباقة</div><div class="v" id="info-group">—</div></div>
+              <div class="info-item"><div class="k">المعلّق</div><div class="v" id="info-commentator">—</div></div>
+              <div class="info-item"><div class="k">البطولة</div><div class="v" id="info-league">—</div></div>
+            </div>
+
+            <div class="disclaimer">
+              ⚠️ رابط البث المعروض تجريبي ومجاني (Mux / Apple demo). استبدله في <code>assets/js/data.js</code> برابط بث مُرخّص تملك حقوقه لتشغيل قناة فعلية.
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="side-panel">
+          <h3>📺 قنوات أخرى</h3>
+          <div id="side-channels"></div>
+        </aside>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-bottom">© 2026 MorshLive · واجهة بدون إعلانات.</div>
+    </div>
+  </footer>
+
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/watch.js"></script>
+</body>
+</html>
