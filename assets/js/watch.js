@@ -4,6 +4,9 @@
  * Match data is loaded live via window.getMatches() (assets/data/today.json).
  * ==========================================================================*/
 (function () {
+  const VIP_EMBED_BASE = "https://vip.worldkoora.com/albaplayer/vip1/";
+  const VIP_SERVERS = 3;
+
   const { CHANNELS } = window.SITE_DATA;
   const params = new URLSearchParams(location.search);
 
@@ -11,12 +14,15 @@
   let channel = CHANNELS[0];
   let match = null;
   let isEmbed = false;
+  let activePlayer = params.get("player") === "2" ? 2 : 1;
 
   const shell = document.getElementById("player-shell");
   const video = document.getElementById("video");
   const overlay = document.getElementById("overlay");
+  const vipFrame = document.getElementById("vip-frame");
   let hls = null;
   let started = false;
+  let savedShellMarkup = null;
 
   /* ---------------------------------------------- Player core */
   function loadStream(url) {
@@ -46,11 +52,83 @@
   }
 
   function loadEmbed(serverIndex) {
-    // Exact iframe markup from the known-good commit 9878075 — no sandbox.
+    if (!savedShellMarkup) savedShellMarkup = shell.innerHTML;
     shell.innerHTML =
       `<iframe class="embed-frame" src="${embedUrl(serverIndex)}" ` +
       `allow="autoplay; encrypted-media; fullscreen" allowfullscreen ` +
       `referrerpolicy="no-referrer" scrolling="no"></iframe>`;
+  }
+
+  function vipEmbedUrl(serverIndex) {
+    const u = new URL(VIP_EMBED_BASE);
+    u.searchParams.set("serv", serverIndex);
+    return u.toString();
+  }
+
+  function loadVipEmbed(serverIndex) {
+    if (vipFrame) vipFrame.src = vipEmbedUrl(serverIndex);
+  }
+
+  function setActivePlayer(n) {
+    activePlayer = n;
+    isEmbed = !!channel.embed && n === 1;
+
+    document.querySelectorAll(".player-switch-btn").forEach((btn) => {
+      btn.classList.toggle("active", Number(btn.dataset.player) === n);
+    });
+    document.getElementById("player-panel-1").classList.toggle("active", n === 1);
+    document.getElementById("player-panel-2").classList.toggle("active", n === 2);
+
+    const servers = document.getElementById("servers");
+    const vipServers = document.getElementById("vip-servers");
+    if (servers) servers.hidden = n !== 1;
+    if (vipServers) vipServers.hidden = n !== 2;
+
+    if (n === 1) {
+      if (isEmbed) {
+        loadEmbed(0);
+      } else if (savedShellMarkup) {
+        shell.innerHTML = savedShellMarkup;
+        const freshVideo = document.getElementById("video");
+        const freshOverlay = document.getElementById("overlay");
+        if (freshVideo && channel.stream) loadStream(channel.stream);
+        if (freshOverlay) freshOverlay.addEventListener("click", play);
+      }
+      renderServers();
+    }
+
+    const next = new URL(location.href);
+    next.searchParams.set("player", n);
+    history.replaceState(null, "", next);
+  }
+
+  function initPlayerSwitch() {
+    document.querySelectorAll(".player-switch-btn").forEach((btn) => {
+      btn.addEventListener("click", () => setActivePlayer(Number(btn.dataset.player)));
+    });
+    setActivePlayer(activePlayer);
+  }
+
+  function renderVipServers() {
+    const row = document.getElementById("vip-servers");
+    if (!row) return;
+    const activeServ = Number(params.get("serv") || 0);
+
+    row.innerHTML = Array.from({ length: VIP_SERVERS }, (_, i) =>
+      `<button class="server-btn ${i === activeServ ? "active" : ""}" data-vip-srv="${i}">VIP سيرفر ${i + 1}</button>`
+    ).join("");
+
+    row.querySelectorAll("[data-vip-srv]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const srv = Number(btn.dataset.vipSrv);
+        row.querySelectorAll("[data-vip-srv]").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        loadVipEmbed(srv);
+        const next = new URL(location.href);
+        next.searchParams.set("serv", srv);
+        history.replaceState(null, "", next);
+      });
+    });
   }
 
   /* ---------------------------------------------- Head info */
@@ -148,22 +226,27 @@
 
     channel = CHANNELS.find((c) => c.id === chId) || CHANNELS[0];
     match = MATCHES.find((m) => m.id === matchId) || null;
-    isEmbed = !!channel.embed;
+    isEmbed = !!channel.embed && activePlayer === 1;
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();
+    if (shell) savedShellMarkup = shell.innerHTML;
     const meta = await window.getMatches();
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
     renderServers();
+    renderVipServers();
     renderSidebar();
-    if (isEmbed) {
-      loadEmbed(0); // iframe handles its own playback controls
-    } else {
-      loadStream(channel.stream);
-      overlay.addEventListener("click", play);
+    loadVipEmbed(Number(params.get("serv") || 0));
+    if (activePlayer === 1) {
+      if (isEmbed) loadEmbed(0);
+      else {
+        loadStream(channel.stream);
+        overlay.addEventListener("click", play);
+      }
     }
+    initPlayerSwitch();
   });
 })();
