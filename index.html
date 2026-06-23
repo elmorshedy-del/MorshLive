@@ -3,18 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MorshLive — بث مباشر للمباريات والقنوات الرياضية بدون إعلانات</title>
-  <meta name="description" content="MorshLive — مشاهدة بث مباشر للمباريات وأهم القنوات الرياضية بجودة عالية وبدون إعلانات." />
+  <title>Morsh Kora — بث مباشر للمباريات والقنوات الرياضية بدون إعلانات</title>
+  <meta name="description" content="Morsh Kora — مشاهدة بث مباشر للمباريات وأهم القنوات الرياضية بجودة عالية وبدون إعلانات." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css" />
+  <!-- GSAP 3 — industry-standard animation engine -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 </head>
 <body>
+  <!-- Floating shot ball (GSAP-animated, fixed layer) -->
+  <div id="shotBall" class="shot-ball" aria-hidden="true">
+    <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="19" fill="white" stroke="#111" stroke-width="1.2"/>
+      <polygon points="20,3 25,12 15,12" fill="#111"/>
+      <polygon points="37,15 28,18 25,8" fill="#111"/>
+      <polygon points="34,30 25,27 28,17" fill="#111"/>
+      <polygon points="20,37 16,28 24,28" fill="#111"/>
+      <polygon points="6,30 15,27 12,17" fill="#111"/>
+      <polygon points="3,15 12,18 15,8" fill="#111"/>
+    </svg>
+  </div>
+
   <!-- Header -->
   <header class="site-header">
     <div class="container nav">
-      <a class="logo" href="index.html"><span class="mark"></span> Morsh<b>Live</b></a>
+      <a class="logo" href="index.html">
+        <span class="logo-ball-icon" id="logoBallIcon">
+          <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="34" height="34">
+            <circle cx="20" cy="20" r="19" fill="white" stroke="#222" stroke-width="1.2"/>
+            <polygon points="20,3 25,12 15,12" fill="#222"/>
+            <polygon points="37,15 28,18 25,8" fill="#222"/>
+            <polygon points="34,30 25,27 28,17" fill="#222"/>
+            <polygon points="20,37 16,28 24,28" fill="#222"/>
+            <polygon points="6,30 15,27 12,17" fill="#222"/>
+            <polygon points="3,15 12,18 15,8" fill="#222"/>
+          </svg>
+        </span>
+        Morsh<b>Kora</b>
+      </a>
       <button class="nav-toggle" aria-label="القائمة">☰</button>
       <nav class="nav-links">
         <a href="index.html" class="active">الرئيسية</a>
@@ -24,6 +53,41 @@
       </nav>
     </div>
   </header>
+
+  <!-- World Cup 2026 Banner -->
+  <div class="wc2026-banner" id="wc2026Banner">
+    <canvas id="wcParticles" class="wc-particles"></canvas>
+    <div class="container">
+      <div class="wc-inner">
+        <div class="wc-trophy-wrap">
+          <div class="wc-trophy" id="wcTrophy">🏆</div>
+        </div>
+        <div class="wc-content">
+          <div class="wc-eyebrow">FIFA™</div>
+          <div class="wc-title-row">
+            <span class="wc-word wc-word-1">World</span>
+            <span class="wc-word wc-word-2">Cup</span>
+            <span class="wc-year">2026</span>
+          </div>
+          <div class="wc-hosts">🇺🇸 USA &nbsp;·&nbsp; 🇨🇦 Canada &nbsp;·&nbsp; 🇲🇽 Mexico</div>
+        </div>
+        <div class="wc-ball-col">
+          <div class="wc-spin-ball" id="wcSpinBall">
+            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="56" height="56">
+              <circle cx="30" cy="30" r="28.5" fill="white" stroke="#111" stroke-width="1.5"/>
+              <polygon points="30,4 36,18 24,18" fill="#111"/>
+              <polygon points="54,22 42,27 38,12" fill="#111"/>
+              <polygon points="50,45 38,40 42,26" fill="#111"/>
+              <polygon points="30,56 24,42 36,42" fill="#111"/>
+              <polygon points="10,45 22,40 18,26" fill="#111"/>
+              <polygon points="6,22 18,27 22,12" fill="#111"/>
+            </svg>
+          </div>
+          <div class="wc-live-badge">🔴 جارٍ الآن</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Hero -->
   <section class="hero">
@@ -81,7 +145,7 @@
     <div class="container">
       <div class="footer-grid">
         <div>
-          <h4>MorshLive</h4>
+          <h4>Morsh Kora</h4>
           <p>منصة لعرض مواعيد المباريات والقنوات الرياضية بواجهة نظيفة وسريعة وبدون إعلانات. تجربة مشاهدة مريحة على جميع الأجهزة.</p>
           <div class="disclaimer">
             ⚠️ هذا المشروع قالب واجهة فقط. روابط البث المرفقة هي روابط تجريبية مجانية. لتشغيل قنوات فعلية يجب استخدام مصادر بث مُرخّصة قانونياً تملك حقوقها.
@@ -105,12 +169,13 @@
           </ul>
         </div>
       </div>
-      <div class="footer-bottom">© 2026 MorshLive · صُمم بواجهة نظيفة وبدون إعلانات.</div>
+      <div class="footer-bottom">© 2026 Morsh Kora · صُمم بواجهة نظيفة وبدون إعلانات.</div>
     </div>
   </footer>
 
   <script src="assets/js/matches-api.js"></script>
   <script src="assets/js/data.js"></script>
   <script src="assets/js/app.js"></script>
+  <script src="assets/js/animations.js"></script>
 </body>
 </html>

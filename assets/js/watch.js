@@ -143,7 +143,7 @@
     document.getElementById("ch-status").innerHTML = live
       ? `<span class="status-pill status-live">مباشر الآن</span>`
       : `<span class="status-pill status-upcoming">جاهزة للبث</span>`;
-    document.title = `${channel.name} — مشاهدة مباشرة | MorshLive`;
+    document.title = `${channel.name} — مشاهدة مباشرة | Morsh Kora`;
 
     const sub = document.getElementById("now-sub");
     sub.textContent = match

@@ -73,31 +73,6 @@ img { max-width: 100%; display: block; }
   display: flex; align-items: center; gap: 12px; font-weight: 900; font-size: 1.38rem;
   letter-spacing: -.02em;
 }
-.logo .mark {
-  width: 44px; height: 44px; border-radius: 15px;
-  background:
-    radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), transparent 18%),
-    conic-gradient(from 140deg, var(--brand), var(--brand-2), var(--gold), var(--accent), var(--brand));
-  display: grid; place-items: center; position: relative; isolation: isolate;
-  box-shadow: 0 10px 30px rgba(123,47,247,.45), inset 0 1px 0 rgba(255,255,255,.35);
-  transform-style: preserve-3d;
-  animation: logoFloat 4s ease-in-out infinite;
-}
-.logo .mark::before {
-  content: "";
-  width: 19px; height: 19px;
-  background: #fff;
-  clip-path: polygon(26% 12%, 86% 50%, 26% 88%);
-  filter: drop-shadow(0 3px 8px rgba(0,0,0,.35));
-  transform: translateX(-1px);
-}
-.logo .mark::after {
-  content: "";
-  position: absolute; inset: -5px; border-radius: 18px;
-  background: linear-gradient(135deg, rgba(255,255,255,.35), transparent 45%, rgba(24,226,154,.28));
-  opacity: .55; z-index: -1;
-  animation: logoHalo 2.8s ease-in-out infinite;
-}
 .logo b {
   background: linear-gradient(135deg, var(--gold), #fff2a8 42%, var(--accent));
   -webkit-background-clip: text; background-clip: text; color: transparent;
@@ -454,4 +429,268 @@ img { max-width: 100%; display: block; }
   .nav-links.open { display: flex; }
   .nav-links a { width: 100%; }
   .nav-toggle { display: block; margin-inline-start: auto; }
+}
+
+/* ================================================================
+ * Morsh Kora — Logo (top-left, overrides RTL start-side placement)
+ * ================================================================*/
+
+/* Force the nav bar to lay out left-to-right so the logo sits on
+   the visual-left side of the screen even on an RTL page.        */
+.nav {
+  direction: ltr;
+}
+.nav-links {
+  direction: rtl;   /* Arabic link text keeps its RTL reading order */
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 900;
+  font-size: 1.38rem;
+  letter-spacing: -.02em;
+}
+.logo b {
+  background: linear-gradient(135deg, var(--gold), #fff2a8 42%, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 0 22px rgba(255,201,77,.16);
+}
+
+.logo-ball-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 15px;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), transparent 18%),
+    conic-gradient(from 140deg, var(--brand), var(--brand-2), var(--gold), var(--accent), var(--brand));
+  box-shadow: 0 10px 30px rgba(123,47,247,.45), inset 0 1px 0 rgba(255,255,255,.35);
+  animation: logoBallIdle 6s ease-in-out infinite;
+  flex-shrink: 0;
+  position: relative;
+  isolation: isolate;
+}
+.logo-ball-icon::after {
+  content: "";
+  position: absolute;
+  inset: -5px;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255,255,255,.35), transparent 45%, rgba(24,226,154,.28));
+  opacity: .55;
+  z-index: -1;
+  animation: logoHalo 2.8s ease-in-out infinite;
+}
+.logo-ball-icon svg {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,.4));
+}
+
+@keyframes logoBallIdle {
+  0%, 70%, 100% { transform: rotate(0deg) scale(1); }
+  75%  { transform: rotate(20deg) scale(1.08); }
+  80%  { transform: rotate(-10deg) scale(1.05); }
+  85%  { transform: rotate(360deg) scale(1.1); }
+  90%  { transform: rotate(380deg) scale(1); }
+}
+
+/* ================================================================
+ * Shot ball — fixed floating layer, animated by GSAP
+ * ================================================================*/
+.shot-ball {
+  position: fixed;
+  top: 0;
+  left: -60px;
+  width: 44px;
+  height: 44px;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  filter: drop-shadow(0 4px 14px rgba(255,255,255,.35))
+          drop-shadow(0 0 6px rgba(123,47,247,.6));
+  will-change: transform, opacity;
+}
+.shot-ball svg { width: 100%; height: 100%; }
+
+/* ================================================================
+ * World Cup 2026 Banner
+ * ================================================================*/
+.wc2026-banner {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(135deg,
+      rgba(123,47,247,.25) 0%,
+      rgba(10,14,23,1)  35%,
+      rgba(10,20,10,.95) 65%,
+      rgba(26,10,14,1)  100%
+    ),
+    var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 18px 0;
+}
+
+/* Rainbow-stripe bottom edge */
+.wc2026-banner::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg,
+    #7b2ff7 0%,
+    #c026d3 20%,
+    #ffc94d 40%,
+    #18e29a 60%,
+    #ff3b5c 80%,
+    #7b2ff7 100%);
+  background-size: 200% 100%;
+  animation: rainbowSlide 4s linear infinite;
+}
+
+@keyframes rainbowSlide {
+  0%   { background-position: 0% 0%; }
+  100% { background-position: 200% 0%; }
+}
+
+.wc-particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.wc-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  flex-wrap: wrap;
+  direction: ltr;   /* banner lays out left-to-right */
+}
+
+/* Trophy */
+.wc-trophy-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.wc-trophy {
+  font-size: 3.2rem;
+  display: block;
+  filter: drop-shadow(0 0 16px rgba(255,201,77,.7));
+  will-change: transform, filter;
+  transform-origin: bottom center;
+}
+
+/* Text content */
+.wc-content {
+  text-align: center;
+  direction: ltr;
+}
+.wc-eyebrow {
+  font-family: 'Bebas Neue', 'Tajawal', sans-serif;
+  font-size: .75rem;
+  letter-spacing: .35em;
+  color: var(--muted);
+  margin-bottom: 2px;
+}
+.wc-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 12px;
+  font-family: 'Bebas Neue', 'Tajawal', sans-serif;
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+}
+.wc-word {
+  background: linear-gradient(90deg,
+    #7b2ff7, #c026d3 30%, #ffc94d 55%, #18e29a 75%, #7b2ff7 100%);
+  background-size: 250% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: wcShimmer 3.5s linear infinite;
+  will-change: background-position;
+}
+@keyframes wcShimmer {
+  0%   { background-position:   0% center; }
+  100% { background-position: 250% center; }
+}
+
+.wc-year {
+  font-family: 'Bebas Neue', 'Tajawal', sans-serif;
+  font-size: 1.25em;
+  color: var(--gold);
+  text-shadow:
+    0 0 12px rgba(255,201,77,.8),
+    0 0 28px rgba(255,201,77,.4);
+  animation: yearPulse 2s ease-in-out infinite;
+}
+@keyframes yearPulse {
+  0%, 100% { text-shadow: 0 0 12px rgba(255,201,77,.8), 0 0 28px rgba(255,201,77,.4); }
+  50%       { text-shadow: 0 0 24px rgba(255,201,77,1), 0 0 50px rgba(255,201,77,.7); }
+}
+
+.wc-hosts {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: .82rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+/* Spinning ball column */
+.wc-ball-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.wc-spin-ball {
+  will-change: transform;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,.5));
+  animation: wcBallSpin 3s linear infinite;
+}
+@keyframes wcBallSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.wc-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(255,59,92,.15);
+  color: var(--danger);
+  border: 1px solid rgba(255,59,92,.4);
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  animation: liveBlink 1.8s ease-in-out infinite;
+}
+@keyframes liveBlink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: .55; }
+}
+
+/* --------------------------------------------------------- WC Banner responsive */
+@media (max-width: 600px) {
+  .wc-trophy { font-size: 2.2rem; }
+  .wc-title-row { font-size: clamp(1.6rem, 7vw, 2.2rem); }
+  .wc-trophy-wrap, .wc-ball-col { display: none; }
+  .wc2026-banner { padding: 14px 0; }
 }
