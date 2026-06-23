@@ -8,21 +8,47 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css" />
+  <!-- GSAP 3 — industry-standard animation engine -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 </head>
 <body>
+  <!-- Floating shot ball (GSAP-animated, fixed layer) -->
+  <div id="shotBall" class="shot-ball" aria-hidden="true">
+    <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="20" cy="20" r="19" fill="white" stroke="#111" stroke-width="1.2"/>
+      <polygon points="20,3 25,12 15,12" fill="#111"/>
+      <polygon points="37,15 28,18 25,8" fill="#111"/>
+      <polygon points="34,30 25,27 28,17" fill="#111"/>
+      <polygon points="20,37 16,28 24,28" fill="#111"/>
+      <polygon points="6,30 15,27 12,17" fill="#111"/>
+      <polygon points="3,15 12,18 15,8" fill="#111"/>
+    </svg>
+  </div>
+
   <header class="site-header">
     <div class="container nav">
       <a class="logo" href="index.html">
-        <span class="logo-ball-icon">
-          <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="34" height="34">
-            <circle cx="20" cy="20" r="19" fill="white" stroke="#222" stroke-width="1.2"/>
-            <polygon points="20,3 25,12 15,12" fill="#222"/>
-            <polygon points="37,15 28,18 25,8" fill="#222"/>
-            <polygon points="34,30 25,27 28,17" fill="#222"/>
-            <polygon points="20,37 16,28 24,28" fill="#222"/>
-            <polygon points="6,30 15,27 12,17" fill="#222"/>
-            <polygon points="3,15 12,18 15,8" fill="#222"/>
+        <span class="logo-ball-icon" id="logoBallIcon">
+          <svg class="mk-logo-ball" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <radialGradient id="mkLogoSurfaceEmbed" cx="32%" cy="22%" r="78%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="38%" stop-color="#eaf2ff"/>
+                <stop offset="70%" stop-color="#b9c7ff"/>
+                <stop offset="100%" stop-color="#7b2ff7"/>
+              </radialGradient>
+              <linearGradient id="mkLogoSeamEmbed" x1="8" y1="8" x2="40" y2="42">
+                <stop offset="0%" stop-color="#18e29a"/>
+                <stop offset="52%" stop-color="#7b2ff7"/>
+                <stop offset="100%" stop-color="#c026d3"/>
+              </linearGradient>
+            </defs>
+            <circle class="mk-logo-core" cx="24" cy="24" r="18.5" fill="url(#mkLogoSurfaceEmbed)"/>
+            <path class="mk-logo-seam" d="M14 15c6 5 14 5 20 0M12 30c7-5 17-5 24 0M24 6c-3 8-3 28 0 36M8 24c9-3 23-3 32 0" fill="none" stroke="url(#mkLogoSeamEmbed)" stroke-width="2.2" stroke-linecap="round"/>
+            <path class="mk-logo-orbit" d="M7 29c7 10 24 13 34 2" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" opacity=".68"/>
+            <ellipse cx="18" cy="15" rx="7" ry="4" fill="#fff" opacity=".68"/>
           </svg>
         </span>
         Morsh<b>Kora</b>
@@ -37,6 +63,41 @@
       </nav>
     </div>
   </header>
+
+  <!-- World Cup 2026 Banner -->
+  <div class="wc2026-banner" id="wc2026Banner">
+    <canvas id="wcParticles" class="wc-particles"></canvas>
+    <div class="container">
+      <div class="wc-inner">
+        <div class="wc-trophy-wrap">
+          <div class="wc-trophy" id="wcTrophy">🏆</div>
+        </div>
+        <div class="wc-content">
+          <div class="wc-eyebrow">FIFA™</div>
+          <div class="wc-title-row">
+            <span class="wc-word wc-word-1">World</span>
+            <span class="wc-word wc-word-2">Cup</span>
+            <span class="wc-year">2026</span>
+          </div>
+          <div class="wc-hosts">🇺🇸 USA &nbsp;·&nbsp; 🇨🇦 Canada &nbsp;·&nbsp; 🇲🇽 Mexico</div>
+        </div>
+        <div class="wc-ball-col">
+          <div class="wc-spin-ball" id="wcSpinBall">
+            <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" width="56" height="56">
+              <circle cx="30" cy="30" r="28.5" fill="white" stroke="#111" stroke-width="1.5"/>
+              <polygon points="30,4 36,18 24,18" fill="#111"/>
+              <polygon points="54,22 42,27 38,12" fill="#111"/>
+              <polygon points="50,45 38,40 42,26" fill="#111"/>
+              <polygon points="30,56 24,42 36,42" fill="#111"/>
+              <polygon points="10,45 22,40 18,26" fill="#111"/>
+              <polygon points="6,22 18,27 22,12" fill="#111"/>
+            </svg>
+          </div>
+          <div class="wc-live-badge">🔴 جارٍ الآن</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <main class="watch-wrap">
     <div class="container">
@@ -89,12 +150,13 @@
 
   <footer class="site-footer">
     <div class="container">
-      <div class="footer-bottom">© 2026 MorshLive · مشغّل VIP.</div>
+      <div class="footer-bottom">© 2026 Morsh Kora · مشغّل VIP.</div>
     </div>
   </footer>
 
   <script src="assets/js/matches-api.js"></script>
   <script src="assets/js/data.js"></script>
   <script src="assets/js/watch-embed.js"></script>
+  <script src="assets/js/animations.js"></script>
 </body>
 </html>

@@ -32,14 +32,24 @@
     <div class="container nav">
       <a class="logo" href="index.html">
         <span class="logo-ball-icon" id="logoBallIcon">
-          <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg" width="34" height="34">
-            <circle cx="20" cy="20" r="19" fill="white" stroke="#222" stroke-width="1.2"/>
-            <polygon points="20,3 25,12 15,12" fill="#222"/>
-            <polygon points="37,15 28,18 25,8" fill="#222"/>
-            <polygon points="34,30 25,27 28,17" fill="#222"/>
-            <polygon points="20,37 16,28 24,28" fill="#222"/>
-            <polygon points="6,30 15,27 12,17" fill="#222"/>
-            <polygon points="3,15 12,18 15,8" fill="#222"/>
+          <svg class="mk-logo-ball" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <radialGradient id="mkLogoSurface" cx="32%" cy="22%" r="78%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="38%" stop-color="#eaf2ff"/>
+                <stop offset="70%" stop-color="#b9c7ff"/>
+                <stop offset="100%" stop-color="#7b2ff7"/>
+              </radialGradient>
+              <linearGradient id="mkLogoSeam" x1="8" y1="8" x2="40" y2="42">
+                <stop offset="0%" stop-color="#18e29a"/>
+                <stop offset="52%" stop-color="#7b2ff7"/>
+                <stop offset="100%" stop-color="#c026d3"/>
+              </linearGradient>
+            </defs>
+            <circle class="mk-logo-core" cx="24" cy="24" r="18.5" fill="url(#mkLogoSurface)"/>
+            <path class="mk-logo-seam" d="M14 15c6 5 14 5 20 0M12 30c7-5 17-5 24 0M24 6c-3 8-3 28 0 36M8 24c9-3 23-3 32 0" fill="none" stroke="url(#mkLogoSeam)" stroke-width="2.2" stroke-linecap="round"/>
+            <path class="mk-logo-orbit" d="M7 29c7 10 24 13 34 2" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" opacity=".68"/>
+            <ellipse cx="18" cy="15" rx="7" ry="4" fill="#fff" opacity=".68"/>
           </svg>
         </span>
         Morsh<b>Kora</b>

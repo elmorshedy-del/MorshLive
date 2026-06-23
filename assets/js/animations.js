@@ -102,12 +102,15 @@
     /* First shot fires 2 seconds after page load */
     gsap.delayedCall(2, shoot);
 
-    /* Also give the logo ball icon a subtle idle spin */
+    /* Give the logo ball icon a subtle premium idle motion. */
     gsap.to('#logoBallIcon', {
-      rotation: 360,
-      duration: 8,
+      y: -2,
+      scale: 1.035,
+      rotation: 2,
+      duration: 2.4,
       repeat: -1,
-      ease: 'none',
+      yoyo: true,
+      ease: 'sine.inOut',
     });
   }
 
@@ -211,8 +214,8 @@
     /* ── Trophy glow pulse ── */
     gsap.to(trophy, {
       filter: [
-        'drop-shadow(0 0 20px rgba(255,201,77,0.9)) drop-shadow(0 0 40px rgba(255,201,77,0.5))',
-        'drop-shadow(0 0 8px rgba(255,201,77,0.4))  drop-shadow(0 0 16px rgba(255,201,77,0.2))',
+        'drop-shadow(0 0 20px rgba(201,162,84,0.9)) drop-shadow(0 0 40px rgba(201,162,84,0.45))',
+        'drop-shadow(0 0 8px rgba(201,162,84,0.42))  drop-shadow(0 0 16px rgba(201,162,84,0.2))',
       ],
       duration: 1.4,
       repeat: -1,
@@ -243,8 +246,8 @@
     const resizeObs = new ResizeObserver(resize);
     resizeObs.observe(banner);
 
-    /* Colour palette matching the site theme */
-    const COLORS = ['#ffc94d', '#7b2ff7', '#c026d3', '#18e29a', '#ff3b5c', '#ffffff'];
+    /* Premium 2026-inspired palette: ivory, black, metallic gold. */
+    const COLORS = ['#f8f3ea', '#ffffff', '#c9a254', '#8b6b32', '#d7d0c2'];
 
     /* Build particle pool */
     const PARTICLE_COUNT = 70;
