@@ -102,7 +102,7 @@
     /* First shot fires 2 seconds after page load */
     gsap.delayedCall(2, shoot);
 
-    /* Give the logo ball icon a subtle premium idle motion. */
+    /* Give the Iconify logo mark a subtle premium idle motion. */
     gsap.to('#logoBallIcon', {
       y: -2,
       scale: 1.035,

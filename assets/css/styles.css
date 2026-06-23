@@ -460,7 +460,7 @@ img { max-width: 100%; display: block; }
   text-shadow: 0 0 22px rgba(255,201,77,.16);
 }
 
-.logo-ball-icon {
+.logo-mark {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -476,7 +476,7 @@ img { max-width: 100%; display: block; }
   position: relative;
   isolation: isolate;
 }
-.logo-ball-icon::after {
+.logo-mark::after {
   content: "";
   position: absolute;
   inset: -5px;
@@ -486,36 +486,16 @@ img { max-width: 100%; display: block; }
   z-index: -1;
   animation: logoHalo 2.8s ease-in-out infinite;
 }
-.logo-ball-icon svg {
-  width: 36px;
-  height: 36px;
+.logo-mark iconify-icon {
+  color: #fff;
+  font-size: 30px;
   filter: drop-shadow(0 5px 10px rgba(0,0,0,.34));
-}
-.mk-logo-core {
-  filter: drop-shadow(0 2px 10px rgba(255,255,255,.22));
-}
-.mk-logo-seam {
-  stroke-dasharray: 70;
-  stroke-dashoffset: 0;
-  animation: logoSeamFlow 4.8s ease-in-out infinite;
-}
-.mk-logo-orbit {
-  stroke-dasharray: 44;
-  animation: logoOrbitGlide 3.8s ease-in-out infinite;
 }
 
 @keyframes logoBallIdle {
   0%, 100% { transform: translateY(0) rotate(-3deg) scale(1); }
   45% { transform: translateY(-2px) rotate(3deg) scale(1.035); }
   70% { transform: translateY(0) rotate(0deg) scale(1.01); }
-}
-@keyframes logoSeamFlow {
-  0%, 100% { stroke-dashoffset: 0; opacity: .9; }
-  50% { stroke-dashoffset: -18; opacity: 1; }
-}
-@keyframes logoOrbitGlide {
-  0%, 100% { stroke-dashoffset: 0; opacity: .42; }
-  50% { stroke-dashoffset: -16; opacity: .86; }
 }
 
 /* ================================================================
