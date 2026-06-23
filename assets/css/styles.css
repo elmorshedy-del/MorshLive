@@ -445,80 +445,95 @@ img { max-width: 100%; display: block; }
 }
 
 .logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 11px;
   font-family: "Space Grotesk", "Tajawal", system-ui, sans-serif;
-  font-weight: 600;
-  font-size: 1.42rem;
-  letter-spacing: -.015em;
-  color: #f3f1ff;
 }
-.logo b {
+
+/* ----- KoraZero logotype: one custom word, ball-as-"o", speed swoosh ----- */
+.kz-lockup {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  line-height: 1;
+  padding-bottom: 7px;
+}
+.kz-word {
+  display: inline-flex;
+  align-items: center;
   font-weight: 700;
-  background: linear-gradient(120deg, var(--accent), #8a6bff 45%, var(--brand-2));
+  font-size: 1.6rem;
+  letter-spacing: -.04em;
+  transform: skewX(-8deg);            /* custom sporty oblique — not a plain font */
+  color: #f4f2ff;
+  text-shadow: 0 2px 10px rgba(0,0,0,.35);
+}
+.kz-word b {
+  font-weight: 700;
+  margin-inline-start: -.02em;
+  background: linear-gradient(118deg, var(--accent) 0%, #8a6bff 46%, var(--brand-2) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 0 26px rgba(123,47,247,.28);
 }
-
-/* Animated SVG brand glyph — the "0" becomes an orbiting ball. */
-.logo-mark {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  flex-shrink: 0;
+/* the soccer ball that replaces the "o" in Kora */
+.kz-o {
+  display: inline-flex;
+  width: .82em;
+  height: .82em;
+  margin: 0 .015em;
+  transform: skewX(8deg) translateY(.05em);  /* cancel parent skew so the ball stays round */
   position: relative;
   isolation: isolate;
-  filter: drop-shadow(0 6px 16px rgba(123,47,247,.5));
+  filter: drop-shadow(0 4px 9px rgba(123,47,247,.5));
 }
-.logo-mark::after {
+.kz-o::after {
   content: "";
   position: absolute;
-  inset: -6px;
+  inset: -30%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(123,47,247,.45), rgba(24,226,154,.18) 55%, transparent 72%);
+  background: radial-gradient(circle, rgba(123,47,247,.5), rgba(24,226,154,.16) 55%, transparent 72%);
   z-index: -1;
-  opacity: .8;
   animation: logoHalo 3.2s ease-in-out infinite;
 }
-.kz-logo {
-  width: 42px;
-  height: 42px;
+.kz-float {            /* GSAP idle-bob target — no CSS transform of its own */
+  display: inline-flex;
+  width: 100%;
+  height: 100%;
+}
+.kz-ball-spin {
+  display: inline-flex;
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  animation: kzBallRoll 4.5s linear infinite;
+}
+.kz-ball-spin svg { width: 100%; height: 100%; display: block; }
+
+/* kinetic speed swoosh beneath the word */
+.kz-swoosh {
+  position: absolute;
+  left: 2px;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 11px;
   overflow: visible;
+  pointer-events: none;
 }
-.kz-ring {
-  transform-box: view-box;
-  transform-origin: 32px 32px;
-  animation: kzRingSpin 9s linear infinite;
-}
-.kz-orbit {
-  transform-box: view-box;
-  transform-origin: 32px 32px;
-  animation: kzOrbit 3.6s linear infinite;
-}
-.kz-orbit circle {
-  filter: drop-shadow(0 0 5px rgba(24,226,154,.9));
-}
-.kz-core {
-  transform-box: view-box;
-  transform-origin: 32px 32px;
-  animation: kzCorePulse 3s ease-in-out infinite;
+.kz-swoosh path {
+  stroke-dasharray: 230;
+  animation: kzSwooshDraw 5s ease-in-out infinite;
 }
 
-@keyframes kzRingSpin { to { transform: rotate(360deg); } }
-@keyframes kzOrbit { to { transform: rotate(360deg); } }
-@keyframes kzCorePulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.12); }
+@keyframes kzBallRoll { to { transform: rotate(360deg); } }
+@keyframes kzSwooshDraw {
+  0%, 100% { stroke-dashoffset: 66; opacity: .65; }
+  50% { stroke-dashoffset: 0; opacity: 1; }
 }
 
-@keyframes logoBallIdle {
-  0%, 100% { transform: translateY(0) rotate(-3deg) scale(1); }
-  45% { transform: translateY(-2px) rotate(3deg) scale(1.035); }
-  70% { transform: translateY(0) rotate(0deg) scale(1.01); }
+@media (max-width: 480px) {
+  .kz-word { font-size: 1.4rem; }
 }
 
 /* ================================================================
