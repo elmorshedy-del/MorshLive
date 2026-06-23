@@ -109,13 +109,12 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();
-    const meta = await window.getMatches();
-    MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
     renderServers();
     renderSidebar();
     loadEmbed(Number(params.get("serv") || 0));
+    refreshMatches().catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches().catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
   });
 })();

@@ -17,8 +17,8 @@
   let activePlayer = params.get("player") === "2" ? 2 : 1;
 
   const shell = document.getElementById("player-shell");
-  const video = document.getElementById("video");
-  const overlay = document.getElementById("overlay");
+  let video = document.getElementById("video");
+  let overlay = document.getElementById("overlay");
   const vipFrame = document.getElementById("vip-frame");
   let hls = null;
   let started = false;
@@ -26,6 +26,8 @@
 
   /* ---------------------------------------------- Player core */
   function loadStream(url) {
+    video = document.getElementById("video");
+    if (!video || !url) return;
     if (hls) { hls.destroy(); hls = null; }
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = url; // native HLS (Safari / iOS)
@@ -39,6 +41,9 @@
   }
 
   function play() {
+    video = document.getElementById("video");
+    overlay = document.getElementById("overlay");
+    if (!video || !overlay) return;
     started = true;
     overlay.classList.add("hidden");
     video.play().catch(() => {/* user gesture may still be required */});
@@ -89,10 +94,10 @@
         loadEmbed(0);
       } else if (savedShellMarkup) {
         shell.innerHTML = savedShellMarkup;
-        const freshVideo = document.getElementById("video");
-        const freshOverlay = document.getElementById("overlay");
-        if (freshVideo && channel.stream) loadStream(channel.stream);
-        if (freshOverlay) freshOverlay.addEventListener("click", play);
+        video = document.getElementById("video");
+        overlay = document.getElementById("overlay");
+        if (video && channel.stream) loadStream(channel.stream);
+        if (overlay) overlay.addEventListener("click", play);
       }
       renderServers();
     }
@@ -150,10 +155,14 @@
     document.getElementById("info-commentator").textContent = (match && match.commentator) || "—";
     document.getElementById("info-league").textContent = (match && match.league) || "—";
 
-    document.getElementById("overlay-title").textContent = channel.name;
-    document.getElementById("overlay-sub").textContent = match
-      ? `${match.home} ضد ${match.away}`
-      : `اضغط للتشغيل · جودة ${channel.quality}`;
+    const overlayTitle = document.getElementById("overlay-title");
+    const overlaySub = document.getElementById("overlay-sub");
+    if (overlayTitle) overlayTitle.textContent = channel.name;
+    if (overlaySub) {
+      overlaySub.textContent = match
+        ? `${match.home} ضد ${match.away}`
+        : `اضغط للتشغيل · جودة ${channel.quality}`;
+    }
   }
 
   /* ---------------------------------------------- Servers (quality mirrors) */
@@ -230,17 +239,24 @@
   }
 
   async function refreshMatches() {
+    const previousChannelId = channel.id;
     const meta = await window.getMatches({ force: true });
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
+    if (channel.id !== previousChannelId) {
+      renderServers();
+      renderSidebar();
+      if (activePlayer === 1) {
+        if (isEmbed) loadEmbed(0);
+        else loadStream(channel.stream);
+      }
+    }
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();
     if (shell) savedShellMarkup = shell.innerHTML;
-    const meta = await window.getMatches();
-    MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
     renderServers();
@@ -255,6 +271,7 @@
       }
     }
     initPlayerSwitch();
+    refreshMatches().catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches().catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
   });
 })();

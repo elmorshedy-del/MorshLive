@@ -25,6 +25,7 @@
     "caf.champions",
   ];
   const CACHE_MS = 60 * 1000; // 1 min client cache
+  const FETCH_TIMEOUT_MS = 5000;
   const MATCH_WINDOW_MS = 135 * 60 * 1000;
   const RECENT_ENDED_MS = 18 * 60 * 60 * 1000;
 
@@ -135,11 +136,22 @@
     return `${shiftDate(today, -1).replace(/-/g, "")}-${shiftDate(today, 1).replace(/-/g, "")}`;
   }
 
+  async function fetchJson(url, label) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+    let res;
+    try {
+      res = await fetch(url, { cache: "no-store", signal: controller.signal });
+    } finally {
+      clearTimeout(timer);
+    }
+    if (!res.ok) throw new Error(`${label} ${res.status}`);
+    return res.json();
+  }
+
   async function fetchDay(dateStr) {
     const url = `${BASE}/eventsday.php?d=${dateStr}&s=Soccer`;
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`TheSportsDB ${res.status} (${dateStr})`);
-    const json = await res.json();
+    const json = await fetchJson(url, `TheSportsDB (${dateStr})`);
     return Array.isArray(json.events) ? json.events : [];
   }
 
@@ -195,9 +207,7 @@
 
   async function fetchEspnLeague(slug, dateRange) {
     const url = `${ESPN_BASE}/${slug}/scoreboard?dates=${dateRange}&limit=100`;
-    const res = await fetch(url, { cache: "no-store" });
-    if (!res.ok) throw new Error(`ESPN ${res.status} (${slug})`);
-    const json = await res.json();
+    const json = await fetchJson(url, `ESPN (${slug})`);
     const league = json.leagues && json.leagues[0] ? json.leagues[0] : { slug };
     const events = Array.isArray(json.events) ? json.events : [];
     return events.map((event) => normalizeEspnEvent(event, league));
