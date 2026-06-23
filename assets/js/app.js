@@ -103,11 +103,22 @@
   }
 
   /* -------------------------------------------------- Channels rendering */
+  function channelMark(name) {
+    return (name || "")
+      .replace(/[^A-Za-z0-9 ]/g, "")
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 3)
+      .toUpperCase() || "ML";
+  }
+
   function channelCard(c) {
     return `
       <a class="channel-card" href="watch.html?ch=${c.id}">
         ${c.badge ? `<span class="badge">${c.badge}</span>` : ""}
-        <div class="logo-box">📡</div>
+        <div class="logo-box" aria-hidden="true"><span>${channelMark(c.name)}</span></div>
         <div class="cname">${c.name}</div>
         <div class="cmeta">${c.quality} · ${c.group}</div>
       </a>`;

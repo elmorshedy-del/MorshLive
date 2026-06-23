@@ -67,11 +67,22 @@
     });
   }
 
+  function channelMark(name) {
+    return (name || "")
+      .replace(/[^A-Za-z0-9 ]/g, "")
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 3)
+      .toUpperCase() || "ML";
+  }
+
   function renderSidebar() {
     const panel = document.getElementById("side-channels");
     panel.innerHTML = CHANNELS.map((c) =>
       `<a class="side-channel ${c.id === channel.id ? "active" : ""}" href="watch-embed.html?ch=${c.id}">
-         <div class="mini-logo">📡</div>
+         <div class="mini-logo">${channelMark(c.name)}</div>
          <div class="meta">
            <div class="n">${c.name}</div>
            <div class="q">${c.quality} · ${c.group}</div>
