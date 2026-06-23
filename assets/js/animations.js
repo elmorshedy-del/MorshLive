@@ -1,5 +1,5 @@
 /* ==========================================================================
- * Morsh Kora — Animations
+ * KoraZero — Animations
  * Powered by GSAP 3 (GreenSock) + Canvas 2D
  * Features:
  *   1. Ball-shot animation — a soccer ball flies from the logo across screen
@@ -14,7 +14,7 @@
    * Wait for GSAP to load (it's loaded via CDN in <head>)
    * --------------------------------------------------------------------- */
   if (typeof gsap === 'undefined') {
-    console.warn('Morsh Kora animations: GSAP not available.');
+    console.warn('KoraZero animations: GSAP not available.');
     return;
   }
 

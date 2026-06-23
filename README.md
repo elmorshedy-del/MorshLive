@@ -1,4 +1,4 @@
-# MorshLive
+# KoraZero
 
 A clean, **ad-free** sports streaming front-end — live match schedule, channel grid, and a watch page with HLS video playback. Arabic-first (RTL), fully responsive, dark theme.
 

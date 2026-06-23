@@ -32,7 +32,7 @@
     document.getElementById("ch-status").innerHTML = live
       ? `<span class="status-pill status-live">مباشر الآن</span>`
       : `<span class="status-pill status-upcoming">جاهزة للبث</span>`;
-    document.title = `${channel.name} — VIP | Morsh Kora`;
+    document.title = `${channel.name} — VIP | KoraZero`;
 
     const sub = document.getElementById("now-sub");
     sub.textContent = match

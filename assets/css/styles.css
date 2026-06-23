@@ -1,5 +1,5 @@
 /* ============================================================================
- * MorshLive — stylesheet (RTL, dark theme, ad-free)
+ * KoraZero — stylesheet (RTL, dark theme, ad-free)
  * ==========================================================================*/
 
 :root {
@@ -432,7 +432,7 @@ img { max-width: 100%; display: block; }
 }
 
 /* ================================================================
- * Morsh Kora — Logo (top-left, overrides RTL start-side placement)
+ * KoraZero — Logo (top-left, overrides RTL start-side placement)
  * ================================================================*/
 
 /* Force the nav bar to lay out left-to-right so the logo sits on
@@ -447,49 +447,72 @@ img { max-width: 100%; display: block; }
 .logo {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-weight: 900;
-  font-size: 1.38rem;
-  letter-spacing: -.02em;
+  gap: 11px;
+  font-family: "Space Grotesk", "Tajawal", system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 1.42rem;
+  letter-spacing: -.015em;
+  color: #f3f1ff;
 }
 .logo b {
-  background: linear-gradient(135deg, var(--gold), #fff2a8 42%, var(--accent));
+  font-weight: 700;
+  background: linear-gradient(120deg, var(--accent), #8a6bff 45%, var(--brand-2));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  text-shadow: 0 0 22px rgba(255,201,77,.16);
+  text-shadow: 0 0 26px rgba(123,47,247,.28);
 }
 
+/* Animated SVG brand glyph — the "0" becomes an orbiting ball. */
 .logo-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 15px;
-  background:
-    radial-gradient(circle at 32% 28%, rgba(255,255,255,.55), transparent 18%),
-    conic-gradient(from 140deg, var(--brand), var(--brand-2), var(--gold), var(--accent), var(--brand));
-  box-shadow: 0 10px 30px rgba(123,47,247,.45), inset 0 1px 0 rgba(255,255,255,.35);
-  animation: logoBallIdle 5.5s ease-in-out infinite;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
   flex-shrink: 0;
   position: relative;
   isolation: isolate;
+  filter: drop-shadow(0 6px 16px rgba(123,47,247,.5));
 }
 .logo-mark::after {
   content: "";
   position: absolute;
-  inset: -5px;
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(255,255,255,.35), transparent 45%, rgba(24,226,154,.28));
-  opacity: .55;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(123,47,247,.45), rgba(24,226,154,.18) 55%, transparent 72%);
   z-index: -1;
-  animation: logoHalo 2.8s ease-in-out infinite;
+  opacity: .8;
+  animation: logoHalo 3.2s ease-in-out infinite;
 }
-.logo-mark iconify-icon {
-  color: #fff;
-  font-size: 30px;
-  filter: drop-shadow(0 5px 10px rgba(0,0,0,.34));
+.kz-logo {
+  width: 42px;
+  height: 42px;
+  overflow: visible;
+}
+.kz-ring {
+  transform-box: view-box;
+  transform-origin: 32px 32px;
+  animation: kzRingSpin 9s linear infinite;
+}
+.kz-orbit {
+  transform-box: view-box;
+  transform-origin: 32px 32px;
+  animation: kzOrbit 3.6s linear infinite;
+}
+.kz-orbit circle {
+  filter: drop-shadow(0 0 5px rgba(24,226,154,.9));
+}
+.kz-core {
+  transform-box: view-box;
+  transform-origin: 32px 32px;
+  animation: kzCorePulse 3s ease-in-out infinite;
+}
+
+@keyframes kzRingSpin { to { transform: rotate(360deg); } }
+@keyframes kzOrbit { to { transform: rotate(360deg); } }
+@keyframes kzCorePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
 }
 
 @keyframes logoBallIdle {

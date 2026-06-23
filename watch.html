@@ -3,19 +3,18 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>مشاهدة مباشرة | Morsh Kora</title>
+  <title>مشاهدة مباشرة | KoraZero</title>
   <meta name="description" content="مشاهدة البث المباشر للقناة المختارة بدون إعلانات." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css" />
   <!-- hls.js for HLS playback on non-Safari browsers -->
   <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
   <!-- GSAP 3 — industry-standard animation engine -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
-  <!-- Iconify — open icon framework for the brand mark -->
-  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
 </head>
 <body>
   <!-- Floating shot ball (GSAP-animated, fixed layer) -->
@@ -34,11 +33,27 @@
   <!-- Header -->
   <header class="site-header">
     <div class="container nav">
-      <a class="logo" href="index.html">
+      <a class="logo" href="index.html" aria-label="KoraZero">
         <span class="logo-mark" id="logoBallIcon" aria-hidden="true">
-          <iconify-icon icon="solar:play-circle-bold-duotone"></iconify-icon>
+          <svg class="kz-logo" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="kzGrad" x1="8" y1="8" x2="56" y2="56" gradientUnits="userSpaceOnUse">
+                <stop offset="0" stop-color="#18e29a"/>
+                <stop offset=".5" stop-color="#7b2ff7"/>
+                <stop offset="1" stop-color="#c026d3"/>
+              </linearGradient>
+              <radialGradient id="kzCore" cx="38%" cy="30%" r="75%">
+                <stop offset="0" stop-color="#ffffff"/>
+                <stop offset=".38" stop-color="#d9c2ff"/>
+                <stop offset="1" stop-color="#7b2ff7"/>
+              </radialGradient>
+            </defs>
+            <circle class="kz-ring" cx="32" cy="32" r="23" fill="none" stroke="url(#kzGrad)" stroke-width="7" stroke-linecap="round" stroke-dasharray="116 42"/>
+            <circle class="kz-core" cx="32" cy="32" r="9" fill="url(#kzCore)"/>
+            <g class="kz-orbit"><circle cx="32" cy="7" r="3.6" fill="#18e29a"/></g>
+          </svg>
         </span>
-        Morsh<b>Kora</b>
+        Kora<b>Zero</b>
       </a>
       <button class="nav-toggle" aria-label="القائمة">☰</button>
       <nav class="nav-links">
@@ -160,7 +175,7 @@
 
   <footer class="site-footer">
     <div class="container">
-      <div class="footer-bottom">© 2026 Morsh Kora · واجهة بدون إعلانات.</div>
+      <div class="footer-bottom">© 2026 KoraZero · واجهة بدون إعلانات.</div>
     </div>
   </footer>
 
