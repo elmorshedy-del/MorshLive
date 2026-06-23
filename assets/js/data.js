@@ -94,30 +94,48 @@ window.SITE_DATA = { CHANNELS, MATCHES };
  * the GitHub Action / scripts/fetch-matches.js). Falls back to the sample
  * MATCHES above only if the live file can't be loaded (e.g. opened via file://).
  * ------------------------------------------------------------------------- */
-// Corrects a snapshot's status against the wall clock, so a match flips to
-// live/ended on schedule even if today.json hasn't been refreshed recently.
-// Kickoff time in today.json is UTC (HH:MM). A typical match window ~135 min.
+// Corrects cached snapshot status using kickoff timestamp when API status is stale.
 const MATCH_WINDOW_MS = 135 * 60 * 1000;
 function refineStatus(m, dateStr) {
-  if (m.status === "ended") return "ended";              // trust a finished result
-  if (!dateStr || !m.time || !/^\d{2}:\d{2}$/.test(m.time)) return m.status;
-  const kickoff = Date.parse(`${dateStr}T${m.time}:00Z`);
+  if (m.status === "ended") return "ended";
+  const kickoff = m.kickoffUtc
+    ? Date.parse(m.kickoffUtc)
+    : (dateStr && m.time && /^\d{2}:\d{2}$/.test(m.time) ? Date.parse(`${dateStr}T${m.time}:00Z`) : NaN);
   if (isNaN(kickoff)) return m.status;
   const elapsed = Date.now() - kickoff;
   if (elapsed < 0) return "upcoming";
-  if (elapsed < MATCH_WINDOW_MS) return "live";
+  if (elapsed < MATCH_WINDOW_MS) return m.status === "ended" ? "ended" : "live";
   return "ended";
 }
 
-window.getMatches = async function getMatches() {
+window.getMatches = async function getMatches({ force } = {}) {
+  // 1) Live fetch from TheSportsDB in the browser (best — real statuses, auto-refresh)
+  if (window.MatchesAPI) {
+    try {
+      const live = await window.MatchesAPI.fetchLiveSoccer({ force });
+      if (live.matches && live.matches.length) return live;
+    } catch (e) {
+      console.warn("Live API fetch failed, using cache:", e.message);
+    }
+  }
+
+  // 2) Cached JSON (GitHub Action / offline fallback)
   try {
     const res = await fetch("assets/data/today.json", { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
     const raw = Array.isArray(data.matches) ? data.matches : [];
     const matches = raw.map((m) => ({ ...m, status: refineStatus(m, data.date) }));
-    return { matches, updatedAt: data.updatedAt, date: data.date, live: true };
+    return {
+      matches,
+      updatedAt: data.updatedAt,
+      date: data.date,
+      live: true,
+      source: data.source || "thesportsdb",
+      sourceLabel: data.sourceLabel || "TheSportsDB (cache)",
+    };
   } catch (e) {
-    return { matches: MATCHES, updatedAt: null, date: null, live: false };
+    // 3) Demo sample data
+    return { matches: MATCHES, updatedAt: null, date: null, live: false, source: "demo", sourceLabel: "بيانات تجريبية" };
   }
 };

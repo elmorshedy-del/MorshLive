@@ -5,7 +5,7 @@ name: Update today's matches
 # be triggered manually from the Actions tab.
 on:
   schedule:
-    - cron: "0 */4 * * *"   # every 4 hours
+    - cron: "*/30 * * * *"   # every 30 minutes
   workflow_dispatch:
 
 permissions:

@@ -122,12 +122,15 @@
   }
 
   /* -------------------------------------------------- Filters */
+  let activeFilter = "all";
+
   function initFilters() {
     document.querySelectorAll(".filter-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
         document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
-        renderMatches(btn.dataset.filter);
+        activeFilter = btn.dataset.filter;
+        renderMatches(activeFilter);
       });
     });
   }
@@ -144,20 +147,27 @@
     if (!el) return;
     if (meta.live && meta.updatedAt) {
       const d = new Date(meta.updatedAt);
-      el.textContent = `مباريات حقيقية · آخر تحديث ${d.toLocaleString("ar")}`;
+      const src = meta.sourceLabel || "TheSportsDB";
+      el.innerHTML = `مصدر: <b>${src}</b> · آخر تحديث ${d.toLocaleString("ar")} · <span class="live-refresh-dot"></span> يتحدث تلقائياً`;
     } else {
       el.textContent = "بيانات تجريبية (تعذّر تحميل الجدول المباشر)";
     }
+  }
+
+  async function loadMatches({ force } = {}) {
+    const meta = await window.getMatches({ force });
+    MATCHES = meta.matches;
+    showUpdated(meta);
+    renderFeaturedLive();
+    renderMatches(activeFilter);
+    return meta;
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
     renderChannels();
     initFilters();
     initNav();
-    const meta = await window.getMatches();
-    MATCHES = meta.matches;
-    showUpdated(meta);
-    renderFeaturedLive();
-    renderMatches("all");
+    await loadMatches();
+    setInterval(() => loadMatches({ force: true }), 90 * 1000);
   });
 })();

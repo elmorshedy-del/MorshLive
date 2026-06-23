@@ -146,6 +146,12 @@ img { max-width: 100%; display: block; }
 }
 .team .crest img { width: 100%; height: 100%; object-fit: contain; padding: 6px; }
 .updated-line { color: var(--muted); font-size: .82rem; margin: -8px 0 18px; }
+.updated-line b { color: var(--text); }
+.live-refresh-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: var(--accent); margin-inline-start: 4px; vertical-align: middle;
+  animation: blink 1.3s infinite;
+}
 .team .tname { font-weight: 700; font-size: .92rem; }
 .score { font-size: 1.45rem; font-weight: 800; min-width: 70px; text-align: center; }
 .score small { display: block; font-size: .72rem; color: var(--muted); font-weight: 600; margin-top: 2px; }
