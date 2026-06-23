@@ -136,6 +136,19 @@
     });
   }
 
+  function timeZoneHtml(m) {
+    const zones = window.getMatchTimeZones && m ? window.getMatchTimeZones(m) : [];
+    if (!zones.length) return "—";
+    return `
+      <div class="time-zone-row watch-times">
+        ${zones.map((z) => `
+          <div class="time-chip time-chip-${z.key}">
+            <span>${z.label}</span>
+            <b>${z.value}</b>
+          </div>`).join("")}
+      </div>`;
+  }
+
   /* ---------------------------------------------- Head info */
   function fillInfo() {
     const live = !!(match && match.status === "live");
@@ -154,6 +167,8 @@
     document.getElementById("info-group").textContent = channel.group;
     document.getElementById("info-commentator").textContent = (match && match.commentator) || "—";
     document.getElementById("info-league").textContent = (match && match.league) || "—";
+    const infoTimes = document.getElementById("info-times");
+    if (infoTimes) infoTimes.innerHTML = timeZoneHtml(match);
 
     const overlayTitle = document.getElementById("overlay-title");
     const overlaySub = document.getElementById("overlay-sub");

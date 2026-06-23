@@ -30,6 +30,19 @@
     return parts.join(" · ");
   }
 
+  function timeZoneChips(m, { compact = false } = {}) {
+    const zones = window.getMatchTimeZones ? window.getMatchTimeZones(m) : [];
+    if (!zones.length) return "";
+    return `
+      <div class="time-zone-row ${compact ? "compact" : ""}">
+        ${zones.map((z) => `
+          <div class="time-chip time-chip-${z.key}">
+            <span>${compact ? z.shortLabel : z.label}</span>
+            <b>${z.value}</b>
+          </div>`).join("")}
+      </div>`;
+  }
+
   /* -------------------------------------------------- Featured live (auto) */
   function renderFeaturedLive() {
     const wrap = document.getElementById("featured-live");
@@ -54,6 +67,7 @@
               <b class="featured-score">${m.score}</b>
               <span>${m.away}</span>
             </div>
+            ${timeZoneChips(m, { compact: true })}
             <div class="featured-foot">▶ شاهد الآن</div>
           </a>`).join("")}
       </div>`;
@@ -76,12 +90,13 @@
             ${crest(m.homeBadge, m.homeAbbr)}
             <div class="tname">${m.home}</div>
           </div>
-          <div class="score">${m.score}<small>${m.time}</small></div>
+          <div class="score">${m.score}</div>
           <div class="team">
             ${crest(m.awayBadge, m.awayAbbr)}
             <div class="tname">${m.away}</div>
           </div>
         </div>
+        ${timeZoneChips(m)}
         <div class="match-foot">
           <span class="match-meta">${footMeta(m)}</span>
           ${liveBtn}

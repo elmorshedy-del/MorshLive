@@ -139,6 +139,35 @@ function sortDisplayMatches(matches) {
   });
 }
 
+function formatMatchTime(m, timeZone) {
+  const kickoff = m && m.kickoffUtc ? parseKickoffMs(m.kickoffUtc) : NaN;
+  if (isNaN(kickoff)) return null;
+  return new Intl.DateTimeFormat("ar", {
+    timeZone,
+    weekday: "short",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(new Date(kickoff));
+}
+
+window.getMatchTimeZones = function getMatchTimeZones(m) {
+  return [
+    {
+      key: "ksa",
+      label: "توقيت السعودية",
+      shortLabel: "السعودية",
+      value: formatMatchTime(m, "Asia/Riyadh"),
+    },
+    {
+      key: "et",
+      label: "توقيت أمريكا الشرقي (ET)",
+      shortLabel: "أمريكا الشرقي",
+      value: formatMatchTime(m, "America/New_York"),
+    },
+  ].filter((item) => item.value);
+};
+
 window.getMatches = async function getMatches({ force } = {}) {
   // 1) Live fetch from TheSportsDB in the browser (best — real statuses, auto-refresh)
   if (window.MatchesAPI) {

@@ -221,6 +221,52 @@ img { max-width: 100%; display: block; }
 .score { font-size: 1.45rem; font-weight: 800; min-width: 70px; text-align: center; }
 .score small { display: block; font-size: .72rem; color: var(--muted); font-weight: 600; margin-top: 2px; }
 
+.time-zone-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 14px;
+}
+.time-zone-row.compact {
+  margin: 10px 0 2px;
+}
+.time-chip {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 9px 11px;
+  border-radius: 12px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.055), transparent),
+    rgba(29,38,56,.78);
+  border: 1px solid rgba(255,255,255,.08);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+.time-chip span {
+  color: var(--muted);
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: -.01em;
+}
+.time-chip b {
+  color: var(--text);
+  font-size: .92rem;
+  line-height: 1.25;
+}
+.time-chip-ksa {
+  border-color: rgba(24,226,154,.18);
+}
+.time-chip-et {
+  border-color: rgba(123,47,247,.22);
+}
+.featured-card .time-chip {
+  background: rgba(10,14,23,.32);
+  border-color: rgba(255,255,255,.1);
+}
+.featured-card .time-chip b {
+  font-size: .84rem;
+}
+
 .match-foot { display: flex; align-items: center; justify-content: space-between; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
 .match-meta { font-size: .82rem; color: var(--muted); }
 .match-meta b { color: var(--text); }
@@ -330,6 +376,12 @@ img { max-width: 100%; display: block; }
 .info-item { background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
 .info-item .k { color: var(--muted); font-size: .78rem; }
 .info-item .v { font-weight: 700; margin-top: 2px; }
+.info-time-item {
+  grid-column: 1 / -1;
+}
+.info-time-item .watch-times {
+  margin-top: 7px;
+}
 
 .player-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
 
