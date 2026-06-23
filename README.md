@@ -8,7 +8,7 @@ A clean, **ad-free** sports streaming front-end — live match schedule, channel
 
 - **Home page** — today's matches (live / upcoming / ended filters) + channel grid
 - **Watch page** — HLS player (`hls.js`), server switcher, sidebar of other channels
-- **Live fixtures** — auto-refreshed from TheSportsDB via `assets/data/today.json`
+- **Live fixtures** — auto-refreshed from TheSportsDB with ESPN scoreboard fallback via `assets/data/today.json`
 - **Responsive** — mobile, tablet, desktop with collapsible nav
 - **Zero build step** — plain HTML/CSS/JS
 
@@ -35,7 +35,7 @@ assets/
   js/app.js             # home page rendering & filters
   js/watch.js           # player, server switching, sidebar
 scripts/
-  fetch-matches.js      # pulls fixtures from TheSportsDB
+  fetch-matches.js      # pulls fixtures from TheSportsDB + ESPN fallback
 .github/workflows/
   update-matches.yml    # refreshes today.json on a schedule
 ```

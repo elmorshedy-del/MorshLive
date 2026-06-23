@@ -229,6 +229,13 @@
     isEmbed = !!channel.embed && activePlayer === 1;
   }
 
+  async function refreshMatches() {
+    const meta = await window.getMatches({ force: true });
+    MATCHES = meta.matches;
+    resolveSelection();
+    fillInfo();
+  }
+
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();
     if (shell) savedShellMarkup = shell.innerHTML;
@@ -248,5 +255,6 @@
       }
     }
     initPlayerSwitch();
+    setInterval(() => refreshMatches().catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
   });
 })();

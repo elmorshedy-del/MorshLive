@@ -100,6 +100,13 @@
     match = MATCHES.find((m) => m.id === matchId) || null;
   }
 
+  async function refreshMatches() {
+    const meta = await window.getMatches({ force: true });
+    MATCHES = meta.matches;
+    resolveSelection();
+    fillInfo();
+  }
+
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();
     const meta = await window.getMatches();
@@ -109,5 +116,6 @@
     renderServers();
     renderSidebar();
     loadEmbed(Number(params.get("serv") || 0));
+    setInterval(() => refreshMatches().catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
   });
 })();

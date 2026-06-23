@@ -1,8 +1,8 @@
 name: Update today's matches
 
-# Refreshes assets/data/today.json with REAL fixtures from TheSportsDB so the
-# site always shows the current day's matches. Runs a few times a day and can
-# be triggered manually from the Actions tab.
+# Refreshes assets/data/today.json with fixtures from TheSportsDB plus ESPN
+# fallback so the site always shows current games and scores. Runs a few times
+# a day and can be triggered manually from the Actions tab.
 on:
   schedule:
     - cron: "*/30 * * * *"   # every 30 minutes

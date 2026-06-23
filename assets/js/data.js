@@ -96,16 +96,47 @@ window.SITE_DATA = { CHANNELS, MATCHES };
  * ------------------------------------------------------------------------- */
 // Corrects cached snapshot status using kickoff timestamp when API status is stale.
 const MATCH_WINDOW_MS = 135 * 60 * 1000;
+const RECENT_ENDED_MS = 18 * 60 * 60 * 1000;
+function parseKickoffMs(ts) {
+  if (!ts) return NaN;
+  const text = String(ts).trim();
+  const normalized = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(text)
+    ? `${text}Z`
+    : text;
+  return Date.parse(normalized);
+}
+
 function refineStatus(m, dateStr) {
   if (m.status === "ended") return "ended";
   const kickoff = m.kickoffUtc
-    ? Date.parse(m.kickoffUtc)
+    ? parseKickoffMs(m.kickoffUtc)
     : (dateStr && m.time && /^\d{2}:\d{2}$/.test(m.time) ? Date.parse(`${dateStr}T${m.time}:00Z`) : NaN);
   if (isNaN(kickoff)) return m.status;
   const elapsed = Date.now() - kickoff;
   if (elapsed < 0) return "upcoming";
   if (elapsed < MATCH_WINDOW_MS) return m.status === "ended" ? "ended" : "live";
   return "ended";
+}
+
+function keepDisplayMatch(m) {
+  if (m.status !== "ended") return true;
+  const kickoff = parseKickoffMs(m.kickoffUtc);
+  if (isNaN(kickoff)) return true;
+  return Date.now() - kickoff <= MATCH_WINDOW_MS + RECENT_ENDED_MS;
+}
+
+function sortDisplayMatches(matches) {
+  const order = { live: 0, upcoming: 1, ended: 2 };
+  return matches.sort((a, b) => {
+    const byStatus = order[a.status] - order[b.status];
+    if (byStatus) return byStatus;
+    const at = parseKickoffMs(a.kickoffUtc);
+    const bt = parseKickoffMs(b.kickoffUtc);
+    if (!isNaN(at) && !isNaN(bt)) {
+      return a.status === "ended" ? bt - at : at - bt;
+    }
+    return (a.time || "").localeCompare(b.time || "");
+  });
 }
 
 window.getMatches = async function getMatches({ force } = {}) {
@@ -125,7 +156,9 @@ window.getMatches = async function getMatches({ force } = {}) {
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
     const raw = Array.isArray(data.matches) ? data.matches : [];
-    const matches = raw.map((m) => ({ ...m, status: refineStatus(m, data.date) }));
+    const matches = sortDisplayMatches(
+      raw.map((m) => ({ ...m, status: refineStatus(m, data.date) })).filter(keepDisplayMatch)
+    );
     return {
       matches,
       updatedAt: data.updatedAt,

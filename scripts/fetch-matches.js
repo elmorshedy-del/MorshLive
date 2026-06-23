@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /* ============================================================================
- * fetch-matches.js — Pulls fixtures from TheSportsDB (free open API).
+ * fetch-matches.js — Pulls fixtures from TheSportsDB plus ESPN fallback.
  * Writes assets/data/today.json as offline cache / GitHub Pages fallback.
  *
  * Usage:  node scripts/fetch-matches.js [YYYY-MM-DD]
@@ -9,11 +9,33 @@
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
-const { normalizeEvent, sortMatches } = require("./matches-lib");
+const {
+  filterDisplayMatches,
+  mergeMatches,
+  normalizeEspnEvent,
+  normalizeEvent,
+  sortMatches,
+} = require("./matches-lib");
 
 const KEY = process.env.SPORTSDB_KEY || "3";
 const centerDate = process.argv[2] || new Date().toISOString().slice(0, 10);
 const OUT = path.join(__dirname, "..", "assets", "data", "today.json");
+const ESPN_LEAGUES = [
+  "fifa.world",
+  "fifa.worldq",
+  "uefa.champions",
+  "uefa.europa",
+  "uefa.europa.conf",
+  "eng.1",
+  "esp.1",
+  "ita.1",
+  "ger.1",
+  "fra.1",
+  "usa.1",
+  "ksa.1",
+  "afc.champions",
+  "caf.champions",
+];
 
 function get(url) {
   return new Promise((resolve, reject) => {
@@ -41,10 +63,22 @@ async function fetchDay(date) {
   return Array.isArray(json.events) ? json.events : [];
 }
 
+function espnDateRange(center) {
+  return `${shiftDate(center, -1).replace(/-/g, "")}-${shiftDate(center, 1).replace(/-/g, "")}`;
+}
+
+async function fetchEspnLeague(slug, dateRange) {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${slug}/scoreboard?dates=${dateRange}&limit=100`;
+  const json = await get(url);
+  const league = json.leagues && json.leagues[0] ? json.leagues[0] : { slug };
+  const events = Array.isArray(json.events) ? json.events : [];
+  return events.map((event) => normalizeEspnEvent(event, league));
+}
+
 (async () => {
   const dates = [shiftDate(centerDate, -1), centerDate, shiftDate(centerDate, 1)];
   const seen = new Set();
-  const matches = [];
+  const sportsDbMatches = [];
 
   for (const date of dates) {
     const events = await fetchDay(date);
@@ -52,11 +86,21 @@ async function fetchDay(date) {
       const id = "e" + e.idEvent;
       if (seen.has(id)) continue;
       seen.add(id);
-      matches.push(normalizeEvent(e));
+      sportsDbMatches.push(normalizeEvent(e));
     }
   }
 
+  const espnResults = await Promise.allSettled(
+    ESPN_LEAGUES.map((slug) => fetchEspnLeague(slug, espnDateRange(centerDate)))
+  );
+  const espnMatches = espnResults.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+  const matches = filterDisplayMatches(mergeMatches(sportsDbMatches, espnMatches));
   sortMatches(matches);
+  const sourceLabel = sportsDbMatches.length && espnMatches.length
+    ? "TheSportsDB + ESPN"
+    : sportsDbMatches.length
+      ? "TheSportsDB"
+      : "ESPN";
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   fs.writeFileSync(
@@ -65,15 +109,17 @@ async function fetchDay(date) {
       {
         date: centerDate,
         updatedAt: new Date().toISOString(),
-        source: "thesportsdb",
-        sourceLabel: "TheSportsDB",
+        source: sportsDbMatches.length ? "thesportsdb" : "espn",
+        sourceLabel,
         matches,
       },
       null,
       2
     )
   );
-  console.log(`Wrote ${matches.length} matches (${dates.join(", ")}) -> ${path.relative(process.cwd(), OUT)}`);
+  console.log(
+    `Wrote ${matches.length} matches (${dates.join(", ")}, ESPN fallback ${espnDateRange(centerDate)}) -> ${path.relative(process.cwd(), OUT)}`
+  );
 })().catch((err) => {
   console.error("fetch-matches failed:", err.message);
   process.exit(1);
