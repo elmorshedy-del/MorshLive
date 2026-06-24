@@ -244,27 +244,22 @@
     if (vip && !vip.hidden) checkServers(vip, { autoSelect: false });
   }
 
-  /* ---------------------------------------------- Sidebar */
-  function channelMark(name) {
-    return (name || "")
-      .replace(/[^A-Za-z0-9 ]/g, "")
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 3)
-      .toUpperCase() || "ML";
-  }
-
+  /* ---------------------------------------------- Sidebar (today's matches) */
   function renderSidebar() {
     const panel = document.getElementById("side-channels");
-    panel.innerHTML = CHANNELS.map((c) =>
-      `<a class="side-channel ${c.id === channel.id ? "active" : ""}" href="watch.html?ch=${c.id}">
-         <div class="mini-logo">${channelMark(c.name)}</div>
-         <div class="meta">
-           <div class="n">${c.name}</div>
-           <div class="q">${c.quality} · ${c.group}</div>
-         </div>
+    if (!panel) return;
+    const order = { live: 0, upcoming: 1, ended: 2 };
+    const list = MATCHES.slice().sort((a, b) => (order[a.status] - order[b.status])).slice(0, 14);
+    if (!list.length) {
+      panel.innerHTML = `<div class="side-empty">لا توجد مباريات متاحة الآن</div>`;
+      return;
+    }
+    const label = { live: "مباشر", upcoming: "قادمة", ended: "انتهت" };
+    panel.innerHTML = list.map((m) =>
+      `<a class="side-match ${match && m.id === match.id ? "active" : ""}" href="watch.html?ch=${m.channelId || "live"}&match=${m.id}">
+         <span class="side-status status-${m.status}">${label[m.status]}</span>
+         <span class="side-teams">${m.home} <i>×</i> ${m.away}</span>
+         <span class="side-league">${m.league || ""}</span>
        </a>`
     ).join("");
   }
@@ -297,9 +292,9 @@
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
+    renderSidebar();
     if (channel.id !== previousChannelId) {
       renderServers();
-      renderSidebar();
       if (activePlayer === 1) {
         if (isEmbed) loadEmbed(0);
         else loadStream(channel.stream);

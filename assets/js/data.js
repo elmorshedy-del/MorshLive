@@ -7,84 +7,16 @@
  * live. No copyrighted broadcasts are bundled with this project.
  * ==========================================================================*/
 
-// Public, royalty-free demo HLS streams used as placeholders.
-const DEMO_STREAMS = {
-  bbb: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-  tears: "https://test-streams.mux.dev/pts_shift/master.m3u8",
-  apple: "https://devstreaming-cdn.apple.com/videos/streaming/examples/img_bipbop_adv_example_ts/master.m3u8",
-};
-
+// The site streams a single real live source. Player 1 uses this channel's
+// embed; Player 2 (VIP) on the watch page is a second source kept for now while
+// comparing which stream is smoothest.
 const CHANNELS = [
-  // Embed channel — reproduces the known-good commit 9878075 exactly.
-  { id: "bein-sports-1",       name: "beIN Sports 1",        group: "beIN",     quality: "1080p", stream: DEMO_STREAMS.bbb,   badge: "HD",
+  { id: "bein-sports-1", name: "beIN Sports", group: "beIN", quality: "1080p", badge: "HD",
     embed: { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 3 } },
-  { id: "bein-sports-2",       name: "beIN Sports 2",        group: "beIN",     quality: "1080p", stream: DEMO_STREAMS.tears, badge: "HD" },
-  { id: "bein-sports-3",       name: "beIN Sports 3",        group: "beIN",     quality: "1080p", stream: DEMO_STREAMS.apple, badge: "HD" },
-  { id: "bein-sports-4",       name: "beIN Sports 4",        group: "beIN",     quality: "720p",  stream: DEMO_STREAMS.bbb },
-  { id: "bein-sports-5",       name: "beIN Sports 5",        group: "beIN",     quality: "720p",  stream: DEMO_STREAMS.tears },
-  { id: "bein-sports-6",       name: "beIN Sports 6",        group: "beIN",     quality: "720p",  stream: DEMO_STREAMS.apple },
-  { id: "bein-premium-1",      name: "beIN Premium 1",       group: "Premium",  quality: "1080p", stream: DEMO_STREAMS.bbb,   badge: "4K" },
-  { id: "bein-premium-2",      name: "beIN Premium 2",       group: "Premium",  quality: "1080p", stream: DEMO_STREAMS.tears, badge: "4K" },
-  { id: "ssc-1",               name: "SSC 1",                group: "SSC",      quality: "1080p", stream: DEMO_STREAMS.apple, badge: "HD" },
-  { id: "ssc-2",               name: "SSC 2",                group: "SSC",      quality: "1080p", stream: DEMO_STREAMS.bbb },
-  { id: "ad-sports-1",         name: "AD Sports 1",          group: "AD",       quality: "1080p", stream: DEMO_STREAMS.tears },
-  { id: "dubai-sports-1",      name: "Dubai Sports 1",       group: "Dubai",    quality: "720p",  stream: DEMO_STREAMS.apple },
 ];
 
-// FALLBACK sample matches — only shown if assets/data/today.json can't be
-// loaded (e.g. opened via file://). Real fixtures come from getMatches() below,
-// refreshed by scripts/fetch-matches.js + the GitHub Action.
-// status: "live" | "upcoming" | "ended"
-const MATCHES = [
-  {
-    id: "m1", status: "live", minute: "67'",
-    home: "ريال مدريد", away: "برشلونة",
-    homeAbbr: "RMA", awayAbbr: "BAR",
-    score: "2 - 1", time: "21:00",
-    league: "الدوري الإسباني", channel: "beIN Sports 1",
-    channelId: "bein-sports-1", commentator: "عصام الشوالي",
-  },
-  {
-    id: "m2", status: "live", minute: "33'",
-    home: "ليفربول", away: "مانشستر سيتي",
-    homeAbbr: "LIV", awayAbbr: "MCI",
-    score: "0 - 0", time: "21:30",
-    league: "الدوري الإنجليزي", channel: "beIN Sports 2",
-    channelId: "bein-sports-2", commentator: "حفيظ دراجي",
-  },
-  {
-    id: "m3", status: "upcoming",
-    home: "بايرن ميونخ", away: "دورتموند",
-    homeAbbr: "BAY", awayAbbr: "DOR",
-    score: "VS", time: "22:45",
-    league: "الدوري الألماني", channel: "beIN Sports 3",
-    channelId: "bein-sports-3", commentator: "رؤوف خليف",
-  },
-  {
-    id: "m4", status: "upcoming",
-    home: "يوفنتوس", away: "إنتر ميلان",
-    homeAbbr: "JUV", awayAbbr: "INT",
-    score: "VS", time: "23:00",
-    league: "الدوري الإيطالي", channel: "beIN Premium 1",
-    channelId: "bein-premium-1", commentator: "علي محمد علي",
-  },
-  {
-    id: "m5", status: "upcoming",
-    home: "الهلال", away: "النصر",
-    homeAbbr: "HIL", awayAbbr: "NAS",
-    score: "VS", time: "20:00",
-    league: "الدوري السعودي", channel: "SSC 1",
-    channelId: "ssc-1", commentator: "فهد العتيبي",
-  },
-  {
-    id: "m6", status: "ended",
-    home: "باريس سان جيرمان", away: "مارسيليا",
-    homeAbbr: "PSG", awayAbbr: "MAR",
-    score: "3 - 0", time: "أمس",
-    league: "الدوري الفرنسي", channel: "beIN Sports 4",
-    channelId: "bein-sports-4", commentator: "جواد بده",
-  },
-];
+// Fallback only — shown if both the live API and cached today.json fail to load.
+const MATCHES = [];
 
 // Expose for non-module scripts.
 window.SITE_DATA = { CHANNELS, MATCHES };

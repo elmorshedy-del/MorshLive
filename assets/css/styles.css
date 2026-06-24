@@ -284,46 +284,6 @@ img { max-width: 100%; display: block; }
 }
 .watch-link:hover { transform: translateY(-2px); }
 
-/* --------------------------------------------------------- Channels */
-.channels { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; }
-.channel-card {
-  background: linear-gradient(180deg, rgba(255,255,255,.04), transparent), var(--glass);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: var(--radius); padding: 20px 16px; text-align: center;
-  transition: transform .22s ease, box-shadow .22s ease, border-color .22s ease; position: relative; overflow: hidden;
-  backdrop-filter: blur(12px); animation: cardIn .55s ease both;
-}
-.channel-card::before {
-  content: ""; position: absolute; inset: -40% -20% auto; height: 100px;
-  background: radial-gradient(circle, rgba(255,255,255,.18), transparent 65%);
-  transform: translateY(-60px); transition: transform .32s ease;
-}
-.channel-card:hover { border-color: rgba(123,47,247,.75); transform: translateY(-5px); box-shadow: var(--shadow-soft); }
-.channel-card:hover::before { transform: translateY(10px); }
-.channel-card .logo-box {
-  width: 64px; height: 64px; margin: 0 auto 12px; border-radius: 16px;
-  background:
-    radial-gradient(circle at 32% 28%, rgba(255,255,255,.45), transparent 18%),
-    var(--grad);
-  display: grid; place-items: center; font-size: 1.1rem; font-weight: 900; letter-spacing: .04em;
-  box-shadow: 0 12px 30px rgba(123,47,247,.34), inset 0 1px 0 rgba(255,255,255,.25);
-  position: relative; z-index: 1; transition: transform .24s ease;
-}
-.channel-card:hover .logo-box { transform: rotate(-2deg) scale(1.04); }
-.channel-card .logo-box span { color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.32); }
-.channel-card .cname { font-weight: 700; font-size: 1rem; }
-.channel-card .cmeta { color: var(--muted); font-size: .8rem; margin-top: 4px; }
-.channel-card .live-dot {
-  position: absolute; top: 12px; inset-inline-start: 12px;
-  background: var(--danger); color: #fff; font-size: .68rem; font-weight: 800;
-  padding: 3px 8px; border-radius: 999px;
-}
-.channel-card .badge {
-  position: absolute; top: 12px; inset-inline-end: 12px;
-  background: var(--surface-2); color: var(--gold); font-size: .68rem; font-weight: 800;
-  padding: 3px 8px; border-radius: 6px; border: 1px solid var(--border);
-}
-
 /* --------------------------------------------------------- Filters */
 .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
 .filter-btn {
@@ -452,16 +412,19 @@ img { max-width: 100%; display: block; }
   backdrop-filter: blur(12px); animation: fadeUp .65s .14s ease both;
 }
 .side-panel h3 { font-size: 1.1rem; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-.side-channel { display: flex; align-items: center; gap: 12px; padding: 10px; border-radius: 10px; transition: .2s; }
-.side-channel:hover { background: var(--surface-2); }
-.side-channel.active { background: var(--surface-2); border: 1px solid var(--brand); }
-.side-channel .mini-logo {
-  width: 42px; height: 42px; border-radius: 12px; background: var(--grad);
-  display: grid; place-items: center; font-size: .78rem; font-weight: 900; letter-spacing: .03em; flex-shrink: 0;
-  box-shadow: 0 8px 18px rgba(123,47,247,.24);
+.side-match {
+  display: grid; gap: 4px; padding: 11px 12px; border-radius: 11px;
+  border: 1px solid transparent; transition: background .2s ease, border-color .2s ease;
 }
-.side-channel .meta .n { font-weight: 700; font-size: .9rem; }
-.side-channel .meta .q { color: var(--muted); font-size: .76rem; }
+.side-match:hover { background: var(--surface-2); }
+.side-match.active { background: var(--surface-2); border-color: var(--brand); }
+.side-match .side-status {
+  justify-self: start; font-size: .66rem; font-weight: 800; padding: 2px 8px; border-radius: 999px;
+}
+.side-match .side-teams { font-weight: 700; font-size: .9rem; }
+.side-match .side-teams i { font-style: normal; color: var(--muted); margin: 0 4px; }
+.side-match .side-league { color: var(--muted); font-size: .76rem; }
+.side-empty { color: var(--muted); font-size: .88rem; padding: 8px 4px; }
 
 /* --------------------------------------------------------- FAQ */
 .faq { display: grid; gap: 12px; }

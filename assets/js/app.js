@@ -3,7 +3,6 @@
  * Match data is loaded live from assets/data/today.json via window.getMatches().
  * ==========================================================================*/
 (function () {
-  const { CHANNELS } = window.SITE_DATA;
   let MATCHES = [];
 
   const statusLabel = { live: "مباشر الآن", upcoming: "لم تبدأ", ended: "انتهت" };
@@ -128,36 +127,6 @@
     if (count) count.textContent = `${list.length} مباراة`;
   }
 
-  /* -------------------------------------------------- Channels rendering */
-  function channelMark(name) {
-    return (name || "")
-      .replace(/[^A-Za-z0-9 ]/g, "")
-      .split(/\s+/)
-      .filter(Boolean)
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 3)
-      .toUpperCase() || "ML";
-  }
-
-  function channelCard(c) {
-    return `
-      <a class="channel-card" href="watch.html?ch=${c.id}">
-        ${c.badge ? `<span class="badge">${c.badge}</span>` : ""}
-        <div class="logo-box" aria-hidden="true"><span>${channelMark(c.name)}</span></div>
-        <div class="cname">${c.name}</div>
-        <div class="cmeta">${c.quality} · ${c.group}</div>
-      </a>`;
-  }
-
-  function renderChannels() {
-    const grid = document.getElementById("channels-grid");
-    if (!grid) return;
-    grid.innerHTML = CHANNELS.map(channelCard).join("");
-    const count = document.getElementById("channels-count");
-    if (count) count.textContent = `${CHANNELS.length} قناة`;
-  }
-
   /* -------------------------------------------------- Filters */
   let activeFilter = "all";
 
@@ -201,7 +170,6 @@
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
-    renderChannels();
     initFilters();
     initNav();
     await loadMatches();
