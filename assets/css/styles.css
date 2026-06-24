@@ -115,10 +115,12 @@ img { max-width: 100%; display: block; }
 .hero p { color: var(--muted); margin-top: 14px; max-width: 680px; font-size: 1.08rem; animation: fadeUp .7s .18s ease both; }
 .hero-usps { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; animation: fadeUp .7s .24s ease both; }
 .hero-usps .usp {
+  display: inline-flex; align-items: center; gap: 7px;
   font-size: .85rem; font-weight: 700; color: var(--text);
   background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
   padding: 8px 14px; border-radius: 999px; backdrop-filter: blur(8px);
 }
+.hero-usps .usp .ico { color: var(--accent); }
 .hero-cta { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; animation: fadeUp .7s .3s ease both; }
 
 .btn {
@@ -137,6 +139,19 @@ img { max-width: 100%; display: block; }
 .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 16px 38px rgba(123,47,247,.5); }
 .btn-ghost { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1); color: var(--text); }
 .btn-ghost:hover { background: rgba(255,255,255,.1); transform: translateY(-2px); }
+
+/* ---- Inline SVG icon system (replaces emoji) ---- */
+.ico {
+  width: 1em; height: 1em; display: inline-block; vertical-align: -.14em;
+  fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  flex-shrink: 0;
+}
+.ico-fill { fill: currentColor; stroke: none; }
+.live-dot-i {
+  display: inline-block; width: .6em; height: .6em; border-radius: 50%;
+  background: var(--danger); vertical-align: middle;
+  box-shadow: 0 0 0 0 rgba(255,59,92,.6); animation: rec 1.6s infinite;
+}
 
 .no-ads-badge {
   display: inline-flex; align-items: center; gap: 8px;
@@ -315,9 +330,10 @@ img { max-width: 100%; display: block; }
 .player-overlay.hidden { opacity: 0; pointer-events: none; }
 .player-overlay .play-btn {
   width: 84px; height: 84px; border-radius: 50%; background: var(--grad);
-  display: grid; place-items: center; font-size: 2rem; margin: 0 auto 16px;
+  display: grid; place-items: center; margin: 0 auto 16px; color: #fff;
   box-shadow: 0 10px 30px rgba(123,47,247,.6); animation: pulse 2s infinite;
 }
+.player-overlay .play-btn .ico { width: 34px; height: 34px; }
 @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.06); } }
 .player-overlay h3 { font-size: 1.3rem; }
 .player-overlay p { color: var(--muted); margin-top: 6px; font-size: .92rem; }
@@ -696,10 +712,12 @@ img { max-width: 100%; display: block; }
 .wc-trophy {
   font-size: 3.2rem;
   display: block;
+  color: #e3c878;
   filter: drop-shadow(0 0 16px rgba(201,162,84,.72));
   will-change: transform, filter;
   transform-origin: bottom center;
 }
+.wc-trophy .ico { width: 1em; height: 1em; stroke-width: 1.7; }
 
 /* Text content */
 .wc-content {
