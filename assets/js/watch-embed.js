@@ -65,7 +65,7 @@
     const activeServ = Number(params.get("serv") || 0);
 
     row.innerHTML = Array.from({ length: EMBED_SERVERS }, (_, i) =>
-      `<button class="server-btn ${i === activeServ ? "active" : ""}" data-srv="${i}">سيرفر ${i + 1}</button>`
+      `<button class="server-btn ${i === activeServ ? "active" : ""}" data-srv="${i}" data-kind="reachable" data-url="${embedUrl(i)}" data-label="سيرفر ${i + 1}"><span class="srv-label">سيرفر ${i + 1}</span></button>`
     ).join("");
 
     row.querySelectorAll(".server-btn").forEach((btn) => {
@@ -80,6 +80,8 @@
         history.replaceState(null, "", next);
       });
     });
+
+    if (window.StreamCheck) window.StreamCheck.autoHighlight(row).catch(() => {});
   }
 
   function channelMark(name) {
@@ -142,5 +144,9 @@
     loadEmbed(Number(params.get("serv") || 0));
     refreshMatches().catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches().catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
+    setInterval(() => {
+      const row = document.getElementById("servers");
+      if (row && window.StreamCheck) window.StreamCheck.autoHighlight(row, { autoSelect: false }).catch(() => {});
+    }, 60 * 1000);
   });
 })();

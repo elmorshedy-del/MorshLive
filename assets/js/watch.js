@@ -120,7 +120,7 @@
     const activeServ = Number(params.get("serv") || 0);
 
     row.innerHTML = Array.from({ length: VIP_SERVERS }, (_, i) =>
-      `<button class="server-btn ${i === activeServ ? "active" : ""}" data-vip-srv="${i}">VIP سيرفر ${i + 1}</button>`
+      `<button class="server-btn ${i === activeServ ? "active" : ""}" data-vip-srv="${i}" data-kind="reachable" data-url="${vipEmbedUrl(i)}" data-label="VIP سيرفر ${i + 1}"><span class="srv-label">VIP سيرفر ${i + 1}</span></button>`
     ).join("");
 
     row.querySelectorAll("[data-vip-srv]").forEach((btn) => {
@@ -134,6 +134,8 @@
         history.replaceState(null, "", next);
       });
     });
+
+    checkServers(row);
   }
 
   function timeZoneHtml(m) {
@@ -187,7 +189,7 @@
     if (isEmbed) {
       const n = channel.embed.servers || 1;
       row.innerHTML = Array.from({ length: n }, (_, i) =>
-        `<button class="server-btn ${i === 0 ? "active" : ""}" data-srv="${i}">سيرفر ${i + 1}</button>`
+        `<button class="server-btn ${i === 0 ? "active" : ""}" data-srv="${i}" data-kind="reachable" data-url="${embedUrl(i)}" data-label="سيرفر ${i + 1}"><span class="srv-label">سيرفر ${i + 1}</span></button>`
       ).join("");
       row.querySelectorAll(".server-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -196,6 +198,7 @@
           loadEmbed(Number(btn.dataset.srv));
         });
       });
+      checkServers(row);
       return;
     }
 
@@ -205,7 +208,7 @@
       { label: "سيرفر 3 · احتياطي", url: channel.stream },
     ];
     row.innerHTML = servers
-      .map((s, i) => `<button class="server-btn ${i === 0 ? "active" : ""}" data-url="${s.url}">${s.label}</button>`)
+      .map((s, i) => `<button class="server-btn ${i === 0 ? "active" : ""}" data-kind="hls" data-url="${s.url}" data-label="${s.label}"><span class="srv-label">${s.label}</span></button>`)
       .join("");
     row.querySelectorAll(".server-btn").forEach((btn) => {
       btn.addEventListener("click", () => {
@@ -215,6 +218,21 @@
         if (started) video.play().catch(() => {});
       });
     });
+    checkServers(row);
+  }
+
+  /* ---------------------------------------------- Live server detection */
+  function checkServers(row, opts) {
+    if (row && window.StreamCheck) {
+      window.StreamCheck.autoHighlight(row, opts).catch(() => {});
+    }
+  }
+
+  function recheckVisibleServers() {
+    const servers = document.getElementById("servers");
+    const vip = document.getElementById("vip-servers");
+    if (servers && !servers.hidden) checkServers(servers, { autoSelect: false });
+    if (vip && !vip.hidden) checkServers(vip, { autoSelect: false });
   }
 
   /* ---------------------------------------------- Sidebar */
@@ -299,5 +317,6 @@
     initPlayerSwitch();
     refreshMatches().catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches().catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
+    setInterval(recheckVisibleServers, 60 * 1000);
   });
 })();
