@@ -195,8 +195,22 @@ function buildIndex(rows) {
   return index;
 }
 
-/* Attach commentator data to fixtures; returns a compact index for the JSON
-   cache so the browser can re-attach onto live API results. */
+function channelNumber(label) {
+  const m = (label || "").match(/(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+/* Map the broadcast channel(s) to our embed channels. World Cup matches air on
+   the odd beIN MAX pair (1/3 → beIN Sports 1) or the even pair (2/4 → beIN
+   Sports 2), so a single game resolves cleanly to one of our two channels. */
+function channelIdFor(commentators) {
+  const nums = commentators.map((c) => channelNumber(c.channel)).filter((n) => n != null);
+  if (nums.some((n) => n % 2 === 0)) return "bein-sports-2";
+  return "bein-sports-1";
+}
+
+/* Attach commentator + channel data to fixtures; returns a compact index for
+   the JSON cache so the browser can re-attach onto live API results. */
 function attachCommentators(matches, html) {
   const index = buildIndex(parseCommentators(html));
   const commentaryIndex = [];
@@ -205,13 +219,19 @@ function attachCommentators(matches, html) {
     const entry = index.get(pairKey(m.home, m.away));
     if (!entry || !entry.commentators.length) continue;
     matched++;
+    const channelId = channelIdFor(entry.commentators);
+    const channelName = channelId === "bein-sports-2" ? "beIN Sports 2" : "beIN Sports 1";
     m.commentators = entry.commentators;
     m.commentator = entry.commentators[0].name;
+    m.channel = channelName;
+    m.channelId = channelId;
     commentaryIndex.push({
       key: pairKey(m.home, m.away),
       home: m.home,
       away: m.away,
       commentators: entry.commentators,
+      channel: channelName,
+      channelId,
     });
   }
   return { matched, commentaryIndex };

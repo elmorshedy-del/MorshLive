@@ -11,8 +11,10 @@
 // embed; Player 2 (VIP) on the watch page is a second source kept for now while
 // comparing which stream is smoothest.
 const CHANNELS = [
-  { id: "bein-sports-1", name: "beIN Sports", group: "beIN", quality: "1080p", badge: "HD",
+  { id: "bein-sports-1", name: "beIN Sports 1", group: "beIN", quality: "1080p", badge: "HD",
     embed: { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 3 } },
+  { id: "bein-sports-2", name: "beIN Sports 2", group: "beIN", quality: "1080p", badge: "HD",
+    embed: { url: "https://vip.worldkoora.com/albaplayer/vip2/", param: "serv", servers: 3 } },
 ];
 
 // Fallback only — shown if both the live API and cached today.json fail to load.
@@ -115,7 +117,7 @@ async function loadCommentaryIndex() {
     const res = await fetch("assets/data/today.json", { cache: "no-store" });
     const data = await res.json();
     const idx = {};
-    (data.commentaryIndex || []).forEach((c) => { idx[c.key] = c.commentators; });
+    (data.commentaryIndex || []).forEach((c) => { idx[c.key] = c; });
     _commentaryIdx = idx;
     _commentaryAt = Date.now();
   } catch (e) {
@@ -127,10 +129,16 @@ async function loadCommentaryIndex() {
 function applyCommentary(matches, idx) {
   if (!idx) return matches;
   return matches.map((m) => {
-    if (m.commentators && m.commentators.length) return m;
-    const list = idx[commentaryKey(m.home, m.away)];
-    if (!list || !list.length) return m;
-    return { ...m, commentators: list, commentator: m.commentator || list[0].name };
+    const entry = idx[commentaryKey(m.home, m.away)];
+    if (!entry) return m;
+    const out = { ...m };
+    if (entry.commentators && entry.commentators.length) {
+      out.commentators = entry.commentators;
+      out.commentator = out.commentator || entry.commentators[0].name;
+    }
+    if (entry.channel) out.channel = entry.channel;
+    if (entry.channelId) out.channelId = entry.channelId;
+    return out;
   });
 }
 

@@ -12,6 +12,7 @@
     play: '<svg class="ico ico-fill" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
     trophy: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.7V17c0 .6-.5 1-1 1.2C7.9 18.8 7 20.2 7 22"/><path d="M14 14.7V17c0 .6.5 1 1 1.2 1.1.6 2 2 2 2.8"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>',
     pin: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
+    tv: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>',
   };
 
   function crest(badge, ab) {
@@ -38,10 +39,12 @@
   }
 
   function footMeta(m) {
+    const parts = [];
     const comm = commentatorText(m);
-    if (comm) return `${ICON.mic} <b>${comm}</b>`;
-    if (m.venue) return `${ICON.pin} ${m.venue}`;
-    return `${ICON.trophy} ${m.league || ""}`;
+    if (comm) parts.push(`${ICON.mic} <b>${comm}</b>`);
+    if (m.channel) parts.push(`${ICON.tv} ${m.channel}`);
+    if (!parts.length) parts.push(m.venue ? `${ICON.pin} ${m.venue}` : `${ICON.trophy} ${m.league || ""}`);
+    return parts.join(" · ");
   }
 
   function timeZoneChips(m, { compact = false } = {}) {
