@@ -1,9 +1,9 @@
 /* ============================================================================
- * watch-embed.js — VIP iframe player (vip.worldkoora.com/albaplayer/vip1)
+ * watch-embed.js — VIP iframe player (vip.worldkoora.com/albaplayer/vip2)
  * Same layout as watch.html; opens in its own tab via watch-embed.html
  * ==========================================================================*/
 (function () {
-  const EMBED_BASE = "https://vip.worldkoora.com/albaplayer/vip1/";
+  const EMBED_BASE = "https://vip.worldkoora.com/albaplayer/vip2/";
   const EMBED_PARAM = "serv";
   const EMBED_SERVERS = 3;
 
