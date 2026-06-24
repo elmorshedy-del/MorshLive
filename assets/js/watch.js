@@ -4,7 +4,7 @@
  * Match data is loaded live via window.getMatches() (assets/data/today.json).
  * ==========================================================================*/
 (function () {
-  const VIP_EMBED_BASE = "https://vip.worldkoora.com/albaplayer/vip2/";
+  const VIP_EMBED_BASE = "https://vip.worldkoora.com/albaplayer/vip1/";
   const VIP_SERVERS = 3;
 
   const { CHANNELS } = window.SITE_DATA;
