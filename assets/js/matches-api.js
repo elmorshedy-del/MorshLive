@@ -8,22 +8,9 @@
   const API_KEY = "3"; // free public test key — upgrade via SPORTSDB_KEY env in CI
   const BASE = `https://www.thesportsdb.com/api/v1/json/${API_KEY}`;
   const ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer";
-  const ESPN_LEAGUES = [
-    "fifa.world",
-    "fifa.worldq",
-    "uefa.champions",
-    "uefa.europa",
-    "uefa.europa.conf",
-    "eng.1",
-    "esp.1",
-    "ita.1",
-    "ger.1",
-    "fra.1",
-    "usa.1",
-    "ksa.1",
-    "afc.champions",
-    "caf.champions",
-  ];
+  // World Cup only for now.
+  const ESPN_LEAGUES = ["fifa.world"];
+  const WORLD_CUP_RE = /world\s*cup|كأس العالم/i;
   const CACHE_MS = 60 * 1000; // 1 min client cache
   const FETCH_TIMEOUT_MS = 5000;
   const MATCH_WINDOW_MS = 135 * 60 * 1000;
@@ -152,7 +139,8 @@
   async function fetchDay(dateStr) {
     const url = `${BASE}/eventsday.php?d=${dateStr}&s=Soccer`;
     const json = await fetchJson(url, `TheSportsDB (${dateStr})`);
-    return Array.isArray(json.events) ? json.events : [];
+    const events = Array.isArray(json.events) ? json.events : [];
+    return events.filter((e) => WORLD_CUP_RE.test(e.strLeague || ""));
   }
 
   function espnStatus(status, kickoffUtc) {
@@ -173,11 +161,6 @@
     const kickoffUtc = competition.date || e.date || null;
     const status = espnStatus(competition.status, kickoffUtc);
     const statusType = competition.status && competition.status.type ? competition.status.type : {};
-    const broadcasts = []
-      .concat(competition.broadcasts || [])
-      .concat(competition.geoBroadcasts || [])
-      .map((b) => (b.media && (b.media.shortName || b.media.name)) || b.name)
-      .filter(Boolean);
 
     return {
       id: `espn-${(league && league.slug) || "soccer"}-${e.id}`,
@@ -198,7 +181,7 @@
         competition.venue && competition.venue.address && competition.venue.address.city,
         competition.venue && competition.venue.address && competition.venue.address.country,
       ].filter(Boolean).join(" · "),
-      channel: [...new Set(broadcasts)].join(" / ") || null,
+      channel: null,
       channelId: "bein-sports-1",
       commentator: null,
       source: "espn",

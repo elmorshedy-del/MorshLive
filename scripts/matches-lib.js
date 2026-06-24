@@ -3,6 +3,8 @@ const LIVE = new Set(["1H", "2H", "HT", "ET", "BT", "P", "LIVE", "IN PLAY", "INT
 const ENDED = new Set(["FT", "AET", "PEN", "Match Finished", "AWD", "WO", "CANC", "ABD", "PST"]);
 const MATCH_WINDOW_MS = 135 * 60 * 1000;
 const RECENT_ENDED_MS = 18 * 60 * 60 * 1000;
+// World Cup only for now.
+const WORLD_CUP_RE = /world\s*cup|كأس العالم/i;
 
 function abbr(name) {
   return (name || "")
@@ -77,7 +79,7 @@ function normalizeEvent(e) {
     score: formatScore(e.intHomeScore, e.intAwayScore, status),
     time: formatTime(e),
     kickoffUtc: e.strTimestamp || null,
-    league: e.strLeague || "مباراة",
+    league: e.strLeague || "كأس العالم",
     venue: [e.strVenue, e.strCity].filter(Boolean).join(" · "),
     channel: null,
     channelId: "bein-sports-1",
@@ -104,11 +106,6 @@ function normalizeEspnEvent(e, league) {
   const kickoffUtc = competition.date || e.date || null;
   const status = espnStatus(competition.status, kickoffUtc);
   const statusType = competition.status && competition.status.type ? competition.status.type : {};
-  const broadcasts = []
-    .concat(competition.broadcasts || [])
-    .concat(competition.geoBroadcasts || [])
-    .map((b) => (b.media && (b.media.shortName || b.media.name)) || b.name)
-    .filter(Boolean);
 
   return {
     id: `espn-${(league && league.slug) || "soccer"}-${e.id}`,
@@ -129,7 +126,7 @@ function normalizeEspnEvent(e, league) {
       competition.venue && competition.venue.address && competition.venue.address.city,
       competition.venue && competition.venue.address && competition.venue.address.country,
     ].filter(Boolean).join(" · "),
-    channel: [...new Set(broadcasts)].join(" / ") || null,
+    channel: null,
     channelId: "bein-sports-1",
     commentator: null,
     source: "espn",
@@ -215,4 +212,5 @@ module.exports = {
   parseKickoffMs,
   sortMatches,
   statusOf,
+  WORLD_CUP_RE,
 };

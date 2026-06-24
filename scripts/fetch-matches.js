@@ -15,6 +15,7 @@ const {
   normalizeEspnEvent,
   normalizeEvent,
   sortMatches,
+  WORLD_CUP_RE,
 } = require("./matches-lib");
 const { attachCommentators } = require("./commentators-lib");
 
@@ -23,22 +24,8 @@ const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
 const KEY = process.env.SPORTSDB_KEY || "3";
 const centerDate = process.argv[2] || new Date().toISOString().slice(0, 10);
 const OUT = path.join(__dirname, "..", "assets", "data", "today.json");
-const ESPN_LEAGUES = [
-  "fifa.world",
-  "fifa.worldq",
-  "uefa.champions",
-  "uefa.europa",
-  "uefa.europa.conf",
-  "eng.1",
-  "esp.1",
-  "ita.1",
-  "ger.1",
-  "fra.1",
-  "usa.1",
-  "ksa.1",
-  "afc.champions",
-  "caf.champions",
-];
+// World Cup only for now.
+const ESPN_LEAGUES = ["fifa.world"];
 
 function get(url) {
   return new Promise((resolve, reject) => {
@@ -80,7 +67,8 @@ function shiftDate(iso, days) {
 async function fetchDay(date) {
   const url = `https://www.thesportsdb.com/api/v1/json/${KEY}/eventsday.php?d=${date}&s=Soccer`;
   const json = await get(url);
-  return Array.isArray(json.events) ? json.events : [];
+  const events = Array.isArray(json.events) ? json.events : [];
+  return events.filter((e) => WORLD_CUP_RE.test(e.strLeague || ""));
 }
 
 function espnDateRange(center) {
