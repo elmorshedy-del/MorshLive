@@ -112,8 +112,14 @@ img { max-width: 100%; display: block; }
   background: linear-gradient(135deg, #fff, var(--gold) 24%, var(--brand-2) 58%, var(--accent));
   -webkit-background-clip: text; background-clip: text; color: transparent;
 }
-.hero p { color: var(--muted); margin-top: 14px; max-width: 650px; font-size: 1.08rem; animation: fadeUp .7s .18s ease both; }
-.hero-cta { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; animation: fadeUp .7s .28s ease both; }
+.hero p { color: var(--muted); margin-top: 14px; max-width: 680px; font-size: 1.08rem; animation: fadeUp .7s .18s ease both; }
+.hero-usps { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; animation: fadeUp .7s .24s ease both; }
+.hero-usps .usp {
+  font-size: .85rem; font-weight: 700; color: var(--text);
+  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+  padding: 8px 14px; border-radius: 999px; backdrop-filter: blur(8px);
+}
+.hero-cta { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; animation: fadeUp .7s .3s ease both; }
 
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
@@ -157,6 +163,7 @@ img { max-width: 100%; display: block; }
 .featured-league { color: var(--muted); font-size: .85rem; font-weight: 600; }
 .featured-teams { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 12px 0; font-weight: 700; font-size: 1.05rem; }
 .featured-score { font-size: 1.4rem; color: var(--gold); }
+.featured-commentator { color: var(--text); font-size: .9rem; font-weight: 700; margin: 6px 0 2px; }
 .featured-foot { color: var(--text); font-size: .88rem; font-weight: 600; }
 .live-empty { display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border);
   border-radius: var(--radius); padding: 16px 18px; color: var(--muted); font-weight: 600; }
@@ -415,6 +422,15 @@ img { max-width: 100%; display: block; }
   margin-top: 7px;
 }
 
+.commentator-list { display: grid; gap: 6px; margin-top: 2px; }
+.commentator-item { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.commentator-item b { font-weight: 700; }
+.commentator-item i {
+  font-style: normal; font-size: .72rem; font-weight: 700; color: var(--accent);
+  background: rgba(24,226,154,.1); border: 1px solid rgba(24,226,154,.25);
+  padding: 2px 8px; border-radius: 999px;
+}
+
 .player-tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px; }
 
 .player-switch {
@@ -446,6 +462,25 @@ img { max-width: 100%; display: block; }
 }
 .side-channel .meta .n { font-weight: 700; font-size: .9rem; }
 .side-channel .meta .q { color: var(--muted); font-size: .76rem; }
+
+/* --------------------------------------------------------- FAQ */
+.faq { display: grid; gap: 12px; }
+.faq-item {
+  background: linear-gradient(180deg, rgba(255,255,255,.035), transparent), var(--glass);
+  border: 1px solid rgba(255,255,255,.08); border-radius: var(--radius);
+  padding: 14px 18px; backdrop-filter: blur(12px);
+}
+.faq-item summary {
+  cursor: pointer; font-weight: 700; font-size: 1rem; color: var(--text);
+  list-style: none; display: flex; align-items: center; gap: 10px;
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::before {
+  content: "+"; color: var(--accent); font-weight: 900; font-size: 1.2rem;
+  width: 18px; text-align: center; transition: transform .2s ease;
+}
+.faq-item[open] summary::before { content: "−"; }
+.faq-item p { color: var(--muted); margin-top: 10px; line-height: 1.7; font-size: .92rem; }
 
 /* --------------------------------------------------------- Footer */
 .site-footer { border-top: 1px solid var(--border); margin-top: 40px; padding: 34px 0; background: var(--bg-2); }

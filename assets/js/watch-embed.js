@@ -39,6 +39,15 @@
       </div>`;
   }
 
+  function commentatorHtml(m) {
+    if (m && m.commentators && m.commentators.length) {
+      return `<div class="commentator-list">${m.commentators
+        .map((c) => `<span class="commentator-item"><b>${c.name}</b>${c.channel ? `<i>${c.channel}</i>` : ""}</span>`)
+        .join("")}</div>`;
+    }
+    return (m && m.commentator) || "—";
+  }
+
   function fillInfo() {
     const live = !!(match && match.status === "live");
     document.getElementById("ch-name").textContent = channel.name;
@@ -54,7 +63,7 @@
 
     document.getElementById("info-quality").textContent = channel.quality;
     document.getElementById("info-group").textContent = channel.group;
-    document.getElementById("info-commentator").textContent = (match && match.commentator) || "—";
+    document.getElementById("info-commentator").innerHTML = commentatorHtml(match);
     document.getElementById("info-league").textContent = (match && match.league) || "—";
     const infoTimes = document.getElementById("info-times");
     if (infoTimes) infoTimes.innerHTML = timeZoneHtml(match);

@@ -155,25 +155,62 @@ window.getMatchTimeZones = function getMatchTimeZones(m) {
   return [
     {
       key: "ksa",
-      label: "توقيت السعودية",
+      label: "بتوقيت السعودية",
       shortLabel: "السعودية",
       value: formatMatchTime(m, "Asia/Riyadh"),
     },
     {
       key: "et",
-      label: "توقيت أمريكا الشرقي (ET)",
-      shortLabel: "أمريكا الشرقي",
+      label: "بتوقيت شرق أمريكا (ET)",
+      shortLabel: "شرق أمريكا",
       value: formatMatchTime(m, "America/New_York"),
     },
   ].filter((item) => item.value);
 };
+
+/* Commentators (المعلّق) — joined from the cached commentaryIndex so that live
+   API results (which lack commentator data) still show them. */
+function commentaryKey(home, away) {
+  const norm = (s) => (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  return [norm(home), norm(away)].sort().join("~");
+}
+
+let _commentaryIdx = null;
+let _commentaryAt = 0;
+async function loadCommentaryIndex() {
+  if (_commentaryIdx && Date.now() - _commentaryAt < 5 * 60 * 1000) return _commentaryIdx;
+  try {
+    const res = await fetch("assets/data/today.json", { cache: "no-store" });
+    const data = await res.json();
+    const idx = {};
+    (data.commentaryIndex || []).forEach((c) => { idx[c.key] = c.commentators; });
+    _commentaryIdx = idx;
+    _commentaryAt = Date.now();
+  } catch (e) {
+    _commentaryIdx = _commentaryIdx || {};
+  }
+  return _commentaryIdx;
+}
+
+function applyCommentary(matches, idx) {
+  if (!idx) return matches;
+  return matches.map((m) => {
+    if (m.commentators && m.commentators.length) return m;
+    const list = idx[commentaryKey(m.home, m.away)];
+    if (!list || !list.length) return m;
+    return { ...m, commentators: list, commentator: m.commentator || list[0].name };
+  });
+}
 
 window.getMatches = async function getMatches({ force } = {}) {
   // 1) Live fetch from TheSportsDB in the browser (best — real statuses, auto-refresh)
   if (window.MatchesAPI) {
     try {
       const live = await window.MatchesAPI.fetchLiveSoccer({ force });
-      if (live.matches && live.matches.length) return live;
+      if (live.matches && live.matches.length) {
+        const idx = await loadCommentaryIndex();
+        return { ...live, matches: applyCommentary(live.matches, idx) };
+      }
     } catch (e) {
       console.warn("Live API fetch failed, using cache:", e.message);
     }

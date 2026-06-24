@@ -16,6 +16,9 @@ const {
   normalizeEvent,
   sortMatches,
 } = require("./matches-lib");
+const { attachCommentators } = require("./commentators-lib");
+
+const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
 
 const KEY = process.env.SPORTSDB_KEY || "3";
 const centerDate = process.argv[2] || new Date().toISOString().slice(0, 10);
@@ -46,6 +49,23 @@ function get(url) {
         res.on("end", () => {
           try { resolve(JSON.parse(d)); } catch (e) { reject(e); }
         });
+      })
+      .on("error", reject);
+  });
+}
+
+function getText(url) {
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
+          "Accept-Language": "ar,en;q=0.8",
+        },
+      }, (res) => {
+        let d = "";
+        res.on("data", (c) => (d += c));
+        res.on("end", () => resolve(d));
       })
       .on("error", reject);
   });
@@ -102,6 +122,18 @@ async function fetchEspnLeague(slug, dateRange) {
       ? "TheSportsDB"
       : "ESPN";
 
+  // Best-effort: attach Arabic commentators (المعلّق) from full-coverage source.
+  let commentaryIndex = [];
+  let commentaryMatched = 0;
+  try {
+    const html = await getText(COMMENTATORS_URL);
+    const result = attachCommentators(matches, html);
+    commentaryIndex = result.commentaryIndex;
+    commentaryMatched = result.matched;
+  } catch (err) {
+    console.warn("commentators fetch failed:", err.message);
+  }
+
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   fs.writeFileSync(
     OUT,
@@ -111,6 +143,8 @@ async function fetchEspnLeague(slug, dateRange) {
         updatedAt: new Date().toISOString(),
         source: sportsDbMatches.length ? "thesportsdb" : "espn",
         sourceLabel,
+        commentarySource: "almaghrebsport",
+        commentaryIndex,
         matches,
       },
       null,
@@ -118,7 +152,7 @@ async function fetchEspnLeague(slug, dateRange) {
     )
   );
   console.log(
-    `Wrote ${matches.length} matches (${dates.join(", ")}, ESPN fallback ${espnDateRange(centerDate)}) -> ${path.relative(process.cwd(), OUT)}`
+    `Wrote ${matches.length} matches (${commentaryMatched} with commentators) -> ${path.relative(process.cwd(), OUT)}`
   );
 })().catch((err) => {
   console.error("fetch-matches failed:", err.message);

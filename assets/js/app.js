@@ -22,10 +22,20 @@
       : `watch.html?ch=live&match=${m.id}`;
   }
 
+  function commentatorText(m) {
+    if (m.commentators && m.commentators.length) {
+      const names = m.commentators.map((c) => c.name);
+      const extra = names.length > 1 ? ` +${names.length - 1}` : "";
+      return `${names[0]}${extra}`;
+    }
+    return m.commentator || "";
+  }
+
   function footMeta(m) {
     const parts = [];
-    if (m.channel) parts.push(`📺 <b>${m.channel}</b>`);
-    if (m.commentator) parts.push(`🎙️ ${m.commentator}`);
+    const comm = commentatorText(m);
+    if (comm) parts.push(`🎙️ <b>${comm}</b>`);
+    if (m.channel) parts.push(`📺 ${m.channel}`);
     if (!parts.length) parts.push(m.venue ? `🏟️ ${m.venue}` : `🏆 ${m.league}`);
     return parts.join(" · ");
   }
@@ -67,6 +77,7 @@
               <b class="featured-score">${m.score}</b>
               <span>${m.away}</span>
             </div>
+            ${commentatorText(m) ? `<div class="featured-commentator">🎙️ ${commentatorText(m)}</div>` : ""}
             ${timeZoneChips(m, { compact: true })}
             <div class="featured-foot">▶ شاهد الآن</div>
           </a>`).join("")}
