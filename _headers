@@ -1,0 +1,7 @@
+# Keep HTML and assets in sync — always revalidate so a new deploy can't leave
+# a stale CSS/JS cached against fresh HTML (which caused oversized icons).
+/*
+  Cache-Control: public, max-age=0, must-revalidate
+
+/assets/*
+  Cache-Control: public, max-age=0, must-revalidate
