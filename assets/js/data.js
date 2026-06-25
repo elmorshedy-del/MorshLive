@@ -19,25 +19,27 @@ const EMBEDS = {
   vip2: { url: "https://vip.worldkoora.com/albaplayer/vip2/", param: "serv", servers: 1 },
 };
 
-// CALIBRATION (cross-matching). The broadcast source (almaghrebsport) reliably
-// tells us each match's TRUE channel (beIN MAX 1–4). This map routes each real
-// channel to the generic embed that actually carries it. To re-calibrate:
-// observe once which embed shows a known match (e.g. "vip1 showed the MAX-2
-// game"), then set the binding here — everything else derives from it.
-// NOTE: corrected from the previous even/odd guess, which routed each match to
-// the OPPOSITE feed (the reported Korea/Mexico swap).
-const EMBED_BINDING = {
-  "bein-max-1": "vip2",
-  "bein-max-2": "vip1",
-  "bein-max-3": "vip2",
-  "bein-max-4": "vip1",
-  "bein-sports-1": "vip1",
-  "bein-sports-2": "vip2",
+// Embed routing — loaded from channel-bindings.js (synced from channel-bindings.json).
+const BINDING_DOC = window.KZ_CHANNEL_BINDINGS || {
+  embedBinding: {
+    "bein-max-1": "vip1",
+    "bein-max-2": "vip2",
+    "bein-max-3": "vip2",
+    "bein-max-4": "vip1",
+    "bein-sports-1": "vip1",
+    "bein-sports-2": "vip2",
+  },
 };
+const EMBED_BINDING = BINDING_DOC.embedBinding;
 const DEFAULT_EMBED = "vip1";
 
+function embedKeyFor(channelId) {
+  return EMBED_BINDING[channelId] || DEFAULT_EMBED;
+}
+
 function embedFor(channelId) {
-  return EMBEDS[EMBED_BINDING[channelId]] || EMBEDS[DEFAULT_EMBED];
+  const key = embedKeyFor(channelId);
+  return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];
 }
 
 // Real beIN channels the schedule can reference. Each channel keeps its true
@@ -79,11 +81,12 @@ function resolveWatchSelection(matches, channels, searchParams) {
 
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
-  return { channel, match };
+  const embedKey = embedKeyFor(chId);
+  return { channel, match, embedKey };
 }
 
 // Expose for non-module scripts.
-window.SITE_DATA = { CHANNELS, MATCHES };
+window.SITE_DATA = { CHANNELS, MATCHES, embedKeyFor, EMBED_BINDING };
 window.resolveWatchSelection = resolveWatchSelection;
 
 /* ---------------------------------------------------------------------------

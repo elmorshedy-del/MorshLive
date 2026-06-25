@@ -179,6 +179,15 @@
 
     document.getElementById("info-quality").textContent = channel.quality;
     document.getElementById("info-group").textContent = channel.group;
+    const infoRoute = document.getElementById("info-route");
+    if (infoRoute) {
+      const key = window.SITE_DATA && window.SITE_DATA.embedKeyFor
+        ? window.SITE_DATA.embedKeyFor(channel.id)
+        : "";
+      infoRoute.textContent = key
+        ? `${key} ← ${match && match.channel ? match.channel : channel.name}`
+        : "—";
+    }
     document.getElementById("info-commentator").innerHTML = commentatorHtml(match);
     document.getElementById("info-league").textContent = (match && match.league) || "—";
     const infoTimes = document.getElementById("info-times");

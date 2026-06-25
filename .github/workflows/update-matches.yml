@@ -26,13 +26,16 @@ jobs:
           SPORTSDB_KEY: ${{ secrets.SPORTSDB_KEY }}   # optional; falls back to free key
         run: node scripts/fetch-matches.js
 
+      - name: Verify live channel routing
+        run: node scripts/verify-channel-bindings.js
+
       - name: Commit if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet -- assets/data/today.json; then
-            git add assets/data/today.json
-            git commit -m "chore: refresh today's matches"
+          if ! git diff --quiet -- assets/data/today.json assets/data/live-snapshot.json assets/js/channel-bindings.js; then
+            git add assets/data/today.json assets/data/live-snapshot.json assets/js/channel-bindings.js
+            git commit -m "chore: refresh today's matches and live channel snapshot"
             git push
           else
             echo "No changes."

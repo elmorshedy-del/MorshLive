@@ -18,6 +18,7 @@ const {
   WORLD_CUP_RE,
 } = require("./matches-lib");
 const { attachCommentators } = require("./commentators-lib");
+const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
 
@@ -123,6 +124,8 @@ async function fetchEspnLeague(slug, dateRange) {
   }
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
+  writeBindingsJs();
+  const snapshot = writeLiveSnapshot(matches);
   fs.writeFileSync(
     OUT,
     JSON.stringify(
@@ -141,6 +144,9 @@ async function fetchEspnLeague(slug, dateRange) {
   );
   console.log(
     `Wrote ${matches.length} matches (${commentaryMatched} with commentators) -> ${path.relative(process.cwd(), OUT)}`
+  );
+  console.log(
+    `Live snapshot: ${snapshot.liveCount} live, ${snapshot.conflicts.length} conflict(s) -> assets/data/live-snapshot.json`
   );
 })().catch((err) => {
   console.error("fetch-matches failed:", err.message);
