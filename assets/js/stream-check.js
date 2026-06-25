@@ -33,6 +33,34 @@
   }
 
   /* --------------------------------------------- Real HLS playback probe */
+  // Detect whether a parsed HLS manifest actually carries an audio track —
+  // either a dedicated audio rendition or audio muxed into the video levels
+  // (e.g. CODECS="avc1…,mp4a.40.2"). Returns true / false / null (unknown).
+  function manifestHasAudio(data) {
+    if (!data) return null;
+    if (data.audioTracks && data.audioTracks.length) return true;
+    const levels = data.levels || [];
+    if (!levels.length) return null;
+    return levels.some((l) =>
+      l && (l.audioCodec || /mp4a|ac-3|ec-3|opus|mp3|aac/i.test(
+        (l.attrs && (l.attrs.CODECS || l.attrs.codecs)) || ""
+      ))
+    );
+  }
+
+  // Best-effort audio detection on the native (Safari/iOS) path, where hls.js
+  // metadata isn't available.
+  function videoHasAudio(video) {
+    if (typeof video.mozHasAudio === "boolean") return video.mozHasAudio;
+    if (video.audioTracks && typeof video.audioTracks.length === "number") {
+      return video.audioTracks.length > 0;
+    }
+    if (typeof video.webkitAudioDecodedByteCount === "number") {
+      return video.webkitAudioDecodedByteCount > 0;
+    }
+    return null;
+  }
+
   function probeHls(url, { timeout = 7000 } = {}) {
     return new Promise((resolve) => {
       const started = (global.performance || Date).now();
@@ -50,21 +78,25 @@
         try { if (hls) hls.destroy(); } catch (e) { /* noop */ }
         try { video.removeAttribute("src"); video.load(); } catch (e) { /* noop */ }
       }
-      function finish(ok) {
+      function finish(ok, audio) {
         if (settled) return;
         settled = true;
         cleanup();
-        resolve({ ok, ms: Math.round((global.performance || Date).now() - started) });
+        resolve({
+          ok,
+          audio: ok ? (audio == null ? null : audio) : null,
+          ms: Math.round((global.performance || Date).now() - started),
+        });
       }
 
       try {
         if (video.canPlayType("application/vnd.apple.mpegurl")) {
-          video.addEventListener("loadedmetadata", () => finish(true), { once: true });
+          video.addEventListener("loadedmetadata", () => finish(true, videoHasAudio(video)), { once: true });
           video.addEventListener("error", () => finish(false), { once: true });
           video.src = url;
         } else if (global.Hls && global.Hls.isSupported()) {
           hls = new global.Hls({ enableWorker: false, maxBufferLength: 4 });
-          hls.on(global.Hls.Events.MANIFEST_PARSED, () => finish(true));
+          hls.on(global.Hls.Events.MANIFEST_PARSED, (_e, data) => finish(true, manifestHasAudio(data)));
           hls.on(global.Hls.Events.ERROR, (_e, data) => { if (data && data.fatal) finish(false); });
           hls.loadSource(url);
           hls.attachMedia(video);
@@ -106,8 +138,8 @@
     return hint;
   }
 
-  function setState(btn, state, ms) {
-    btn.classList.remove("srv-checking", "srv-ok", "srv-down");
+  function setState(btn, state, ms, audio) {
+    btn.classList.remove("srv-checking", "srv-ok", "srv-down", "srv-noaudio");
     btn.classList.add("srv-" + state);
     let dot = btn.querySelector(".srv-state");
     if (!dot) {
@@ -117,9 +149,13 @@
       btn.appendChild(dot);
     }
     if (state === "ok") {
-      dot.textContent = "✓";
-      btn.title = ms ? `يعمل · ${ms}ms` : "يعمل";
-      btn.setAttribute("aria-label", (btn.dataset.label || btn.textContent || "سيرفر") + " — يعمل");
+      const noAudio = audio === false;
+      if (noAudio) btn.classList.add("srv-noaudio");
+      dot.textContent = noAudio ? "🔇" : "✓";
+      const audioNote = audio === false ? " · بدون صوت" : audio === true ? " · صوت ✓" : "";
+      btn.title = (ms ? `يعمل · ${ms}ms` : "يعمل") + audioNote;
+      btn.setAttribute("aria-label",
+        (btn.dataset.label || btn.textContent || "سيرفر") + " — يعمل" + audioNote);
     } else if (state === "down") {
       dot.textContent = "✕";
       btn.title = "تعذّر الوصول لهذا السيرفر";
@@ -151,20 +187,24 @@
     hint.textContent = "🔎 جارٍ فحص السيرفرات وتحديد العامل منها…";
 
     return Promise.all(
-      buttons.map((b) => probeButton(b).then((r) => ({ b, ok: !!(r && r.ok), ms: r && r.ms }))
+      buttons.map((b) => probeButton(b).then((r) => ({ b, ok: !!(r && r.ok), ms: r && r.ms, audio: r && r.audio }))
         .catch(() => ({ b, ok: false })))
     ).then((results) => {
       if (gen !== row.__kzCheckGen) return null; // a newer check superseded this run
       let firstOk = null;
-      results.forEach(({ b, ok, ms }) => {
-        setState(b, ok ? "ok" : "down", ms);
+      results.forEach(({ b, ok, ms, audio }) => {
+        setState(b, ok ? "ok" : "down", ms, audio);
         if (ok && !firstOk) firstOk = b;
       });
 
       const okCount = results.filter((r) => r.ok).length;
+      const muteCount = results.filter((r) => r.ok && r.audio === false).length;
       if (okCount > 0) {
         hint.className = "server-hint ok";
-        hint.innerHTML = `<span class="server-hint-dot"></span> تم تمييز <b>${okCount}</b> سيرفر متاح — المظلّل بالأخضر يعمل`;
+        const muteNote = muteCount
+          ? ` — <b>${muteCount}</b> منها بدون صوت 🔇`
+          : "";
+        hint.innerHTML = `<span class="server-hint-dot"></span> تم تمييز <b>${okCount}</b> سيرفر متاح — المظلّل بالأخضر يعمل${muteNote}`;
       } else {
         hint.className = "server-hint down";
         hint.textContent = "⚠️ تعذّر تأكيد عمل السيرفرات الآن — يمكنك التجربة يدويًا";

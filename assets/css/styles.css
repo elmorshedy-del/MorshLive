@@ -374,6 +374,12 @@ img { max-width: 100%; display: block; }
 .server-btn.srv-ok:not(.active) { background: rgba(24,226,154,.08); }
 .server-btn.srv-down { opacity: .45; }
 .server-btn.srv-down .srv-state { color: var(--danger); }
+/* Stream is live but carries no audio track. */
+.server-btn.srv-noaudio {
+  border-color: rgba(245,179,1,.7);
+  box-shadow: 0 0 0 1px rgba(245,179,1,.3);
+}
+.server-btn.srv-noaudio .srv-state { color: var(--gold); }
 
 .server-hint {
   display: flex; align-items: center; gap: 7px;

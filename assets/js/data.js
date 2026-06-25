@@ -7,15 +7,52 @@
  * live. No copyrighted broadcasts are bundled with this project.
  * ==========================================================================*/
 
-// The site streams a single real live source. Player 1 uses this channel's
-// embed; Player 2 (VIP) on the watch page is a second source kept for now while
-// comparing which stream is smoothest.
-const CHANNELS = [
-  { id: "bein-sports-1", name: "beIN Sports 1", group: "beIN", quality: "1080p", badge: "HD",
-    embed: { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 3 } },
-  { id: "bein-sports-2", name: "beIN Sports 2", group: "beIN", quality: "1080p", badge: "HD",
-    embed: { url: "https://vip.worldkoora.com/albaplayer/vip2/", param: "serv", servers: 3 } },
+// ---------------------------------------------------------------------------
+// Playable embeds (worldkoora). Only these two exist — every other player slug
+// (vip3, bein-max-1, …) returns 404. Each is a GENERIC feed that is NOT tied to
+// a fixed beIN channel; which match it carries is decided upstream. The `serv`
+// query param is cosmetic (all values return the same stream), so each embed
+// has exactly one real server.
+// ---------------------------------------------------------------------------
+const EMBEDS = {
+  vip1: { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 },
+  vip2: { url: "https://vip.worldkoora.com/albaplayer/vip2/", param: "serv", servers: 1 },
+};
+
+// CALIBRATION (cross-matching). The broadcast source (almaghrebsport) reliably
+// tells us each match's TRUE channel (beIN MAX 1–4). This map routes each real
+// channel to the generic embed that actually carries it. To re-calibrate:
+// observe once which embed shows a known match (e.g. "vip1 showed the MAX-2
+// game"), then set the binding here — everything else derives from it.
+// NOTE: corrected from the previous even/odd guess, which routed each match to
+// the OPPOSITE feed (the reported Korea/Mexico swap).
+const EMBED_BINDING = {
+  "bein-max-1": "vip2",
+  "bein-max-2": "vip1",
+  "bein-max-3": "vip2",
+  "bein-max-4": "vip1",
+  "bein-sports-1": "vip1",
+  "bein-sports-2": "vip2",
+};
+const DEFAULT_EMBED = "vip1";
+
+function embedFor(channelId) {
+  return EMBEDS[EMBED_BINDING[channelId] || DEFAULT_EMBED];
+}
+
+// Real beIN channels the schedule can reference. Each channel keeps its true
+// name (shown in the UI) and resolves its playable embed through the calibration
+// above, so a single match always maps to its actual channel — not a parity guess.
+// beIN Sports 1 stays first so it remains the default fallback channel.
+const CHANNEL_DEFS = [
+  { id: "bein-sports-1", name: "beIN Sports 1", group: "beIN", quality: "1080p", badge: "HD" },
+  { id: "bein-sports-2", name: "beIN Sports 2", group: "beIN", quality: "1080p", badge: "HD" },
+  { id: "bein-max-1", name: "beIN MAX 1", group: "beIN", quality: "1080p", badge: "HD" },
+  { id: "bein-max-2", name: "beIN MAX 2", group: "beIN", quality: "1080p", badge: "HD" },
+  { id: "bein-max-3", name: "beIN MAX 3", group: "beIN", quality: "1080p", badge: "HD" },
+  { id: "bein-max-4", name: "beIN MAX 4", group: "beIN", quality: "1080p", badge: "HD" },
 ];
+const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: embedFor(c.id) }));
 
 // Fallback only — shown if both the live API and cached today.json fail to load.
 const MATCHES = [];
