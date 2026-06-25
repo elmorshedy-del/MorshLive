@@ -880,3 +880,42 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
 .tv-mode .btn {
   min-height: 52px;
 }
+
+/* ============================================================================
+ * Favorites — site bookmark button, per-match ☆ stars, saved section, toast.
+ * ==========================================================================*/
+.nav-bookmark {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--grad); color: #fff;
+  border: 0; border-radius: 999px;
+  padding: 8px 16px; font: inherit; font-weight: 700; cursor: pointer;
+  box-shadow: 0 6px 18px rgba(123,47,247,.3);
+}
+.nav-bookmark .ico { width: 18px; height: 18px; }
+.nav-bookmark:hover { filter: brightness(1.08); }
+
+.match-top-end { display: inline-flex; align-items: center; gap: 8px; }
+.fav-star {
+  display: inline-grid; place-items: center;
+  width: 34px; height: 34px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 10px; color: var(--muted); cursor: pointer; padding: 0;
+  transition: color .15s, border-color .15s, background .15s, transform .12s;
+}
+.fav-star .ico { width: 18px; height: 18px; fill: none; }
+.fav-star:hover { color: var(--gold); border-color: var(--gold); transform: translateY(-1px); }
+.fav-star.is-saved { color: var(--gold); border-color: rgba(255,201,77,.6); background: rgba(255,201,77,.12); }
+.fav-star.is-saved .ico { fill: var(--gold); }
+
+.saved-card .score { color: var(--muted); }
+
+.kz-toast {
+  position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 20px);
+  max-width: min(92%, 460px);
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 18px; box-shadow: var(--shadow);
+  z-index: 9999; opacity: 0; pointer-events: none;
+  transition: opacity .25s, transform .25s; text-align: center; font-weight: 600;
+}
+.kz-toast.show { opacity: 1; transform: translate(-50%, 0); }

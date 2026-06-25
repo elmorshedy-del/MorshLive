@@ -13,7 +13,19 @@
     trophy: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.7V17c0 .6-.5 1-1 1.2C7.9 18.8 7 20.2 7 22"/><path d="M14 14.7V17c0 .6.5 1 1 1.2 1.1.6 2 2 2 2.8"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>',
     pin: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
     tv: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>',
+    star: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.1 8.6 22 9.3 17 14 18.3 21 12 17.5 5.7 21 7 14 2 9.3 8.9 8.6 12 2"/></svg>',
+    trash: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>',
   };
+
+  const FAV = () => window.KZFav;
+
+  function favStar(m) {
+    if (!window.KZFav) return "";
+    const saved = window.KZFav.has(m.id);
+    return `<button class="fav-star ${saved ? "is-saved" : ""}" data-fav-id="${m.id}" type="button"
+      aria-pressed="${saved}" aria-label="${saved ? "إزالة من المحفوظة" : "حفظ المباراة"}"
+      title="${saved ? "إزالة من المحفوظة" : "حفظ المباراة"}">${ICON.star}</button>`;
+  }
 
   function crest(badge, ab) {
     return badge
@@ -101,7 +113,10 @@
       <article class="match-card" data-status="${m.status}">
         <div class="match-top">
           <span class="league-tag">${m.league}</span>
-          <span class="status-pill status-${m.status}">${statusLabel[m.status]}${minute}</span>
+          <span class="match-top-end">
+            <span class="status-pill status-${m.status}">${statusLabel[m.status]}${minute}</span>
+            ${favStar(m)}
+          </span>
         </div>
         <div class="teams">
           <div class="team">
@@ -133,6 +148,55 @@
       : `<p style="color:var(--muted)">لا توجد مباريات في هذا التصنيف.</p>`;
     const count = document.getElementById("matches-count");
     if (count) count.textContent = `${list.length} مباراة`;
+  }
+
+  /* -------------------------------------------------- Saved matches */
+  function savedCard(m) {
+    const liveBtn = `<a class="watch-link" href="${watchHref(m)}">${ICON.play} مشاهدة</a>`;
+    return `
+      <article class="match-card saved-card">
+        <div class="match-top">
+          <span class="league-tag">${m.league || ""}</span>
+          <button class="fav-star is-saved" data-unsave-id="${m.id}" type="button"
+            aria-label="إزالة من المحفوظة" title="إزالة من المحفوظة">${ICON.trash}</button>
+        </div>
+        <div class="teams">
+          <div class="team">${crest(m.homeBadge, m.homeAbbr)}<div class="tname">${m.home}</div></div>
+          <div class="score">×</div>
+          <div class="team">${crest(m.awayBadge, m.awayAbbr)}<div class="tname">${m.away}</div></div>
+        </div>
+        <div class="match-foot">
+          <span class="match-meta">${m.channel ? `${ICON.tv} ${m.channel}` : ""}</span>
+          ${liveBtn}
+        </div>
+      </article>`;
+  }
+
+  function renderSaved() {
+    const section = document.getElementById("saved");
+    const grid = document.getElementById("saved-grid");
+    if (!section || !grid || !window.KZFav) return;
+    const saved = window.KZFav.list();
+    section.hidden = saved.length === 0;
+    grid.innerHTML = saved.map(savedCard).join("");
+  }
+
+  // One delegated handler covers ☆ on match cards and the remove button in the
+  // saved section, even though both grids re-render on the live refresh.
+  function initFavorites() {
+    if (!window.KZFav) return;
+    document.addEventListener("click", (e) => {
+      const star = e.target.closest("[data-fav-id]");
+      if (star) {
+        const m = MATCHES.find((x) => x.id === star.dataset.favId);
+        if (m) window.KZFav.toggle(m);
+        return;
+      }
+      const rm = e.target.closest("[data-unsave-id]");
+      if (rm) window.KZFav.remove(rm.dataset.unsaveId);
+    });
+    // Re-paint stars + saved list whenever the favorites change.
+    window.KZFav.subscribe(() => { renderMatches(activeFilter); renderFeaturedLive(); renderSaved(); });
   }
 
   /* -------------------------------------------------- Filters */
@@ -174,12 +238,15 @@
     showUpdated(meta);
     renderFeaturedLive();
     renderMatches(activeFilter);
+    renderSaved();
     return meta;
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
     initFilters();
     initNav();
+    initFavorites();
+    renderSaved();
     await loadMatches();
     setInterval(() => loadMatches({ force: true }), 90 * 1000);
   });
