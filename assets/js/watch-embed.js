@@ -119,17 +119,11 @@
   }
 
   function resolveSelection() {
-    const liveMatch = MATCHES.find((m) => m.status === "live");
-    const reqCh = params.get("ch");
-    const wantsAutoLive = !reqCh || reqCh === "live";
-
-    const chId = wantsAutoLive
-      ? (liveMatch && liveMatch.channelId ? liveMatch.channelId : CHANNELS[0].id)
-      : reqCh;
-    const matchId = params.get("match") || (wantsAutoLive && liveMatch ? liveMatch.id : null);
-
-    channel = CHANNELS.find((c) => c.id === chId) || CHANNELS[0];
-    match = MATCHES.find((m) => m.id === matchId) || null;
+    const picked = window.resolveWatchSelection
+      ? window.resolveWatchSelection(MATCHES, CHANNELS, params)
+      : { channel: CHANNELS[0], match: null };
+    channel = picked.channel;
+    match = picked.match;
   }
 
   async function refreshMatches() {

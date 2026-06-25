@@ -21,7 +21,12 @@
       "bookmark.save": "احفظ الموقع",
       "bookmark.aria": "احفظ الموقع في المفضلة",
       "lang.toggle": "EN",
+      "lang.toggleFull": "English",
       "lang.toggleAria": "Switch to English",
+      "tv.toggle": "وضع التلفزيون",
+      "tv.toggleOn": "وضع التلفزيون: مفعّل",
+      "tv.toggleAria": "تفعيل وضع التلفزيون",
+      "tv.toggleAriaOff": "إيقاف وضع التلفزيون",
       "wc.hosts": "أمريكا · كندا · المكسيك",
       "wc.live": "جارٍ الآن",
       "hero.noAds": "بدون إعلانات ولا نوافذ منبثقة",
@@ -134,7 +139,12 @@
       "bookmark.save": "Bookmark site",
       "bookmark.aria": "Add this site to favorites",
       "lang.toggle": "ع",
+      "lang.toggleFull": "العربية",
       "lang.toggleAria": "التبديل إلى العربية",
+      "tv.toggle": "TV mode",
+      "tv.toggleOn": "TV mode: on",
+      "tv.toggleAria": "Enable TV mode",
+      "tv.toggleAriaOff": "Disable TV mode",
       "wc.hosts": "USA · Canada · Mexico",
       "wc.live": "Live now",
       "hero.noAds": "No ads, no pop-ups",
@@ -283,10 +293,13 @@
     document.querySelectorAll(".js-lang-toggle").forEach((btn) => {
       if (btn.__kzWired) return;
       btn.__kzWired = true;
-      btn.textContent = t("lang.toggle");
+      const full = btn.querySelector("[data-lang-label]");
+      if (full) full.textContent = t("lang.toggleFull");
+      else btn.textContent = t("lang.toggle");
       btn.setAttribute("aria-label", t("lang.toggleAria"));
       btn.addEventListener("click", (e) => { e.preventDefault(); set(lang === "ar" ? "en" : "ar"); });
     });
+    if (global.KZTv && global.KZTv.syncTvToggles) global.KZTv.syncTvToggles();
   }
 
   applyDir(); // before paint — avoids a flash of the wrong direction

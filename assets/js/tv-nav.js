@@ -36,6 +36,50 @@
   const isTv = detectTv();
   if (isTv) root.classList.add("tv-mode");
 
+  function setTvMode(on) {
+    try {
+      if (on) localStorage.setItem("kz-tv", "1");
+      else localStorage.removeItem("kz-tv");
+    } catch (e) { /* private mode */ }
+    root.classList.toggle("tv-mode", on);
+    syncTvToggles();
+    if (on) {
+      const first = focusables()[0];
+      if (first) setTimeout(() => focusEl(first), 200);
+    }
+    return on;
+  }
+
+  function toggleTvMode() {
+    return setTvMode(!root.classList.contains("tv-mode"));
+  }
+
+  function syncTvToggles() {
+    const on = root.classList.contains("tv-mode");
+    const t = (k) => (window.I18N ? window.I18N.t(k) : k);
+    document.querySelectorAll(".js-tv-toggle").forEach((btn) => {
+      btn.classList.toggle("is-on", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+      const label = btn.querySelector("[data-tv-label]");
+      if (label) label.textContent = on ? t("tv.toggleOn") : t("tv.toggle");
+      btn.setAttribute("aria-label", on ? t("tv.toggleAriaOff") : t("tv.toggleAria"));
+    });
+  }
+
+  function wireTvToggles() {
+    document.querySelectorAll(".js-tv-toggle").forEach((btn) => {
+      if (btn.__kzWired) return;
+      btn.__kzWired = true;
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        toggleTvMode();
+      });
+    });
+    syncTvToggles();
+  }
+
+  document.addEventListener("DOMContentLoaded", wireTvToggles);
+
   /* ----------------------------------------------- Focusable collection */
   const FOCUSABLE = [
     "a[href]", "button:not([disabled])", "input:not([disabled])",
@@ -143,5 +187,5 @@
     });
   }
 
-  window.KZTv = { isTv, refreshFocusables: focusables };
+  window.KZTv = { isTv, refreshFocusables: focusables, setTvMode, toggleTvMode, wireTvToggles, syncTvToggles };
 })();

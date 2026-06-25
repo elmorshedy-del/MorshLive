@@ -533,6 +533,10 @@ img { max-width: 100%; display: block; }
 @media (max-width: 860px) {
   .watch-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: 1fr; }
+  .nav-actions { margin-inline-start: auto; margin-inline-end: 0; order: 3; }
+  .nav-toggle { order: 2; margin-inline-start: auto; }
+  .nav-pill span:not(.ico), .nav-pill [data-lang-label], .nav-pill [data-tv-label] { display: none; }
+  .nav-pill { min-width: 38px; padding: 0 10px; justify-content: center; }
   .nav-links { position: fixed; inset: 64px 0 auto 0; flex-direction: column; background: var(--bg-2);
     border-bottom: 1px solid var(--border); padding: 14px; margin: 0; display: none; }
   .nav-links.open { display: flex; }
@@ -925,7 +929,40 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
 }
 .kz-toast.show { opacity: 1; transform: translate(-50%, 0); }
 
-/* Language toggle (AR/EN) */
+/* Language + TV toggles — always visible in header */
+.nav-actions {
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+.nav-pill, .hero-pill {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 38px; padding: 0 14px;
+  background: var(--surface-2); color: var(--text);
+  border: 1px solid var(--border); border-radius: 999px;
+  font: inherit; font-weight: 700; font-size: .88rem;
+  cursor: pointer; white-space: nowrap;
+  transition: border-color .15s, color .15s, background .15s, box-shadow .15s;
+}
+.nav-pill .ico, .hero-pill .ico { width: 18px; height: 18px; flex-shrink: 0; }
+.nav-pill:hover, .hero-pill:hover { border-color: var(--accent); color: var(--accent); }
+.nav-pill-tv.is-on, .hero-pill.js-tv-toggle.is-on {
+  border-color: rgba(24,226,154,.65);
+  background: rgba(24,226,154,.12);
+  color: #8ef0c8;
+  box-shadow: 0 0 0 1px rgba(24,226,154,.25);
+}
+.hero-quick-bar {
+  display: flex; flex-wrap: wrap; gap: 10px;
+  margin: 0 0 18px;
+}
+.hero-pill {
+  min-height: 44px; padding: 0 18px; font-size: .95rem;
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.14);
+}
+.hero-pill:hover { background: rgba(123,47,247,.15); }
+
+/* Language toggle (AR/EN) — legacy class kept for compatibility */
 .nav-lang {
   display: inline-grid; place-items: center;
   min-width: 38px; height: 38px; padding: 0 10px;

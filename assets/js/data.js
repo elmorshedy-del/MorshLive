@@ -57,8 +57,34 @@ const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: embedFor(c.id) }));
 // Fallback only — shown if both the live API and cached today.json fail to load.
 const MATCHES = [];
 
+// Pick channel + match for the watch page. When a match id is in the URL, its
+// channelId always wins — fixes showing Germany while another match is selected.
+function resolveWatchSelection(matches, channels, searchParams) {
+  const params = searchParams || new URLSearchParams(location.search);
+  const liveMatch = matches.find((m) => m.status === "live");
+  const reqCh = params.get("ch");
+  const matchId = params.get("match");
+  const explicitMatch = matchId ? matches.find((m) => m.id === matchId) : null;
+
+  let chId;
+  if (explicitMatch && explicitMatch.channelId) {
+    chId = explicitMatch.channelId;
+  } else if ((!reqCh || reqCh === "live") && liveMatch && liveMatch.channelId) {
+    chId = liveMatch.channelId;
+  } else if (reqCh && reqCh !== "live") {
+    chId = reqCh;
+  } else {
+    chId = (channels[0] && channels[0].id) || "bein-sports-1";
+  }
+
+  const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
+  const channel = channels.find((c) => c.id === chId) || channels[0];
+  return { channel, match };
+}
+
 // Expose for non-module scripts.
 window.SITE_DATA = { CHANNELS, MATCHES };
+window.resolveWatchSelection = resolveWatchSelection;
 
 /* ---------------------------------------------------------------------------
  * getMatches(): returns REAL fixtures from assets/data/today.json (refreshed by
