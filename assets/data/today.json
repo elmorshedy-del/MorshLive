@@ -1,6 +1,6 @@
 {
   "date": "2026-06-25",
-  "updatedAt": "2026-06-25T17:54:38.920Z",
+  "updatedAt": "2026-06-25T19:22:15.026Z",
   "source": "thesportsdb",
   "sourceLabel": "TheSportsDB + ESPN",
   "commentarySource": "almaghrebsport",
@@ -381,46 +381,6 @@
       "channelId": "bein-sports-1",
       "commentator": null,
       "source": "espn"
-    },
-    {
-      "id": "e2391764",
-      "status": "ended",
-      "minute": "",
-      "home": "Morocco",
-      "away": "Haiti",
-      "homeAbbr": "M",
-      "awayAbbr": "H",
-      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/hbmwkj1731791275.png",
-      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/gml8wx1598135302.png",
-      "score": "4 - 2",
-      "time": "18:00",
-      "kickoffUtc": "2026-06-24T22:00:00",
-      "league": "FIFA World Cup",
-      "venue": "Mercedes-Benz Stadium · Atlanta, GA",
-      "channel": null,
-      "channelId": "bein-sports-1",
-      "commentator": null,
-      "source": "thesportsdb+espn"
-    },
-    {
-      "id": "e2391765",
-      "status": "ended",
-      "minute": "",
-      "home": "Scotland",
-      "away": "Brazil",
-      "homeAbbr": "S",
-      "awayAbbr": "B",
-      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/3691i11552945146.png",
-      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/jl6dip1726167280.png",
-      "score": "0 - 3",
-      "time": "18:00",
-      "kickoffUtc": "2026-06-24T22:00:00",
-      "league": "FIFA World Cup",
-      "venue": "Hard Rock Stadium · Miami Gardens, FL",
-      "channel": null,
-      "channelId": "bein-sports-1",
-      "commentator": null,
-      "source": "thesportsdb+espn"
     }
   ]
 }
