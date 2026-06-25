@@ -1,41 +1,41 @@
 {
-  "updatedAt": "2026-06-25T20:04:10.652Z",
-  "bindingVersion": 3,
+  "updatedAt": "2026-06-25T23:43:33.566Z",
+  "bindingVersion": 4,
   "embedBinding": {
     "bein-max-1": "vip1",
     "bein-max-2": "vip2",
-    "bein-max-3": "vip2",
-    "bein-max-4": "vip1",
+    "bein-max-3": "vip1",
+    "bein-max-4": "vip2",
     "bein-sports-1": "vip1",
     "bein-sports-2": "vip2"
   },
   "liveCount": 2,
   "routes": [
     {
-      "id": "e2391768",
-      "home": "Curaçao",
-      "away": "Ivory Coast",
+      "id": "espn-fifa.world-760471",
+      "home": "Japan",
+      "away": "Sweden",
       "score": "0 - 0",
-      "minute": "3'",
-      "channelId": "bein-max-2",
-      "channel": "beIN MAX 2",
-      "commentator": "محمد بركات",
+      "minute": "42'",
+      "channelId": "bein-max-4",
+      "channel": "beIN MAX 4",
+      "commentator": "عبدالله الغامدي",
       "embedKey": "vip2",
       "embedUrl": "https://vip.worldkoora.com/albaplayer/vip2/",
-      "kickoffUtc": "2026-06-25T20:00:00"
+      "kickoffUtc": "2026-06-25T23:00Z"
     },
     {
-      "id": "e2391769",
-      "home": "Ecuador",
-      "away": "Germany",
-      "score": "0 - 1",
-      "minute": "4'",
-      "channelId": "bein-max-1",
-      "channel": "beIN MAX 1",
-      "commentator": "حسن العيدروس",
+      "id": "espn-fifa.world-760472",
+      "home": "Tunisia",
+      "away": "Netherlands",
+      "score": "0 - 2",
+      "minute": "42'",
+      "channelId": "bein-max-3",
+      "channel": "beIN MAX 3",
+      "commentator": "عصام الشوالي",
       "embedKey": "vip1",
       "embedUrl": "https://vip.worldkoora.com/albaplayer/vip1/",
-      "kickoffUtc": "2026-06-25T20:00:00"
+      "kickoffUtc": "2026-06-25T23:00Z"
     }
   ],
   "conflicts": [],

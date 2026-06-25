@@ -1,36 +1,10 @@
 {
   "date": "2026-06-25",
-  "updatedAt": "2026-06-25T20:04:10.630Z",
+  "updatedAt": "2026-06-25T23:42:57.716Z",
   "source": "thesportsdb",
   "sourceLabel": "TheSportsDB + ESPN",
   "commentarySource": "almaghrebsport",
   "commentaryIndex": [
-    {
-      "key": "curacao~ivorycoast",
-      "home": "Curaçao",
-      "away": "Ivory Coast",
-      "commentators": [
-        {
-          "name": "محمد بركات",
-          "channel": "beIN MAX 2"
-        }
-      ],
-      "channel": "beIN MAX 2",
-      "channelId": "bein-max-2"
-    },
-    {
-      "key": "ecuador~germany",
-      "home": "Ecuador",
-      "away": "Germany",
-      "commentators": [
-        {
-          "name": "حسن العيدروس",
-          "channel": "beIN MAX 1"
-        }
-      ],
-      "channel": "beIN MAX 1",
-      "channelId": "bein-max-1"
-    },
     {
       "key": "japan~sweden",
       "home": "Japan",
@@ -69,72 +43,46 @@
       ],
       "channel": "beIN MAX 2",
       "channelId": "bein-max-2"
-    }
-  ],
-  "matches": [
+    },
     {
-      "id": "e2391768",
-      "status": "live",
-      "minute": "3'",
+      "key": "curacao~ivorycoast",
       "home": "Curaçao",
       "away": "Ivory Coast",
-      "homeAbbr": "C",
-      "awayAbbr": "IC",
-      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/itygvb1600955363.png",
-      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/rwxuuu1455465643.png",
-      "score": "0 - 0",
-      "time": "16:00",
-      "kickoffUtc": "2026-06-25T20:00:00",
-      "league": "FIFA World Cup",
-      "venue": "Lincoln Financial Field · Philadelphia, PA",
-      "channel": "beIN MAX 2",
-      "channelId": "bein-max-2",
-      "commentator": "محمد بركات",
-      "source": "thesportsdb+espn",
       "commentators": [
         {
           "name": "محمد بركات",
           "channel": "beIN MAX 2"
         }
-      ]
+      ],
+      "channel": "beIN MAX 2",
+      "channelId": "bein-max-2"
     },
     {
-      "id": "e2391769",
-      "status": "live",
-      "minute": "4'",
+      "key": "ecuador~germany",
       "home": "Ecuador",
       "away": "Germany",
-      "homeAbbr": "E",
-      "awayAbbr": "G",
-      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/47wv2y1591989301.png",
-      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/1xysi51726167152.png",
-      "score": "0 - 1",
-      "time": "16:00",
-      "kickoffUtc": "2026-06-25T20:00:00",
-      "league": "FIFA World Cup",
-      "venue": "MetLife Stadium · East Rutherford, NJ",
-      "channel": "beIN MAX 1",
-      "channelId": "bein-max-1",
-      "commentator": "حسن العيدروس",
-      "source": "thesportsdb+espn",
       "commentators": [
         {
           "name": "حسن العيدروس",
           "channel": "beIN MAX 1"
         }
-      ]
-    },
+      ],
+      "channel": "beIN MAX 1",
+      "channelId": "bein-max-1"
+    }
+  ],
+  "matches": [
     {
       "id": "espn-fifa.world-760471",
-      "status": "upcoming",
-      "minute": "",
+      "status": "live",
+      "minute": "42'",
       "home": "Japan",
       "away": "Sweden",
       "homeAbbr": "JPN",
       "awayAbbr": "SWE",
       "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/jpn.png",
       "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/swe.png",
-      "score": "VS",
+      "score": "0 - 0",
       "time": "23:00",
       "kickoffUtc": "2026-06-25T23:00Z",
       "league": "FIFA World Cup",
@@ -152,15 +100,15 @@
     },
     {
       "id": "espn-fifa.world-760472",
-      "status": "upcoming",
-      "minute": "",
+      "status": "live",
+      "minute": "42'",
       "home": "Tunisia",
       "away": "Netherlands",
       "homeAbbr": "TUN",
       "awayAbbr": "NED",
       "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/tun.png",
       "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/ned.png",
-      "score": "VS",
+      "score": "0 - 2",
       "time": "23:00",
       "kickoffUtc": "2026-06-25T23:00Z",
       "league": "FIFA World Cup",
@@ -343,44 +291,56 @@
       "source": "espn"
     },
     {
-      "id": "e2391766",
+      "id": "e2391768",
       "status": "ended",
       "minute": "",
-      "home": "South Africa",
-      "away": "South Korea",
-      "homeAbbr": "SA",
-      "awayAbbr": "SK",
-      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/xjz9j91553368824.png",
-      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/a8nqfs1589564916.png",
-      "score": "1 - 0",
-      "time": "19:00",
-      "kickoffUtc": "2026-06-25T01:00:00",
+      "home": "Curaçao",
+      "away": "Ivory Coast",
+      "homeAbbr": "C",
+      "awayAbbr": "IC",
+      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/itygvb1600955363.png",
+      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/rwxuuu1455465643.png",
+      "score": "0 - 2",
+      "time": "16:00",
+      "kickoffUtc": "2026-06-25T20:00:00",
       "league": "FIFA World Cup",
-      "venue": "Estadio BBVA · Guadalupe, NL",
-      "channel": null,
-      "channelId": "bein-sports-1",
-      "commentator": null,
-      "source": "thesportsdb+espn"
+      "venue": "Lincoln Financial Field · Philadelphia, PA",
+      "channel": "beIN MAX 2",
+      "channelId": "bein-max-2",
+      "commentator": "محمد بركات",
+      "source": "thesportsdb+espn",
+      "commentators": [
+        {
+          "name": "محمد بركات",
+          "channel": "beIN MAX 2"
+        }
+      ]
     },
     {
-      "id": "espn-fifa.world-760467",
+      "id": "e2391769",
       "status": "ended",
       "minute": "",
-      "home": "Czechia",
-      "away": "Mexico",
-      "homeAbbr": "CZE",
-      "awayAbbr": "MEX",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/cze.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/mex.png",
-      "score": "0 - 3",
-      "time": "01:00",
-      "kickoffUtc": "2026-06-25T01:00Z",
+      "home": "Ecuador",
+      "away": "Germany",
+      "homeAbbr": "E",
+      "awayAbbr": "G",
+      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/47wv2y1591989301.png",
+      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/1xysi51726167152.png",
+      "score": "2 - 1",
+      "time": "16:00",
+      "kickoffUtc": "2026-06-25T20:00:00",
       "league": "FIFA World Cup",
-      "venue": "Estadio Banorte · Mexico City · Mexico",
-      "channel": null,
-      "channelId": "bein-sports-1",
-      "commentator": null,
-      "source": "espn"
+      "venue": "MetLife Stadium · East Rutherford, NJ",
+      "channel": "beIN MAX 1",
+      "channelId": "bein-max-1",
+      "commentator": "حسن العيدروس",
+      "source": "thesportsdb+espn",
+      "commentators": [
+        {
+          "name": "حسن العيدروس",
+          "channel": "beIN MAX 1"
+        }
+      ]
     }
   ]
 }
