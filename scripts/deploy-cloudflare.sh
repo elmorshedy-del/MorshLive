@@ -1,27 +1,24 @@
 #!/usr/bin/env bash
-# Deploy static site to Cloudflare Pages (korazero).
-# Reads token from the first available env var (Cursor secrets may use any of these names).
+# Deploy korazero to Cloudflare Pages.
+# Resolves token from CLOUDFLARE_TOKEN5, CLOUDFLARE_API_TOKEN, Cloudflare, or any cfat_ env value.
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-TOKEN="${CLOUDFLARE_API_TOKEN:-${CLOUDFLARE_TOKEN5:-${Cloudflare:-}}}"
-ACCOUNT_ID="${CLOUDFLARE_ACCOUNT_ID:-${CLOUDFLAREID:-}}"
-
-if [[ -z "$TOKEN" ]]; then
-  echo "No Cloudflare token found. Set one of: CLOUDFLARE_API_TOKEN, CLOUDFLARE_TOKEN5, Cloudflare"
+if ! RESOLVE=$(node scripts/resolve-cloudflare-token.js --export 2>/dev/null); then
+  echo "Could not find a deploy-capable Cloudflare token in this environment."
+  echo ""
+  echo "Add your cfat_ token to Cursor Cloud Agent secrets as CLOUDFLARE_API_TOKEN"
+  echo "(or CLOUDFLARE_TOKEN5 — this script checks both once injected)."
+  echo ""
+  node scripts/resolve-cloudflare-token.js || true
   exit 1
 fi
-if [[ -z "$ACCOUNT_ID" ]]; then
-  echo "Missing CLOUDFLARE_ACCOUNT_ID"
-  exit 1
-fi
 
-# Strip accidental spaces (broken global keys were pasted with a space mid-string).
-TOKEN="${TOKEN// /}"
+# shellcheck disable=SC1090
+eval "$RESOLVE"
 
-echo "Verifying token can deploy..."
-CLOUDFLARE_API_TOKEN="$TOKEN" CLOUDFLARE_ACCOUNT_ID="$ACCOUNT_ID" node scripts/verify-deploy-token.js
+echo "Token resolved. Verifying..."
+node scripts/verify-deploy-token.js
 
 echo "Deploying to Cloudflare Pages (korazero)..."
-CLOUDFLARE_API_TOKEN="$TOKEN" CLOUDFLARE_ACCOUNT_ID="$ACCOUNT_ID" \
-  npx wrangler pages deploy . --project-name=korazero --branch=main
+npx wrangler pages deploy . --project-name=korazero --branch=main
