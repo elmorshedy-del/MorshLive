@@ -5,7 +5,9 @@
  * ==========================================================================*/
 (function () {
   const VIP_EMBED_BASE = "https://vip.worldkoora.com/albaplayer/vip1/";
-  const VIP_SERVERS = 3;
+  // The worldkoora `serv` param is cosmetic — every value returns the same
+  // stream — so there is only one real VIP server, not three.
+  const VIP_SERVERS = 1;
 
   const { CHANNELS } = window.SITE_DATA;
   const params = new URLSearchParams(location.search);

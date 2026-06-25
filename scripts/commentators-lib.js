@@ -200,13 +200,28 @@ function channelNumber(label) {
   return m ? parseInt(m[1], 10) : null;
 }
 
-/* Map the broadcast channel(s) to our embed channels. World Cup matches air on
-   the odd beIN MAX pair (1/3 → beIN Sports 1) or the even pair (2/4 → beIN
-   Sports 2), so a single game resolves cleanly to one of our two channels. */
+/* Map the broadcast channel label to a registry channel id, KEEPING the true
+   channel. World Cup matches air on beIN MAX 1–4; we preserve that exact channel
+   (e.g. "beIN MAX 2" → "bein-max-2") instead of collapsing odd/even into two
+   generic feeds. A non-MAX "beIN 2" still resolves to beIN Sports 2; anything
+   without a recognizable number falls back to beIN Sports 1. The id is then
+   routed to a playable embed by EMBED_BINDING in assets/js/data.js. */
 function channelIdFor(commentators) {
-  const nums = commentators.map((c) => channelNumber(c.channel)).filter((n) => n != null);
-  if (nums.some((n) => n % 2 === 0)) return "bein-sports-2";
+  const c = commentators.find((x) => channelNumber(x.channel) != null);
+  if (!c) return "bein-sports-1";
+  const n = channelNumber(c.channel);
+  if (/max/i.test(c.channel) && n >= 1 && n <= 4) return "bein-max-" + n;
+  if (n === 2) return "bein-sports-2";
   return "bein-sports-1";
+}
+
+/* The human-readable broadcast channel for display (the source's own label,
+   e.g. "beIN MAX 2"), falling back to a name derived from the resolved id. */
+function channelNameFor(commentators, channelId) {
+  const c = commentators.find((x) => x.channel);
+  if (c && c.channel) return c.channel;
+  if (/^bein-max-(\d)$/.test(channelId)) return "beIN MAX " + channelId.slice(-1);
+  return channelId === "bein-sports-2" ? "beIN Sports 2" : "beIN Sports 1";
 }
 
 /* Attach commentator + channel data to fixtures; returns a compact index for
@@ -220,7 +235,7 @@ function attachCommentators(matches, html) {
     if (!entry || !entry.commentators.length) continue;
     matched++;
     const channelId = channelIdFor(entry.commentators);
-    const channelName = channelId === "bein-sports-2" ? "beIN Sports 2" : "beIN Sports 1";
+    const channelName = channelNameFor(entry.commentators, channelId);
     m.commentators = entry.commentators;
     m.commentator = entry.commentators[0].name;
     m.channel = channelName;
