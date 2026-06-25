@@ -11,6 +11,7 @@
 (function (global) {
   "use strict";
 
+  const t = (k, v) => (global.I18N ? global.I18N.t(k, v) : k);
   const KEY = "kz-favorites";
   const subs = [];
 
@@ -55,8 +56,8 @@
     document.documentElement.classList.contains("tv-mode");
 
   function bookmarkHint() {
-    if (isTv) return "للحفظ: افتح قائمة المتصفح بالريموت واختر «إضافة إلى المفضلة».";
-    return isMac ? "اضغط ⌘ + D لإضافة الموقع إلى المفضلة." : "اضغط Ctrl + D لإضافة الموقع إلى المفضلة.";
+    if (isTv) return t("bookmark.hintTv");
+    return isMac ? t("bookmark.hintMac") : t("bookmark.hintWin");
   }
 
   // Try the legacy native APIs; fall back to a toast with the manual shortcut.

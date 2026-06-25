@@ -17,6 +17,7 @@
 (function (global) {
   "use strict";
 
+  const t = (k, v) => (global.I18N ? global.I18N.t(k, v) : k);
   const CACHE_TTL = 25 * 1000;
   const cache = new Map();
 
@@ -152,16 +153,16 @@
       const noAudio = audio === false;
       if (noAudio) btn.classList.add("srv-noaudio");
       dot.textContent = noAudio ? "🔇" : "✓";
-      const audioNote = audio === false ? " · بدون صوت" : audio === true ? " · صوت ✓" : "";
-      btn.title = (ms ? `يعمل · ${ms}ms` : "يعمل") + audioNote;
+      const audioNote = audio === false ? " · " + t("srv.noAudio") : audio === true ? " · " + t("srv.hasAudio") : "";
+      btn.title = (ms ? `${t("srv.working")} · ${ms}ms` : t("srv.working")) + audioNote;
       btn.setAttribute("aria-label",
-        (btn.dataset.label || btn.textContent || "سيرفر") + " — يعمل" + audioNote);
+        (btn.dataset.label || btn.textContent || t("watch.server")) + " — " + t("srv.working") + audioNote);
     } else if (state === "down") {
       dot.textContent = "✕";
-      btn.title = "تعذّر الوصول لهذا السيرفر";
+      btn.title = t("srv.unreachable");
     } else {
       dot.textContent = "";
-      btn.title = "جارٍ فحص السيرفر…";
+      btn.title = t("srv.checkingOne");
     }
   }
 
@@ -184,7 +185,7 @@
     const hint = ensureHint(row);
     buttons.forEach((b) => setState(b, "checking"));
     hint.className = "server-hint checking";
-    hint.textContent = "🔎 جارٍ فحص السيرفرات وتحديد العامل منها…";
+    hint.textContent = t("srv.checking");
 
     return Promise.all(
       buttons.map((b) => probeButton(b).then((r) => ({ b, ok: !!(r && r.ok), ms: r && r.ms, audio: r && r.audio }))
@@ -202,12 +203,12 @@
       if (okCount > 0) {
         hint.className = "server-hint ok";
         const muteNote = muteCount
-          ? ` — <b>${muteCount}</b> منها بدون صوت 🔇`
+          ? ` — <b>${muteCount}</b> ${t("srv.muteSuffix")}`
           : "";
-        hint.innerHTML = `<span class="server-hint-dot"></span> تم تمييز <b>${okCount}</b> سيرفر متاح — المظلّل بالأخضر يعمل${muteNote}`;
+        hint.innerHTML = `<span class="server-hint-dot"></span> ${t("srv.okPrefix")} <b>${okCount}</b> ${t("srv.okSuffix")}${muteNote}`;
       } else {
         hint.className = "server-hint down";
-        hint.textContent = "⚠️ تعذّر تأكيد عمل السيرفرات الآن — يمكنك التجربة يدويًا";
+        hint.textContent = t("srv.down");
       }
 
       if (firstOk && opts.autoSelect !== false) {

@@ -5,7 +5,8 @@
 (function () {
   let MATCHES = [];
 
-  const statusLabel = { live: "مباشر الآن", upcoming: "لم تبدأ", ended: "انتهت" };
+  const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
+  const statusLabel = (s) => t("status." + s);
 
   const ICON = {
     mic: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>',
@@ -23,8 +24,8 @@
     if (!window.KZFav) return "";
     const saved = window.KZFav.has(m.id);
     return `<button class="fav-star ${saved ? "is-saved" : ""}" data-fav-id="${m.id}" type="button"
-      aria-pressed="${saved}" aria-label="${saved ? "إزالة من المحفوظة" : "حفظ المباراة"}"
-      title="${saved ? "إزالة من المحفوظة" : "حفظ المباراة"}">${ICON.star}</button>`;
+      aria-pressed="${saved}" aria-label="${saved ? t("card.removeSaved") : t("card.saveMatch")}"
+      title="${saved ? t("card.removeSaved") : t("card.saveMatch")}">${ICON.star}</button>`;
   }
 
   function crest(badge, ab) {
@@ -81,12 +82,12 @@
       wrap.innerHTML = `
         <div class="live-empty">
           <span class="live-empty-dot"></span>
-          لا توجد مباريات مباشرة الآن — تابع مباريات اليوم بالأسفل.
+          ${t("live.empty")}
         </div>`;
       return;
     }
     wrap.innerHTML = `
-      <div class="featured-head"><span class="rec-dot"></span> مباشر الآن</div>
+      <div class="featured-head"><span class="rec-dot"></span> ${t("live.now")}</div>
       <div class="featured-grid">
         ${live.map((m) => `
           <a class="featured-card" href="${watchHref(m)}">
@@ -98,7 +99,7 @@
             </div>
             ${commentatorText(m) ? `<div class="featured-commentator">${ICON.mic} ${commentatorText(m)}</div>` : ""}
             ${timeZoneChips(m, { compact: true })}
-            <div class="featured-foot">${ICON.play} شاهد الآن</div>
+            <div class="featured-foot">${ICON.play} ${t("card.watchNow")}</div>
           </a>`).join("")}
       </div>`;
   }
@@ -106,15 +107,15 @@
   /* -------------------------------------------------- Matches rendering */
   function matchCard(m) {
     const liveBtn = m.status === "ended"
-      ? `<span class="watch-link" style="background:var(--surface-2);color:var(--muted)">انتهت</span>`
-      : `<a class="watch-link" href="${watchHref(m)}">${ICON.play} مشاهدة</a>`;
+      ? `<span class="watch-link" style="background:var(--surface-2);color:var(--muted)">${t("card.ended")}</span>`
+      : `<a class="watch-link" href="${watchHref(m)}">${ICON.play} ${t("card.watch")}</a>`;
     const minute = m.status === "live" && m.minute ? ` · ${m.minute}` : "";
     return `
       <article class="match-card" data-status="${m.status}">
         <div class="match-top">
           <span class="league-tag">${m.league}</span>
           <span class="match-top-end">
-            <span class="status-pill status-${m.status}">${statusLabel[m.status]}${minute}</span>
+            <span class="status-pill status-${m.status}">${statusLabel(m.status)}${minute}</span>
             ${favStar(m)}
           </span>
         </div>
@@ -145,20 +146,20 @@
       : MATCHES;
     grid.innerHTML = list.length
       ? list.map(matchCard).join("")
-      : `<p style="color:var(--muted)">لا توجد مباريات في هذا التصنيف.</p>`;
+      : `<p style="color:var(--muted)">${t("matches.none")}</p>`;
     const count = document.getElementById("matches-count");
-    if (count) count.textContent = `${list.length} مباراة`;
+    if (count) count.textContent = t("matches.count", { n: list.length });
   }
 
   /* -------------------------------------------------- Saved matches */
   function savedCard(m) {
-    const liveBtn = `<a class="watch-link" href="${watchHref(m)}">${ICON.play} مشاهدة</a>`;
+    const liveBtn = `<a class="watch-link" href="${watchHref(m)}">${ICON.play} ${t("card.watch")}</a>`;
     return `
       <article class="match-card saved-card">
         <div class="match-top">
           <span class="league-tag">${m.league || ""}</span>
           <button class="fav-star is-saved" data-unsave-id="${m.id}" type="button"
-            aria-label="إزالة من المحفوظة" title="إزالة من المحفوظة">${ICON.trash}</button>
+            aria-label="${t("card.removeSaved")}" title="${t("card.removeSaved")}">${ICON.trash}</button>
         </div>
         <div class="teams">
           <div class="team">${crest(m.homeBadge, m.homeAbbr)}<div class="tname">${m.home}</div></div>
@@ -226,9 +227,10 @@
     if (meta.live && meta.updatedAt) {
       const d = new Date(meta.updatedAt);
       const src = meta.sourceLabel || "TheSportsDB";
-      el.innerHTML = `مصدر: <b>${src}</b> · آخر تحديث ${d.toLocaleString("ar")} · <span class="live-refresh-dot"></span> يتحدث تلقائياً`;
+      const locale = (window.I18N && window.I18N.lang === "en") ? "en" : "ar";
+      el.innerHTML = `${t("updated.prefix")} <b>${src}</b> · ${t("updated.lastUpdate")} ${d.toLocaleString(locale)} · <span class="live-refresh-dot"></span> ${t("updated.auto")}`;
     } else {
-      el.textContent = "بيانات تجريبية (تعذّر تحميل الجدول المباشر)";
+      el.textContent = t("updated.demo");
     }
   }
 

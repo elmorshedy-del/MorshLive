@@ -113,7 +113,8 @@ function sortDisplayMatches(matches) {
 function formatMatchTime(m, timeZone) {
   const kickoff = m && m.kickoffUtc ? parseKickoffMs(m.kickoffUtc) : NaN;
   if (isNaN(kickoff)) return null;
-  return new Intl.DateTimeFormat("ar", {
+  const locale = (window.I18N && window.I18N.lang === "en") ? "en" : "ar";
+  return new Intl.DateTimeFormat(locale, {
     timeZone,
     weekday: "short",
     hour: "numeric",
@@ -123,17 +124,18 @@ function formatMatchTime(m, timeZone) {
 }
 
 window.getMatchTimeZones = function getMatchTimeZones(m) {
+  const tr = (k) => (window.I18N ? window.I18N.t(k) : k);
   return [
     {
       key: "ksa",
-      label: "بتوقيت السعودية",
-      shortLabel: "السعودية",
+      label: tr("tz.ksa"),
+      shortLabel: tr("tz.ksaShort"),
       value: formatMatchTime(m, "Asia/Riyadh"),
     },
     {
       key: "et",
-      label: "بتوقيت شرق أمريكا (ET)",
-      shortLabel: "شرق أمريكا",
+      label: tr("tz.et"),
+      shortLabel: tr("tz.etShort"),
       value: formatMatchTime(m, "America/New_York"),
     },
   ].filter((item) => item.value);
@@ -212,6 +214,6 @@ window.getMatches = async function getMatches({ force } = {}) {
     };
   } catch (e) {
     // 3) Demo sample data
-    return { matches: MATCHES, updatedAt: null, date: null, live: false, source: "demo", sourceLabel: "بيانات تجريبية" };
+    return { matches: MATCHES, updatedAt: null, date: null, live: false, source: "demo", sourceLabel: (window.I18N ? window.I18N.t("updated.demo") : "بيانات تجريبية") };
   }
 };
