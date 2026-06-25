@@ -5,10 +5,11 @@
  * ==========================================================================*/
 (function () {
   const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
-  const VIP_EMBED_BASE = "https://vip.worldkoora.com/albaplayer/vip1/";
-  // The worldkoora `serv` param is cosmetic — every value returns the same
-  // stream — so there is only one real VIP server, not three.
-  const VIP_SERVERS = 1;
+  // Player 2 VIP uses the same worldkoora embed as Player 1 for this channel.
+  // The `serv` param is cosmetic — each embed has one real server.
+  function vipEmbed() {
+    return channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
+  }
 
   const { CHANNELS } = window.SITE_DATA;
   const params = new URLSearchParams(location.search);
@@ -68,8 +69,9 @@
   }
 
   function vipEmbedUrl(serverIndex) {
-    const u = new URL(VIP_EMBED_BASE);
-    u.searchParams.set("serv", serverIndex);
+    const embed = vipEmbed();
+    const u = new URL(embed.url);
+    if (embed.param != null) u.searchParams.set(embed.param, serverIndex);
     return u.toString();
   }
 
@@ -103,6 +105,8 @@
         if (overlay) overlay.addEventListener("click", play);
       }
       renderServers();
+    } else {
+      loadVipEmbed(Number(params.get("serv") || 0));
     }
 
     const next = new URL(location.href);
@@ -122,7 +126,8 @@
     if (!row) return;
     const activeServ = Number(params.get("serv") || 0);
 
-    row.innerHTML = Array.from({ length: VIP_SERVERS }, (_, i) =>
+    const n = vipEmbed().servers || 1;
+    row.innerHTML = Array.from({ length: n }, (_, i) =>
       `<button class="server-btn ${i === activeServ ? "active" : ""}" data-vip-srv="${i}" data-kind="reachable" data-url="${vipEmbedUrl(i)}" data-label="${t("watch.vipServer")} ${i + 1}"><span class="srv-label">${t("watch.vipServer")} ${i + 1}</span></button>`
     ).join("");
 
@@ -300,6 +305,8 @@
     renderSidebar();
     if (channel.id !== previousChannelId) {
       renderServers();
+      renderVipServers();
+      loadVipEmbed(Number(params.get("serv") || 0));
       if (activePlayer === 1) {
         if (isEmbed) loadEmbed(0);
         else loadStream(channel.stream);

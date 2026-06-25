@@ -3,9 +3,9 @@
  * Same layout as watch.html; opens in its own tab via watch-embed.html
  * ==========================================================================*/
 (function () {
-  const EMBED_BASE = "https://vip.worldkoora.com/albaplayer/vip1/";
-  const EMBED_PARAM = "serv";
-  const EMBED_SERVERS = 3;
+  function channelEmbed() {
+    return channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
+  }
 
   const { CHANNELS } = window.SITE_DATA;
   const params = new URLSearchParams(location.search);
@@ -17,8 +17,9 @@
   const frame = document.getElementById("vip-frame");
 
   function embedUrl(serverIndex) {
-    const u = new URL(EMBED_BASE);
-    u.searchParams.set(EMBED_PARAM, serverIndex);
+    const embed = channelEmbed();
+    const u = new URL(embed.url);
+    if (embed.param != null) u.searchParams.set(embed.param, serverIndex);
     return u.toString();
   }
 
@@ -73,7 +74,8 @@
     const row = document.getElementById("servers");
     const activeServ = Number(params.get("serv") || 0);
 
-    row.innerHTML = Array.from({ length: EMBED_SERVERS }, (_, i) =>
+    const n = channelEmbed().servers || 1;
+    row.innerHTML = Array.from({ length: n }, (_, i) =>
       `<button class="server-btn ${i === activeServ ? "active" : ""}" data-srv="${i}" data-kind="reachable" data-url="${embedUrl(i)}" data-label="سيرفر ${i + 1}"><span class="srv-label">سيرفر ${i + 1}</span></button>`
     ).join("");
 
@@ -127,11 +129,16 @@
   }
 
   async function refreshMatches() {
+    const previousChannelId = channel.id;
     const meta = await window.getMatches({ force: true });
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
     renderSidebar();
+    if (channel.id !== previousChannelId) {
+      renderServers();
+      loadEmbed(Number(params.get("serv") || 0));
+    }
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
