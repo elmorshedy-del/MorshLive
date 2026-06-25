@@ -4,6 +4,7 @@
  * Match data is loaded live via window.getMatches() (assets/data/today.json).
  * ==========================================================================*/
 (function () {
+  const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
   const VIP_EMBED_BASE = "https://vip.worldkoora.com/albaplayer/vip1/";
   // The worldkoora `serv` param is cosmetic — every value returns the same
   // stream — so there is only one real VIP server, not three.
@@ -122,7 +123,7 @@
     const activeServ = Number(params.get("serv") || 0);
 
     row.innerHTML = Array.from({ length: VIP_SERVERS }, (_, i) =>
-      `<button class="server-btn ${i === activeServ ? "active" : ""}" data-vip-srv="${i}" data-kind="reachable" data-url="${vipEmbedUrl(i)}" data-label="VIP سيرفر ${i + 1}"><span class="srv-label">VIP سيرفر ${i + 1}</span></button>`
+      `<button class="server-btn ${i === activeServ ? "active" : ""}" data-vip-srv="${i}" data-kind="reachable" data-url="${vipEmbedUrl(i)}" data-label="${t("watch.vipServer")} ${i + 1}"><span class="srv-label">${t("watch.vipServer")} ${i + 1}</span></button>`
     ).join("");
 
     row.querySelectorAll("[data-vip-srv]").forEach((btn) => {
@@ -167,14 +168,14 @@
     const live = !!(match && match.status === "live");
     document.getElementById("ch-name").textContent = channel.name;
     document.getElementById("ch-status").innerHTML = live
-      ? `<span class="status-pill status-live">مباشر الآن</span>`
-      : `<span class="status-pill status-upcoming">جاهزة للبث</span>`;
-    document.title = `${channel.name} — مشاهدة مباشرة | KoraZero`;
+      ? `<span class="status-pill status-live">${t("watch.live")}</span>`
+      : `<span class="status-pill status-upcoming">${t("watch.ready")}</span>`;
+    document.title = `${channel.name} — ${t("watch.titleSuffix")}`;
 
     const sub = document.getElementById("now-sub");
     sub.textContent = match
-      ? `${match.home} ضد ${match.away} · ${match.league}`
-      : `بث مباشر بجودة ${channel.quality}`;
+      ? `${match.home} ${t("watch.vs")} ${match.away} · ${match.league}`
+      : `${t("watch.pressToPlayQ")} ${channel.quality}`;
 
     document.getElementById("info-quality").textContent = channel.quality;
     document.getElementById("info-group").textContent = channel.group;
@@ -188,8 +189,8 @@
     if (overlayTitle) overlayTitle.textContent = channel.name;
     if (overlaySub) {
       overlaySub.textContent = match
-        ? `${match.home} ضد ${match.away}`
-        : `اضغط للتشغيل · جودة ${channel.quality}`;
+        ? `${match.home} ${t("watch.vs")} ${match.away}`
+        : `${t("watch.pressToPlayQ")} ${channel.quality}`;
     }
   }
 
@@ -200,7 +201,7 @@
     if (isEmbed) {
       const n = channel.embed.servers || 1;
       row.innerHTML = Array.from({ length: n }, (_, i) =>
-        `<button class="server-btn ${i === 0 ? "active" : ""}" data-srv="${i}" data-kind="reachable" data-url="${embedUrl(i)}" data-label="سيرفر ${i + 1}"><span class="srv-label">سيرفر ${i + 1}</span></button>`
+        `<button class="server-btn ${i === 0 ? "active" : ""}" data-srv="${i}" data-kind="reachable" data-url="${embedUrl(i)}" data-label="${t("watch.server")} ${i + 1}"><span class="srv-label">${t("watch.server")} ${i + 1}</span></button>`
       ).join("");
       row.querySelectorAll(".server-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
@@ -214,9 +215,9 @@
     }
 
     const servers = [
-      { label: "سيرفر 1 · HD", url: channel.stream },
-      { label: "سيرفر 2 · SD", url: channel.stream },
-      { label: "سيرفر 3 · احتياطي", url: channel.stream },
+      { label: t("watch.serverHd"), url: channel.stream },
+      { label: t("watch.serverSd"), url: channel.stream },
+      { label: t("watch.serverBackup"), url: channel.stream },
     ];
     row.innerHTML = servers
       .map((s, i) => `<button class="server-btn ${i === 0 ? "active" : ""}" data-kind="hls" data-url="${s.url}" data-label="${s.label}"><span class="srv-label">${s.label}</span></button>`)
@@ -253,10 +254,10 @@
     const order = { live: 0, upcoming: 1, ended: 2 };
     const list = MATCHES.slice().sort((a, b) => (order[a.status] - order[b.status])).slice(0, 14);
     if (!list.length) {
-      panel.innerHTML = `<div class="side-empty">لا توجد مباريات متاحة الآن</div>`;
+      panel.innerHTML = `<div class="side-empty">${t("watch.noMatches")}</div>`;
       return;
     }
-    const label = { live: "مباشر", upcoming: "قادمة", ended: "انتهت" };
+    const label = { live: t("side.live"), upcoming: t("side.upcoming"), ended: t("side.ended") };
     panel.innerHTML = list.map((m) =>
       `<a class="side-match ${match && m.id === match.id ? "active" : ""}" href="watch.html?ch=${m.channelId || "live"}&match=${m.id}">
          <span class="side-status status-${m.status}">${label[m.status]}</span>
