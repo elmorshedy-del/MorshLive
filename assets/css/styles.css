@@ -379,6 +379,11 @@ img { max-width: 100%; display: block; }
   border-color: rgba(245,179,1,.7);
   box-shadow: 0 0 0 1px rgba(245,179,1,.3);
 }
+/* Keep the gold cue when this button is also the active one (higher specificity
+   than .srv-ok.active). */
+.server-btn.srv-noaudio.active {
+  box-shadow: 0 0 0 1px rgba(245,179,1,.55), 0 10px 26px rgba(245,179,1,.25);
+}
 .server-btn.srv-noaudio .srv-state { color: var(--gold); }
 
 .server-hint {

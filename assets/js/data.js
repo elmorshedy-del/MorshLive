@@ -37,7 +37,7 @@ const EMBED_BINDING = {
 const DEFAULT_EMBED = "vip1";
 
 function embedFor(channelId) {
-  return EMBEDS[EMBED_BINDING[channelId] || DEFAULT_EMBED];
+  return EMBEDS[EMBED_BINDING[channelId]] || EMBEDS[DEFAULT_EMBED];
 }
 
 // Real beIN channels the schedule can reference. Each channel keeps its true

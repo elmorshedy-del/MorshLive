@@ -41,6 +41,12 @@
     if (data.audioTracks && data.audioTracks.length) return true;
     const levels = data.levels || [];
     if (!levels.length) return null;
+    // If the manifest declares no codecs at all, we genuinely can't tell — say
+    // "unknown" rather than falsely reporting silence.
+    const hasAnyCodec = levels.some((l) =>
+      l && (l.audioCodec || l.videoCodec || (l.attrs && (l.attrs.CODECS || l.attrs.codecs)))
+    );
+    if (!hasAnyCodec) return null;
     return levels.some((l) =>
       l && (l.audioCodec || /mp4a|ac-3|ec-3|opus|mp3|aac/i.test(
         (l.attrs && (l.attrs.CODECS || l.attrs.codecs)) || ""
@@ -55,8 +61,10 @@
     if (video.audioTracks && typeof video.audioTracks.length === "number") {
       return video.audioTracks.length > 0;
     }
+    // At loadedmetadata no decoding has happened yet, so a 0 count means
+    // "unknown", not "no audio".
     if (typeof video.webkitAudioDecodedByteCount === "number") {
-      return video.webkitAudioDecodedByteCount > 0;
+      return video.webkitAudioDecodedByteCount > 0 ? true : null;
     }
     return null;
   }
