@@ -834,3 +834,54 @@ img { max-width: 100%; display: block; }
   .wc-trophy-wrap, .wc-ball-col { display: none; }
   .wc2026-banner { padding: 14px 0; }
 }
+
+/* ============================================================================
+ * Smart-TV mode — large-screen scaling + remote/D-pad focus styles.
+ * Activated by tv-nav.js (adds .tv-mode to <html>). Forceable with ?tv=1.
+ * ==========================================================================*/
+html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
+@media (min-width: 2400px) {
+  html.tv-mode { zoom: 1.55; }            /* 4K panels */
+}
+/* Roomier reading column on very wide TV screens. */
+@media (min-width: 1800px) {
+  html.tv-mode .container { width: min(1500px, 90%); }
+}
+
+/* The whole point of TV mode: a big, obvious highlight on whatever the remote
+   has selected, and keep it clear of the fixed header when scrolled to. */
+.tv-mode a, .tv-mode button, .tv-mode [tabindex], .tv-mode video, .tv-mode iframe {
+  scroll-margin-top: 96px;
+  scroll-margin-bottom: 40px;
+}
+.tv-mode a:focus,
+.tv-mode button:focus,
+.tv-mode [tabindex]:focus,
+.tv-mode .watch-link:focus,
+.tv-mode .server-btn:focus,
+.tv-mode .side-match:focus,
+.tv-mode .filter-btn:focus,
+.tv-mode .featured-card:focus,
+.tv-mode video:focus,
+.tv-mode iframe:focus {
+  outline: 4px solid var(--accent);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 7px rgba(24,226,154,.28), var(--shadow);
+  border-radius: 12px;
+  position: relative;
+  z-index: 5;
+}
+/* Slight lift on focused cards so the selection reads from across the room. */
+.tv-mode .featured-card:focus,
+.tv-mode .match-card:focus-within,
+.tv-mode .side-match:focus {
+  transform: translateY(-2px) scale(1.015);
+  transition: transform .12s ease;
+}
+/* Bigger remote targets. */
+.tv-mode .server-btn,
+.tv-mode .filter-btn,
+.tv-mode .player-switch-btn,
+.tv-mode .btn {
+  min-height: 52px;
+}
