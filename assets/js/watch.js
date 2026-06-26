@@ -28,6 +28,7 @@
   let started = false;
   let savedShellMarkup = null;
   let vipLoaded = false;
+  let vipLoadedUrl = "";
 
   /* HLS tuned for stable live playback on mobile (buffer over ultra-low latency). */
   function createHls() {
@@ -96,9 +97,10 @@
   function loadVipEmbed(serverIndex) {
     if (!vipFrame) return;
     const next = vipEmbedUrl(serverIndex);
-    if (vipLoaded && vipFrame.src === next) return;
+    if (vipLoaded && vipLoadedUrl === next) return;
     vipFrame.src = next;
     vipLoaded = true;
+    vipLoadedUrl = next;
   }
 
   function setActivePlayer(n) {
@@ -272,7 +274,7 @@
   /* ---------------------------------------------- Live server detection */
   function checkServers(row, opts) {
     if (row && window.StreamCheck) {
-      const embedRow = row.id === "servers" && isEmbed || row.id === "vip-servers";
+      const embedRow = (row.id === "servers" && isEmbed) || row.id === "vip-servers";
       const options = embedRow ? { autoSelect: false, ...opts } : opts;
       window.StreamCheck.autoHighlight(row, options).catch(() => {});
     }

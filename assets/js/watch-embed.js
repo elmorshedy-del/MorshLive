@@ -23,11 +23,14 @@
     return u.toString();
   }
 
+  let embedLoadedUrl = "";
+
   function loadEmbed(serverIndex) {
     if (!frame) return;
     const next = embedUrl(serverIndex);
-    if (frame.src === next) return;
+    if (embedLoadedUrl === next) return;
     frame.src = next;
+    embedLoadedUrl = next;
   }
 
   function timeZoneHtml(m) {
