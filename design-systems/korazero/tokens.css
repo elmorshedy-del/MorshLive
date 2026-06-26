@@ -1,25 +1,101 @@
-/* KoraZero design tokens — Open Design project shape (design-systems/korazero/) */
+/* design-systems/korazero/tokens.css — Open Design token contract (dark sports streaming) */
 :root {
-  --kz-bg: #0a0e17;
+  --bg: #0a0e17;
+  --surface: #161d2b;
+  --surface-warm: #1d2638;
+
+  --fg: #e8edf5;
+  --fg-2: #ffffff;
+  --muted: #93a1bd;
+  --meta: #7d8cab;
+
+  --border: #283349;
+  --border-soft: rgba(255, 255, 255, 0.1);
+
+  --accent: #18e29a;
+  --accent-on: #041a12;
+  --accent-hover: #3ae8ad;
+  --accent-active: color-mix(in oklab, var(--accent), black 12%);
+
+  --brand: #7b2ff7;
+  --brand-2: #c026d3;
+  --brand-on: #ffffff;
+
+  --success: #18e29a;
+  --warn: #ffc94d;
+  --danger: #ff3b5c;
+
+  --gold: #ffc94d;
+  --live: #ff3b5c;
+
+  --font-display: "Space Grotesk", "Tajawal", system-ui, sans-serif;
+  --font-body: "Tajawal", "Segoe UI", Tahoma, system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-xl: 1.25rem;
+  --text-2xl: 1.5rem;
+  --text-3xl: clamp(1.9rem, 4.4vw, 3.4rem);
+
+  --leading-body: 1.6;
+  --leading-tight: 1.16;
+  --tracking-display: -0.035em;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+
+  --elev-flat: none;
+  --elev-ring: 0 0 0 1px var(--border);
+  --elev-raised: 0 10px 30px rgba(0, 0, 0, 0.45);
+  --elev-soft: 0 18px 50px rgba(0, 0, 0, 0.28);
+  --glass: rgba(22, 29, 43, 0.72);
+
+  --grad-brand: linear-gradient(135deg, var(--brand), var(--brand-2));
+  --grad-accent: linear-gradient(180deg, var(--accent), #0d9f6e);
+
+  --focus-ring: 0 0 0 4px rgba(24, 226, 154, 0.28);
+
+  --container-max: 1200px;
+  --hero-intro-max: 42rem;
+
+  --motion-fast: 150ms;
+  --motion-base: 220ms;
+  --ease-standard: ease;
+
+  /* Legacy aliases used across styles.css */
+  --kz-bg: var(--bg);
   --kz-bg-2: #111827;
-  --kz-surface: #161d2b;
-  --kz-surface-2: #1d2638;
-  --kz-border: #283349;
-  --kz-text: #e8edf5;
-  --kz-muted: #93a1bd;
-  --kz-brand: #7b2ff7;
-  --kz-brand-2: #c026d3;
-  --kz-accent: #18e29a;
-  --kz-danger: #ff3b5c;
-  --kz-gold: #ffc94d;
-  --kz-radius: 14px;
-  --kz-radius-pill: 999px;
-  --kz-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
-  --kz-shadow-soft: 0 18px 50px rgba(0, 0, 0, 0.28);
-  --kz-glass: rgba(22, 29, 43, 0.72);
-  --kz-grad: linear-gradient(135deg, var(--kz-brand), var(--kz-brand-2));
-  --kz-grad-accent: linear-gradient(180deg, var(--kz-accent), #0d9f6e);
-  --kz-hero-intro-max: 42rem;
-  --kz-font-ar: "Tajawal", "Segoe UI", Tahoma, system-ui, sans-serif;
-  --kz-font-display: "Space Grotesk", "Tajawal", system-ui, sans-serif;
+  --kz-surface: var(--surface);
+  --kz-surface-2: var(--surface-warm);
+  --kz-border: var(--border);
+  --kz-text: var(--fg);
+  --kz-muted: var(--muted);
+  --kz-brand: var(--brand);
+  --kz-brand-2: var(--brand-2);
+  --kz-accent: var(--accent);
+  --kz-danger: var(--danger);
+  --kz-gold: var(--gold);
+  --kz-radius: var(--radius-md);
+  --kz-radius-pill: var(--radius-pill);
+  --kz-shadow: var(--elev-raised);
+  --kz-shadow-soft: var(--elev-soft);
+  --kz-glass: var(--glass);
+  --kz-grad: var(--grad-brand);
+  --kz-grad-accent: var(--grad-accent);
+  --kz-hero-intro-max: var(--hero-intro-max);
+  --kz-font-ar: var(--font-body);
+  --kz-font-display: var(--font-display);
 }

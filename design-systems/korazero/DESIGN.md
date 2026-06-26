@@ -3,7 +3,7 @@
 > Category: Sports Streaming
 > Arabic-first live football portal. Dark cinematic canvas, beIN-adjacent purple, live green pulse, zero ad clutter.
 
-Inspired by the [Open Design](https://github.com/nexu-io/open-design) `DESIGN.md` contract — agents and contributors should read this before changing UI.
+Inspired by the [Open Design](https://github.com/nexu-io/open-design) `DESIGN.md` contract. The full toolkit lives in `vendor/open-design` (git submodule); this folder is registered there via `npm run open-design:install`.
 
 ## 1. Visual Theme & Atmosphere
 

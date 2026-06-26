@@ -10,7 +10,7 @@
   --surface:   var(--kz-surface);
   --surface-2: var(--kz-surface-2);
   --border:    var(--kz-border);
-  --text:      var(--kz-text);
+  --text:      var(--fg);
   --muted:     var(--kz-muted);
   --brand:     var(--kz-brand);
   --brand-2:   var(--kz-brand-2);

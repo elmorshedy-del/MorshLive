@@ -3,14 +3,25 @@
   "id": "korazero",
   "name": "KoraZero",
   "category": "Sports Streaming",
-  "description": "Dark RTL-first sports streaming UI — beIN purple, live green, ad-free clarity.",
+  "description": "Arabic-first dark sports streaming UI for korazero.com — beIN purple, live green, RTL.",
   "source": {
     "type": "bundled",
     "origin": "hand-authored",
-    "inspiredBy": "https://github.com/nexu-io/open-design"
+    "vendor": "vendor/open-design",
+    "vendorUrl": "https://github.com/nexu-io/open-design"
   },
   "files": {
     "design": "DESIGN.md",
-    "tokens": "tokens.css"
+    "tokens": "tokens.css",
+    "designTokens": "design-tokens.json",
+    "components": "components.html"
+  },
+  "usage": "USAGE.md",
+  "componentsManifest": "components.manifest.json",
+  "importMode": "normalized",
+  "craft": {
+    "applies": [],
+    "suggested": ["color", "accessibility-baseline"],
+    "exemptions": []
   }
 }
