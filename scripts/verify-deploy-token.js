@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * Verify a Cloudflare API token can deploy to Pages (needs upload-token access).
+ * Verify a Cloudflare API token can deploy the morshlive Worker.
  * Usage: CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... node scripts/verify-deploy-token.js
  */
 const token = process.env.CLOUDFLARE_API_TOKEN;
 const accountId = process.env.CLOUDFLARE_ACCOUNT_ID;
-const project = process.env.CF_PAGES_PROJECT || "korazero";
+const worker = process.env.CF_WORKER_NAME || "morshlive";
 
 if (!token || !accountId) {
   console.error("Missing CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID");
@@ -21,20 +21,20 @@ async function check(url) {
 }
 
 (async () => {
-  const verify = await check(`https://api.cloudflare.com/client/v4/accounts/${accountId}/tokens/verify`);
+  const verify = await check("https://api.cloudflare.com/client/v4/user/tokens/verify");
   if (!verify.ok) {
     console.error("Token invalid:", verify.body.errors || verify.status);
     process.exit(1);
   }
 
-  const upload = await check(
-    `https://api.cloudflare.com/client/v4/accounts/${accountId}/pages/projects/${project}/upload-token`
+  const script = await check(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/workers/scripts/${worker}`
   );
-  if (!upload.ok) {
-    console.error("Token cannot deploy (needs Account → Cloudflare Pages → Edit):");
-    console.error(upload.body.errors || upload.status);
+  if (!script.ok && script.status !== 404) {
+    console.error("Token cannot deploy Workers (needs Account → Workers Scripts → Edit):");
+    console.error(script.body.errors || script.status);
     process.exit(1);
   }
 
-  console.log(`OK — token can deploy to Pages project "${project}"`);
+  console.log(`OK — token can deploy Worker "${worker}"`);
 })();
