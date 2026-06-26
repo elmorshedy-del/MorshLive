@@ -79,7 +79,8 @@
 
   /* ---------------------------------------------- Embed (iframe) mode */
   function mirrorAt(embed, serverIndex) {
-    if (embed && embed.mirrors && embed.mirrors[serverIndex]) return embed.mirrors[serverIndex];
+    if (!embed) return { url: "", param: null };
+    if (embed.mirrors && embed.mirrors[serverIndex]) return embed.mirrors[serverIndex];
     return { url: embed.url, param: embed.param };
   }
 
@@ -87,6 +88,7 @@
     const embed = currentEmbed();
     if (!embed) return "";
     const mirror = mirrorAt(embed, serverIndex);
+    if (!mirror.url) return "";
     const u = new URL(mirror.url);
     if (mirror.param != null) u.searchParams.set(mirror.param, serverIndex);
     return u.toString();
@@ -103,6 +105,7 @@
   function vipEmbedUrl(serverIndex) {
     const embed = vipEmbed();
     const mirror = mirrorAt(embed, serverIndex);
+    if (!mirror.url) return "";
     const u = new URL(mirror.url);
     if (mirror.param != null) u.searchParams.set(mirror.param, serverIndex);
     return u.toString();

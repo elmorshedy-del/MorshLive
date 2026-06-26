@@ -126,6 +126,7 @@ function buildEmbedSpec(embedKey, upstream) {
 }
 
 function embedSpecForMatch(match, slotProbe, embedBinding) {
+  if (!match || !match.channelId) return buildEmbedSpec("vip1", null);
   const embedKey = resolveMatchEmbedKey(match, slotProbe, embedBinding);
   const upstream =
     (slotProbe && slotProbe.slots && slotProbe.slots[embedKey]) ||
