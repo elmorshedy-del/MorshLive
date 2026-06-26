@@ -42,6 +42,21 @@
       : `watch.html?ch=live&match=${m.id}`;
   }
 
+  function isCommentaryAvailable(m) {
+    return window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(m);
+  }
+
+  function watchAction(m) {
+    if (m.status === "ended") {
+      if (isCommentaryAvailable(m)) {
+        return `<a class="watch-link watch-link--commentary" href="${watchHref(m)}">${ICON.mic} ${t("card.watchCommentary")}</a>`;
+      }
+      return `<span class="watch-link watch-link--disabled">${t("card.ended")}</span>`;
+    }
+    const label = m.status === "live" ? t("card.watchNow") : t("card.watch");
+    return `<a class="watch-link" href="${watchHref(m)}">${ICON.play} ${label}</a>`;
+  }
+
   function commentatorText(m) {
     if (m.commentators && m.commentators.length) {
       const names = m.commentators.map((c) => c.name);
@@ -78,7 +93,8 @@
     const wrap = document.getElementById("featured-live");
     if (!wrap) return;
     const live = MATCHES.filter((m) => m.status === "live");
-    if (!live.length) {
+    const recentEnded = MATCHES.filter((m) => isCommentaryAvailable(m));
+    if (!live.length && !recentEnded.length) {
       wrap.innerHTML = `
         <div class="live-empty">
           <span class="live-empty-dot"></span>
@@ -86,7 +102,8 @@
         </div>`;
       return;
     }
-    wrap.innerHTML = `
+    const liveBlock = live.length
+      ? `
       <div class="featured-head"><span class="rec-dot"></span> ${t("live.now")}</div>
       <div class="featured-grid">
         ${live.map((m) => `
@@ -101,14 +118,31 @@
             ${timeZoneChips(m, { compact: true })}
             <div class="featured-foot">${ICON.play} ${t("card.watchNow")}</div>
           </a>`).join("")}
-      </div>`;
+      </div>`
+      : "";
+    const endedBlock = recentEnded.length
+      ? `
+      <div class="featured-head featured-head--commentary"><span class="rec-dot rec-dot--muted"></span> ${t("live.recentEnded")}</div>
+      <div class="featured-grid">
+        ${recentEnded.map((m) => `
+          <a class="featured-card featured-card--commentary" href="${watchHref(m)}">
+            <div class="featured-league">${m.league} · ${t("status.ended")}</div>
+            <div class="featured-teams">
+              <span>${m.home}</span>
+              <b class="featured-score">${m.score}</b>
+              <span>${m.away}</span>
+            </div>
+            ${commentatorText(m) ? `<div class="featured-commentator">${ICON.mic} ${commentatorText(m)}</div>` : ""}
+            <div class="featured-foot">${ICON.mic} ${t("card.watchCommentary")}</div>
+          </a>`).join("")}
+      </div>`
+      : "";
+    wrap.innerHTML = liveBlock + endedBlock;
   }
 
   /* -------------------------------------------------- Matches rendering */
   function matchCard(m) {
-    const liveBtn = m.status === "ended"
-      ? `<span class="watch-link" style="background:var(--surface-2);color:var(--muted)">${t("card.ended")}</span>`
-      : `<a class="watch-link" href="${watchHref(m)}">${ICON.play} ${t("card.watch")}</a>`;
+    const liveBtn = watchAction(m);
     const minute = m.status === "live" && m.minute ? ` · ${m.minute}` : "";
     return `
       <article class="match-card" data-status="${m.status}">
@@ -153,7 +187,7 @@
 
   /* -------------------------------------------------- Saved matches */
   function savedCard(m) {
-    const liveBtn = `<a class="watch-link" href="${watchHref(m)}">${ICON.play} ${t("card.watch")}</a>`;
+    const liveBtn = watchAction(m);
     return `
       <article class="match-card saved-card">
         <div class="match-top">

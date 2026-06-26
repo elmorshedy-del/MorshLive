@@ -88,6 +88,8 @@ function resolveWatchSelection(matches, channels, searchParams) {
 // Expose for non-module scripts.
 window.SITE_DATA = { CHANNELS, MATCHES, embedKeyFor, EMBED_BINDING };
 window.resolveWatchSelection = resolveWatchSelection;
+window.isRecentlyEndedMatch = isRecentlyEndedMatch;
+window.keepDisplayMatch = keepDisplayMatch;
 
 /* ---------------------------------------------------------------------------
  * getMatches(): returns REAL fixtures from assets/data/today.json (refreshed by
@@ -123,6 +125,11 @@ function keepDisplayMatch(m) {
   const kickoff = parseKickoffMs(m.kickoffUtc);
   if (isNaN(kickoff)) return true;
   return Date.now() - kickoff <= MATCH_WINDOW_MS + RECENT_ENDED_MS;
+}
+
+/** Ended within the post-match commentary window — stream/commentary still available. */
+function isRecentlyEndedMatch(m) {
+  return !!(m && m.status === "ended" && keepDisplayMatch(m));
 }
 
 function sortDisplayMatches(matches) {

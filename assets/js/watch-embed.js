@@ -57,15 +57,22 @@
 
   function fillInfo() {
     const live = !!(match && match.status === "live");
+    const commentary = match && window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(match);
     document.getElementById("ch-name").textContent = channel.name;
     document.getElementById("ch-status").innerHTML = live
       ? `<span class="status-pill status-live">مباشر الآن</span>`
-      : `<span class="status-pill status-upcoming">جاهزة للبث</span>`;
-    document.title = `${channel.name} — VIP | KoraZero`;
+      : commentary
+        ? `<span class="status-pill status-ended">انتهت · شاهد التعليق</span>`
+        : `<span class="status-pill status-upcoming">جاهزة للبث</span>`;
+    document.title = commentary
+      ? `${match.home} ضد ${match.away} — التعليق متاح`
+      : `${channel.name} — VIP | KoraZero`;
 
     const sub = document.getElementById("now-sub");
     sub.textContent = match
-      ? `${match.home} ضد ${match.away} · ${match.league}`
+      ? commentary
+        ? `${match.home} ضد ${match.away} · ${match.score} · التعليق متاح`
+        : `${match.home} ضد ${match.away} · ${match.league}`
       : `بث مباشر بجودة ${channel.quality}`;
 
     document.getElementById("info-quality").textContent = channel.quality;
@@ -111,13 +118,16 @@
       return;
     }
     const label = { live: "مباشر", upcoming: "قادمة", ended: "انتهت" };
-    panel.innerHTML = list.map((m) =>
-      `<a class="side-match ${match && m.id === match.id ? "active" : ""}" href="watch.html?ch=${m.channelId || "live"}&match=${m.id}">
-         <span class="side-status status-${m.status}">${label[m.status]}</span>
+    panel.innerHTML = list.map((m) => {
+      const sideLabel = (window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(m))
+        ? "التعليق"
+        : (label[m.status] || m.status);
+      return `<a class="side-match ${match && m.id === match.id ? "active" : ""}" href="watch.html?ch=${m.channelId || "live"}&match=${m.id}">
+         <span class="side-status status-${m.status}">${sideLabel}</span>
          <span class="side-teams">${m.home} <i>×</i> ${m.away}</span>
          <span class="side-league">${m.league || ""}</span>
-       </a>`
-    ).join("");
+       </a>`;
+    }).join("");
   }
 
   function initNav() {

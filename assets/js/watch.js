@@ -193,17 +193,28 @@
   }
 
   /* ---------------------------------------------- Head info */
+  function matchIsCommentary() {
+    return match && window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(match);
+  }
+
   function fillInfo() {
     const live = !!(match && match.status === "live");
+    const commentary = matchIsCommentary();
     document.getElementById("ch-name").textContent = channel.name;
     document.getElementById("ch-status").innerHTML = live
       ? `<span class="status-pill status-live">${t("watch.live")}</span>`
-      : `<span class="status-pill status-upcoming">${t("watch.ready")}</span>`;
-    document.title = `${channel.name} — ${t("watch.titleSuffix")}`;
+      : commentary
+        ? `<span class="status-pill status-ended">${t("watch.endedCommentary")}</span>`
+        : `<span class="status-pill status-upcoming">${t("watch.ready")}</span>`;
+    document.title = commentary
+      ? `${match.home} ${t("watch.vs")} ${match.away} — ${t("watch.commentary")}`
+      : `${channel.name} — ${t("watch.titleSuffix")}`;
 
     const sub = document.getElementById("now-sub");
     sub.textContent = match
-      ? `${match.home} ${t("watch.vs")} ${match.away} · ${match.league}`
+      ? commentary
+        ? `${match.home} ${t("watch.vs")} ${match.away} · ${match.score} · ${t("watch.commentary")}`
+        : `${match.home} ${t("watch.vs")} ${match.away} · ${match.league}`
       : `${t("watch.pressToPlayQ")} ${channel.quality}`;
 
     document.getElementById("info-quality").textContent = channel.quality;
@@ -227,7 +238,9 @@
     if (overlayTitle) overlayTitle.textContent = channel.name;
     if (overlaySub) {
       overlaySub.textContent = match
-        ? `${match.home} ${t("watch.vs")} ${match.away}`
+        ? commentary
+          ? `${match.home} ${t("watch.vs")} ${match.away} · ${t("watch.commentary")}`
+          : `${match.home} ${t("watch.vs")} ${match.away}`
         : `${t("watch.pressToPlayQ")} ${channel.quality}`;
     }
   }
@@ -297,14 +310,21 @@
       panel.innerHTML = `<div class="side-empty">${t("watch.noMatches")}</div>`;
       return;
     }
-    const label = { live: t("side.live"), upcoming: t("side.upcoming"), ended: t("side.ended") };
-    panel.innerHTML = list.map((m) =>
-      `<a class="side-match ${match && m.id === match.id ? "active" : ""}" href="watch.html?ch=${m.channelId || "live"}&match=${m.id}">
-         <span class="side-status status-${m.status}">${label[m.status]}</span>
+    const label = {
+      live: t("side.live"),
+      upcoming: t("side.upcoming"),
+      ended: t("side.ended"),
+    };
+    panel.innerHTML = list.map((m) => {
+      const sideLabel = (window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(m))
+        ? t("side.commentary")
+        : (label[m.status] || m.status);
+      return `<a class="side-match ${match && m.id === match.id ? "active" : ""}" href="watch.html?ch=${m.channelId || "live"}&match=${m.id}">
+         <span class="side-status status-${m.status}">${sideLabel}</span>
          <span class="side-teams">${m.home} <i>×</i> ${m.away}</span>
          <span class="side-league">${m.league || ""}</span>
-       </a>`
-    ).join("");
+       </a>`;
+    }).join("");
   }
 
   function initNav() {
