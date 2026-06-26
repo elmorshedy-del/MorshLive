@@ -1,10 +1,32 @@
 #!/usr/bin/env node
 /**
  * Find a Cloudflare API token that can deploy to Pages.
- * Checks known secret names, then any env value that looks like cfat_/cfut_.
+ * Loads .env (gitignored) then checks env vars.
  * Prints export lines for bash: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID
  */
 const https = require("https");
+const fs = require("fs");
+const path = require("path");
+
+function loadDotEnv() {
+  const envPath = path.join(__dirname, "..", ".env");
+  if (!fs.existsSync(envPath)) return;
+  for (const line of fs.readFileSync(envPath, "utf8").split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith("#")) continue;
+    const m = trimmed.match(/^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/);
+    if (!m) continue;
+    let val = m[2].trim();
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+      val = val.slice(1, -1);
+    }
+    if (process.env[m[1]] == null || process.env[m[1]] === "") {
+      process.env[m[1]] = val;
+    }
+  }
+}
+
+loadDotEnv();
 
 const ACCOUNT_ID =
   process.env.CLOUDFLARE_ACCOUNT_ID || process.env.CLOUDFLAREID || "";

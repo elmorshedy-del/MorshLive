@@ -5,10 +5,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 if ! RESOLVE=$(node scripts/resolve-cloudflare-token.js --export 2>/dev/null); then
-  echo "Could not find a deploy-capable Cloudflare token in this environment."
+  echo "Could not find a deploy-capable Cloudflare token."
   echo ""
-  echo "Add your cfat_ token to Cursor Cloud Agent secrets as CLOUDFLARE_API_TOKEN"
-  echo "(or CLOUDFLARE_TOKEN5 — this script checks both once injected)."
+  echo "Create a .env file (gitignored) in the repo root:"
+  echo "  cp .env.example .env"
+  echo "  # edit .env — set CLOUDFLARE_API_TOKEN=cfat_... and CLOUDFLARE_ACCOUNT_ID"
   echo ""
   node scripts/resolve-cloudflare-token.js || true
   exit 1
