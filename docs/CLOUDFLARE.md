@@ -116,3 +116,26 @@ Cloudflare is using the **Workers** deploy command on a **static Pages** site.
 4. **Save** → **Retry deployment**
 
 This repo also includes `wrangler.toml` with `[assets]` so `npx wrangler deploy` can succeed if that command cannot be removed. Prefer clearing the deploy command so `_redirects` and `_headers` work as normal Pages files.
+
+---
+
+## korazero.com works on workers.dev but not the main domain
+
+If **`morshlive.elmorshedy.workers.dev`** has the correct streams but **`korazero.com`** still shows old players or wrong games, you have **two deployments**:
+
+| URL | Project | Status |
+|-----|---------|--------|
+| `morshlive.*.workers.dev` | **Worker `morshlive`** | ✅ latest code (Git `wrangler deploy`) |
+| `korazero.com` / `korazero.pages.dev` | **Pages `korazero`** | ❌ old build — remove domain from here |
+
+**Fix from your phone (Cloudflare Dashboard):**
+
+1. **Workers & Pages** → open **korazero** (Pages) → **Custom domains**
+2. **Remove** `korazero.com` and `www.korazero.com` from the Pages project
+3. **Workers & Pages** → open **morshlive** (Worker) → **Settings** → **Domains & Routes**
+4. **Add** custom domain → `korazero.com` and `www.korazero.com`
+5. Wait 1–2 minutes, then hard-refresh korazero.com
+
+**Check it worked:** open korazero.com/watch and view page source — script URLs should include `watch.js?v=20260626b` (or newer), not `20260625c`.
+
+After the domain move, only **morshlive** needs Git deploys. The old Pages project can stay disconnected or be deleted later.

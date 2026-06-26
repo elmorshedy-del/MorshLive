@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Deploy korazero to Cloudflare Pages.
+# Deploy morshlive (Workers static assets) to Cloudflare.
 # Resolves token from CLOUDFLARE_TOKEN5, CLOUDFLARE_API_TOKEN, Cloudflare, or any cfat_ env value.
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -21,5 +21,5 @@ eval "$RESOLVE"
 echo "Token resolved. Verifying..."
 node scripts/verify-deploy-token.js
 
-echo "Deploying to Cloudflare Pages (korazero)..."
-npx wrangler pages deploy . --project-name=korazero --branch=main
+echo "Deploying to Cloudflare Workers (morshlive)..."
+npx wrangler deploy

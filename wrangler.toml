@@ -1,12 +1,20 @@
-# Cloudflare Pages — korazero (static site, no build step)
-# Git deploy: leave Build command empty, output directory ".", no custom deploy command.
-# Manual: npx wrangler pages deploy . --project-name=korazero
+# Cloudflare Workers static assets — morshlive (production)
+# Git deploy command: npx wrangler deploy
+# Manual: npx wrangler deploy
 # API token: .env locally (see .env.example), never commit it.
 
-name = "korazero"
+name = "morshlive"
 compatibility_date = "2024-06-01"
-pages_build_output_dir = "."
 
-# Required when Cloudflare runs `npx wrangler deploy` (Workers CLI on a Pages project).
 [assets]
 directory = "."
+
+# Attach korazero.com to this Worker (zone must be on the same Cloudflare account).
+# You can also add the domain in Dashboard → Workers → morshlive → Domains.
+[[routes]]
+pattern = "korazero.com/*"
+zone_name = "korazero.com"
+
+[[routes]]
+pattern = "www.korazero.com/*"
+zone_name = "korazero.com"
