@@ -1,4 +1,4 @@
-name: Deploy to Cloudflare Pages
+name: Deploy to Cloudflare Workers
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       cloudflare_api_token:
-        description: "Cloudflare API token (cfat_…, Pages Edit permission)"
+        description: "Cloudflare API token (cfat_…, Workers Edit permission)"
         required: true
         type: string
       cloudflare_account_id:
@@ -22,6 +22,10 @@ jobs:
       deployments: write
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
 
       - name: Set Cloudflare credentials
         env:
@@ -53,19 +57,8 @@ jobs:
             echo "::error::No account ID. Add CLOUDFLARE_ACCOUNT_ID repository secret or pass cloudflare_account_id when running workflow."
             exit 1
           fi
-          echo "Token length: ${#TOKEN} (expect ~53 for cfat_)"
-          echo "Account ID set: yes"
           echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
           echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT" >> "$GITHUB_ENV"
 
-      - name: Verify token can deploy
-        run: node scripts/verify-deploy-token.js
-
-      - name: Publish to Cloudflare Pages
-        uses: cloudflare/pages-action@v1
-        with:
-          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
-          projectName: korazero
-          directory: .
-          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+      - name: Deploy morshlive Worker (static assets + /wk proxy)
+        run: npx wrangler@3 deploy
