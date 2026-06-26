@@ -23,8 +23,14 @@
     return u.toString();
   }
 
+  let embedLoadedUrl = "";
+
   function loadEmbed(serverIndex) {
-    frame.src = embedUrl(serverIndex);
+    if (!frame) return;
+    const next = embedUrl(serverIndex);
+    if (embedLoadedUrl === next) return;
+    frame.src = next;
+    embedLoadedUrl = next;
   }
 
   function timeZoneHtml(m) {
@@ -92,7 +98,7 @@
       });
     });
 
-    if (window.StreamCheck) window.StreamCheck.autoHighlight(row).catch(() => {});
+    if (window.StreamCheck) window.StreamCheck.autoHighlight(row, { autoSelect: false }).catch(() => {});
   }
 
   function renderSidebar() {
@@ -128,9 +134,9 @@
     match = picked.match;
   }
 
-  async function refreshMatches() {
+  async function refreshMatches({ force } = {}) {
     const previousChannelId = channel.id;
-    const meta = await window.getMatches({ force: true });
+    const meta = await window.getMatches({ force: !!force });
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
@@ -148,11 +154,11 @@
     renderServers();
     renderSidebar();
     loadEmbed(Number(params.get("serv") || 0));
-    refreshMatches().catch((e) => console.warn("Initial match refresh failed:", e.message));
-    setInterval(() => refreshMatches().catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
+    refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
+    setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(() => {
       const row = document.getElementById("servers");
       if (row && window.StreamCheck) window.StreamCheck.autoHighlight(row, { autoSelect: false }).catch(() => {});
-    }, 60 * 1000);
+    }, 120 * 1000);
   });
 })();
