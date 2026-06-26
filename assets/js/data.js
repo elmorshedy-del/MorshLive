@@ -19,6 +19,8 @@ const EMBEDS = {
   vip2: { url: "https://vip.worldkoora.com/albaplayer/vip2/", param: "serv", servers: 1 },
 };
 
+const UPSTREAM_PLAYER_BASE = "https://player.syria-player.live/albaplayer/";
+
 // Embed routing — loaded from channel-bindings.js (synced from channel-bindings.json).
 const BINDING_DOC = window.KZ_CHANNEL_BINDINGS || {
   vipSlotProbe: { slots: { vip1: "beinmax2", vip2: "beinmax1" } },
@@ -49,16 +51,44 @@ function embedKeyFor(channelId) {
 
 function embedKeyForMatch(match, channelId) {
   const ch = channelId || (match && match.channelId);
-  if (match && match.embedKey) return match.embedKey;
   if (!ch) return DEFAULT_EMBED;
   const slug = upstreamSlugForChannelId(ch);
   const slots = VIP_SLOT_PROBE && VIP_SLOT_PROBE.slots;
-  if (slug && slots) {
+  const isLive = !!(match && match.status === "live");
+  if (slug && slots && (isLive || !match || !match.embedKey)) {
     for (const [vip, upstream] of Object.entries(slots)) {
       if (upstream === slug) return vip;
     }
   }
+  if (match && match.embedKey) return match.embedKey;
   return embedKeyFor(ch);
+}
+
+function upstreamForMatch(match, channelId, embedKey) {
+  const key = embedKey || embedKeyForMatch(match, channelId);
+  if (match && match.embedUpstream) return match.embedUpstream;
+  const slots = VIP_SLOT_PROBE && VIP_SLOT_PROBE.slots;
+  if (slots && slots[key]) return slots[key];
+  return upstreamSlugForChannelId(channelId || (match && match.channelId));
+}
+
+function buildEmbedSpec(embedKey, upstream) {
+  const wrapper = EMBEDS[embedKey] || EMBEDS[DEFAULT_EMBED];
+  if (!upstream) return { ...wrapper, embedKey, embedUpstream: null };
+  const directUrl = `${UPSTREAM_PLAYER_BASE}${upstream}/`;
+  return {
+    embedKey,
+    embedUpstream: upstream,
+    directEmbedUrl: directUrl,
+    wrapperEmbedUrl: wrapper.url,
+    url: directUrl,
+    param: null,
+    servers: 2,
+    mirrors: [
+      { url: directUrl, param: null, kind: "direct" },
+      { url: wrapper.url, param: wrapper.param, kind: "wrapper" },
+    ],
+  };
 }
 
 function embedFor(channelId) {
@@ -68,7 +98,8 @@ function embedFor(channelId) {
 
 function embedForMatch(match, channelId) {
   const key = embedKeyForMatch(match, channelId);
-  return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];
+  const upstream = upstreamForMatch(match, channelId, key);
+  return buildEmbedSpec(key, upstream);
 }
 
 // Real beIN channels the schedule can reference. Display names stay on the true
@@ -122,6 +153,7 @@ window.SITE_DATA = {
   embedKeyFor,
   embedKeyForMatch,
   embedForMatch,
+  buildEmbedSpec,
   EMBED_BINDING,
 };
 window.resolveWatchSelection = resolveWatchSelection;

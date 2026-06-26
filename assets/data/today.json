@@ -1,6 +1,6 @@
 {
   "date": "2026-06-26",
-  "updatedAt": "2026-06-26T19:00:00.673Z",
+  "updatedAt": "2026-06-26T19:14:49.978Z",
   "source": "thesportsdb",
   "sourceLabel": "TheSportsDB + ESPN",
   "commentarySource": "almaghrebsport",
@@ -149,15 +149,15 @@
   "matches": [
     {
       "id": "e2391775",
-      "status": "upcoming",
-      "minute": "",
+      "status": "live",
+      "minute": "13'",
       "home": "Norway",
       "away": "France",
       "homeAbbr": "N",
       "awayAbbr": "F",
       "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/gyfn811591973155.png",
       "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/p3n0z51726166851.png",
-      "score": "VS",
+      "score": "0 - 1",
       "time": "15:00",
       "kickoffUtc": "2026-06-26T19:00:00",
       "league": "FIFA World Cup",
@@ -173,19 +173,21 @@
         }
       ],
       "embedKey": "vip1",
-      "embedUpstream": "beinmax2"
+      "embedUpstream": "beinmax2",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax2/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip1/"
     },
     {
       "id": "espn-fifa.world-760474",
-      "status": "upcoming",
-      "minute": "",
+      "status": "live",
+      "minute": "12'",
       "home": "Senegal",
       "away": "Iraq",
       "homeAbbr": "SEN",
       "awayAbbr": "IRQ",
       "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/sen.png",
       "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/irq.png",
-      "score": "VS",
+      "score": "1 - 0",
       "time": "19:00",
       "kickoffUtc": "2026-06-26T19:00Z",
       "league": "FIFA World Cup",
@@ -201,7 +203,9 @@
         }
       ],
       "embedKey": "vip2",
-      "embedUpstream": "beinmax1"
+      "embedUpstream": "beinmax1",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip2/"
     },
     {
       "id": "e2391772",
@@ -229,7 +233,9 @@
         }
       ],
       "embedKey": "vip1",
-      "embedUpstream": "beinmax2"
+      "embedUpstream": "beinmax2",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax2/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip1/"
     },
     {
       "id": "espn-fifa.world-760479",
@@ -251,7 +257,9 @@
       "commentator": null,
       "source": "espn",
       "embedKey": "vip2",
-      "embedUpstream": "beinmax1"
+      "embedUpstream": "beinmax1",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip2/"
     },
     {
       "id": "e2391773",
@@ -279,7 +287,9 @@
         }
       ],
       "embedKey": "vip2",
-      "embedUpstream": "beinmax1"
+      "embedUpstream": "beinmax1",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip2/"
     },
     {
       "id": "e2391774",
@@ -307,7 +317,9 @@
         }
       ],
       "embedKey": "vip1",
-      "embedUpstream": "beinmax2"
+      "embedUpstream": "beinmax2",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax2/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip1/"
     },
     {
       "id": "espn-fifa.world-760480",
@@ -329,7 +341,9 @@
       "commentator": null,
       "source": "espn",
       "embedKey": "vip2",
-      "embedUpstream": "beinmax1"
+      "embedUpstream": "beinmax1",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip2/"
     },
     {
       "id": "espn-fifa.world-760485",
@@ -351,7 +365,9 @@
       "commentator": null,
       "source": "espn",
       "embedKey": "vip2",
-      "embedUpstream": "beinmax1"
+      "embedUpstream": "beinmax1",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip2/"
     },
     {
       "id": "espn-fifa.world-760481",
@@ -373,7 +389,9 @@
       "commentator": null,
       "source": "espn",
       "embedKey": "vip2",
-      "embedUpstream": "beinmax1"
+      "embedUpstream": "beinmax1",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip2/"
     },
     {
       "id": "espn-fifa.world-760482",
@@ -395,7 +413,9 @@
       "commentator": null,
       "source": "espn",
       "embedKey": "vip2",
-      "embedUpstream": "beinmax1"
+      "embedUpstream": "beinmax1",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip2/"
     },
     {
       "id": "espn-fifa.world-760484",
@@ -417,7 +437,9 @@
       "commentator": null,
       "source": "espn",
       "embedKey": "vip2",
-      "embedUpstream": "beinmax1"
+      "embedUpstream": "beinmax1",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip2/"
     },
     {
       "id": "espn-fifa.world-760483",
@@ -439,7 +461,9 @@
       "commentator": null,
       "source": "espn",
       "embedKey": "vip2",
-      "embedUpstream": "beinmax1"
+      "embedUpstream": "beinmax1",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip2/"
     },
     {
       "id": "e2391770",
@@ -467,7 +491,9 @@
         }
       ],
       "embedKey": "vip1",
-      "embedUpstream": "beinmax2"
+      "embedUpstream": "beinmax2",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax2/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip1/"
     },
     {
       "id": "espn-fifa.world-760470",
@@ -489,7 +515,9 @@
       "commentator": null,
       "source": "espn",
       "embedKey": "vip2",
-      "embedUpstream": "beinmax1"
+      "embedUpstream": "beinmax1",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip2/"
     },
     {
       "id": "espn-fifa.world-760471",
@@ -517,7 +545,9 @@
         }
       ],
       "embedKey": "vip2",
-      "embedUpstream": "beinmax1"
+      "embedUpstream": "beinmax1",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip2/"
     },
     {
       "id": "espn-fifa.world-760472",
@@ -545,7 +575,9 @@
         }
       ],
       "embedKey": "vip1",
-      "embedUpstream": "beinmax2"
+      "embedUpstream": "beinmax2",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax2/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip1/"
     }
   ]
 }

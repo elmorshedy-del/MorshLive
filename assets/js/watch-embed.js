@@ -21,10 +21,16 @@
 
   const frame = document.getElementById("vip-frame");
 
+  function mirrorAt(embed, serverIndex) {
+    if (embed && embed.mirrors && embed.mirrors[serverIndex]) return embed.mirrors[serverIndex];
+    return { url: embed.url, param: embed.param };
+  }
+
   function embedUrl(serverIndex) {
     const embed = channelEmbed();
-    const u = new URL(embed.url);
-    if (embed.param != null) u.searchParams.set(embed.param, serverIndex);
+    const mirror = mirrorAt(embed, serverIndex);
+    const u = new URL(mirror.url);
+    if (mirror.param != null) u.searchParams.set(mirror.param, serverIndex);
     return u.toString();
   }
 

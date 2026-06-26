@@ -1,8 +1,8 @@
 {
-  "updatedAt": "2026-06-26T19:00:04.530Z",
+  "updatedAt": "2026-06-26T19:14:50.005Z",
   "bindingVersion": 5,
   "vipSlotProbe": {
-    "probedAt": "2026-06-26T19:00:00.672Z",
+    "probedAt": "2026-06-26T19:14:49.977Z",
     "slots": {
       "vip1": "beinmax2",
       "vip2": "beinmax1"
@@ -16,8 +16,41 @@
     "bein-sports-1": "vip2",
     "bein-sports-2": "vip1"
   },
-  "liveCount": 0,
-  "routes": [],
+  "liveCount": 2,
+  "routes": [
+    {
+      "id": "e2391775",
+      "home": "Norway",
+      "away": "France",
+      "score": "0 - 1",
+      "minute": "13'",
+      "channelId": "bein-max-2",
+      "channel": "beIN MAX 2",
+      "commentator": "أحمد البلوشي",
+      "embedKey": "vip1",
+      "embedUpstream": "beinmax2",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax2/",
+      "embedUrl": "https://player.syria-player.live/albaplayer/beinmax2/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip1/",
+      "kickoffUtc": "2026-06-26T19:00:00"
+    },
+    {
+      "id": "espn-fifa.world-760474",
+      "home": "Senegal",
+      "away": "Iraq",
+      "score": "1 - 0",
+      "minute": "12'",
+      "channelId": "bein-max-1",
+      "channel": "beIN MAX 1",
+      "commentator": "خليل البلوشي",
+      "embedKey": "vip2",
+      "embedUpstream": "beinmax1",
+      "directEmbedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "embedUrl": "https://player.syria-player.live/albaplayer/beinmax1/",
+      "wrapperEmbedUrl": "https://vip.worldkoora.com/albaplayer/vip2/",
+      "kickoffUtc": "2026-06-26T19:00Z"
+    }
+  ],
   "conflicts": [],
   "ok": true,
   "warning": null

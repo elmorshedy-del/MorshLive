@@ -1,13 +1,13 @@
 /* Auto-synced from assets/data/channel-bindings.json by fetch-matches.js */
 window.KZ_CHANNEL_BINDINGS = {
   "version": 5,
-  "updatedAt": "2026-06-26T19:00:00.672Z",
+  "updatedAt": "2026-06-26T19:14:49.977Z",
   "routing": {
     "mode": "probe-match",
     "note": "vip1/vip2 are generic wrappers; upstream beinmaxN is probed at fetch time and stored per match as embedKey."
   },
   "vipSlotProbe": {
-    "probedAt": "2026-06-26T19:00:00.672Z",
+    "probedAt": "2026-06-26T19:14:49.977Z",
     "slots": {
       "vip1": "beinmax2",
       "vip2": "beinmax1"

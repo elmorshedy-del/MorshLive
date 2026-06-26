@@ -7,6 +7,8 @@
 - `scripts/channel-bindings-lib.js` probes vip slots at fetch time; each match gets `embedKey` in `today.json`
 - `assets/data/channel-bindings.json` stores `vipSlotProbe` + fallback `embedBinding`; sync to `assets/js/channel-bindings.js`
 - Browser: `resolveWatchSelection` → `match.embedKey` first, then probe lookup, then static `embedBinding`
+- **Primary playback** uses the probed upstream player directly (`player.syria-player.live/albaplayer/beinmaxN/`) to avoid worldkoora's sandboxed nested iframe (breaks mobile Safari)
+- **Server 2** is the worldkoora vip wrapper as backup
 - Player 2 VIP **must** use the same resolved embed URL as Player 1 (`picked.embed` / `activeEmbed`), never a hardcoded `vip1`
 
 ## Watch page

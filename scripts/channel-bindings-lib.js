@@ -12,6 +12,8 @@ const EMBED_URLS = {
   vip2: "https://vip.worldkoora.com/albaplayer/vip2/",
 };
 
+const UPSTREAM_PLAYER_BASE = "https://player.syria-player.live/albaplayer/";
+
 const VIP_SLOTS = Object.keys(EMBED_URLS);
 
 function loadBindings() {
@@ -82,9 +84,54 @@ function embedKeyFromProbe(channelId, slotProbe, embedBinding) {
 }
 
 function resolveMatchEmbedKey(match, slotProbe, embedBinding) {
-  if (match && match.embedKey) return match.embedKey;
   if (!match || !match.channelId) return "vip1";
+  const slug = upstreamSlugForChannelId(match.channelId);
+  const slots = slotProbe && slotProbe.slots;
+  if (slug && slots && (match.status === "live" || !match.embedKey)) {
+    for (const slot of VIP_SLOTS) {
+      if (slots[slot] === slug) return slot;
+    }
+  }
+  if (match.embedKey) return match.embedKey;
   return embedKeyFromProbe(match.channelId, slotProbe, embedBinding);
+}
+
+function buildEmbedSpec(embedKey, upstream) {
+  const wrapperUrl = EMBED_URLS[embedKey] || EMBED_URLS.vip1;
+  if (!upstream) {
+    return {
+      embedKey,
+      embedUpstream: null,
+      directEmbedUrl: null,
+      wrapperEmbedUrl: wrapperUrl,
+      url: wrapperUrl,
+      param: "serv",
+      servers: 1,
+    };
+  }
+  const directUrl = `${UPSTREAM_PLAYER_BASE}${upstream}/`;
+  return {
+    embedKey,
+    embedUpstream: upstream,
+    directEmbedUrl: directUrl,
+    wrapperEmbedUrl: wrapperUrl,
+    url: directUrl,
+    param: null,
+    servers: 2,
+    mirrors: [
+      { url: directUrl, param: null, kind: "direct" },
+      { url: wrapperUrl, param: "serv", kind: "wrapper" },
+    ],
+  };
+}
+
+function embedSpecForMatch(match, slotProbe, embedBinding) {
+  const embedKey = resolveMatchEmbedKey(match, slotProbe, embedBinding);
+  const upstream =
+    (slotProbe && slotProbe.slots && slotProbe.slots[embedKey]) ||
+    match.embedUpstream ||
+    upstreamSlugForChannelId(match.channelId);
+  return buildEmbedSpec(embedKey, upstream);
 }
 
 /** Write per-match embedKey using live vip-slot probe (source of truth for routing). */
@@ -92,10 +139,11 @@ function assignMatchEmbeds(matches, slotProbe, embedBinding) {
   const map = embedBinding || loadBindings().embedBinding;
   for (const m of matches || []) {
     if (!m.channelId) continue;
-    const key = embedKeyFromProbe(m.channelId, slotProbe, map);
-    m.embedKey = key;
-    const upstream = slotProbe && slotProbe.slots ? slotProbe.slots[key] : null;
-    if (upstream) m.embedUpstream = upstream;
+    const spec = embedSpecForMatch(m, slotProbe, map);
+    m.embedKey = spec.embedKey;
+    if (spec.embedUpstream) m.embedUpstream = spec.embedUpstream;
+    if (spec.directEmbedUrl) m.directEmbedUrl = spec.directEmbedUrl;
+    if (spec.wrapperEmbedUrl) m.wrapperEmbedUrl = spec.wrapperEmbedUrl;
   }
 }
 
@@ -119,7 +167,8 @@ function buildLiveSnapshot(matches, bindingDoc) {
   const live = (matches || []).filter((m) => m.status === "live");
 
   const routes = live.map((m) => {
-    const embedKey = resolveMatchEmbedKey(m, slotProbe, embedBinding);
+    const spec = embedSpecForMatch(m, slotProbe, embedBinding);
+    const embedKey = spec.embedKey;
     return {
       id: m.id,
       home: m.home,
@@ -130,8 +179,10 @@ function buildLiveSnapshot(matches, bindingDoc) {
       channel: m.channel || null,
       commentator: m.commentator || null,
       embedKey,
-      embedUpstream: m.embedUpstream || (slotProbe && slotProbe.slots ? slotProbe.slots[embedKey] : null),
-      embedUrl: EMBED_URLS[embedKey] || EMBED_URLS.vip1,
+      embedUpstream: spec.embedUpstream,
+      directEmbedUrl: spec.directEmbedUrl,
+      embedUrl: spec.url,
+      wrapperEmbedUrl: spec.wrapperEmbedUrl,
       kickoffUtc: m.kickoffUtc || null,
     };
   });
@@ -214,6 +265,8 @@ module.exports = {
   embedKeyFor,
   embedKeyFromProbe,
   resolveMatchEmbedKey,
+  buildEmbedSpec,
+  embedSpecForMatch,
   assignMatchEmbeds,
   pinEndedEmbeds,
   buildLiveSnapshot,
