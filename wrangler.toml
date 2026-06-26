@@ -1,7 +1,12 @@
-# Cloudflare Pages — korazero
-# Deploy: npx wrangler pages deploy . --project-name=korazero
-# API token: put in .env locally (see .env.example), never commit it.
+# Cloudflare Pages — korazero (static site, no build step)
+# Git deploy: leave Build command empty, output directory ".", no custom deploy command.
+# Manual: npx wrangler pages deploy . --project-name=korazero
+# API token: .env locally (see .env.example), never commit it.
 
 name = "korazero"
 compatibility_date = "2024-06-01"
 pages_build_output_dir = "."
+
+# Required when Cloudflare runs `npx wrangler deploy` (Workers CLI on a Pages project).
+[assets]
+directory = "."

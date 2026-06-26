@@ -1,0 +1,12 @@
+.git/**
+.github/**
+scripts/**
+docs/**
+.env
+.env.*
+.wrangler/**
+README.md
+wrangler.toml
+.assetsignore
+embed-test.html
+**/*.md

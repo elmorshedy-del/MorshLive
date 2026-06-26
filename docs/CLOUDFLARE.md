@@ -10,7 +10,8 @@ Your **Cloudflare API token never goes in the website code**. It only lives in s
 4. Build settings:
    - **Framework preset:** None
    - **Build command:** *(leave empty)*
-   - **Build output directory:** `/` or `.`
+   - **Build output directory:** `.` (a single dot)
+   - **Deploy command:** *(leave empty — do not use `npx wrangler deploy`)*
 5. Deploy. You get: `https://korazero.pages.dev`
 6. **Custom domains** → add `korazero.com` (or your domain).
 
@@ -90,3 +91,28 @@ Nice URLs after deploy:
 - Do **not** paste the token in chat or screenshots.
 
 The static site has **no server** — visitors never need your API key.
+
+---
+
+## Troubleshooting: `Missing entry-point to Worker script`
+
+If the build log shows:
+
+```
+Executing user deploy command: npx wrangler deploy
+✘ [ERROR] Missing entry-point to Worker script or to assets directory
+```
+
+Cloudflare is using the **Workers** deploy command on a **static Pages** site.
+
+**Fix in the dashboard (phone-friendly):**
+
+1. [Cloudflare Dashboard](https://dash.cloudflare.com) → **Workers & Pages** → **korazero**
+2. **Settings** → **Build** (or **Builds & deployments**)
+3. Set:
+   - **Build command:** empty
+   - **Build output directory:** `.`
+   - **Deploy command:** empty *(delete `npx wrangler deploy` if present)*
+4. **Save** → **Retry deployment**
+
+This repo also includes `wrangler.toml` with `[assets]` so `npx wrangler deploy` can succeed if that command cannot be removed. Prefer clearing the deploy command so `_redirects` and `_headers` work as normal Pages files.
