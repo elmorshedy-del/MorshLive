@@ -6,8 +6,8 @@
 - `vip1`/`vip2` pages embed upstream slugs like `beinmax1`/`beinmax2` (often inverted vs slot name)
 - `scripts/channel-bindings-lib.js` probes vip slots at fetch time; each match gets `embedKey` in `today.json`
 - `assets/data/channel-bindings.json` stores `vipSlotProbe` + fallback `embedBinding`; sync to `assets/js/channel-bindings.js`
-- Browser: `resolveWatchSelection` → `match.embedKey` from fetch, then `vipSlotProbe`, then static `embedBinding`
-- Playback always uses the worldkoora vip wrapper URL for the resolved `embedKey` — do not iframe syria-player directly
+- Probe vip1/vip2 **worldkoora** pages at fetch time to pick the correct vip slot (`embedKey`)
+- **Playback is always** `https://vip.worldkoora.com/albaplayer/vipN/` — never yalla3arab, syria-player, or other hosts
 - Player 2 VIP **must** use the same resolved embed URL as Player 1 (`picked.embed` / `activeEmbed`), never a hardcoded `vip1`
 
 ## Watch page

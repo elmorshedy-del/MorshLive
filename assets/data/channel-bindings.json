@@ -1,15 +1,15 @@
 {
   "version": 5,
-  "updatedAt": "2026-06-26T19:25:53.233Z",
+  "updatedAt": "2026-06-26T20:01:35.817Z",
   "routing": {
     "mode": "probe-match",
-    "note": "vip1/vip2 are generic wrappers; upstream beinmaxN is probed at fetch time and stored per match as embedKey."
+    "note": "Probe worldkoora vip pages for slot routing only. Playback is always vip.worldkoora.com — no alternate hosts."
   },
   "vipSlotProbe": {
-    "probedAt": "2026-06-26T19:25:53.233Z",
+    "probedAt": "2026-06-26T20:01:35.816Z",
     "slots": {
-      "vip1": "beinmax2",
-      "vip2": "beinmax1"
+      "vip1": "bein-sports-hd-2",
+      "vip2": "bein-sports-hd-1"
     }
   },
   "embedBinding": {

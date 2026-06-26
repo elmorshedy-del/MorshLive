@@ -47,15 +47,30 @@ function embedKeyFor(channelId) {
   return EMBED_BINDING[channelId] || DEFAULT_EMBED;
 }
 
+function channelMatchesProbeSlug(channelId, slug) {
+  if (!channelId || !slug) return false;
+  const max = /^bein-max-(\d+)$/.exec(channelId);
+  if (max) {
+    const n = max[1];
+    return slug === `beinmax${n}` || slug === `bein-sports-hd-${n}` || slug === `beinmax-${n}`;
+  }
+  if (channelId === "bein-sports-1") {
+    return slug === "bein-sports-hd-1" || slug === "bein1" || slug === "beinmax1";
+  }
+  if (channelId === "bein-sports-2") {
+    return slug === "bein-sports-hd-2" || slug === "bein2" || slug === "beinmax2";
+  }
+  return false;
+}
+
 function embedKeyForMatch(match, channelId) {
   const ch = channelId || (match && match.channelId);
   if (!ch) return DEFAULT_EMBED;
   if (match && match.embedKey) return match.embedKey;
-  const slug = upstreamSlugForChannelId(ch);
   const slots = VIP_SLOT_PROBE && VIP_SLOT_PROBE.slots;
-  if (slug && slots) {
-    for (const [vip, upstream] of Object.entries(slots)) {
-      if (upstream === slug) return vip;
+  if (slots) {
+    for (const [vip, slug] of Object.entries(slots)) {
+      if (channelMatchesProbeSlug(ch, slug)) return vip;
     }
   }
   return embedKeyFor(ch);
@@ -66,6 +81,7 @@ function embedFor(channelId) {
   return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];
 }
 
+// Playback is always vip.worldkoora.com — probe data is for vip-slot routing only.
 function embedForMatch(match, channelId) {
   const key = embedKeyForMatch(match, channelId);
   return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];
