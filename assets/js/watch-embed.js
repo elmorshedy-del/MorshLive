@@ -40,7 +40,8 @@
   function loadEmbed(serverIndex) {
     if (!frame) return;
     const next = embedUrl(serverIndex);
-    if (embedLoadedUrl === next) return;
+    if (!next) return;
+    if (embedLoadedUrl === next && frame.getAttribute("src") && frame.getAttribute("src") !== "about:blank") return;
     frame.src = next;
     embedLoadedUrl = next;
   }

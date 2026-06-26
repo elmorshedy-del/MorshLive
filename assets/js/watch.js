@@ -96,10 +96,10 @@
   function loadEmbed(serverIndex, { force } = {}) {
     const next = embedUrl(serverIndex);
     if (!next) return;
-    if (!force && embedLoadedUrl === next) return;
-    embedLoadedUrl = next;
     if (!savedShellMarkup) savedShellMarkup = shell.innerHTML;
     const frame = shell.querySelector(".embed-frame");
+    if (!force && embedLoadedUrl === next && frame) return;
+    embedLoadedUrl = next;
     if (frame) {
       frame.src = next;
       return;
