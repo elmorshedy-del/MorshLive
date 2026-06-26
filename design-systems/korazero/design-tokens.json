@@ -1,0 +1,20 @@
+{
+  "schema": "open-design-tokens/v1",
+  "id": "korazero",
+  "colors": {
+    "bg": "#0a0e17",
+    "surface": "#161d2b",
+    "fg": "#e8edf5",
+    "muted": "#93a1bd",
+    "accent": "#18e29a",
+    "brand": "#7b2ff7",
+    "brand2": "#c026d3",
+    "danger": "#ff3b5c",
+    "gold": "#ffc94d"
+  },
+  "typography": {
+    "display": "Space Grotesk, Tajawal, system-ui",
+    "body": "Tajawal, Segoe UI, Tahoma, system-ui"
+  },
+  "radius": { "md": "14px", "pill": "999px" }
+}

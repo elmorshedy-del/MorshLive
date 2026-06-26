@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>KoraZero — reference components</title>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="tokens.css" />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        margin: 0;
+        padding: var(--space-6);
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--font-body);
+        line-height: var(--leading-body);
+      }
+      h1 { font-family: var(--font-display); font-size: var(--text-2xl); margin: 0 0 var(--space-6); }
+      .grid { display: grid; gap: var(--space-6); max-width: 960px; }
+      .panel {
+        background: var(--glass);
+        border: 1px solid var(--border-soft);
+        border-radius: var(--radius-md);
+        padding: var(--space-5);
+        backdrop-filter: blur(12px);
+      }
+      .btn {
+        display: inline-flex; align-items: center; gap: var(--space-2);
+        min-height: 52px; padding: 0 var(--space-5);
+        border-radius: 11px; border: 0; font: inherit; font-weight: 700;
+        cursor: pointer; text-decoration: none;
+      }
+      .btn-primary { background: var(--grad-brand); color: #fff; }
+      .btn-ghost { background: rgba(255,255,255,.06); border: 1px solid var(--border-soft); color: var(--fg); }
+      .badge {
+        display: inline-flex; align-items: center; gap: 6px;
+        padding: 6px 14px; border-radius: var(--radius-pill);
+        background: rgba(24,226,154,.12); color: var(--accent);
+        border: 1px solid rgba(24,226,154,.35); font-size: var(--text-sm); font-weight: 700;
+      }
+      .hero-intro {
+        position: relative; padding: 18px 20px; border-radius: calc(var(--radius-md) + 2px);
+        background: linear-gradient(135deg, rgba(123,47,247,.08), rgba(24,226,154,.04)), var(--glass);
+        border: 1px solid var(--border-soft); overflow: hidden;
+      }
+      .hero-intro::before {
+        content: ""; position: absolute; inset-block: 12px; inset-inline-start: 0; width: 4px;
+        background: var(--grad-accent); border-radius: 0 4px 4px 0;
+      }
+      .match-card {
+        border-radius: var(--radius-md); padding: var(--space-4);
+        background: var(--surface); border: 1px solid var(--border);
+      }
+      .match-card:focus-within { outline: 4px solid var(--accent); outline-offset: 3px; }
+      .meta { color: var(--muted); font-size: var(--text-sm); margin-top: var(--space-2); }
+      .chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-3); }
+      .chip {
+        padding: 6px 12px; border-radius: var(--radius-pill); font-size: var(--text-xs); font-weight: 700;
+        background: rgba(255,255,255,.05); border: 1px solid var(--border-soft);
+      }
+      .chip--accent { color: #8ef0c8; border-color: rgba(24,226,154,.35); background: rgba(24,226,154,.1); }
+    </style>
+  </head>
+  <body>
+    <h1>KoraZero component fixture</h1>
+    <div class="grid">
+      <section class="panel">
+        <span class="badge">● مباشر الآن</span>
+        <div class="hero-intro" style="margin-top:16px">
+          <p style="margin:0;color:var(--muted)">كورة زيرو موقعك الأول لمشاهدة بث مباشر مباريات اليوم وكأس العالم 2026 أون لاين بجودة HD.</p>
+          <div class="chips">
+            <span class="chip chip--accent">كورة اون لاين</span>
+            <span class="chip">مونديال 2026</span>
+            <span class="chip">بين سبورت</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:12px;margin-top:16px;flex-wrap:wrap">
+          <a class="btn btn-primary" href="#">شاهد المباشر الآن</a>
+          <a class="btn btn-ghost" href="#">مباريات اليوم</a>
+        </div>
+      </section>
+      <section class="panel match-card" tabindex="0">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <strong>اليابان × السويد</strong>
+          <span style="color:var(--gold)">1 - 1</span>
+        </div>
+        <div class="meta">beIN MAX 4 · عبدالله الغامدي · مباشر 69'</div>
+      </section>
+    </div>
+  </body>
+</html>
