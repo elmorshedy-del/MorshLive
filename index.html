@@ -34,8 +34,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css?v=20260626j" />
+  <link rel="stylesheet" href="assets/css/tv-leanback.css?v=20260627a" />
   <!-- i18n must run before paint so dir/lang is correct with no flash -->
-  <script src="assets/js/i18n.js?v=20260626h"></script>
+  <script src="assets/js/i18n.js?v=20260627a"></script>
   <!-- GSAP 3 — industry-standard animation engine -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script type="application/ld+json">
@@ -85,6 +86,39 @@
   </script>
 </head>
 <body>
+  <!-- Leanback TV shell (shown when TV mode is on) -->
+  <div id="tv-leanback" class="tv-lb-app" hidden>
+    <header class="tv-lb-header">
+      <a class="tv-lb-logo" href="index.html" aria-label="KoraZero">Kora<b>Zero</b></a>
+      <div class="tv-lb-filters tv-focus-list" role="tablist">
+        <button type="button" class="tv-lb-tab" data-filter="all" data-i18n="filter.all">الكل</button>
+        <button type="button" class="tv-lb-tab" data-filter="live" data-i18n="filter.live">مباشر الآن</button>
+        <button type="button" class="tv-lb-tab" data-filter="upcoming" data-i18n="filter.upcoming">قادمة</button>
+        <button type="button" class="tv-lb-tab" data-filter="ended" data-i18n="filter.ended">منتهية</button>
+      </div>
+      <div class="tv-lb-actions">
+        <button type="button" class="tv-lb-pill js-lang-toggle" data-i18n-attr="aria-label:lang.toggleAria" aria-label="Switch to English">
+          <span data-lang-label data-i18n="lang.toggleFull">English</span>
+        </button>
+        <button type="button" class="tv-lb-pill js-tv-toggle" data-i18n-attr="aria-label:tv.toggleAriaOff" aria-pressed="true">
+          <span data-tv-label data-i18n="tv.toggleOn">وضع التلفزيون: مفعّل</span>
+        </button>
+        <a class="tv-lb-live tv-row" href="watch.html?ch=live&amp;tv=1">
+          <span class="live-dot-i"></span>
+          <span data-i18n="hero.ctaLive">شاهد المباشر الآن</span>
+        </a>
+      </div>
+    </header>
+    <main class="tv-lb-main">
+      <div class="tv-lb-now" id="tv-lb-now" hidden></div>
+      <p class="tv-lb-section-label" data-i18n="matches.title">مباريات اليوم بث مباشر</p>
+      <div class="tv-lb-list tv-focus-list" id="tv-lb-matches" role="list"></div>
+    </main>
+    <footer class="tv-lb-footer">
+      <span data-i18n="tv.lbHint">↑↓ للتنقّل بين المباريات · OK للمشاهدة</span>
+    </footer>
+  </div>
+
   <!-- Floating shot ball (GSAP-animated, fixed layer) -->
   <div id="shotBall" class="shot-ball" aria-hidden="true">
     <svg viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
@@ -317,7 +351,7 @@
   </section>
 
   <!-- Featured live (auto-detected) -->
-  <section class="section" style="padding-top:0">
+  <section class="section featured-section" style="padding-top:0">
     <div class="container">
       <div id="featured-live"></div>
     </div>
@@ -424,7 +458,8 @@
     </div>
   </footer>
 
-  <script src="assets/js/tv-nav.js?v=20260626g"></script>
+  <script src="assets/js/tv-nav.js?v=20260627a"></script>
+  <script src="assets/js/tv-leanback.js?v=20260627a"></script>
   <script src="assets/js/favorites.js?v=20260625c"></script>
   <script src="assets/js/matches-api.js?v=20260625c"></script>
   <script src="assets/js/channel-bindings.js?v=20260626b"></script>
