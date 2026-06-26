@@ -60,8 +60,18 @@
       "hero.tvHintLink": "اكتشف وضع التلفزيون",
       "wc.live": "جارٍ الآن",
       "hero.noAds": "بدون إعلانات ولا نوافذ منبثقة",
-      "hero.title": "بث مباشر مباريات اليوم <span>وكأس العالم 2026</span><br />بجودة عالية وبدون إعلانات",
-      "hero.lede": "شاهد أهم مباريات اليوم ومباريات كأس العالم 2026™ لحظة بلحظة بجودة HD — بدون إعلانات، بدون نوافذ منبثقة، وبدون تقطيع. مع مواعيد المباريات بتوقيت السعودية وشرق أمريكا، والمعلّق لكل مباراة.",
+      "seo.title": "بث مباشر مباريات اليوم وكأس العالم 2026 بدون إعلانات | كورة زيرو",
+      "seo.description": "شاهد بث مباشر مباريات اليوم وكأس العالم 2026 أون لاين بجودة HD على كورة زيرو. بديل نظيف ليلا شوت وكورة لايف — بدون إعلانات ولا نوافذ منبثقة ولا تقطيع، مع مواعيد المباريات بتوقيت السعودية والمعلّق العربي.",
+      "seo.ogTitle": "بث مباشر مباريات اليوم وكأس العالم 2026 بدون إعلانات | كورة زيرو",
+      "seo.ogDescription": "شاهد بث مباشر مباريات اليوم وكأس العالم 2026 أون لاين بجودة HD على كورة زيرو. بديل نظيف ليلا شوت وكورة لايف — بدون إعلانات ولا نوافذ منبثقة ولا تقطيع.",
+      "seo.twitterDescription": "كورة اون لاين — بث مباشر مباريات اليوم وكأس العالم 2026 بجودة HD بدون إعلانات ولا نوافذ منبثقة.",
+      "seo.keywordsAria": "مواضيع البث والمباريات",
+      "seo.kw1": "كورة اون لاين",
+      "seo.kw2": "مونديال 2026",
+      "seo.kw3": "بين سبورت",
+      "seo.kw4": "بث مباشر HD",
+      "hero.title": "بث مباشر مباريات اليوم وكأس العالم 2026 — <span>كورة أون لاين</span> بجودة HD بدون إعلانات",
+      "hero.lede": "كورة زيرو موقعك الأول لمشاهدة بث مباشر مباريات اليوم ومباريات كأس العالم 2026 (مونديال 2026) أون لاين بجودة HD. بديل نظيف وآمن لمواقع يلا شوت وكورة لايف — بدون إعلانات، بدون نوافذ منبثقة، وبدون تقطيع. تابع مباريات بين سبورت والمونديال لحظة بلحظة، مع مواعيد المباريات بتوقيت السعودية وشرق أمريكا والمعلّق العربي لكل مباراة.",
       "hero.usp1": "بدون إعلانات",
       "hero.usp2": "بدون نوافذ منبثقة",
       "hero.usp3": "بدون تقطيع",
@@ -85,6 +95,8 @@
       "faq.a4": "يفحص KoraZero السيرفرات تلقائيًا ويميّز العامل منها باللون الأخضر، ويعرض اسم المعلّق والقناة الناقلة لكل مباراة حتى لا تبحث بنفسك.",
       "faq.q5": "كيف أشاهد على التلفزيون الذكي؟",
       "faq.a5": "افتح الموقع من متصفح التلفزيون، ثم فعّل «وضع التلفزيون» من القسم المخصص في الصفحة الرئيسية. سيتكبّر الواجهة ويمكنك التنقّل بالريموت بأسهم الاتجاه وزر OK — بدون تطبيق منفصل.",
+      "faq.q6": "هل كورة زيرو بديل ليلا شوت وكورة لايف؟",
+      "faq.a6": "نعم — كورة زيرو (كورة اون لاين) يوفّر بث مباشر مباريات اليوم وكأس العالم 2026 بواجهة نظيفة بدون إعلانات ولا نوافذ منبثقة ولا تقطيع، مع المعلّق العربي والقناة الناقلة لكل مباراة.",
       "footer.about": "وجهتك لمشاهدة مباريات اليوم وكأس العالم 2026 بث مباشر بجودة عالية — بدون إعلانات، بدون نوافذ منبثقة، وبدون تقطيع. مواعيد المباريات بتوقيت السعودية وشرق أمريكا، مع القنوات الناقلة والمعلّق لكل مباراة على جميع الأجهزة.",
       "footer.disclaimer": "البث من مصادر خارجية تابعة لأصحابها. يُرجى احترام حقوق النقل المعمول بها في بلدك.",
       "footer.quickLinks": "روابط سريعة",
@@ -216,8 +228,18 @@
       "hero.tvHintLink": "Discover TV mode",
       "wc.live": "Live now",
       "hero.noAds": "No ads, no pop-ups",
-      "hero.title": "Watch today's matches <span>& World Cup 2026</span><br />live in HD, ad-free",
-      "hero.lede": "Watch today's top matches and the FIFA World Cup 2026™ live in HD — no ads, no pop-ups, no buffering. With kick-off times in Saudi and US Eastern time, and the commentator for every match.",
+      "seo.title": "KoraZero — Live streams, today's matches & World Cup 2026 HD, no ads",
+      "seo.description": "Watch today's matches and FIFA World Cup 2026 live in HD on KoraZero — a clean, ad-free football stream with Arabic commentary, Saudi & US Eastern kick-off times, and beIN Sports MAX channels.",
+      "seo.ogTitle": "KoraZero — Live football streams World Cup 2026 HD, no ads",
+      "seo.ogDescription": "Watch today's matches and World Cup 2026 live in HD on KoraZero — no ads, no pop-ups, no buffering.",
+      "seo.twitterDescription": "KoraZero — live football streams, World Cup 2026 HD, ad-free.",
+      "seo.keywordsAria": "Streaming topics",
+      "seo.kw1": "Football online",
+      "seo.kw2": "World Cup 2026",
+      "seo.kw3": "beIN Sports",
+      "seo.kw4": "HD live stream",
+      "hero.title": "Live streams — today's matches & <span>World Cup 2026</span> online in HD, ad-free",
+      "hero.lede": "KoraZero is your home for today's matches and FIFA World Cup 2026™ live in HD — no ads, no pop-ups, no buffering. Follow every game with Arabic commentary, beIN Sports MAX channels, and kick-off times in Saudi and US Eastern time.",
       "hero.usp1": "No ads",
       "hero.usp2": "No pop-ups",
       "hero.usp3": "No buffering",
@@ -241,6 +263,8 @@
       "faq.a4": "KoraZero checks the servers automatically and highlights the working one in green, and shows the commentator and broadcast channel for every match so you don't have to search.",
       "faq.q5": "How do I watch on a smart TV?",
       "faq.a5": "Open the site in your TV browser, then enable TV mode from the dedicated section on the home page. The UI scales up and you can navigate with your remote's arrow keys and OK button — no separate app required.",
+      "faq.q6": "Is KoraZero an alternative to ad-heavy stream sites?",
+      "faq.a6": "Yes — KoraZero offers today's matches and World Cup 2026 live in a clean interface with no ads, no pop-ups, no buffering, plus Arabic commentary and the broadcast channel for every match.",
       "footer.about": "Your destination to watch today's matches and the World Cup 2026 live in high quality — no ads, no pop-ups, no buffering. Kick-off times in Saudi and US Eastern time, with the broadcast channel and commentator for every match on all devices.",
       "footer.disclaimer": "Streams come from third-party sources owned by their respective holders. Please respect the broadcasting rights that apply in your country.",
       "footer.quickLinks": "Quick links",
@@ -346,6 +370,19 @@
     html.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
   }
 
+  function applySeoMeta() {
+    document.title = t("seo.title");
+    const setMeta = (selector, content) => {
+      const el = document.querySelector(selector);
+      if (el && content) el.setAttribute("content", content);
+    };
+    setMeta('meta[name="description"]', t("seo.description"));
+    setMeta('meta[property="og:title"]', t("seo.ogTitle"));
+    setMeta('meta[property="og:description"]', t("seo.ogDescription"));
+    setMeta('meta[name="twitter:title"]', t("seo.ogTitle"));
+    setMeta('meta[name="twitter:description"]', t("seo.twitterDescription"));
+  }
+
   function applyStatic(rootEl) {
     const scope = rootEl || document;
     scope.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.getAttribute("data-i18n")); });
@@ -379,7 +416,7 @@
   }
 
   applyDir(); // before paint — avoids a flash of the wrong direction
-  document.addEventListener("DOMContentLoaded", () => { applyStatic(); wireToggles(); });
+  document.addEventListener("DOMContentLoaded", () => { applySeoMeta(); applyStatic(); wireToggles(); });
 
   global.I18N = { t, applyStatic, applyDir, set, wireToggles, get lang() { return lang; } };
 })(window);
