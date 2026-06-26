@@ -61,9 +61,7 @@ function api(path) {
         res.on("data", (c) => (data += c));
         res.on("end", () => {
           if (res.statusCode === 401 && useToken && TOKEN) {
-            log("Poll: GitHub token rejected (401) — retrying without auth for public repo API");
-            useToken = false;
-            api(path).then(resolve).catch(reject);
+            reject(new Error(`GitHub API 401: ${data.slice(0, 120)}`));
             return;
           }
           if (res.statusCode && res.statusCode >= 400) {
