@@ -21,7 +21,12 @@ const EMBEDS = {
 
 // Embed routing — loaded from channel-bindings.js (synced from channel-bindings.json).
 const BINDING_DOC = window.KZ_CHANNEL_BINDINGS || {
-  vipSlotProbe: { slots: { vip1: "beinmax2", vip2: "beinmax1" } },
+  vipSlotProbe: {
+    slots: {
+      vip1: "https://1.yalla3arab.com/albaplayer/bein-sports-hd-2/",
+      vip2: "https://1.yalla3arab.com/albaplayer/bein-sports-hd-1/",
+    },
+  },
   embedBinding: {
     "bein-max-1": "vip2",
     "bein-max-2": "vip1",
@@ -47,15 +52,56 @@ function embedKeyFor(channelId) {
   return EMBED_BINDING[channelId] || DEFAULT_EMBED;
 }
 
+function upstreamLabelFromUrl(url) {
+  if (!url) return null;
+  const match = String(url).match(/albaplayer\/([^/'"]+)/i);
+  return match ? match[1].toLowerCase() : null;
+}
+
+function upstreamMatchesChannel(upstreamUrl, channelId) {
+  if (!upstreamUrl || !channelId) return false;
+  const label = upstreamLabelFromUrl(upstreamUrl) || "";
+  const max = /^bein-max-(\d+)$/.exec(channelId);
+  if (max) {
+    const n = max[1];
+    return (
+      label === `beinmax${n}` ||
+      label === `bein-sports-hd-${n}` ||
+      label === `beinmax-${n}`
+    );
+  }
+  if (channelId === "bein-sports-1") {
+    return label === "bein-sports-hd-1" || label === "bein1" || label === "beinmax1";
+  }
+  if (channelId === "bein-sports-2") {
+    return label === "bein-sports-hd-2" || label === "bein2" || label === "beinmax2";
+  }
+  return false;
+}
+
+function playUrlForMatch(match, channelId, embedKey) {
+  const ch = channelId || (match && match.channelId);
+  if (match && match.upstreamEmbedUrl) return match.upstreamEmbedUrl;
+  const slots = VIP_SLOT_PROBE && VIP_SLOT_PROBE.slots;
+  if (slots && ch) {
+    for (const url of Object.values(slots)) {
+      if (upstreamMatchesChannel(url, ch)) return url;
+    }
+  }
+  if (slots && embedKey && typeof slots[embedKey] === "string" && /^https?:\/\//.test(slots[embedKey])) {
+    return slots[embedKey];
+  }
+  return null;
+}
+
 function embedKeyForMatch(match, channelId) {
   const ch = channelId || (match && match.channelId);
   if (!ch) return DEFAULT_EMBED;
   if (match && match.embedKey) return match.embedKey;
-  const slug = upstreamSlugForChannelId(ch);
   const slots = VIP_SLOT_PROBE && VIP_SLOT_PROBE.slots;
-  if (slug && slots) {
-    for (const [vip, upstream] of Object.entries(slots)) {
-      if (upstream === slug) return vip;
+  if (slots) {
+    for (const [vip, url] of Object.entries(slots)) {
+      if (upstreamMatchesChannel(url, ch)) return vip;
     }
   }
   return embedKeyFor(ch);
@@ -68,6 +114,10 @@ function embedFor(channelId) {
 
 function embedForMatch(match, channelId) {
   const key = embedKeyForMatch(match, channelId);
+  const direct = playUrlForMatch(match, channelId, key);
+  if (direct) {
+    return { url: direct, param: null, servers: 1, embedKey: key };
+  }
   return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];
 }
 

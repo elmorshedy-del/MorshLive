@@ -36,10 +36,52 @@ function fetchText(url, timeoutMs = 10000) {
   });
 }
 
-/** Parse the upstream beIN slug from a worldkoora vip wrapper page. */
+/** Parse the upstream player iframe URL from a worldkoora vip wrapper page. */
+function parseUpstreamEmbedUrl(html) {
+  const tags = String(html || "").match(/<iframe\b[^>]*>/gi) || [];
+  for (const tag of tags) {
+    const src = tag.match(/\bsrc=['"](https?:\/\/[^'"]+)['"]/i);
+    if (!src) continue;
+    const url = src[1];
+    if (/\/albaplayer\//i.test(url) && !/\.js(\?|$)/i.test(url)) return url;
+  }
+  return null;
+}
+
+/** @deprecated slug-only probe — kept for older snapshots */
 function parseUpstreamSlug(html) {
-  const match = String(html || "").match(/albaplayer\/(beinmax\d+|bein\d+)\//i);
+  const url = parseUpstreamEmbedUrl(html);
+  if (!url) return null;
+  const slug = url.match(/albaplayer\/([^/'"]+)/i);
+  return slug ? slug[1].toLowerCase() : null;
+}
+
+function upstreamLabelFromUrl(url) {
+  if (!url) return null;
+  const match = String(url).match(/albaplayer\/([^/'"]+)/i);
   return match ? match[1].toLowerCase() : null;
+}
+
+/** True when a probed upstream player URL carries the given registry channel. */
+function upstreamMatchesChannel(upstreamUrl, channelId) {
+  if (!upstreamUrl || !channelId) return false;
+  const label = upstreamLabelFromUrl(upstreamUrl) || "";
+  const max = /^bein-max-(\d+)$/.exec(channelId);
+  if (max) {
+    const n = max[1];
+    return (
+      label === `beinmax${n}` ||
+      label === `bein-sports-hd-${n}` ||
+      label === `beinmax-${n}`
+    );
+  }
+  if (channelId === "bein-sports-1") {
+    return label === "bein-sports-hd-1" || label === "bein1" || label === "beinmax1";
+  }
+  if (channelId === "bein-sports-2") {
+    return label === "bein-sports-hd-2" || label === "bein2" || label === "beinmax2";
+  }
+  return false;
 }
 
 /** Map a registry channel id to the upstream slug worldkoora carries inside vip slots. */
@@ -56,7 +98,7 @@ async function probeVipSlots() {
   for (const slot of VIP_SLOTS) {
     try {
       const html = await fetchText(EMBED_URLS[slot]);
-      slots[slot] = parseUpstreamSlug(html);
+      slots[slot] = parseUpstreamEmbedUrl(html);
     } catch (_) {
       slots[slot] = null;
     }
@@ -69,13 +111,12 @@ function embedKeyFor(channelId, embedBinding) {
   return map[channelId] || "vip1";
 }
 
-/** Resolve vip slot by matching the probed upstream slug for the match's channel. */
+/** Resolve vip slot by matching the probed upstream URL for the match's channel. */
 function embedKeyFromProbe(channelId, slotProbe, embedBinding) {
-  const slug = upstreamSlugForChannelId(channelId);
   const slots = slotProbe && slotProbe.slots;
-  if (slug && slots) {
+  if (slots && channelId) {
     for (const slot of VIP_SLOTS) {
-      if (slots[slot] === slug) return slot;
+      if (upstreamMatchesChannel(slots[slot], channelId)) return slot;
     }
   }
   return embedKeyFor(channelId, embedBinding);
@@ -89,17 +130,27 @@ function resolveMatchEmbedKey(match, slotProbe, embedBinding) {
 
 function embedSpecForMatch(match, slotProbe, embedBinding) {
   if (!match || !match.channelId) {
-    return { embedKey: "vip1", embedUrl: EMBED_URLS.vip1, embedUpstream: null };
+    return {
+      embedKey: "vip1",
+      embedUpstream: null,
+      playUrl: EMBED_URLS.vip1,
+      wrapperUrl: EMBED_URLS.vip1,
+      embedUrl: EMBED_URLS.vip1,
+    };
   }
   const embedKey = resolveMatchEmbedKey(match, slotProbe, embedBinding);
-  const embedUpstream =
+  const upstreamUrl =
     (slotProbe && slotProbe.slots && slotProbe.slots[embedKey]) ||
-    match.embedUpstream ||
-    upstreamSlugForChannelId(match.channelId);
+    match.upstreamEmbedUrl ||
+    null;
+  const wrapperUrl = EMBED_URLS[embedKey] || EMBED_URLS.vip1;
+  const playUrl = upstreamUrl || wrapperUrl;
   return {
     embedKey,
-    embedUpstream: embedUpstream || null,
-    embedUrl: EMBED_URLS[embedKey] || EMBED_URLS.vip1,
+    embedUpstream: upstreamLabelFromUrl(upstreamUrl) || match.embedUpstream || upstreamSlugForChannelId(match.channelId),
+    playUrl,
+    wrapperUrl,
+    embedUrl: playUrl,
   };
 }
 
@@ -111,6 +162,8 @@ function assignMatchEmbeds(matches, slotProbe, embedBinding) {
     const spec = embedSpecForMatch(m, slotProbe, map);
     m.embedKey = spec.embedKey;
     if (spec.embedUpstream) m.embedUpstream = spec.embedUpstream;
+    if (spec.playUrl) m.upstreamEmbedUrl = spec.playUrl;
+    if (spec.wrapperUrl) m.wrapperEmbedUrl = spec.wrapperUrl;
   }
 }
 
@@ -147,6 +200,8 @@ function buildLiveSnapshot(matches, bindingDoc) {
       commentator: m.commentator || null,
       embedKey,
       embedUpstream: spec.embedUpstream,
+      upstreamEmbedUrl: spec.playUrl,
+      wrapperEmbedUrl: spec.wrapperUrl,
       embedUrl: spec.embedUrl,
       kickoffUtc: m.kickoffUtc || null,
     };
@@ -203,7 +258,7 @@ async function probeAssignAndSync(matches, options = {}) {
   if (!doc.routing) doc.routing = {};
   doc.routing.mode = "probe-match";
   doc.routing.note =
-    "vip1/vip2 are generic wrappers; upstream beinmaxN is probed at fetch time and stored per match as embedKey.";
+    "Probe vip1/vip2 wrappers for upstream player URLs; playback skips worldkoora overlay ads.";
 
   assignMatchEmbeds(matches, slotProbe, doc.embedBinding);
   if (options.pinEndedEmbeds && options.previousPayload) {
@@ -224,7 +279,10 @@ module.exports = {
   VIP_SLOTS,
   loadBindings,
   saveBindings,
+  parseUpstreamEmbedUrl,
   parseUpstreamSlug,
+  upstreamLabelFromUrl,
+  upstreamMatchesChannel,
   upstreamSlugForChannelId,
   probeVipSlots,
   embedKeyFor,
