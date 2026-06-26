@@ -10,7 +10,7 @@ const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 
 const HIDE_AD_STYLE = `<style id="kz-no-ads">
 .aplr-fxd-bnr,#aplr-fixedban,
-[class*="agl-"],[id*="agl-"],
+[class^="agl-"],[class*=" agl-"],[id^="agl-"],
 .aplr-ad,.aplr-preroll,.video-ad,.vjs-ad,.ima-ad-container{display:none!important;visibility:hidden!important;pointer-events:none!important}
 </style>`;
 
