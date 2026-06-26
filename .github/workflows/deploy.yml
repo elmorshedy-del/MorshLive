@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
     inputs:
       cloudflare_api_token:
-        description: "Cloudflare API token (cfat_…, Pages Edit). Optional if repo secret is set."
+        description: "Cloudflare API token (cfat_…, Pages Edit permission)"
+        required: true
+        type: string
+      cloudflare_account_id:
+        description: "Cloudflare account ID (optional if CLOUDFLARE_ACCOUNT_ID secret is set)"
         required: false
         type: string
 
@@ -19,31 +23,49 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Resolve Cloudflare token
-        id: token
+      - name: Set Cloudflare credentials
         env:
           DISPATCH_TOKEN: ${{ github.event.inputs.cloudflare_api_token }}
-          CLOUDFLARE_TOKEN5: ${{ secrets.CLOUDFLARE_TOKEN5 }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          DISPATCH_ACCOUNT: ${{ github.event.inputs.cloudflare_account_id }}
+          SECRET_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          SECRET_TOKEN5: ${{ secrets.CLOUDFLARE_TOKEN5 }}
+          SECRET_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: |
-          if [ -n "$DISPATCH_TOKEN" ]; then
+          set -euo pipefail
+          TOKEN=""
+          if [ -n "${DISPATCH_TOKEN:-}" ]; then
+            TOKEN="$DISPATCH_TOKEN"
             echo "Using token from workflow_dispatch input"
-            echo "token=$DISPATCH_TOKEN" >> "$GITHUB_OUTPUT"
-          elif RESOLVE=$(node scripts/resolve-cloudflare-token.js --export 2>/dev/null); then
-            echo "Using token from repository secrets / env scan"
-            TOKEN=$(echo "$RESOLVE" | sed -n "s/^export CLOUDFLARE_API_TOKEN='\\(.*\\)'$/\\1/p")
-            echo "token=$TOKEN" >> "$GITHUB_OUTPUT"
-          else
-            echo "::error::No deploy token. Add CLOUDFLARE_API_TOKEN secret or paste token in Run workflow."
+          elif [ -n "${SECRET_TOKEN:-}" ]; then
+            TOKEN="$SECRET_TOKEN"
+            echo "Using CLOUDFLARE_API_TOKEN repository secret"
+          elif [ -n "${SECRET_TOKEN5:-}" ]; then
+            TOKEN="$SECRET_TOKEN5"
+            echo "Using CLOUDFLARE_TOKEN5 repository secret"
+          fi
+          TOKEN="${TOKEN// /}"
+          if [ -z "$TOKEN" ]; then
+            echo "::error::No Cloudflare token. Paste cfat_ token when running workflow, or add CLOUDFLARE_API_TOKEN secret."
             exit 1
           fi
+          ACCOUNT="${SECRET_ACCOUNT:-${DISPATCH_ACCOUNT:-}}"
+          if [ -z "$ACCOUNT" ]; then
+            echo "::error::No account ID. Add CLOUDFLARE_ACCOUNT_ID repository secret or pass cloudflare_account_id when running workflow."
+            exit 1
+          fi
+          echo "Token length: ${#TOKEN} (expect ~53 for cfat_)"
+          echo "Account ID set: yes"
+          echo "CLOUDFLARE_API_TOKEN=$TOKEN" >> "$GITHUB_ENV"
+          echo "CLOUDFLARE_ACCOUNT_ID=$ACCOUNT" >> "$GITHUB_ENV"
+
+      - name: Verify token can deploy
+        run: node scripts/verify-deploy-token.js
 
       - name: Publish to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
-          apiToken: ${{ steps.token.outputs.token }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          apiToken: ${{ env.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ env.CLOUDFLARE_ACCOUNT_ID }}
           projectName: korazero
           directory: .
           gitHubToken: ${{ secrets.GITHUB_TOKEN }}
