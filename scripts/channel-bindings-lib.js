@@ -22,15 +22,17 @@ function saveBindings(doc) {
   fs.writeFileSync(BINDINGS_JSON, JSON.stringify(doc, null, 2) + "\n");
 }
 
-function fetchText(url) {
+function fetchText(url, timeoutMs = 10000) {
   return new Promise((resolve, reject) => {
-    https
-      .get(url, { headers: { "User-Agent": "morsh-live/1.0" } }, (res) => {
-        let data = "";
-        res.on("data", (chunk) => (data += chunk));
-        res.on("end", () => resolve(data));
-      })
-      .on("error", reject);
+    const req = https.get(url, { headers: { "User-Agent": "morsh-live/1.0" } }, (res) => {
+      let data = "";
+      res.on("data", (chunk) => (data += chunk));
+      res.on("end", () => resolve(data));
+    });
+    req.on("error", reject);
+    req.setTimeout(timeoutMs, () => {
+      req.destroy(new Error(`timeout after ${timeoutMs}ms`));
+    });
   });
 }
 
@@ -42,7 +44,7 @@ function parseUpstreamSlug(html) {
 
 /** Map a registry channel id to the upstream slug worldkoora carries inside vip slots. */
 function upstreamSlugForChannelId(channelId) {
-  const max = /^bein-max-(\d)$/.exec(channelId || "");
+  const max = /^bein-max-(\d+)$/.exec(channelId || "");
   if (max) return `beinmax${max[1]}`;
   if (channelId === "bein-sports-2") return "bein2";
   if (channelId === "bein-sports-1") return "bein1";

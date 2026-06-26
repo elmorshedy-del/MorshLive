@@ -36,7 +36,7 @@ const VIP_SLOT_PROBE = BINDING_DOC.vipSlotProbe || null;
 const DEFAULT_EMBED = "vip1";
 
 function upstreamSlugForChannelId(channelId) {
-  const max = /^bein-max-(\d)$/.exec(channelId || "");
+  const max = /^bein-max-(\d+)$/.exec(channelId || "");
   if (max) return `beinmax${max[1]}`;
   if (channelId === "bein-sports-2") return "bein2";
   if (channelId === "bein-sports-1") return "bein1";

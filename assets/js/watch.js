@@ -8,11 +8,11 @@
   // Player 2 VIP uses the same worldkoora embed as Player 1 for this channel.
   // The `serv` param is cosmetic — each embed has one real server.
   function currentEmbed() {
-    return activeEmbed || channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
+    return activeEmbed || channel.embed || null;
   }
 
   function vipEmbed() {
-    return currentEmbed();
+    return currentEmbed() || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
   }
 
   const { CHANNELS } = window.SITE_DATA;
@@ -80,6 +80,7 @@
   /* ---------------------------------------------- Embed (iframe) mode */
   function embedUrl(serverIndex) {
     const embed = currentEmbed();
+    if (!embed) return "";
     const u = new URL(embed.url);
     if (embed.param != null) u.searchParams.set(embed.param, serverIndex);
     return u.toString();

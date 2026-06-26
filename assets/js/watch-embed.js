@@ -4,11 +4,11 @@
  * ==========================================================================*/
 (function () {
   function currentEmbed() {
-    return activeEmbed || channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
+    return activeEmbed || channel.embed || null;
   }
 
   function channelEmbed() {
-    return currentEmbed();
+    return currentEmbed() || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
   }
 
   const { CHANNELS } = window.SITE_DATA;
