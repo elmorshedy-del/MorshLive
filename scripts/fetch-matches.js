@@ -17,7 +17,7 @@ const {
   sortMatches,
   WORLD_CUP_RE,
 } = require("./matches-lib");
-const { attachCommentators } = require("./commentators-lib");
+const { attachCommentators, pairKey } = require("./commentators-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
@@ -121,6 +121,31 @@ async function fetchEspnLeague(slug, dateRange) {
     commentaryMatched = result.matched;
   } catch (err) {
     console.warn("commentators fetch failed:", err.message);
+  }
+
+  // Keep channel rows for fixtures that dropped off the daily commentators page.
+  let previousCommentary = [];
+  try {
+    previousCommentary = JSON.parse(fs.readFileSync(OUT, "utf8")).commentaryIndex || [];
+  } catch (_) {
+    /* first run */
+  }
+  const mergedKeys = new Set(commentaryIndex.map((c) => c.key));
+  for (const row of previousCommentary) {
+    if (!row || !row.key || mergedKeys.has(row.key)) continue;
+    commentaryIndex.push(row);
+    mergedKeys.add(row.key);
+  }
+  const commentaryByKey = new Map(commentaryIndex.map((c) => [c.key, c]));
+  for (const m of matches) {
+    const row = commentaryByKey.get(pairKey(m.home, m.away));
+    if (!row) continue;
+    if (row.commentators && row.commentators.length) {
+      m.commentators = row.commentators;
+      m.commentator = row.commentators[0].name;
+    }
+    if (row.channel) m.channel = row.channel;
+    if (row.channelId) m.channelId = row.channelId;
   }
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
