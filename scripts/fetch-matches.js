@@ -17,7 +17,12 @@ const {
   sortMatches,
   WORLD_CUP_RE,
 } = require("./matches-lib");
-const { attachCommentators, pairKey } = require("./commentators-lib");
+const {
+  attachCommentators,
+  mergeCommentaryIndex,
+  pairKey,
+  pinEndedChannels,
+} = require("./commentators-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
@@ -123,19 +128,20 @@ async function fetchEspnLeague(slug, dateRange) {
     console.warn("commentators fetch failed:", err.message);
   }
 
-  // Keep channel rows for fixtures that dropped off the daily commentators page.
-  let previousCommentary = [];
+  // Pin broadcast channels for ended fixtures, then merge commentary without
+  // letting a fresh commentators fetch overwrite them (e.g. MAX 2 on Turkey/USA).
+  let previousPayload = null;
   try {
-    previousCommentary = JSON.parse(fs.readFileSync(OUT, "utf8")).commentaryIndex || [];
+    previousPayload = JSON.parse(fs.readFileSync(OUT, "utf8"));
   } catch (_) {
     /* first run */
   }
-  const mergedKeys = new Set(commentaryIndex.map((c) => c.key));
-  for (const row of previousCommentary) {
-    if (!row || !row.key || mergedKeys.has(row.key)) continue;
-    commentaryIndex.push(row);
-    mergedKeys.add(row.key);
-  }
+  pinEndedChannels(matches, previousPayload);
+  commentaryIndex = mergeCommentaryIndex(
+    commentaryIndex,
+    (previousPayload && previousPayload.commentaryIndex) || [],
+    matches
+  );
   const commentaryByKey = new Map(commentaryIndex.map((c) => [c.key, c]));
   for (const m of matches) {
     const row = commentaryByKey.get(pairKey(m.home, m.away));
