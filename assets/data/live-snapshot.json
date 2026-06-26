@@ -1,13 +1,13 @@
 {
-  "updatedAt": "2026-06-26T20:35:38.076Z",
-  "bindingVersion": 4,
+  "updatedAt": "2026-06-26T20:46:46.094Z",
+  "bindingVersion": 5,
   "embedBinding": {
-    "bein-max-1": "vip1",
-    "bein-max-2": "vip2",
-    "bein-max-3": "vip1",
-    "bein-max-4": "vip2",
-    "bein-sports-1": "vip1",
-    "bein-sports-2": "vip2"
+    "bein-max-1": "vip2",
+    "bein-max-2": "vip1",
+    "bein-max-3": "vip2",
+    "bein-max-4": "vip1",
+    "bein-sports-1": "vip2",
+    "bein-sports-2": "vip1"
   },
   "liveCount": 2,
   "routes": [
@@ -20,8 +20,8 @@
       "channelId": "bein-max-2",
       "channel": "beIN MAX 2",
       "commentator": "أحمد البلوشي",
-      "embedKey": "vip2",
-      "embedUrl": "https://vip.worldkoora.com/albaplayer/vip2/",
+      "embedKey": "vip1",
+      "embedUrl": "https://vip.worldkoora.com/albaplayer/vip1/",
       "kickoffUtc": "2026-06-26T19:00:00"
     },
     {
@@ -33,8 +33,8 @@
       "channelId": "bein-max-1",
       "channel": "beIN MAX 1",
       "commentator": "خليل البلوشي",
-      "embedKey": "vip1",
-      "embedUrl": "https://vip.worldkoora.com/albaplayer/vip1/",
+      "embedKey": "vip2",
+      "embedUrl": "https://vip.worldkoora.com/albaplayer/vip2/",
       "kickoffUtc": "2026-06-26T19:00Z"
     }
   ],

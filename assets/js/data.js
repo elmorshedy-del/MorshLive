@@ -22,12 +22,12 @@ const EMBEDS = {
 // Embed routing — loaded from channel-bindings.js (synced from channel-bindings.json).
 const BINDING_DOC = window.KZ_CHANNEL_BINDINGS || {
   embedBinding: {
-    "bein-max-1": "vip1",
-    "bein-max-2": "vip2",
-    "bein-max-3": "vip1",
-    "bein-max-4": "vip2",
-    "bein-sports-1": "vip1",
-    "bein-sports-2": "vip2",
+    "bein-max-1": "vip2",
+    "bein-max-2": "vip1",
+    "bein-max-3": "vip2",
+    "bein-max-4": "vip1",
+    "bein-sports-1": "vip2",
+    "bein-sports-2": "vip1",
   },
 };
 const EMBED_BINDING = BINDING_DOC.embedBinding;
