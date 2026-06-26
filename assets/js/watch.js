@@ -26,6 +26,7 @@
   let activePlayer = params.get("player") === "2" ? 2 : 1;
 
   const shell = document.getElementById("player-shell");
+  const playerMedia = document.getElementById("player-media");
   let video = document.getElementById("video");
   let overlay = document.getElementById("overlay");
   const vipFrame = document.getElementById("vip-frame");
@@ -84,6 +85,42 @@
     video.play().catch(() => {/* user gesture may still be required */});
   }
 
+  function playerMediaEl() {
+    return document.getElementById("player-media") || shell;
+  }
+
+  function toggleFullscreen(target) {
+    const el = target || shell;
+    if (!el) return;
+    const doc = document;
+    const active = doc.fullscreenElement || doc.webkitFullscreenElement;
+    if (active === el) {
+      (doc.exitFullscreen || doc.webkitExitFullscreen || doc.msExitFullscreen)?.call(doc);
+      return;
+    }
+    (el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen)?.call(el);
+  }
+
+  function initFullscreenButtons() {
+    document.querySelectorAll(".player-fs-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleFullscreen(btn.closest(".player-shell"));
+      });
+    });
+    document.addEventListener("fullscreenchange", syncFullscreenButtons);
+    document.addEventListener("webkitfullscreenchange", syncFullscreenButtons);
+  }
+
+  function syncFullscreenButtons() {
+    const active = document.fullscreenElement || document.webkitFullscreenElement;
+    document.querySelectorAll(".player-fs-btn").forEach((btn) => {
+      const on = !!(active && active === btn.closest(".player-shell"));
+      btn.classList.toggle("is-active", on);
+      btn.setAttribute("aria-pressed", on ? "true" : "false");
+    });
+  }
+
   /* ---------------------------------------------- Embed (iframe) mode */
   function embedUrl(serverIndex) {
     const embed = currentEmbed();
@@ -96,15 +133,16 @@
   function loadEmbed(serverIndex, { force } = {}) {
     const next = embedUrl(serverIndex);
     if (!next) return;
-    if (!savedShellMarkup) savedShellMarkup = shell.innerHTML;
-    const frame = shell.querySelector(".embed-frame");
+    const media = playerMediaEl();
+    if (!savedShellMarkup) savedShellMarkup = media.innerHTML;
+    const frame = media.querySelector(".embed-frame");
     if (!force && embedLoadedUrl === next && frame) return;
     embedLoadedUrl = next;
     if (frame) {
       frame.src = next;
       return;
     }
-    shell.innerHTML =
+    media.innerHTML =
       `<iframe class="embed-frame" src="${next}" ` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
       `referrerpolicy="no-referrer" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
@@ -146,7 +184,7 @@
       if (isEmbed) {
         loadEmbed(0);
       } else if (savedShellMarkup) {
-        shell.innerHTML = savedShellMarkup;
+        playerMediaEl().innerHTML = savedShellMarkup;
         video = document.getElementById("video");
         overlay = document.getElementById("overlay");
         if (video && channel.stream) loadStream(channel.stream);
@@ -389,7 +427,8 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();
-    if (shell) savedShellMarkup = shell.innerHTML;
+    initFullscreenButtons();
+    if (playerMedia) savedShellMarkup = playerMedia.innerHTML;
     resolveSelection();
     fillInfo();
     renderServers();
