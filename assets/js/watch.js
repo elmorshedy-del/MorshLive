@@ -11,8 +11,6 @@
     return activeEmbed || channel.embed || null;
   }
 
-  const EMBED_SANDBOX = "allow-scripts allow-same-origin allow-forms allow-presentation";
-
   function vipEmbed() {
     return currentEmbed() || { url: "/wk/albaplayer/vip1/", param: "serv", servers: 1 };
   }
@@ -108,7 +106,6 @@
     }
     shell.innerHTML =
       `<iframe class="embed-frame" src="${next}" ` +
-      `sandbox="${EMBED_SANDBOX}" ` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
       `referrerpolicy="no-referrer" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
   }

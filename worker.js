@@ -16,8 +16,9 @@ function stripAdScripts(html) {
 
 function cleanWorldkooraHtml(html) {
   let out = stripAdScripts(html);
-  if (out.includes("</head>")) {
-    out = out.replace("</head>", HIDE_POPUP_STYLE + "</head>");
+  const headClose = /<\/head>/i;
+  if (headClose.test(out)) {
+    out = out.replace(headClose, HIDE_POPUP_STYLE + "</head>");
   } else {
     out = HIDE_POPUP_STYLE + out;
   }
@@ -29,28 +30,32 @@ async function proxyVip(request, slot) {
   const upstream = new URL(`${WORLDKOORA}/albaplayer/${slot}/`);
   upstream.search = incoming.search;
 
-  const res = await fetch(upstream.toString(), {
-    method: "GET",
-    headers: {
-      "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
-      Accept: "text/html,application/xhtml+xml",
-    },
-    redirect: "follow",
-  });
+  try {
+    const res = await fetch(upstream.toString(), {
+      method: "GET",
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "text/html,application/xhtml+xml",
+      },
+      redirect: "follow",
+    });
 
-  if (!res.ok) {
-    return new Response(`Upstream error ${res.status}`, { status: res.status });
+    if (!res.ok) {
+      return new Response(`Upstream error ${res.status}`, { status: res.status });
+    }
+
+    const html = await res.text();
+    return new Response(cleanWorldkooraHtml(html), {
+      status: 200,
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "public, max-age=60",
+        "X-KZ-Proxy": "worldkoora-vip",
+      },
+    });
+  } catch (err) {
+    return new Response("Upstream unavailable", { status: 502 });
   }
-
-  const html = await res.text();
-  return new Response(cleanWorldkooraHtml(html), {
-    status: 200,
-    headers: {
-      "Content-Type": "text/html; charset=utf-8",
-      "Cache-Control": "public, max-age=60",
-      "X-KZ-Proxy": "worldkoora-vip",
-    },
-  });
 }
 
 export default {
