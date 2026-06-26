@@ -35,6 +35,8 @@
       "seo.ogTitle": "بث مباشر مباريات اليوم وكأس العالم 2026 بدون إعلانات | كورة زيرو",
       "seo.ogDescription": "شاهد بث مباشر مباريات اليوم وكأس العالم 2026 أون لاين بجودة HD على كورة زيرو. بديل نظيف ليلا شوت وكورة لايف — بدون إعلانات ولا نوافذ منبثقة ولا تقطيع.",
       "seo.twitterDescription": "كورة اون لاين — بث مباشر مباريات اليوم وكأس العالم 2026 بجودة HD بدون إعلانات ولا نوافذ منبثقة.",
+      "seo.keywords": "كورة اون لاين, بث مباشر, مباريات اليوم, مباريات اليوم بث مباشر, كأس العالم 2026, مونديال 2026, يلا شوت, كورة لايف, بين سبورت, بي إن سبورت ماكس, معلق المباراة, بث مباشر بدون تقطيع, بدون إعلانات, كورة زيرو",
+      "seo.slogan": "بث مباشر بدون إعلانات ولا نوافذ منبثقة",
       "seo.keywordsAria": "مواضيع البث والمباريات",
       "seo.kw1": "كورة اون لاين",
       "seo.kw2": "مونديال 2026",
@@ -171,13 +173,15 @@
       "seo.ogTitle": "KoraZero — Live football streams World Cup 2026 HD, no ads",
       "seo.ogDescription": "Watch today's matches and World Cup 2026 live in HD on KoraZero — no ads, no pop-ups, no buffering.",
       "seo.twitterDescription": "KoraZero — live football streams, World Cup 2026 HD, ad-free.",
+      "seo.keywords": "football online, live stream, today's matches, World Cup 2026, beIN Sports MAX, HD live stream, no ads, no pop-ups, KoraZero, Yalla Shoot alternative, Koora Live alternative, Arabic commentary",
+      "seo.slogan": "Live football streams with no ads and no pop-ups",
       "seo.keywordsAria": "Streaming topics",
       "seo.kw1": "Football online",
       "seo.kw2": "World Cup 2026",
       "seo.kw3": "beIN Sports",
       "seo.kw4": "HD live stream",
       "hero.title": "Live streams — today's matches & <span>World Cup 2026</span> online in HD, ad-free",
-      "hero.lede": "KoraZero is your home for today's matches and FIFA World Cup 2026™ live in HD — no ads, no pop-ups, no buffering. Follow every game with Arabic commentary, beIN Sports MAX channels, and kick-off times in Saudi and US Eastern time.",
+      "hero.lede": "KoraZero is your go-to site for today's matches and FIFA World Cup 2026™ live in HD. A clean, safe alternative to Yalla Shoot and Koora Live — no ads, no pop-ups, no buffering. Follow beIN Sports MAX and World Cup games with Arabic commentary, plus kick-off times in Saudi and US Eastern time.",
       "hero.usp1": "No ads",
       "hero.usp2": "No pop-ups",
       "hero.usp3": "No buffering",
@@ -199,8 +203,8 @@
       "faq.a3": "Each match time is shown in both Saudi time and US Eastern time (ET), so you can catch the match at the right time wherever you are.",
       "faq.q4": "How do I know the working server and the commentator for each match?",
       "faq.a4": "KoraZero checks the servers automatically and highlights the working one in green, and shows the commentator and broadcast channel for every match so you don't have to search.",
-      "faq.q6": "Is KoraZero an alternative to ad-heavy stream sites?",
-      "faq.a6": "Yes — KoraZero offers today's matches and World Cup 2026 live in a clean interface with no ads, no pop-ups, no buffering, plus Arabic commentary and the broadcast channel for every match.",
+      "faq.q6": "Is KoraZero an alternative to Yalla Shoot and Koora Live?",
+      "faq.a6": "Yes — KoraZero (football online) offers today's matches and World Cup 2026 live in a clean interface with no ads, no pop-ups, no buffering, plus Arabic commentary and the broadcast channel for every match.",
       "footer.about": "Your destination to watch today's matches and the World Cup 2026 live in high quality — no ads, no pop-ups, no buffering. Kick-off times in Saudi and US Eastern time, with the broadcast channel and commentator for every match on all devices.",
       "footer.disclaimer": "Streams come from third-party sources owned by their respective holders. Please respect the broadcasting rights that apply in your country.",
       "footer.quickLinks": "Quick links",
@@ -313,10 +317,52 @@
       if (el && content) el.setAttribute("content", content);
     };
     setMeta('meta[name="description"]', t("seo.description"));
+    setMeta('meta[name="keywords"]', t("seo.keywords"));
     setMeta('meta[property="og:title"]', t("seo.ogTitle"));
     setMeta('meta[property="og:description"]', t("seo.ogDescription"));
+    setMeta('meta[property="og:locale"]', lang === "ar" ? "ar_AR" : "en_US");
     setMeta('meta[name="twitter:title"]', t("seo.ogTitle"));
     setMeta('meta[name="twitter:description"]', t("seo.twitterDescription"));
+    applySeoSchema();
+  }
+
+  function applySeoSchema() {
+    const el = document.getElementById("seo-schema");
+    if (!el) return;
+    const faqKeys = ["faq.q1", "faq.a1", "faq.q2", "faq.a2", "faq.q3", "faq.a3", "faq.q4", "faq.a4", "faq.q6", "faq.a6"];
+    const faqPairs = [];
+    for (let i = 0; i < faqKeys.length; i += 2) {
+      faqPairs.push({ q: t(faqKeys[i]), a: t(faqKeys[i + 1]) });
+    }
+    const schema = {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "name": "KoraZero",
+          "alternateName": lang === "ar"
+            ? ["كورة زيرو", "كورة اون لاين", "KoraZero"]
+            : ["KoraZero", "football online", "كورة زيرو"],
+          "url": "https://korazero.com/",
+          "inLanguage": lang,
+        },
+        {
+          "@type": "Organization",
+          "name": "KoraZero",
+          "url": "https://korazero.com/",
+          "slogan": t("seo.slogan"),
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": faqPairs.map(({ q, a }) => ({
+            "@type": "Question",
+            "name": q,
+            "acceptedAnswer": { "@type": "Answer", "text": a },
+          })),
+        },
+      ],
+    };
+    el.textContent = JSON.stringify(schema);
   }
 
   function applyStatic(rootEl) {
@@ -352,7 +398,8 @@
   }
 
   applyDir(); // before paint — avoids a flash of the wrong direction
-  document.addEventListener("DOMContentLoaded", () => { applySeoMeta(); applyStatic(); wireToggles(); });
+  applySeoMeta(); // meta + JSON-LD in <head> are available above this script
+  document.addEventListener("DOMContentLoaded", () => { applyStatic(); wireToggles(); });
 
   global.I18N = { t, applyStatic, applyDir, set, wireToggles, get lang() { return lang; } };
 })(window);
