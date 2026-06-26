@@ -124,8 +124,9 @@
     panel.classList.add("tv-focus-list");
     panel.querySelectorAll(".side-match").forEach((el) => {
       el.classList.add("tv-row");
-      if (!/[?&]tv=1/.test(el.href)) {
-        el.href += (el.href.includes("?") ? "&" : "?") + "tv=1";
+      const href = el.getAttribute("href");
+      if (href && !/[?&]tv=1/.test(href)) {
+        el.setAttribute("href", href + (href.includes("?") ? "&" : "?") + "tv=1");
       }
     });
     let hint = document.getElementById("tv-lb-watch-hint");
@@ -160,13 +161,17 @@
       else render();
       startRefresh();
       if (!isWatchPage()) focusFirstRow();
+    } else {
+      stopRefresh();
     }
     if (window.KZTv && window.KZTv.syncTvToggles) window.KZTv.syncTvToggles();
   }
 
   function focusFirstRow() {
-    const first = document.querySelector("#tv-leanback .tv-row[href], #tv-leanback .tv-lb-tab");
-    if (first && window.KZTv) {
+    const first = document.querySelector(
+      "#tv-lb-now .tv-row[href], #tv-lb-matches .tv-row[href]"
+    );
+    if (first) {
       setTimeout(() => {
         try { first.focus({ preventScroll: false }); } catch (e) { first.focus(); }
       }, 250);
@@ -204,6 +209,12 @@
     }, 90 * 1000);
   }
 
+  function stopRefresh() {
+    if (!refreshTimer) return;
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
+
   function observeTvMode() {
     const obs = new MutationObserver(() => syncLeanback());
     obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
@@ -223,11 +234,7 @@
     observeTvMode();
     observeSidebar();
     syncLeanback();
-    if (isTvMode()) {
-      loadMatches();
-      startRefresh();
-    }
   });
 
-  window.KZTvLeanback = { refresh: render, sync: syncLeanback, loadMatches };
+  window.KZTvLeanback = { refresh: render, sync: syncLeanback, loadMatches, stopRefresh };
 })();
