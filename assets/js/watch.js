@@ -34,6 +34,13 @@
   let savedShellMarkup = null;
   let vipLoaded = false;
   let vipLoadedUrl = "";
+  let embedLoadedUrl = "";
+
+  function currentEmbedKey() {
+    return window.SITE_DATA && window.SITE_DATA.embedKeyForMatch
+      ? window.SITE_DATA.embedKeyForMatch(match, channel.id)
+      : "";
+  }
 
   /* HLS tuned for stable live playback on mobile (buffer over ultra-low latency). */
   function createHls() {
@@ -86,10 +93,19 @@
     return u.toString();
   }
 
-  function loadEmbed(serverIndex) {
+  function loadEmbed(serverIndex, { force } = {}) {
+    const next = embedUrl(serverIndex);
+    if (!next) return;
+    if (!force && embedLoadedUrl === next) return;
+    embedLoadedUrl = next;
     if (!savedShellMarkup) savedShellMarkup = shell.innerHTML;
+    const frame = shell.querySelector(".embed-frame");
+    if (frame) {
+      frame.src = next;
+      return;
+    }
     shell.innerHTML =
-      `<iframe class="embed-frame" src="${embedUrl(serverIndex)}" ` +
+      `<iframe class="embed-frame" src="${next}" ` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
       `referrerpolicy="no-referrer" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
   }
@@ -354,21 +370,20 @@
 
   async function refreshMatches({ force } = {}) {
     const previousChannelId = channel.id;
-    const previousEmbedUrl = activeEmbed && activeEmbed.url;
+    const previousEmbedKey = currentEmbedKey();
     const meta = await window.getMatches({ force: !!force });
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
     renderSidebar();
-    const embedChanged = (activeEmbed && activeEmbed.url) !== previousEmbedUrl;
-    if (channel.id !== previousChannelId || embedChanged) {
-      renderServers();
-      renderVipServers();
-      if (activePlayer === 2) loadVipEmbed(Number(params.get("serv") || 0));
-      if (activePlayer === 1) {
-        if (isEmbed) loadEmbed(0);
-        else loadStream(channel.stream);
-      }
+    const routingChanged = channel.id !== previousChannelId || currentEmbedKey() !== previousEmbedKey;
+    if (!routingChanged) return;
+    renderServers();
+    renderVipServers();
+    if (activePlayer === 2) loadVipEmbed(Number(params.get("serv") || 0));
+    if (activePlayer === 1) {
+      if (isEmbed) loadEmbed(0);
+      else loadStream(channel.stream);
     }
   }
 
@@ -392,7 +407,7 @@
     }
     initPlayerSwitch();
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
-    setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
-    setInterval(recheckVisibleServers, 120 * 1000);
+    setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 120 * 1000);
+    setInterval(recheckVisibleServers, 300 * 1000);
   });
 })();

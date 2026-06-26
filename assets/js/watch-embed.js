@@ -31,6 +31,12 @@
 
   let embedLoadedUrl = "";
 
+  function currentEmbedKey() {
+    return window.SITE_DATA && window.SITE_DATA.embedKeyForMatch
+      ? window.SITE_DATA.embedKeyForMatch(match, channel.id)
+      : "";
+  }
+
   function loadEmbed(serverIndex) {
     if (!frame) return;
     const next = embedUrl(serverIndex);
@@ -153,17 +159,16 @@
 
   async function refreshMatches({ force } = {}) {
     const previousChannelId = channel.id;
-    const previousEmbedUrl = activeEmbed && activeEmbed.url;
+    const previousEmbedKey = currentEmbedKey();
     const meta = await window.getMatches({ force: !!force });
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
     renderSidebar();
-    const embedChanged = (activeEmbed && activeEmbed.url) !== previousEmbedUrl;
-    if (channel.id !== previousChannelId || embedChanged) {
-      renderServers();
-      loadEmbed(Number(params.get("serv") || 0));
-    }
+    const routingChanged = channel.id !== previousChannelId || currentEmbedKey() !== previousEmbedKey;
+    if (!routingChanged) return;
+    renderServers();
+    loadEmbed(Number(params.get("serv") || 0));
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -174,10 +179,10 @@
     renderSidebar();
     loadEmbed(Number(params.get("serv") || 0));
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
-    setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
+    setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 120 * 1000);
     setInterval(() => {
       const row = document.getElementById("servers");
       if (row && window.StreamCheck) window.StreamCheck.autoHighlight(row, { autoSelect: false }).catch(() => {});
-    }, 120 * 1000);
+    }, 300 * 1000);
   });
 })();
