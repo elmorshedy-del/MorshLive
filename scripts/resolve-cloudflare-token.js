@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Find a Cloudflare API token that can deploy to Pages.
+ * Find a Cloudflare API token that can deploy the morshlive Worker.
  * Loads .env (gitignored) then checks env vars.
  * Prints export lines for bash: CLOUDFLARE_API_TOKEN and CLOUDFLARE_ACCOUNT_ID
  */
@@ -69,7 +69,7 @@ function probe(token) {
     const req = https.request(
       {
         hostname: "api.cloudflare.com",
-        path: `/client/v4/accounts/${ACCOUNT_ID}/pages/projects/${PROJECT}/upload-token`,
+        path: `/client/v4/accounts/${ACCOUNT_ID}/workers/scripts/morshlive`,
         method: "GET",
         headers: { Authorization: `Bearer ${token}` },
       },
@@ -79,7 +79,7 @@ function probe(token) {
         res.on("end", () => {
           try {
             const json = JSON.parse(body);
-            resolve({ ok: res.statusCode === 200 && json.success, status: res.statusCode, errors: json.errors });
+            resolve({ ok: (res.statusCode === 200 || res.statusCode === 404) && json.success !== false, status: res.statusCode, errors: json.errors });
           } catch {
             resolve({ ok: false, status: res.statusCode, errors: [] });
           }
@@ -125,6 +125,6 @@ function probe(token) {
     }
   }
 
-  console.error("No token with Pages deploy permission found.");
+  console.error("No token with Workers deploy permission found.");
   process.exit(1);
 })();
