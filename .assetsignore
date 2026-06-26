@@ -1,6 +1,5 @@
 .git/**
 .github/**
-vendor/**
 scripts/**
 docs/**
 .env
