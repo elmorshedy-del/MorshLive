@@ -20,13 +20,16 @@ function embedKeyFor(channelId, embedBinding) {
   return map[channelId] || "vip1";
 }
 
-function buildLiveSnapshot(matches, bindingDoc) {
+function buildLiveSnapshot(matches, bindingDoc, overrides) {
   const doc = bindingDoc || loadBindings();
   const embedBinding = doc.embedBinding;
+  const over = overrides || { embedBinding: {}, matchOverrides: {} };
+  const merged = { ...embedBinding, ...(over.embedBinding || {}) };
+  const matchOverrides = over.matchOverrides || {};
   const live = (matches || []).filter((m) => m.status === "live");
 
   const routes = live.map((m) => {
-    const embedKey = embedKeyFor(m.channelId, embedBinding);
+    const embedKey = matchOverrides[m.id] || m.embedKey || embedKeyFor(m.channelId, merged);
     return {
       id: m.id,
       home: m.home,

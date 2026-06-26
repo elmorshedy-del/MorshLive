@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Routing Admin | KoraZero</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20260630a" />
+  <link rel="stylesheet" href="assets/css/admin.css?v=20260630a" />
+</head>
+<body class="admin-body">
+  <div id="gate" class="admin-gate">
+    <div class="admin-gate__card">
+      <h1>Routing Admin</h1>
+      <p>View all vip1/vip2 feeds, channel bindings, and live match routes. Change routing manually and push live.</p>
+      <form id="gate-form">
+        <div class="admin-field">
+          <label for="token-input">Admin token</label>
+          <input id="token-input" type="password" autocomplete="current-password" placeholder="Bearer token (ADMIN_TOKEN secret)" />
+        </div>
+        <div class="admin-actions">
+          <button class="btn btn--primary" type="submit">Enter</button>
+          <button class="btn btn--ghost" type="button" id="btn-skip-gate">View without token</button>
+        </div>
+      </form>
+      <p class="muted" style="margin-top:1rem;font-size:.85rem">Token required to save live overrides to Cloudflare KV. View-only works without it.</p>
+    </div>
+  </div>
+
+  <div id="app" class="container" hidden>
+    <header class="admin-header">
+      <h1>Routing Dashboard</h1>
+      <div class="admin-header__meta">
+        Bindings <span id="binding-version">—</span> ·
+        Server <span id="server-source">—</span> ·
+        Updated <span id="server-updated">—</span> ·
+        Matches <span id="match-updated">—</span>
+      </div>
+      <button class="btn btn--ghost" type="button" id="btn-logout">Logout</button>
+    </header>
+
+    <div id="status" class="admin-status">Loading…</div>
+
+    <div class="admin-toolbar">
+      <button class="btn btn--primary" type="button" id="btn-save" disabled>Save live overrides</button>
+      <button class="btn" type="button" id="btn-reset-draft" disabled>Reset draft</button>
+      <button class="btn" type="button" id="btn-export">Export JSON</button>
+      <button class="btn" type="button" id="btn-refresh">Refresh</button>
+      <a class="btn" href="index.html">← Site</a>
+    </div>
+
+    <div id="conflicts" class="admin-alert" hidden></div>
+
+    <section class="admin-section">
+      <h2>VIP display slots</h2>
+      <p>What each worldkoora feed (vip1 / vip2) is carrying right now based on your bindings and overrides.</p>
+      <div id="vip-grid"></div>
+    </section>
+
+    <section class="admin-section">
+      <h2>Channel → VIP bindings</h2>
+      <p>Default routing per beIN channel. Changes here update the draft until you save live overrides.</p>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Channel</th>
+              <th>ID</th>
+              <th>Git default</th>
+              <th>Route to</th>
+              <th>Preview</th>
+            </tr>
+          </thead>
+          <tbody id="channel-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <h2>Match routing</h2>
+      <p>Per-match overrides win over channel defaults. Use when two live games collide on the same vip slot.</p>
+      <div class="admin-table-wrap">
+        <table class="admin-table">
+          <thead>
+            <tr>
+              <th>Status</th>
+              <th>Match</th>
+              <th>Channel</th>
+              <th>Channel route</th>
+              <th>Override</th>
+              <th>Effective</th>
+              <th>Watch</th>
+            </tr>
+          </thead>
+          <tbody id="match-rows"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="admin-section">
+      <h2>Setup (one-time)</h2>
+      <p class="muted">To push routing live for all visitors:</p>
+      <ol class="muted" style="padding-inline-start:1.2rem;font-size:.9rem;line-height:1.7">
+        <li><code>npx wrangler kv namespace create ROUTING_KV</code> — add id to <code>wrangler.toml</code></li>
+        <li><code>npx wrangler secret put ADMIN_TOKEN</code> — use this as your login token</li>
+        <li><code>npx wrangler deploy</code></li>
+      </ol>
+    </section>
+  </div>
+
+  <script src="assets/js/routing-overrides.js?v=20260630a"></script>
+  <script src="assets/js/matches-api.js?v=20260630a"></script>
+  <script src="assets/js/channel-bindings.js?v=20260630a"></script>
+  <script src="assets/js/data.js?v=20260630a"></script>
+  <script src="assets/js/admin.js?v=20260630a"></script>
+</body>
+</html>

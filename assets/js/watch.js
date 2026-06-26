@@ -19,7 +19,9 @@
       : 0;
 
   function vipEmbed() {
-    const key = (match && match.embedKey) || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id));
+    const key = (window.SITE_DATA && window.SITE_DATA.embedKeyForMatch)
+      ? window.SITE_DATA.embedKeyForMatch(match || { channelId: channel.id })
+      : (match && match.embedKey) || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id));
     const fromKey = window.SITE_DATA && window.SITE_DATA.embedForKey
       ? window.SITE_DATA.embedForKey(key)
       : null;
@@ -376,6 +378,7 @@
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();
     if (shell) savedShellMarkup = shell.innerHTML;
+    if (window.loadRoutingOverrides) await window.loadRoutingOverrides();
     resolveSelection();
     fillInfo();
     renderServers();
