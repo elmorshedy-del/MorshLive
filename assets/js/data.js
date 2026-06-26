@@ -207,12 +207,24 @@ function applyCommentary(matches, idx) {
     const entry = idx[commentaryKey(m.home, m.away)];
     if (!entry) return m;
     const out = { ...m };
+    const ended = m.status === "ended";
+
     if (entry.commentators && entry.commentators.length) {
       out.commentators = entry.commentators;
       out.commentator = out.commentator || entry.commentators[0].name;
     }
-    if (entry.channel) out.channel = entry.channel;
-    if (entry.channelId) out.channelId = entry.channelId;
+
+    if (!ended) {
+      if (entry.channel) out.channel = entry.channel;
+      if (entry.channelId) out.channelId = entry.channelId;
+      return out;
+    }
+
+    // Ended fixtures keep their pinned broadcast channel (set in today.json).
+    if (entry.locked) {
+      if (entry.channel) out.channel = entry.channel;
+      if (entry.channelId) out.channelId = entry.channelId;
+    }
     return out;
   });
 }

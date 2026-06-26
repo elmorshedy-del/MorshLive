@@ -252,6 +252,93 @@ function attachCommentators(matches, html) {
   return { matched, commentaryIndex };
 }
 
+function channelFieldsFrom(row) {
+  if (!row) return {};
+  const out = {};
+  if (row.channel) out.channel = row.channel;
+  if (row.channelId) out.channelId = row.channelId;
+  if (row.commentators && row.commentators.length) out.commentators = row.commentators;
+  return out;
+}
+
+function hasRealChannel(row) {
+  return !!(row && row.channelId && row.channelId !== "bein-sports-1");
+}
+
+/** Keep the broadcast channel that was assigned while the match was live. */
+function pinEndedChannels(matches, previousPayload) {
+  if (!previousPayload) return;
+  const prevMatches = previousPayload.matches || [];
+  const prevIndex = new Map((previousPayload.commentaryIndex || []).map((c) => [c.key, c]));
+  const prevByKey = new Map(prevMatches.map((m) => [pairKey(m.home, m.away), m]));
+
+  for (const m of matches) {
+    if (m.status !== "ended") continue;
+    const key = pairKey(m.home, m.away);
+    const prevM = prevByKey.get(key);
+    const prevC = prevIndex.get(key);
+    const pin = hasRealChannel(prevM) ? prevM : hasRealChannel(prevC) ? prevC : null;
+    if (!pin) continue;
+    Object.assign(m, channelFieldsFrom(pin));
+    if (pin.commentators && pin.commentators.length) {
+      m.commentator = pin.commentators[0].name;
+    }
+  }
+}
+
+/** Merge fresh commentators with cache; never replace channel mapping for ended fixtures. */
+function mergeCommentaryIndex(fresh, previous, matches) {
+  const endedKeys = new Set(
+    matches.filter((m) => m.status === "ended").map((m) => pairKey(m.home, m.away))
+  );
+  const prevByKey = new Map((previous || []).map((c) => [c.key, c]));
+  const out = [];
+  const seen = new Set();
+
+  for (const row of fresh || []) {
+    if (!row || !row.key) continue;
+    if (endedKeys.has(row.key)) {
+      const prev = prevByKey.get(row.key);
+      if (hasRealChannel(prev)) {
+        out.push({ ...row, ...channelFieldsFrom(prev), locked: true });
+        seen.add(row.key);
+        continue;
+      }
+      if (hasRealChannel(row)) {
+        out.push({ ...row, locked: true });
+        seen.add(row.key);
+        continue;
+      }
+    }
+    out.push(row.locked ? row : { ...row, locked: false });
+    seen.add(row.key);
+  }
+
+  for (const row of previous || []) {
+    if (!row || !row.key || seen.has(row.key)) continue;
+    out.push({ ...row, locked: row.locked || endedKeys.has(row.key) });
+    seen.add(row.key);
+  }
+
+  for (const m of matches) {
+    if (m.status !== "ended" || !hasRealChannel(m)) continue;
+    const key = pairKey(m.home, m.away);
+    if (seen.has(key)) continue;
+    out.push({
+      key,
+      home: m.home,
+      away: m.away,
+      commentators: m.commentators || [],
+      channel: m.channel,
+      channelId: m.channelId,
+      locked: true,
+    });
+    seen.add(key);
+  }
+
+  return out;
+}
+
 module.exports = {
   normalizeArabic,
   normalizeEnglish,
@@ -261,4 +348,6 @@ module.exports = {
   parseCommentators,
   buildIndex,
   attachCommentators,
+  pinEndedChannels,
+  mergeCommentaryIndex,
 };
