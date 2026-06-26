@@ -14,10 +14,30 @@
 // query param is cosmetic (all values return the same stream), so each embed
 // has exactly one real server.
 // ---------------------------------------------------------------------------
+// Worldkoora uses serv=1 for "البث 1" (serv=2 is often empty). servStart aligns our
+// server buttons (0-based) with their 1-based query param.
 const EMBEDS = {
-  vip1: { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 },
-  vip2: { url: "https://vip.worldkoora.com/albaplayer/vip2/", param: "serv", servers: 1 },
+  vip1: { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 },
+  vip2: { url: "https://vip.worldkoora.com/albaplayer/vip2/", param: "serv", servStart: 1, servers: 1 },
 };
+
+function embedUrlFor(embed, serverIndex) {
+  if (!embed || !embed.url) return "";
+  const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
+  const u = new URL(embed.url, base);
+  if (embed.param != null) {
+    const start = embed.servStart != null ? embed.servStart : 0;
+    u.searchParams.set(embed.param, start + serverIndex);
+  }
+  return u.toString();
+}
+
+function servIndexFromParam(embed, raw) {
+  const start = embed && embed.servStart != null ? embed.servStart : 0;
+  const serv = Number(raw);
+  if (raw == null || raw === "" || Number.isNaN(serv)) return 0;
+  return Math.max(0, serv - start);
+}
 
 // Embed routing — loaded from channel-bindings.js (synced from channel-bindings.json).
 const BINDING_DOC = window.KZ_CHANNEL_BINDINGS || {
@@ -86,7 +106,7 @@ function resolveWatchSelection(matches, channels, searchParams) {
 }
 
 // Expose for non-module scripts.
-window.SITE_DATA = { CHANNELS, MATCHES, embedKeyFor, EMBED_BINDING };
+window.SITE_DATA = { CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedUrlFor, servIndexFromParam, EMBED_BINDING };
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;
 window.keepDisplayMatch = keepDisplayMatch;

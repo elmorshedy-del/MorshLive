@@ -4,8 +4,18 @@
  * ==========================================================================*/
 (function () {
   function channelEmbed() {
-    return channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
+    return channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
   }
+
+  const embedUrlFor = (embed, i) =>
+    (window.SITE_DATA && window.SITE_DATA.embedUrlFor)
+      ? window.SITE_DATA.embedUrlFor(embed, i)
+      : "";
+  const servIndexFromParam = (embed, raw) =>
+    (window.SITE_DATA && window.SITE_DATA.servIndexFromParam)
+      ? window.SITE_DATA.servIndexFromParam(embed, raw)
+      : 0;
+  const EMBED_REFERRER = "strict-origin-when-cross-origin";
 
   const { CHANNELS } = window.SITE_DATA;
   const params = new URLSearchParams(location.search);
@@ -17,10 +27,7 @@
   const frame = document.getElementById("vip-frame");
 
   function embedUrl(serverIndex) {
-    const embed = channelEmbed();
-    const u = new URL(embed.url);
-    if (embed.param != null) u.searchParams.set(embed.param, serverIndex);
-    return u.toString();
+    return embedUrlFor(channelEmbed(), serverIndex);
   }
 
   let embedLoadedUrl = "";
@@ -85,7 +92,7 @@
 
   function renderServers() {
     const row = document.getElementById("servers");
-    const activeServ = Number(params.get("serv") || 0);
+    const activeServ = servIndexFromParam(channelEmbed(), params.get("serv"));
 
     const n = channelEmbed().servers || 1;
     row.innerHTML = Array.from({ length: n }, (_, i) =>
@@ -100,7 +107,9 @@
         loadEmbed(srv);
 
         const next = new URL(location.href);
-        next.searchParams.set("serv", srv);
+        const embed = channelEmbed();
+        const start = embed.servStart != null ? embed.servStart : 0;
+        next.searchParams.set("serv", start + srv);
         history.replaceState(null, "", next);
       });
     });
@@ -153,7 +162,7 @@
     renderSidebar();
     if (channel.id !== previousChannelId) {
       renderServers();
-      loadEmbed(Number(params.get("serv") || 0));
+      loadEmbed(servIndexFromParam(channelEmbed(), params.get("serv")));
     }
   }
 
@@ -163,7 +172,7 @@
     fillInfo();
     renderServers();
     renderSidebar();
-    loadEmbed(Number(params.get("serv") || 0));
+    loadEmbed(servIndexFromParam(channelEmbed(), params.get("serv")));
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(() => {

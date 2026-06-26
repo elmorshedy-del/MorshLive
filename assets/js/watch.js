@@ -7,8 +7,19 @@
   const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
   // Player 2 VIP uses the same worldkoora embed as Player 1 for this channel.
   // The `serv` param is cosmetic — each embed has one real server.
+  // Chrome needs a real referrer for Clappr/HLS inside the worldkoora iframe; Safari is lenient.
+  const EMBED_REFERRER = "strict-origin-when-cross-origin";
+  const embedUrlFor = (embed, i) =>
+    (window.SITE_DATA && window.SITE_DATA.embedUrlFor)
+      ? window.SITE_DATA.embedUrlFor(embed, i)
+      : "";
+  const servIndexFromParam = (embed, raw) =>
+    (window.SITE_DATA && window.SITE_DATA.servIndexFromParam)
+      ? window.SITE_DATA.servIndexFromParam(embed, raw)
+      : 0;
+
   function vipEmbed() {
-    return channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
+    return channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
   }
 
   const { CHANNELS } = window.SITE_DATA;
@@ -74,9 +85,7 @@
 
   /* ---------------------------------------------- Embed (iframe) mode */
   function embedUrl(serverIndex) {
-    const u = new URL(channel.embed.url);
-    if (channel.embed.param != null) u.searchParams.set(channel.embed.param, serverIndex);
-    return u.toString();
+    return embedUrlFor(channel.embed, serverIndex);
   }
 
   function loadEmbed(serverIndex) {
@@ -84,14 +93,11 @@
     shell.innerHTML =
       `<iframe class="embed-frame" src="${embedUrl(serverIndex)}" ` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
-      `referrerpolicy="no-referrer" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
+      `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
   }
 
   function vipEmbedUrl(serverIndex) {
-    const embed = vipEmbed();
-    const u = new URL(embed.url);
-    if (embed.param != null) u.searchParams.set(embed.param, serverIndex);
-    return u.toString();
+    return embedUrlFor(vipEmbed(), serverIndex);
   }
 
   function loadVipEmbed(serverIndex) {
@@ -130,7 +136,7 @@
       }
       renderServers();
     } else {
-      loadVipEmbed(Number(params.get("serv") || 0));
+      loadVipEmbed(servIndexFromParam(vipEmbed(), params.get("serv")));
     }
 
     const next = new URL(location.href);
@@ -148,7 +154,7 @@
   function renderVipServers() {
     const row = document.getElementById("vip-servers");
     if (!row) return;
-    const activeServ = Number(params.get("serv") || 0);
+    const activeServ = servIndexFromParam(vipEmbed(), params.get("serv"));
 
     const n = vipEmbed().servers || 1;
     row.innerHTML = Array.from({ length: n }, (_, i) =>
@@ -162,7 +168,8 @@
         btn.classList.add("active");
         loadVipEmbed(srv);
         const next = new URL(location.href);
-        next.searchParams.set("serv", srv);
+        const start = vipEmbed().servStart != null ? vipEmbed().servStart : 0;
+        next.searchParams.set("serv", start + srv);
         history.replaceState(null, "", next);
       });
     });
@@ -369,7 +376,7 @@
     renderVipServers();
     renderSidebar();
     if (activePlayer === 2) {
-      loadVipEmbed(Number(params.get("serv") || 0));
+      loadVipEmbed(servIndexFromParam(vipEmbed(), params.get("serv")));
     }
     if (activePlayer === 1) {
       if (isEmbed) loadEmbed(0);
