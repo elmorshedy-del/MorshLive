@@ -47,7 +47,7 @@
       "tv.remoteHint": "أسهم الريموت للتنقّل · OK للمشاهدة",
       "tv.stepsTitle": "كيف تبدأ على التلفزيون في 3 خطوات",
       "tv.step1": "افتح korazero.com من متصفح التلفزيون الذكي (أو أرسل الرابط من هاتفك).",
-      "tv.step2": "اضغط «تفعيل وضع التلفزيون» أعلاه — أو أضف ?tv=1 للرابط ليُفعَّل تلقائياً.",
+      "tv.step2": "اضغط «تفعيل وضع التلفزيون» أعلاه — أو أضف <code>?tv=1</code> للرابط ليُفعَّل تلقائياً.",
       "tv.step3": "اختر مباراة اليوم، اضغط OK على الريموت، واستمتع بالبث بدون إعلانات.",
       "tv.devicesTitle": "يعمل على",
       "tv.device1": "Samsung Smart TV",
@@ -217,7 +217,7 @@
       "tv.remoteHint": "Remote arrows to move · OK to watch",
       "tv.stepsTitle": "Get started on TV in 3 steps",
       "tv.step1": "Open korazero.com in your smart TV browser (or send the link from your phone).",
-      "tv.step2": "Tap Enable TV mode above — or add ?tv=1 to the URL to turn it on automatically.",
+      "tv.step2": "Tap Enable TV mode above — or add <code>?tv=1</code> to the URL to turn it on automatically.",
       "tv.step3": "Pick a match, press OK on your remote, and enjoy ad-free streaming.",
       "tv.devicesTitle": "Works on",
       "tv.device1": "Samsung Smart TV",
@@ -387,7 +387,6 @@
     setMeta('meta[property="og:locale"]', lang === "ar" ? "ar_AR" : "en_US");
     setMeta('meta[name="twitter:title"]', t("seo.ogTitle"));
     setMeta('meta[name="twitter:description"]', t("seo.twitterDescription"));
-    applySeoSchema();
   }
 
   function applySeoSchema() {
@@ -462,8 +461,12 @@
   }
 
   applyDir(); // before paint — avoids a flash of the wrong direction
-  applySeoMeta(); // meta + JSON-LD in <head> are available above this script
-  document.addEventListener("DOMContentLoaded", () => { applyStatic(); wireToggles(); });
+  applySeoMeta(); // title + meta tags exist above this script in <head>
+  document.addEventListener("DOMContentLoaded", () => {
+    applySeoSchema(); // #seo-schema is parsed after this script tag
+    applyStatic();
+    wireToggles();
+  });
 
   global.I18N = { t, applyStatic, applyDir, set, wireToggles, get lang() { return lang; } };
 })(window);
