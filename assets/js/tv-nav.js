@@ -62,18 +62,7 @@
       btn.setAttribute("aria-pressed", on ? "true" : "false");
       const label = btn.querySelector("[data-tv-label]");
       if (label) label.textContent = on ? t("tv.toggleOn") : t("tv.toggle");
-      const cta = btn.querySelector("[data-tv-cta]");
-      if (cta) cta.textContent = on ? t("tv.ctaOn") : t("tv.ctaEnable");
       btn.setAttribute("aria-label", on ? t("tv.toggleAriaOff") : t("tv.toggleAria"));
-    });
-    document.querySelectorAll(".js-tv-status-text").forEach((el) => {
-      el.textContent = on ? t("tv.statusOn") : t("tv.statusOff");
-    });
-    document.querySelectorAll(".js-tv-status-dot").forEach((el) => {
-      el.classList.toggle("is-on", on);
-    });
-    document.querySelectorAll(".tv-spotlight").forEach((el) => {
-      el.classList.toggle("tv-spotlight--active", on);
     });
   }
 
@@ -154,40 +143,6 @@
     }
   }
 
-  /* Leanback lists — up/down (or left/right in a row) move focus predictably. */
-  const LIST_ITEM = ".tv-row[href], .tv-lb-tab, .side-match, .server-btn, .player-switch-btn";
-
-  function listContainer(el) {
-    return el && el.closest(".tv-focus-list, .tv-lb-list, .tv-lb-filters, .server-row, #side-channels, .player-switch");
-  }
-
-  function listItems(container) {
-    if (!container) return [];
-    return Array.prototype.filter.call(container.querySelectorAll(LIST_ITEM), visible);
-  }
-
-  function listSibling(from, dir) {
-    const container = listContainer(from);
-    if (!container) return null;
-    const items = listItems(container);
-    const idx = items.indexOf(from);
-    if (idx < 0) return null;
-    const horizontal = container.classList.contains("tv-lb-filters")
-      || container.classList.contains("server-row")
-      || container.classList.contains("player-switch");
-    let next = null;
-    if (horizontal) {
-      if (dir === "left") next = items[idx - 1];
-      else if (dir === "right") next = items[idx + 1];
-    } else {
-      if (dir === "up") next = items[idx - 1];
-      else if (dir === "down") next = items[idx + 1];
-    }
-    return next || null;
-  }
-
-  function wireListNav() { /* no-op — list nav is handled in onKey */ }
-
   const DIRS = { ArrowLeft: "left", ArrowRight: "right", ArrowUp: "up", ArrowDown: "down" };
   // TV remotes report arrows via standard keys, but some send keyCodes 37–40.
   const CODE_DIRS = { 37: "left", 38: "up", 39: "right", 40: "down" };
@@ -208,11 +163,6 @@
       const start = active && active !== document.body && visible(active) ? active : focusables()[0];
       if (!start) return;
       if (!active || active === document.body) { focusEl(start); e.preventDefault(); return; }
-      /* Leanback: list-style navigation inside match rows / server buttons. */
-      if (root.classList.contains("tv-leanback") && listContainer(start)) {
-        const listed = listSibling(start, dir);
-        if (listed) { focusEl(listed); e.preventDefault(); return; }
-      }
       const next = bestInDirection(start, dir);
       if (next) { focusEl(next); e.preventDefault(); }
       return;
@@ -237,8 +187,5 @@
     });
   }
 
-  window.KZTv = {
-    isTv, refreshFocusables: focusables, setTvMode, toggleTvMode,
-    wireTvToggles, syncTvToggles, wireListNav, focusEl,
-  };
+  window.KZTv = { isTv, refreshFocusables: focusables, setTvMode, toggleTvMode, wireTvToggles, syncTvToggles };
 })();
