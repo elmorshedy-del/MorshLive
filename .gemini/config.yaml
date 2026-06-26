@@ -1,0 +1,23 @@
+# Gemini Code Assist — auto-review every PR
+# Docs: https://developers.google.com/gemini-code-assist/docs/customize-repo-review
+
+have_fun: false
+
+ignore_patterns:
+  - "assets/data/today.json"
+  - "assets/data/live-snapshot.json"
+  - ".wrangler/**"
+  - "**/*.min.js"
+
+code_review:
+  disable: false
+  comment_severity_threshold: MEDIUM
+  max_review_comments: -1
+  pull_request_opened:
+    help: false
+    summary: true
+    code_review: true
+    include_drafts: true
+
+memory_config:
+  disabled: false
