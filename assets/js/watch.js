@@ -19,7 +19,11 @@
       : 0;
 
   function vipEmbed() {
-    return channel.embed || { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
+    const key = (match && match.embedKey) || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id));
+    const fromKey = window.SITE_DATA && window.SITE_DATA.embedForKey
+      ? window.SITE_DATA.embedForKey(key)
+      : null;
+    return fromKey || channel.embed || { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
   }
 
   const { CHANNELS } = window.SITE_DATA;
@@ -346,17 +350,19 @@
       : { channel: CHANNELS[0], match: null };
     channel = picked.channel;
     match = picked.match;
-    isEmbed = !!channel.embed && activePlayer === 1;
+    isEmbed = !!(channel.embed && channel.embed.url) && activePlayer === 1;
   }
 
   async function refreshMatches({ force } = {}) {
     const previousChannelId = channel.id;
+    const previousMatchId = match && match.id;
     const meta = await window.getMatches({ force: !!force });
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
     renderSidebar();
-    if (channel.id !== previousChannelId) {
+    const matchChanged = (match && match.id) !== previousMatchId;
+    if (channel.id !== previousChannelId || matchChanged) {
       renderServers();
       renderVipServers();
       if (activePlayer === 2) loadVipEmbed(Number(params.get("serv") || 0));

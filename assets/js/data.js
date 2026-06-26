@@ -63,6 +63,10 @@ function embedFor(channelId) {
   return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];
 }
 
+function embedForKey(key) {
+  return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];
+}
+
 // Real beIN channels the schedule can reference. Each channel keeps its true
 // name (shown in the UI) and resolves its playable embed through the calibration
 // above, so a single match always maps to its actual channel — not a parity guess.
@@ -102,12 +106,13 @@ function resolveWatchSelection(matches, channels, searchParams) {
 
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
-  const embedKey = embedKeyFor(chId);
-  return { channel, match, embedKey };
+  const embedKey = (match && match.embedKey) || embedKeyFor(chId);
+  const channelWithEmbed = { ...channel, embed: embedForKey(embedKey) };
+  return { channel: channelWithEmbed, match, embedKey };
 }
 
 // Expose for non-module scripts.
-window.SITE_DATA = { CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedUrlFor, servIndexFromParam, EMBED_BINDING };
+window.SITE_DATA = { CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor, servIndexFromParam, EMBED_BINDING };
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;
 window.keepDisplayMatch = keepDisplayMatch;
