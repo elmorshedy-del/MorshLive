@@ -36,7 +36,37 @@
   const isTv = detectTv();
   if (isTv) root.classList.add("tv-mode");
 
-  function setTvMode(on) {
+  function tvGuideEl() {
+    return document.getElementById("tv");
+  }
+
+  function revealTvGuide(scroll) {
+    const section = tvGuideEl();
+    if (!section) return;
+    section.hidden = false;
+    if (scroll) {
+      try {
+        section.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch (e) {
+        section.scrollIntoView();
+      }
+    }
+  }
+
+  function hideTvGuide() {
+    const section = tvGuideEl();
+    if (!section) return;
+    if (location.hash === "#tv") return;
+    section.hidden = true;
+  }
+
+  function openTvGuide() {
+    if (!root.classList.contains("tv-mode")) setTvMode(true);
+    else revealTvGuide(true);
+  }
+
+  function setTvMode(on, opts) {
+    const options = opts || {};
     try {
       if (on) localStorage.setItem("kz-tv", "1");
       else localStorage.removeItem("kz-tv");
@@ -44,8 +74,11 @@
     root.classList.toggle("tv-mode", on);
     syncTvToggles();
     if (on) {
+      revealTvGuide(options.scrollToGuide !== false);
       const first = focusables()[0];
-      if (first) setTimeout(() => focusEl(first), 200);
+      if (first && !options.skipFocus) setTimeout(() => focusEl(first), 200);
+    } else {
+      hideTvGuide();
     }
     return on;
   }
@@ -62,8 +95,21 @@
       btn.setAttribute("aria-pressed", on ? "true" : "false");
       const label = btn.querySelector("[data-tv-label]");
       if (label) label.textContent = on ? t("tv.toggleOn") : t("tv.toggle");
+      const cta = btn.querySelector("[data-tv-cta]");
+      if (cta) cta.textContent = on ? t("tv.ctaOn") : t("tv.ctaEnable");
       btn.setAttribute("aria-label", on ? t("tv.toggleAriaOff") : t("tv.toggleAria"));
     });
+    document.querySelectorAll(".js-tv-status-text").forEach((el) => {
+      el.textContent = on ? t("tv.statusOn") : t("tv.statusOff");
+    });
+    document.querySelectorAll(".js-tv-status-dot").forEach((el) => {
+      el.classList.toggle("is-on", on);
+    });
+    document.querySelectorAll(".tv-spotlight").forEach((el) => {
+      el.classList.toggle("tv-spotlight--active", on);
+    });
+    if (on) revealTvGuide(false);
+    else hideTvGuide();
   }
 
   function wireTvToggles() {
@@ -75,7 +121,17 @@
         toggleTvMode();
       });
     });
+    document.querySelectorAll(".js-tv-guide-link").forEach((btn) => {
+      if (btn.__kzWired) return;
+      btn.__kzWired = true;
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        openTvGuide();
+      });
+    });
     syncTvToggles();
+    if (isTv) revealTvGuide(false);
+    if (location.hash === "#tv") revealTvGuide(true);
   }
 
   document.addEventListener("DOMContentLoaded", wireTvToggles);
@@ -187,5 +243,5 @@
     });
   }
 
-  window.KZTv = { isTv, refreshFocusables: focusables, setTvMode, toggleTvMode, wireTvToggles, syncTvToggles };
+  window.KZTv = { isTv, refreshFocusables: focusables, setTvMode, toggleTvMode, openTvGuide, revealTvGuide, wireTvToggles, syncTvToggles };
 })();
