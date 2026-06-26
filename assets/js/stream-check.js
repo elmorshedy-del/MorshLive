@@ -18,7 +18,7 @@
   "use strict";
 
   const t = (k, v) => (global.I18N ? global.I18N.t(k, v) : k);
-  const CACHE_TTL = 25 * 1000;
+  const CACHE_TTL = 45 * 1000;
   const cache = new Map();
 
   function fromCache(key, factory) {
@@ -220,6 +220,9 @@
       }
 
       if (firstOk && opts.autoSelect !== false) {
+        const kind = firstOk.dataset.kind || "reachable";
+        // Never auto-switch cross-origin embeds — it reloads the player mid-stream.
+        if (kind === "reachable") return { okCount, firstOk };
         const active = row.querySelector(".server-btn.active");
         const needsSwitch = !active || active.classList.contains("srv-down");
         if (needsSwitch && active !== firstOk) firstOk.click();
