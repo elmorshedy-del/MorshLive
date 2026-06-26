@@ -20,3 +20,10 @@ zone_name = "korazero.com"
 [[routes]]
 pattern = "www.korazero.com/*"
 zone_name = "korazero.com"
+
+# Live routing overrides (admin panel). Create namespace, then uncomment and set id:
+#   npx wrangler kv namespace create ROUTING_KV
+#   npx wrangler secret put ADMIN_TOKEN
+# [[kv_namespaces]]
+# binding = "ROUTING_KV"
+# id = "YOUR_KV_NAMESPACE_ID"

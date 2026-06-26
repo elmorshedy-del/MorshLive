@@ -54,8 +54,46 @@ const BINDING_DOC = window.KZ_CHANNEL_BINDINGS || {
 const EMBED_BINDING = BINDING_DOC.embedBinding;
 const DEFAULT_EMBED = "vip1";
 
+let ROUTING_OVERRIDES = { embedBinding: {}, matchOverrides: {} };
+
+function mergedEmbedBinding() {
+  const over = ROUTING_OVERRIDES.embedBinding || {};
+  return { ...EMBED_BINDING, ...over };
+}
+
 function embedKeyFor(channelId) {
-  return EMBED_BINDING[channelId] || DEFAULT_EMBED;
+  return mergedEmbedBinding()[channelId] || DEFAULT_EMBED;
+}
+
+function embedKeyForMatch(match) {
+  if (!match) return DEFAULT_EMBED;
+  const mo = ROUTING_OVERRIDES.matchOverrides || {};
+  if (match.id && mo[match.id]) return mo[match.id];
+  if (match.embedKey) return match.embedKey;
+  return embedKeyFor(match.channelId);
+}
+
+function refreshChannelEmbeds() {
+  CHANNEL_DEFS.forEach((c, i) => {
+    CHANNELS[i] = { ...c, embed: embedFor(c.id) };
+  });
+}
+
+async function loadRoutingOverrides() {
+  try {
+    const res = await fetch("/api/routing", { cache: "no-store" });
+    if (res.ok) {
+      const data = await res.json();
+      ROUTING_OVERRIDES = {
+        embedBinding: data.embedBinding || {},
+        matchOverrides: data.matchOverrides || {},
+      };
+      refreshChannelEmbeds();
+      if (window.SITE_DATA) window.SITE_DATA.EMBED_BINDING = mergedEmbedBinding();
+    }
+  } catch (e) {
+  }
+  return ROUTING_OVERRIDES;
 }
 
 function embedFor(channelId) {
@@ -106,14 +144,27 @@ function resolveWatchSelection(matches, channels, searchParams) {
 
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
-  const embedKey = (match && match.embedKey) || embedKeyFor(chId);
+  const embedKey = embedKeyForMatch(match || { channelId: chId });
   const channelWithEmbed = { ...channel, embed: embedForKey(embedKey) };
   return { channel: channelWithEmbed, match, embedKey };
 }
 
 // Expose for non-module scripts.
-window.SITE_DATA = { CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor, servIndexFromParam, EMBED_BINDING };
+window.SITE_DATA = {
+  CHANNELS,
+  MATCHES,
+  EMBEDS,
+  embedKeyFor,
+  embedKeyForMatch,
+  embedForKey,
+  embedUrlFor,
+  servIndexFromParam,
+  EMBED_BINDING: mergedEmbedBinding(),
+  mergedEmbedBinding,
+  getRoutingOverrides: () => ROUTING_OVERRIDES,
+};
 window.resolveWatchSelection = resolveWatchSelection;
+window.loadRoutingOverrides = loadRoutingOverrides;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;
 window.keepDisplayMatch = keepDisplayMatch;
 
