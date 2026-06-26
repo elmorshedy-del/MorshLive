@@ -62,7 +62,18 @@
       btn.setAttribute("aria-pressed", on ? "true" : "false");
       const label = btn.querySelector("[data-tv-label]");
       if (label) label.textContent = on ? t("tv.toggleOn") : t("tv.toggle");
+      const cta = btn.querySelector("[data-tv-cta]");
+      if (cta) cta.textContent = on ? t("tv.ctaOn") : t("tv.ctaEnable");
       btn.setAttribute("aria-label", on ? t("tv.toggleAriaOff") : t("tv.toggleAria"));
+    });
+    document.querySelectorAll(".js-tv-status-text").forEach((el) => {
+      el.textContent = on ? t("tv.statusOn") : t("tv.statusOff");
+    });
+    document.querySelectorAll(".js-tv-status-dot").forEach((el) => {
+      el.classList.toggle("is-on", on);
+    });
+    document.querySelectorAll(".tv-spotlight").forEach((el) => {
+      el.classList.toggle("tv-spotlight--active", on);
     });
   }
 
