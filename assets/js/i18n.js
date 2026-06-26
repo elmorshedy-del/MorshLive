@@ -27,11 +27,53 @@
       "tv.toggleOn": "وضع التلفزيون: مفعّل",
       "tv.toggleAria": "تفعيل وضع التلفزيون",
       "tv.toggleAriaOff": "إيقاف وضع التلفزيون",
+      "tv.toggleShort": "تلفاز",
+      "tv.eyebrow": "شاشة كبيرة · ريموت · بدون تطبيق",
+      "tv.title": "شاهد KoraZero على التلفزيون",
+      "tv.lede": "وضع التلفزيون يحوّل الموقع إلى تجربة مناسبة للأريكة: خط أكبر، أزرار أوضح، وتنقّل كامل بريموت التلفزيون — بدون تحميل تطبيق وبدون إعداد معقّد.",
+      "tv.feat1title": "واجهة مكبّرة للشاشات الكبيرة",
+      "tv.feat1desc": "يُكبّر النص والأزرار تلقائياً على 720p و1080p و4K حتى تقرأ من مسافة الجلوس على الأريكة.",
+      "tv.feat2title": "تنقّل بالريموت (أسهم + OK)",
+      "tv.feat2desc": "حرّك التركيز بين المباريات وأزرار المشاهدة بأسهم الريموت، واضغط OK للتشغيل — مثل تطبيق تلفزيون حقيقي.",
+      "tv.feat3title": "يكتشف التلفزيون الذكي تلقائياً",
+      "tv.feat3desc": "Samsung Tizen، LG webOS، Fire TV، Apple TV والمتصفحات المدمجة — أو فعّله يدوياً بضغطة واحدة.",
+      "tv.feat4title": "نفس البث بدون إعلانات",
+      "tv.feat4desc": "نفس جودة HD، نفس المعلّق والقناة لكل مباراة، ونفس السيرفر العامل المميّز بالأخضر — على الشاشة الكبيرة.",
+      "tv.ctaEnable": "تفعيل وضع التلفزيون",
+      "tv.ctaOn": "وضع التلفزيون مفعّل",
+      "tv.ctaWatch": "افتح البث على التلفزيون",
+      "tv.statusOff": "وضع التلفزيون غير مفعّل على هذا الجهاز",
+      "tv.statusOn": "وضع التلفزيون مفعّل — استخدم أسهم الريموت للتنقّل",
+      "tv.remoteHint": "أسهم الريموت للتنقّل · OK للمشاهدة",
+      "tv.stepsTitle": "كيف تبدأ على التلفزيون في 3 خطوات",
+      "tv.step1": "افتح korazero.com من متصفح التلفزيون الذكي (أو أرسل الرابط من هاتفك).",
+      "tv.step2": "اضغط «تفعيل وضع التلفزيون» أعلاه — أو أضف ?tv=1 للرابط ليُفعَّل تلقائياً.",
+      "tv.step3": "اختر مباراة اليوم، اضغط OK على الريموت، واستمتع بالبث بدون إعلانات.",
+      "tv.devicesTitle": "يعمل على",
+      "tv.device1": "Samsung Smart TV",
+      "tv.device2": "LG webOS",
+      "tv.device3": "Amazon Fire TV",
+      "tv.device4": "Apple TV",
+      "hero.quickSettings": "إعدادات سريعة قبل المشاهدة",
+      "hero.tvHintPrefix": "شاشة كبيرة؟",
+      "hero.tvHintLink": "فعّل وضع التلفزيون لعرض الدليل",
       "wc.hosts": "أمريكا · كندا · المكسيك",
       "wc.live": "جارٍ الآن",
       "hero.noAds": "بدون إعلانات ولا نوافذ منبثقة",
-      "hero.title": "بث مباشر مباريات اليوم <span>وكأس العالم 2026</span><br />بجودة عالية وبدون إعلانات",
-      "hero.lede": "شاهد أهم مباريات اليوم ومباريات كأس العالم 2026™ لحظة بلحظة بجودة HD — بدون إعلانات، بدون نوافذ منبثقة، وبدون تقطيع. مع مواعيد المباريات بتوقيت السعودية وشرق أمريكا، والمعلّق لكل مباراة.",
+      "seo.title": "بث مباشر مباريات اليوم وكأس العالم 2026 بدون إعلانات | كورة زيرو",
+      "seo.description": "شاهد بث مباشر مباريات اليوم وكأس العالم 2026 أون لاين بجودة HD على كورة زيرو. بديل نظيف ليلا شوت وكورة لايف — بدون إعلانات ولا نوافذ منبثقة ولا تقطيع، مع مواعيد المباريات بتوقيت السعودية والمعلّق العربي.",
+      "seo.ogTitle": "بث مباشر مباريات اليوم وكأس العالم 2026 بدون إعلانات | كورة زيرو",
+      "seo.ogDescription": "شاهد بث مباشر مباريات اليوم وكأس العالم 2026 أون لاين بجودة HD على كورة زيرو. بديل نظيف ليلا شوت وكورة لايف — بدون إعلانات ولا نوافذ منبثقة ولا تقطيع.",
+      "seo.twitterDescription": "كورة اون لاين — بث مباشر مباريات اليوم وكأس العالم 2026 بجودة HD بدون إعلانات ولا نوافذ منبثقة.",
+      "seo.keywords": "كورة اون لاين, بث مباشر, مباريات اليوم, مباريات اليوم بث مباشر, كأس العالم 2026, مونديال 2026, يلا شوت, كورة لايف, بين سبورت, بي إن سبورت ماكس, معلق المباراة, بث مباشر بدون تقطيع, بدون إعلانات, كورة زيرو",
+      "seo.slogan": "بث مباشر بدون إعلانات ولا نوافذ منبثقة",
+      "seo.keywordsAria": "مواضيع البث والمباريات",
+      "seo.kw1": "كورة اون لاين",
+      "seo.kw2": "مونديال 2026",
+      "seo.kw3": "بين سبورت",
+      "seo.kw4": "بث مباشر HD",
+      "hero.title": "بث مباشر مباريات اليوم وكأس العالم 2026 — <span>كورة أون لاين</span> بجودة HD بدون إعلانات",
+      "hero.lede": "كورة زيرو موقعك الأول لمشاهدة بث مباشر مباريات اليوم ومباريات كأس العالم 2026 (مونديال 2026) أون لاين بجودة HD. بديل نظيف وآمن لمواقع يلا شوت وكورة لايف — بدون إعلانات، بدون نوافذ منبثقة، وبدون تقطيع. تابع مباريات بين سبورت والمونديال لحظة بلحظة، مع مواعيد المباريات بتوقيت الرياض (السعودية) والتوقيت الشرقي الأمريكي (ET) والمعلّق العربي لكل مباراة.",
       "hero.usp1": "بدون إعلانات",
       "hero.usp2": "بدون نوافذ منبثقة",
       "hero.usp3": "بدون تقطيع",
@@ -50,10 +92,14 @@
       "faq.q2": "هل يمكن متابعة كأس العالم 2026 بث مباشر؟",
       "faq.a2": "نعم، يوفّر KoraZero تغطية مباشرة لمباريات كأس العالم 2026™ مع مواعيد المباريات، القنوات الناقلة (بي إن سبورت ماكس) واسم المعلّق لكل مباراة.",
       "faq.q3": "بأي توقيت تظهر مواعيد المباريات؟",
-      "faq.a3": "تُعرض مواعيد كل مباراة بتوقيت السعودية وبتوقيت شرق أمريكا (ET) لتتابع المباراة في وقتها الصحيح أينما كنت.",
+      "faq.a3": "تُعرض مواعيد كل مباراة بتوقيت الرياض (السعودية) والتوقيت الشرقي الأمريكي (ET) لتتابع المباراة في وقتها الصحيح أينما كنت.",
       "faq.q4": "كيف أعرف السيرفر العامل والمعلّق لكل مباراة؟",
       "faq.a4": "يفحص KoraZero السيرفرات تلقائيًا ويميّز العامل منها باللون الأخضر، ويعرض اسم المعلّق والقناة الناقلة لكل مباراة حتى لا تبحث بنفسك.",
-      "footer.about": "وجهتك لمشاهدة مباريات اليوم وكأس العالم 2026 بث مباشر بجودة عالية — بدون إعلانات، بدون نوافذ منبثقة، وبدون تقطيع. مواعيد المباريات بتوقيت السعودية وشرق أمريكا، مع القنوات الناقلة والمعلّق لكل مباراة على جميع الأجهزة.",
+      "faq.q5": "كيف أشاهد على التلفزيون الذكي؟",
+      "faq.a5": "افتح الموقع من متصفح التلفزيون، ثم فعّل «وضع التلفزيون» من القسم المخصص في الصفحة الرئيسية. سيتكبّر الواجهة ويمكنك التنقّل بالريموت بأسهم الاتجاه وزر OK — بدون تطبيق منفصل.",
+      "faq.q6": "هل كورة زيرو بديل ليلا شوت وكورة لايف؟",
+      "faq.a6": "نعم — كورة زيرو (كورة اون لاين) يوفّر بث مباشر مباريات اليوم وكأس العالم 2026 بواجهة نظيفة بدون إعلانات ولا نوافذ منبثقة ولا تقطيع، مع المعلّق العربي والقناة الناقلة لكل مباراة.",
+      "footer.about": "وجهتك لمشاهدة مباريات اليوم وكأس العالم 2026 بث مباشر بجودة عالية — بدون إعلانات، بدون نوافذ منبثقة، وبدون تقطيع. مواعيد المباريات بتوقيت الرياض (السعودية) والتوقيت الشرقي الأمريكي (ET)، مع القنوات الناقلة والمعلّق لكل مباراة على جميع الأجهزة.",
       "footer.disclaimer": "البث من مصادر خارجية تابعة لأصحابها. يُرجى احترام حقوق النقل المعمول بها في بلدك.",
       "footer.quickLinks": "روابط سريعة",
       "footer.tournaments": "البطولات",
@@ -118,10 +164,10 @@
       "side.upcoming": "قادمة",
       "side.ended": "انتهت",
       "side.commentary": "التعليق",
-      "tz.ksa": "بتوقيت السعودية",
-      "tz.ksaShort": "السعودية",
-      "tz.et": "بتوقيت شرق أمريكا (ET)",
-      "tz.etShort": "شرق أمريكا",
+      "tz.ksa": "توقيت الرياض (السعودية)",
+      "tz.ksaShort": "الرياض",
+      "tz.et": "التوقيت الشرقي الأمريكي (ET)",
+      "tz.etShort": "ET",
       "tz.dash": "—",
       // stream-check
       "srv.checking": "🔎 جارٍ فحص السيرفرات وتحديد العامل منها…",
@@ -151,11 +197,53 @@
       "tv.toggleOn": "TV mode: on",
       "tv.toggleAria": "Enable TV mode",
       "tv.toggleAriaOff": "Disable TV mode",
+      "tv.toggleShort": "TV",
+      "tv.eyebrow": "Big screen · Remote · No app",
+      "tv.title": "Watch KoraZero on your TV",
+      "tv.lede": "TV mode turns the site into a couch-friendly experience: larger text, bigger buttons, and full navigation with your TV remote — no app download and no complicated setup.",
+      "tv.feat1title": "UI scaled for large screens",
+      "tv.feat1desc": "Text and buttons scale up automatically on 720p, 1080p, and 4K so you can read comfortably from across the room.",
+      "tv.feat2title": "Navigate with your remote (arrows + OK)",
+      "tv.feat2desc": "Move focus between matches and watch buttons with the D-pad, then press OK to play — like a real TV app.",
+      "tv.feat3title": "Auto-detects smart TVs",
+      "tv.feat3desc": "Samsung Tizen, LG webOS, Fire TV, Apple TV, and built-in browsers — or turn it on manually with one tap.",
+      "tv.feat4title": "Same ad-free stream",
+      "tv.feat4desc": "Same HD quality, same commentator and channel per match, and the same green-highlighted working server — on the big screen.",
+      "tv.ctaEnable": "Enable TV mode",
+      "tv.ctaOn": "TV mode is on",
+      "tv.ctaWatch": "Open live on TV",
+      "tv.statusOff": "TV mode is off on this device",
+      "tv.statusOn": "TV mode is on — use your remote arrows to navigate",
+      "tv.remoteHint": "Remote arrows to move · OK to watch",
+      "tv.stepsTitle": "Get started on TV in 3 steps",
+      "tv.step1": "Open korazero.com in your smart TV browser (or send the link from your phone).",
+      "tv.step2": "Tap Enable TV mode above — or add ?tv=1 to the URL to turn it on automatically.",
+      "tv.step3": "Pick a match, press OK on your remote, and enjoy ad-free streaming.",
+      "tv.devicesTitle": "Works on",
+      "tv.device1": "Samsung Smart TV",
+      "tv.device2": "LG webOS",
+      "tv.device3": "Amazon Fire TV",
+      "tv.device4": "Apple TV",
+      "hero.quickSettings": "Quick settings before you watch",
+      "hero.tvHintPrefix": "Big screen?",
+      "hero.tvHintLink": "Enable TV mode to see the guide",
       "wc.hosts": "USA · Canada · Mexico",
       "wc.live": "Live now",
       "hero.noAds": "No ads, no pop-ups",
-      "hero.title": "Watch today's matches <span>& World Cup 2026</span><br />live in HD, ad-free",
-      "hero.lede": "Watch today's top matches and the FIFA World Cup 2026™ live in HD — no ads, no pop-ups, no buffering. With kick-off times in Saudi and US Eastern time, and the commentator for every match.",
+      "seo.title": "KoraZero — Live streams, today's matches & World Cup 2026 HD, no ads",
+      "seo.description": "Watch today's matches and FIFA World Cup 2026 live in HD on KoraZero — a clean, ad-free football stream with Arabic commentary, Saudi & US Eastern kick-off times, and beIN Sports MAX channels.",
+      "seo.ogTitle": "KoraZero — Live football streams World Cup 2026 HD, no ads",
+      "seo.ogDescription": "Watch today's matches and World Cup 2026 live in HD on KoraZero — no ads, no pop-ups, no buffering.",
+      "seo.twitterDescription": "KoraZero — live football streams, World Cup 2026 HD, ad-free.",
+      "seo.keywords": "football online, live stream, today's matches, World Cup 2026, beIN Sports MAX, HD live stream, no ads, no pop-ups, KoraZero, Yalla Shoot alternative, Koora Live alternative, Arabic commentary",
+      "seo.slogan": "Live football streams with no ads and no pop-ups",
+      "seo.keywordsAria": "Streaming topics",
+      "seo.kw1": "Football online",
+      "seo.kw2": "World Cup 2026",
+      "seo.kw3": "beIN Sports",
+      "seo.kw4": "HD live stream",
+      "hero.title": "Live streams — today's matches & <span>World Cup 2026</span> online in HD, ad-free",
+      "hero.lede": "KoraZero is your go-to site for today's matches and FIFA World Cup 2026™ live in HD. A clean, safe alternative to Yalla Shoot and Koora Live — no ads, no pop-ups, no buffering. Follow beIN Sports MAX and World Cup games with Arabic commentary, plus kick-off times in Riyadh (Saudi Arabia) and US Eastern Time (ET).",
       "hero.usp1": "No ads",
       "hero.usp2": "No pop-ups",
       "hero.usp3": "No buffering",
@@ -174,10 +262,14 @@
       "faq.q2": "Can I follow the World Cup 2026 live?",
       "faq.a2": "Yes — KoraZero provides live coverage of the FIFA World Cup 2026™ with kick-off times, the broadcast channels (beIN Sports MAX) and the commentator for every match.",
       "faq.q3": "What time zone are the kick-off times shown in?",
-      "faq.a3": "Each match time is shown in both Saudi time and US Eastern time (ET), so you can catch the match at the right time wherever you are.",
+      "faq.a3": "Each match time is shown in Riyadh (Saudi Arabia) and US Eastern Time (ET), so you can catch the match at the right time wherever you are.",
       "faq.q4": "How do I know the working server and the commentator for each match?",
       "faq.a4": "KoraZero checks the servers automatically and highlights the working one in green, and shows the commentator and broadcast channel for every match so you don't have to search.",
-      "footer.about": "Your destination to watch today's matches and the World Cup 2026 live in high quality — no ads, no pop-ups, no buffering. Kick-off times in Saudi and US Eastern time, with the broadcast channel and commentator for every match on all devices.",
+      "faq.q5": "How do I watch on a smart TV?",
+      "faq.a5": "Open the site in your TV browser, then enable TV mode from the dedicated section on the home page. The UI scales up and you can navigate with your remote's arrow keys and OK button — no separate app required.",
+      "faq.q6": "Is KoraZero an alternative to Yalla Shoot and Koora Live?",
+      "faq.a6": "Yes — KoraZero (football online) offers today's matches and World Cup 2026 live in a clean interface with no ads, no pop-ups, no buffering, plus Arabic commentary and the broadcast channel for every match.",
+      "footer.about": "Your destination to watch today's matches and the World Cup 2026 live in high quality — no ads, no pop-ups, no buffering. Kick-off times in Riyadh (Saudi Arabia) and US Eastern Time (ET), with the broadcast channel and commentator for every match on all devices.",
       "footer.disclaimer": "Streams come from third-party sources owned by their respective holders. Please respect the broadcasting rights that apply in your country.",
       "footer.quickLinks": "Quick links",
       "footer.tournaments": "Tournaments",
@@ -239,10 +331,10 @@
       "side.upcoming": "Upcoming",
       "side.ended": "Ended",
       "side.commentary": "Commentary",
-      "tz.ksa": "Saudi time",
-      "tz.ksaShort": "Saudi",
-      "tz.et": "US Eastern (ET)",
-      "tz.etShort": "US East",
+      "tz.ksa": "Riyadh (Saudi Arabia)",
+      "tz.ksaShort": "Riyadh",
+      "tz.et": "US Eastern Time (ET)",
+      "tz.etShort": "ET",
       "tz.dash": "—",
       "srv.checking": "🔎 Checking servers and finding the working ones…",
       "srv.okPrefix": "Highlighted",
@@ -282,6 +374,61 @@
     html.setAttribute("dir", lang === "ar" ? "rtl" : "ltr");
   }
 
+  function applySeoMeta() {
+    document.title = t("seo.title");
+    const setMeta = (selector, content) => {
+      const el = document.querySelector(selector);
+      if (el && content) el.setAttribute("content", content);
+    };
+    setMeta('meta[name="description"]', t("seo.description"));
+    setMeta('meta[name="keywords"]', t("seo.keywords"));
+    setMeta('meta[property="og:title"]', t("seo.ogTitle"));
+    setMeta('meta[property="og:description"]', t("seo.ogDescription"));
+    setMeta('meta[property="og:locale"]', lang === "ar" ? "ar_AR" : "en_US");
+    setMeta('meta[name="twitter:title"]', t("seo.ogTitle"));
+    setMeta('meta[name="twitter:description"]', t("seo.twitterDescription"));
+    applySeoSchema();
+  }
+
+  function applySeoSchema() {
+    const el = document.getElementById("seo-schema");
+    if (!el) return;
+    const faqKeys = ["faq.q1", "faq.a1", "faq.q2", "faq.a2", "faq.q3", "faq.a3", "faq.q4", "faq.a4", "faq.q5", "faq.a5", "faq.q6", "faq.a6"];
+    const faqPairs = [];
+    for (let i = 0; i < faqKeys.length; i += 2) {
+      faqPairs.push({ q: t(faqKeys[i]), a: t(faqKeys[i + 1]) });
+    }
+    const schema = {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "name": "KoraZero",
+          "alternateName": lang === "ar"
+            ? ["كورة زيرو", "كورة اون لاين", "KoraZero"]
+            : ["KoraZero", "football online", "كورة زيرو"],
+          "url": "https://korazero.com/",
+          "inLanguage": lang,
+        },
+        {
+          "@type": "Organization",
+          "name": "KoraZero",
+          "url": "https://korazero.com/",
+          "slogan": t("seo.slogan"),
+        },
+        {
+          "@type": "FAQPage",
+          "mainEntity": faqPairs.map(({ q, a }) => ({
+            "@type": "Question",
+            "name": q,
+            "acceptedAnswer": { "@type": "Answer", "text": a },
+          })),
+        },
+      ],
+    };
+    el.textContent = JSON.stringify(schema);
+  }
+
   function applyStatic(rootEl) {
     const scope = rootEl || document;
     scope.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.getAttribute("data-i18n")); });
@@ -315,6 +462,7 @@
   }
 
   applyDir(); // before paint — avoids a flash of the wrong direction
+  applySeoMeta(); // meta + JSON-LD in <head> are available above this script
   document.addEventListener("DOMContentLoaded", () => { applyStatic(); wireToggles(); });
 
   global.I18N = { t, applyStatic, applyDir, set, wireToggles, get lang() { return lang; } };
