@@ -12,8 +12,6 @@ const EMBED_URLS = {
   vip2: "https://vip.worldkoora.com/albaplayer/vip2/",
 };
 
-const UPSTREAM_PLAYER_BASE = "https://player.syria-player.live/albaplayer/";
-
 const VIP_SLOTS = Object.keys(EMBED_URLS);
 
 function loadBindings() {
@@ -85,54 +83,24 @@ function embedKeyFromProbe(channelId, slotProbe, embedBinding) {
 
 function resolveMatchEmbedKey(match, slotProbe, embedBinding) {
   if (!match || !match.channelId) return "vip1";
-  const slug = upstreamSlugForChannelId(match.channelId);
-  const slots = slotProbe && slotProbe.slots;
-  if (slug && slots && (match.status === "live" || !match.embedKey)) {
-    for (const slot of VIP_SLOTS) {
-      if (slots[slot] === slug) return slot;
-    }
-  }
   if (match.embedKey) return match.embedKey;
   return embedKeyFromProbe(match.channelId, slotProbe, embedBinding);
 }
 
-function buildEmbedSpec(embedKey, upstream) {
-  const wrapperUrl = EMBED_URLS[embedKey] || EMBED_URLS.vip1;
-  if (!upstream) {
-    return {
-      embedKey,
-      embedUpstream: null,
-      directEmbedUrl: null,
-      wrapperEmbedUrl: wrapperUrl,
-      url: wrapperUrl,
-      param: "serv",
-      servers: 1,
-    };
-  }
-  const directUrl = `${UPSTREAM_PLAYER_BASE}${upstream}/`;
-  return {
-    embedKey,
-    embedUpstream: upstream,
-    directEmbedUrl: directUrl,
-    wrapperEmbedUrl: wrapperUrl,
-    url: directUrl,
-    param: null,
-    servers: 2,
-    mirrors: [
-      { url: directUrl, param: null, kind: "direct" },
-      { url: wrapperUrl, param: "serv", kind: "wrapper" },
-    ],
-  };
-}
-
 function embedSpecForMatch(match, slotProbe, embedBinding) {
-  if (!match || !match.channelId) return buildEmbedSpec("vip1", null);
+  if (!match || !match.channelId) {
+    return { embedKey: "vip1", embedUrl: EMBED_URLS.vip1, embedUpstream: null };
+  }
   const embedKey = resolveMatchEmbedKey(match, slotProbe, embedBinding);
-  const upstream =
+  const embedUpstream =
     (slotProbe && slotProbe.slots && slotProbe.slots[embedKey]) ||
     match.embedUpstream ||
     upstreamSlugForChannelId(match.channelId);
-  return buildEmbedSpec(embedKey, upstream);
+  return {
+    embedKey,
+    embedUpstream: embedUpstream || null,
+    embedUrl: EMBED_URLS[embedKey] || EMBED_URLS.vip1,
+  };
 }
 
 /** Write per-match embedKey using live vip-slot probe (source of truth for routing). */
@@ -143,8 +111,6 @@ function assignMatchEmbeds(matches, slotProbe, embedBinding) {
     const spec = embedSpecForMatch(m, slotProbe, map);
     m.embedKey = spec.embedKey;
     if (spec.embedUpstream) m.embedUpstream = spec.embedUpstream;
-    if (spec.directEmbedUrl) m.directEmbedUrl = spec.directEmbedUrl;
-    if (spec.wrapperEmbedUrl) m.wrapperEmbedUrl = spec.wrapperEmbedUrl;
   }
 }
 
@@ -181,9 +147,7 @@ function buildLiveSnapshot(matches, bindingDoc) {
       commentator: m.commentator || null,
       embedKey,
       embedUpstream: spec.embedUpstream,
-      directEmbedUrl: spec.directEmbedUrl,
-      embedUrl: spec.url,
-      wrapperEmbedUrl: spec.wrapperEmbedUrl,
+      embedUrl: spec.embedUrl,
       kickoffUtc: m.kickoffUtc || null,
     };
   });
@@ -266,7 +230,6 @@ module.exports = {
   embedKeyFor,
   embedKeyFromProbe,
   resolveMatchEmbedKey,
-  buildEmbedSpec,
   embedSpecForMatch,
   assignMatchEmbeds,
   pinEndedEmbeds,
