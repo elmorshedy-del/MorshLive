@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "od-design-system-project/v1",
+  "id": "korazero",
+  "name": "KoraZero",
+  "category": "Sports Streaming",
+  "description": "Dark RTL-first sports streaming UI — beIN purple, live green, ad-free clarity.",
+  "source": {
+    "type": "bundled",
+    "origin": "hand-authored",
+    "inspiredBy": "https://github.com/nexu-io/open-design"
+  },
+  "files": {
+    "design": "DESIGN.md",
+    "tokens": "tokens.css"
+  }
+}
