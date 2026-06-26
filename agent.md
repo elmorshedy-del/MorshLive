@@ -19,9 +19,12 @@ This repo uses [Gemini Code Assist on GitHub](https://github.com/marketplace/gem
 node scripts/poll-gemini-review.js <PR_NUMBER>
 ```
 
-- Polls every 30s, up to 10 minutes
+- Polls every **30s** (configurable: `--interval=30`)
+- **Always stops** after **10 minutes** max (`--max-wait=600`) — exit 1 if Gemini never finishes
 - **Exit 0** = `gemini-code-assist[bot]` posted `## Code Review` → safe to proceed
-- **Exit 1** = **DO NOT MERGE** — comment `/gemini review` on the PR and poll again
+- **Exit 1** = timed out or no review — do **not** merge until resolved or self-review fallback (section 4)
+- Open PRs as **ready for review** (not draft) — Gemini workflows skip draft PRs
+- Invalid `GITHUB_TOKEN` in the environment is ignored; the script falls back to the public GitHub API
 
 ### Forbidden
 

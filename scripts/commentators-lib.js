@@ -304,6 +304,11 @@ function mergeCommentaryIndex(fresh, previous, matches) {
         seen.add(row.key);
         continue;
       }
+      if (hasRealChannel(row)) {
+        out.push({ ...row, locked: true });
+        seen.add(row.key);
+        continue;
+      }
     }
     out.push(row.locked ? row : { ...row, locked: false });
     seen.add(row.key);

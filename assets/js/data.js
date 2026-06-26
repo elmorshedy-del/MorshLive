@@ -221,7 +221,7 @@ function applyCommentary(matches, idx) {
     }
 
     // Ended fixtures keep their pinned broadcast channel (set in today.json).
-    if (entry.locked || entry.channelId) {
+    if (entry.locked) {
       if (entry.channel) out.channel = entry.channel;
       if (entry.channelId) out.channelId = entry.channelId;
     }
