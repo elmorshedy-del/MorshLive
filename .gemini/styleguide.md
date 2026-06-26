@@ -2,10 +2,12 @@
 
 ## Stream routing (critical)
 
-- Only two real embed feeds exist: `vip1` and `vip2` at `vip.worldkoora.com`
-- `assets/data/channel-bindings.json` is the source of truth; sync to `assets/js/channel-bindings.js`
-- `EMBED_BINDING` maps `bein-max-N` → `vip1` or `vip2` — calibration changes when upstream swaps feeds
-- Player 2 VIP **must** use the same embed URL as Player 1 for the selected channel (`channel.embed`), never a hardcoded `vip1`
+- Only two real embed feeds exist: `vip1` and `vip2` at `vip.worldkoora.com` — generic wrappers, not fixed beIN channels
+- `vip1`/`vip2` pages embed upstream slugs like `beinmax1`/`beinmax2` (often inverted vs slot name)
+- `scripts/channel-bindings-lib.js` probes vip slots at fetch time; each match gets `embedKey` in `today.json`
+- `assets/data/channel-bindings.json` stores `vipSlotProbe` + fallback `embedBinding`; sync to `assets/js/channel-bindings.js`
+- Browser: `resolveWatchSelection` → `match.embedKey` first, then probe lookup, then static `embedBinding`
+- Player 2 VIP **must** use the same resolved embed URL as Player 1 (`picked.embed` / `activeEmbed`), never a hardcoded `vip1`
 
 ## Watch page
 

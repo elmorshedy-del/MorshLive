@@ -7,8 +7,12 @@
   const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
   // Player 2 VIP uses the same worldkoora embed as Player 1 for this channel.
   // The `serv` param is cosmetic — each embed has one real server.
+  function currentEmbed() {
+    return activeEmbed || channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
+  }
+
   function vipEmbed() {
-    return channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
+    return currentEmbed();
   }
 
   const { CHANNELS } = window.SITE_DATA;
@@ -17,6 +21,7 @@
   let MATCHES = [];
   let channel = CHANNELS[0];
   let match = null;
+  let activeEmbed = null;
   let isEmbed = false;
   let activePlayer = params.get("player") === "2" ? 2 : 1;
 
@@ -74,8 +79,9 @@
 
   /* ---------------------------------------------- Embed (iframe) mode */
   function embedUrl(serverIndex) {
-    const u = new URL(channel.embed.url);
-    if (channel.embed.param != null) u.searchParams.set(channel.embed.param, serverIndex);
+    const embed = currentEmbed();
+    const u = new URL(embed.url);
+    if (embed.param != null) u.searchParams.set(embed.param, serverIndex);
     return u.toString();
   }
 
@@ -105,7 +111,7 @@
 
   function setActivePlayer(n) {
     activePlayer = n;
-    isEmbed = !!channel.embed && n === 1;
+    isEmbed = !!currentEmbed() && n === 1;
 
     document.querySelectorAll(".player-switch-btn").forEach((btn) => {
       btn.classList.toggle("active", Number(btn.dataset.player) === n);
@@ -221,8 +227,8 @@
     document.getElementById("info-group").textContent = channel.group;
     const infoRoute = document.getElementById("info-route");
     if (infoRoute) {
-      const key = window.SITE_DATA && window.SITE_DATA.embedKeyFor
-        ? window.SITE_DATA.embedKeyFor(channel.id)
+      const key = window.SITE_DATA && window.SITE_DATA.embedKeyForMatch
+        ? window.SITE_DATA.embedKeyForMatch(match, channel.id)
         : "";
       infoRoute.textContent = key
         ? `${key} ← ${match && match.channel ? match.channel : channel.name}`
@@ -250,7 +256,8 @@
     const row = document.getElementById("servers");
 
     if (isEmbed) {
-      const n = channel.embed.servers || 1;
+      const embed = currentEmbed();
+      const n = embed.servers || 1;
       row.innerHTML = Array.from({ length: n }, (_, i) =>
         `<button class="server-btn ${i === 0 ? "active" : ""}" data-srv="${i}" data-kind="reachable" data-url="${embedUrl(i)}" data-label="${t("watch.server")} ${i + 1}"><span class="srv-label">${t("watch.server")} ${i + 1}</span></button>`
       ).join("");
@@ -339,17 +346,20 @@
       : { channel: CHANNELS[0], match: null };
     channel = picked.channel;
     match = picked.match;
-    isEmbed = !!channel.embed && activePlayer === 1;
+    activeEmbed = picked.embed || channel.embed;
+    isEmbed = !!activeEmbed && activePlayer === 1;
   }
 
   async function refreshMatches({ force } = {}) {
     const previousChannelId = channel.id;
+    const previousEmbedUrl = activeEmbed && activeEmbed.url;
     const meta = await window.getMatches({ force: !!force });
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
     renderSidebar();
-    if (channel.id !== previousChannelId) {
+    const embedChanged = (activeEmbed && activeEmbed.url) !== previousEmbedUrl;
+    if (channel.id !== previousChannelId || embedChanged) {
       renderServers();
       renderVipServers();
       if (activePlayer === 2) loadVipEmbed(Number(params.get("serv") || 0));

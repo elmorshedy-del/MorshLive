@@ -21,20 +21,44 @@ const EMBEDS = {
 
 // Embed routing — loaded from channel-bindings.js (synced from channel-bindings.json).
 const BINDING_DOC = window.KZ_CHANNEL_BINDINGS || {
+  vipSlotProbe: { slots: { vip1: "beinmax2", vip2: "beinmax1" } },
   embedBinding: {
-    "bein-max-1": "vip1",
-    "bein-max-2": "vip2",
+    "bein-max-1": "vip2",
+    "bein-max-2": "vip1",
     "bein-max-3": "vip1",
     "bein-max-4": "vip2",
-    "bein-sports-1": "vip1",
-    "bein-sports-2": "vip2",
+    "bein-sports-1": "vip2",
+    "bein-sports-2": "vip1",
   },
 };
 const EMBED_BINDING = BINDING_DOC.embedBinding;
+const VIP_SLOT_PROBE = BINDING_DOC.vipSlotProbe || null;
 const DEFAULT_EMBED = "vip1";
+
+function upstreamSlugForChannelId(channelId) {
+  const max = /^bein-max-(\d)$/.exec(channelId || "");
+  if (max) return `beinmax${max[1]}`;
+  if (channelId === "bein-sports-2") return "bein2";
+  if (channelId === "bein-sports-1") return "bein1";
+  return null;
+}
 
 function embedKeyFor(channelId) {
   return EMBED_BINDING[channelId] || DEFAULT_EMBED;
+}
+
+function embedKeyForMatch(match, channelId) {
+  const ch = channelId || (match && match.channelId);
+  if (match && match.embedKey) return match.embedKey;
+  if (!ch) return DEFAULT_EMBED;
+  const slug = upstreamSlugForChannelId(ch);
+  const slots = VIP_SLOT_PROBE && VIP_SLOT_PROBE.slots;
+  if (slug && slots) {
+    for (const [vip, upstream] of Object.entries(slots)) {
+      if (upstream === slug) return vip;
+    }
+  }
+  return embedKeyFor(ch);
 }
 
 function embedFor(channelId) {
@@ -42,9 +66,13 @@ function embedFor(channelId) {
   return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];
 }
 
-// Real beIN channels the schedule can reference. Each channel keeps its true
-// name (shown in the UI) and resolves its playable embed through the calibration
-// above, so a single match always maps to its actual channel — not a parity guess.
+function embedForMatch(match, channelId) {
+  const key = embedKeyForMatch(match, channelId);
+  return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];
+}
+
+// Real beIN channels the schedule can reference. Display names stay on the true
+// broadcast channel; playable embeds are resolved per match via vip-slot probe.
 // beIN Sports 1 stays first so it remains the default fallback channel.
 const CHANNEL_DEFS = [
   { id: "bein-sports-1", name: "beIN Sports 1", group: "beIN", quality: "1080p", badge: "HD" },
@@ -81,12 +109,21 @@ function resolveWatchSelection(matches, channels, searchParams) {
 
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
-  const embedKey = embedKeyFor(chId);
-  return { channel, match, embedKey };
+  const embedKey = embedKeyForMatch(match, chId);
+  const embed = embedForMatch(match, chId);
+  return { channel, match, embedKey, embed };
 }
 
 // Expose for non-module scripts.
-window.SITE_DATA = { CHANNELS, MATCHES, embedKeyFor, EMBED_BINDING };
+window.SITE_DATA = {
+  CHANNELS,
+  MATCHES,
+  EMBEDS,
+  embedKeyFor,
+  embedKeyForMatch,
+  embedForMatch,
+  EMBED_BINDING,
+};
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;
 window.keepDisplayMatch = keepDisplayMatch;

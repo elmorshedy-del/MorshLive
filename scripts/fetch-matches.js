@@ -23,7 +23,7 @@ const {
   pairKey,
   pinEndedChannels,
 } = require("./commentators-lib");
-const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
+const { probeAssignAndSync } = require("./channel-bindings-lib");
 
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
 
@@ -155,8 +155,10 @@ async function fetchEspnLeague(slug, dateRange) {
   }
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
-  writeBindingsJs();
-  const snapshot = writeLiveSnapshot(matches);
+  const { snapshot } = await probeAssignAndSync(matches, {
+    pinEndedEmbeds: true,
+    previousPayload,
+  });
   fs.writeFileSync(
     OUT,
     JSON.stringify(

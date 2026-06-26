@@ -1,15 +1,48 @@
 {
-  "version": 4,
-  "updatedAt": "2026-06-25T23:45:00.000Z",
+  "version": 5,
+  "updatedAt": "2026-06-26T19:00:00.672Z",
+  "routing": {
+    "mode": "probe-match",
+    "note": "vip1/vip2 are generic wrappers; upstream beinmaxN is probed at fetch time and stored per match as embedKey."
+  },
+  "vipSlotProbe": {
+    "probedAt": "2026-06-26T19:00:00.672Z",
+    "slots": {
+      "vip1": "beinmax2",
+      "vip2": "beinmax1"
+    }
+  },
   "embedBinding": {
-    "bein-max-1": "vip1",
-    "bein-max-2": "vip2",
+    "bein-max-1": "vip2",
+    "bein-max-2": "vip1",
     "bein-max-3": "vip1",
     "bein-max-4": "vip2",
-    "bein-sports-1": "vip1",
-    "bein-sports-2": "vip2"
+    "bein-sports-1": "vip2",
+    "bein-sports-2": "vip1"
   },
   "calibration": [
+    {
+      "date": "2026-06-26T12:00:00.000Z",
+      "issue": "France vs Norway showed beIN MAX 2 but played beIN MAX 1 stream.",
+      "rootCause": "vip1/vip2 are inverted wrappers (vip1→beinmax2, vip2→beinmax1). Static channel→vip map assumed vipN carried beinmaxN.",
+      "fix": "Probe vip slots at fetch time; store embedKey per match; browser resolves via match.embedKey + vipSlotProbe.",
+      "liveAtTime": [
+        {
+          "match": "Norway vs France",
+          "channelId": "bein-max-2",
+          "channel": "beIN MAX 2",
+          "embedKey": "vip1",
+          "embedUpstream": "beinmax2"
+        },
+        {
+          "match": "Senegal vs Iraq",
+          "channelId": "bein-max-1",
+          "channel": "beIN MAX 1",
+          "embedKey": "vip2",
+          "embedUpstream": "beinmax1"
+        }
+      ]
+    },
     {
       "date": "2026-06-26T00:00:00.000Z",
       "issue": "Both simultaneous live matches showed the opposite stream (Ecuador/Germany ↔ Curaçao/Ivory Coast).",

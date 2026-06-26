@@ -3,8 +3,12 @@
  * Same layout as watch.html; opens in its own tab via watch-embed.html
  * ==========================================================================*/
 (function () {
+  function currentEmbed() {
+    return activeEmbed || channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
+  }
+
   function channelEmbed() {
-    return channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
+    return currentEmbed();
   }
 
   const { CHANNELS } = window.SITE_DATA;
@@ -13,6 +17,7 @@
   let MATCHES = [];
   let channel = CHANNELS[0];
   let match = null;
+  let activeEmbed = null;
 
   const frame = document.getElementById("vip-frame");
 
@@ -142,16 +147,19 @@
       : { channel: CHANNELS[0], match: null };
     channel = picked.channel;
     match = picked.match;
+    activeEmbed = picked.embed || channel.embed;
   }
 
   async function refreshMatches({ force } = {}) {
     const previousChannelId = channel.id;
+    const previousEmbedUrl = activeEmbed && activeEmbed.url;
     const meta = await window.getMatches({ force: !!force });
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
     renderSidebar();
-    if (channel.id !== previousChannelId) {
+    const embedChanged = (activeEmbed && activeEmbed.url) !== previousEmbedUrl;
+    if (channel.id !== previousChannelId || embedChanged) {
       renderServers();
       loadEmbed(Number(params.get("serv") || 0));
     }
