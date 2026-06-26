@@ -14,9 +14,10 @@
 // query param is cosmetic (all values return the same stream), so each embed
 // has exactly one real server.
 // ---------------------------------------------------------------------------
+// Same-origin /wk/ proxy (worker.js) serves worldkoora vip pages without the Yalla Score overlay.
 const EMBEDS = {
-  vip1: { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 },
-  vip2: { url: "https://vip.worldkoora.com/albaplayer/vip2/", param: "serv", servers: 1 },
+  vip1: { url: "/wk/albaplayer/vip1/", param: "serv", servers: 1 },
+  vip2: { url: "/wk/albaplayer/vip2/", param: "serv", servers: 1 },
 };
 
 // Embed routing — loaded from channel-bindings.js (synced from channel-bindings.json).
@@ -81,7 +82,7 @@ function embedFor(channelId) {
   return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];
 }
 
-// Playback is always vip.worldkoora.com — probe data is for vip-slot routing only.
+// Playback uses /wk/ worldkoora proxy — probe data is for vip-slot routing only.
 function embedForMatch(match, channelId) {
   const key = embedKeyForMatch(match, channelId);
   return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];

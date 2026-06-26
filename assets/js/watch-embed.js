@@ -8,7 +8,7 @@
   }
 
   function channelEmbed() {
-    return currentEmbed() || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servers: 1 };
+    return currentEmbed() || { url: "/wk/albaplayer/vip1/", param: "serv", servers: 1 };
   }
 
   const { CHANNELS } = window.SITE_DATA;
@@ -24,7 +24,7 @@
   function embedUrl(serverIndex) {
     const embed = channelEmbed();
     if (!embed || !embed.url) return "";
-    const u = new URL(embed.url);
+    const u = new URL(embed.url, location.origin);
     if (embed.param != null) u.searchParams.set(embed.param, serverIndex);
     return u.toString();
   }
