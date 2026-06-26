@@ -3,7 +3,7 @@
 # Manual: npx wrangler pages deploy . --project-name=korazero
 # API token: .env locally (see .env.example), never commit it.
 
-name = "korazero"
+name = "morshlive"
 compatibility_date = "2024-06-01"
 pages_build_output_dir = "."
 
