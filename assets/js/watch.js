@@ -27,23 +27,6 @@
   let hls = null;
   let started = false;
   let savedShellMarkup = null;
-  let vipLoaded = false;
-
-  /* HLS tuned for stable live playback on mobile (buffer over ultra-low latency). */
-  function createHls() {
-    return new window.Hls({
-      enableWorker: true,
-      lowLatencyMode: false,
-      maxBufferLength: 30,
-      maxMaxBufferLength: 60,
-      backBufferLength: 90,
-      liveSyncDurationCount: 3,
-      liveMaxLatencyDurationCount: 10,
-      manifestLoadingTimeOut: 12000,
-      manifestLoadingMaxRetry: 4,
-      levelLoadingTimeOut: 12000,
-    });
-  }
 
   /* ---------------------------------------------- Player core */
   function loadStream(url) {
@@ -51,10 +34,9 @@
     if (!video || !url) return;
     if (hls) { hls.destroy(); hls = null; }
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.preload = "auto";
       video.src = url; // native HLS (Safari / iOS)
     } else if (window.Hls && window.Hls.isSupported()) {
-      hls = createHls();
+      hls = new window.Hls({ lowLatencyMode: true });
       hls.loadSource(url);
       hls.attachMedia(video);
     } else {
@@ -82,8 +64,8 @@
     if (!savedShellMarkup) savedShellMarkup = shell.innerHTML;
     shell.innerHTML =
       `<iframe class="embed-frame" src="${embedUrl(serverIndex)}" ` +
-      `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
-      `referrerpolicy="no-referrer" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
+      `allow="autoplay; encrypted-media; fullscreen" allowfullscreen ` +
+      `referrerpolicy="no-referrer" scrolling="no"></iframe>`;
   }
 
   function vipEmbedUrl(serverIndex) {
@@ -94,11 +76,7 @@
   }
 
   function loadVipEmbed(serverIndex) {
-    if (!vipFrame) return;
-    const next = vipEmbedUrl(serverIndex);
-    if (vipLoaded && vipFrame.src === next) return;
-    vipFrame.src = next;
-    vipLoaded = true;
+    if (vipFrame) vipFrame.src = vipEmbedUrl(serverIndex);
   }
 
   function setActivePlayer(n) {
@@ -272,9 +250,7 @@
   /* ---------------------------------------------- Live server detection */
   function checkServers(row, opts) {
     if (row && window.StreamCheck) {
-      const embedRow = row.id === "servers" && isEmbed || row.id === "vip-servers";
-      const options = embedRow ? { autoSelect: false, ...opts } : opts;
-      window.StreamCheck.autoHighlight(row, options).catch(() => {});
+      window.StreamCheck.autoHighlight(row, opts).catch(() => {});
     }
   }
 
@@ -320,9 +296,9 @@
     isEmbed = !!channel.embed && activePlayer === 1;
   }
 
-  async function refreshMatches({ force } = {}) {
+  async function refreshMatches() {
     const previousChannelId = channel.id;
-    const meta = await window.getMatches({ force: !!force });
+    const meta = await window.getMatches({ force: true });
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
@@ -330,7 +306,7 @@
     if (channel.id !== previousChannelId) {
       renderServers();
       renderVipServers();
-      if (activePlayer === 2) loadVipEmbed(Number(params.get("serv") || 0));
+      loadVipEmbed(Number(params.get("serv") || 0));
       if (activePlayer === 1) {
         if (isEmbed) loadEmbed(0);
         else loadStream(channel.stream);
@@ -346,9 +322,7 @@
     renderServers();
     renderVipServers();
     renderSidebar();
-    if (activePlayer === 2) {
-      loadVipEmbed(Number(params.get("serv") || 0));
-    }
+    loadVipEmbed(Number(params.get("serv") || 0));
     if (activePlayer === 1) {
       if (isEmbed) loadEmbed(0);
       else {
@@ -357,8 +331,8 @@
       }
     }
     initPlayerSwitch();
-    refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
-    setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
-    setInterval(recheckVisibleServers, 120 * 1000);
+    refreshMatches().catch((e) => console.warn("Initial match refresh failed:", e.message));
+    setInterval(() => refreshMatches().catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
+    setInterval(recheckVisibleServers, 60 * 1000);
   });
 })();
