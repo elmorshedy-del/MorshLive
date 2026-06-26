@@ -6,32 +6,51 @@
 
 - Create branch: `cursor/<short-description>-5da7`
 - Commit focused changes
-- **Open a pull request to `main` before considering the task done**
-- Do **not** fast-forward merge locally to `main` and push without a PR
+- **Open a pull request to `main`**
+- **Stop — do not merge yet**
 
-## 2. Gemini Code Assist review (required)
+## 2. Gemini Code Assist review — MANDATORY POLL
 
 This repo uses [Gemini Code Assist on GitHub](https://github.com/marketplace/gemini-code-assist).
 
-On every PR:
+### You MUST run this before every merge
 
-1. Wait for `gemini-code-assist[bot]` to post a review (auto-triggered via `.gemini/config.yaml`)
-2. If no review after ~3 minutes, comment on the PR: `/gemini review`
-3. Read **all** inline comments and the summary
-4. Fix **MEDIUM** severity and above (and any LOW issues that are clearly bugs)
-5. Push fixes to the **same PR branch** — do not open a duplicate PR
-6. Wait for Gemini to re-review or comment `/gemini review` again after pushes
+```bash
+node scripts/poll-gemini-review.js <PR_NUMBER>
+```
 
-If Gemini is unavailable, run an equivalent review yourself (Bugbot checklist in section 4) and note that in the PR body.
+- Polls every 30s, up to 10 minutes
+- **Exit 0** = `gemini-code-assist[bot]` posted `## Code Review` → safe to proceed
+- **Exit 1** = **DO NOT MERGE** — comment `/gemini review` on the PR and poll again
 
-## 3. Merge only after review
+### Forbidden
 
-- Merge the PR to `main` **only when**:
-  - Gemini feedback is addressed (or explicitly declined with reason in PR), **and**
-  - Build/deploy sanity checks pass
-- After merge, confirm deploy (Cloudflare Worker `morshlive`) if the change affects the live site
+- **Merging in the same agent turn as PR creation** without a successful poll
+- **Merging before** `gemini-code-assist[bot]` finishes (summary-only “reviewing shortly” is NOT enough)
+- **Fast-forwarding to `main`** without a PR
 
-## 4. Agent self-review checklist (when Gemini has not responded)
+### After poll succeeds
+
+1. Read **all** inline review comments and the summary
+2. Fix **MEDIUM** severity and above (and clear LOW bugs)
+3. Push fixes to the **same PR branch**
+4. **Run `poll-gemini-review.js` again** after every fix push
+5. Only then merge
+
+If Gemini times out after 10 minutes, comment `/gemini review` on the PR, poll again.  
+If still unavailable, run section 4 self-review, note that in the PR body, then merge.
+
+## 3. Merge only after poll + fixes
+
+Merge the PR to `main` **only when**:
+
+- `node scripts/poll-gemini-review.js <PR#>` exited **0**, and
+- Gemini feedback is addressed (or explicitly declined with reason in PR), and
+- CI is green (including **Gemini review gate** if enabled on the repo)
+
+After merge, confirm Cloudflare Worker `morshlive` deploy if the change affects the live site.
+
+## 4. Agent self-review checklist (Gemini timeout fallback only)
 
 - [ ] No secrets in tracked files
 - [ ] Stream routing: `EMBED_BINDING` / `channel-bindings.json` consistent
@@ -43,12 +62,10 @@ If Gemini is unavailable, run an equivalent review yourself (Bugbot checklist in
 
 ## 5. Deploy
 
-- Production: Cloudflare Worker **`morshlive`** (not stale Pages `korazero`)
-- Custom domain: `korazero.com` → Worker, not Pages
-- Do not ask the user to run terminal commands — use PR + merge + Cloudflare Git deploy
+- Production: Cloudflare Worker **`morshlive`**
+- Custom domain: `korazero.com` → Worker (not stale Pages `korazero`)
 
 ## 6. User communication
 
-- Do not tell the user to merge or run review steps that are **your** job
-- Summarize what Gemini found and what you fixed
-- Link the PR number
+- Do not ask the user to merge or poll Gemini — that is **your** job
+- Report: PR link, poll wait time, what Gemini found, what you fixed
