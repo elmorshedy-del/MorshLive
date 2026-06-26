@@ -26,7 +26,9 @@
       if (localStorage.getItem("kz-tv") === "1") return true;
     } catch (e) { /* localStorage may be unavailable */ }
     if (TV_UA.test(navigator.userAgent || "")) return true;
-    // Big screen + no fine pointer (typical of a TV browser).
+    // Big screen + no fine pointer (typical of a TV browser) — skip phones/tablets.
+    const isNarrow = window.matchMedia && window.matchMedia("(max-width: 767px)").matches;
+    if (isNarrow) return false;
     const coarse = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
     const noHover = window.matchMedia && window.matchMedia("(hover: none)").matches;
     if ((window.innerWidth >= 1920 || screen.width >= 1920) && (coarse || noHover)) return true;
@@ -62,7 +64,18 @@
       btn.setAttribute("aria-pressed", on ? "true" : "false");
       const label = btn.querySelector("[data-tv-label]");
       if (label) label.textContent = on ? t("tv.toggleOn") : t("tv.toggle");
+      const cta = btn.querySelector("[data-tv-cta]");
+      if (cta) cta.textContent = on ? t("tv.ctaOn") : t("tv.ctaEnable");
       btn.setAttribute("aria-label", on ? t("tv.toggleAriaOff") : t("tv.toggleAria"));
+    });
+    document.querySelectorAll(".js-tv-status-text").forEach((el) => {
+      el.textContent = on ? t("tv.statusOn") : t("tv.statusOff");
+    });
+    document.querySelectorAll(".js-tv-status-dot").forEach((el) => {
+      el.classList.toggle("is-on", on);
+    });
+    document.querySelectorAll(".tv-spotlight").forEach((el) => {
+      el.classList.toggle("tv-spotlight--active", on);
     });
   }
 
