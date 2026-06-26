@@ -4,7 +4,7 @@
  * ==========================================================================*/
 (function () {
   function channelEmbed() {
-    return channel.embed || { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
+    return channel.embed || { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
   }
 
   const embedUrlFor = (embed, i) =>

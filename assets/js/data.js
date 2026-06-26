@@ -16,9 +16,10 @@
 // ---------------------------------------------------------------------------
 // Worldkoora uses serv=1 for "البث 1" (serv=2 is often empty). servStart aligns our
 // server buttons (0-based) with their 1-based query param.
+// Same-origin /wk/ proxy (worker.js) serves worldkoora vip pages without preroll ads.
 const EMBEDS = {
-  vip1: { url: "https://vip.worldkoora.com/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 },
-  vip2: { url: "https://vip.worldkoora.com/albaplayer/vip2/", param: "serv", servStart: 1, servers: 1 },
+  vip1: { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 },
+  vip2: { url: "/wk/albaplayer/vip2/", param: "serv", servStart: 1, servers: 1 },
 };
 
 function embedUrlFor(embed, serverIndex) {
