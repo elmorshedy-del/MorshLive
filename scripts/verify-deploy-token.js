@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
  * Verify a Cloudflare API token can deploy the morshlive Worker.
+ * Supports user-owned and account-owned (cfat_) tokens.
  * Usage: CLOUDFLARE_API_TOKEN=... CLOUDFLARE_ACCOUNT_ID=... node scripts/verify-deploy-token.js
  */
 const token = process.env.CLOUDFLARE_API_TOKEN;
@@ -21,9 +22,21 @@ async function check(url) {
 }
 
 (async () => {
-  const verify = await check("https://api.cloudflare.com/client/v4/user/tokens/verify");
-  if (!verify.ok) {
-    console.error("Token invalid:", verify.body.errors || verify.status);
+  const userVerify = await check("https://api.cloudflare.com/client/v4/user/tokens/verify");
+  const accountVerify = await check(
+    `https://api.cloudflare.com/client/v4/accounts/${accountId}/tokens/verify`
+  );
+
+  const tokenOk =
+    userVerify.ok ||
+    accountVerify.ok ||
+    (accountVerify.body && accountVerify.body.result && accountVerify.body.result.status === "active");
+
+  if (!tokenOk) {
+    console.error("Token invalid (user + account verify failed):");
+    console.error("  user:", userVerify.body.errors || userVerify.status);
+    console.error("  account:", accountVerify.body.errors || accountVerify.status);
+    console.error("Tip: Account API tokens need account_id in wrangler.toml (set) and no IP filter on token.");
     process.exit(1);
   }
 

@@ -6,6 +6,7 @@
 name = "morshlive"
 main = "worker.js"
 compatibility_date = "2024-06-01"
+account_id = "f06dda0c02d25976dcda319e942e432c" # pragma: allowlist secret
 
 [assets]
 directory = "."
