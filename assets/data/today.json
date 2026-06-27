@@ -294,6 +294,7 @@
       "venue": "Lumen Field · Seattle, WA",
       "channel": "beIN MAX 1",
       "channelId": "bein-max-1",
+      "embedKey": "vip1",
       "commentator": "علي محمد علي",
       "source": "thesportsdb+espn",
       "commentators": [
@@ -320,6 +321,7 @@
       "venue": "BC Place · Vancouver, BC",
       "channel": "beIN MAX 2",
       "channelId": "bein-max-2",
+      "embedKey": "vip2",
       "commentator": "عبدالله الغامدي",
       "source": "thesportsdb+espn",
       "commentators": [

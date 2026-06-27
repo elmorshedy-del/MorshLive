@@ -1,15 +1,36 @@
 {
-  "version": 6,
-  "updatedAt": "2026-06-27T00:00:00.000Z",
+  "version": 8,
+  "updatedAt": "2026-06-27T03:15:00.000Z",
   "embedBinding": {
-    "bein-max-1": "vip2",
-    "bein-max-2": "vip1",
+    "bein-max-1": "vip1",
+    "bein-max-2": "vip2",
     "bein-max-3": "vip1",
     "bein-max-4": "vip2",
     "bein-sports-1": "vip2",
     "bein-sports-2": "vip1"
   },
   "calibration": [
+    {
+      "date": "2026-06-27T03:15:00.000Z",
+      "issue": "Egypt vs Iran (MAX 1) showed wrong stream at 03:00 UTC; collides with NZ vs Belgium on MAX 2.",
+      "rootCause": "vip1/vip2 inverted for MAX 1/2 pair during simultaneous 03:00 UTC kickoff.",
+      "fix": "Swap bein-max-1→vip1 (Egypt) and bein-max-2→vip2 (Belgium); pin embedKey on both matches.",
+      "liveAtTime": [
+        {
+          "match": "Egypt vs Iran",
+          "channelId": "bein-max-1",
+          "channel": "beIN MAX 1",
+          "embedKey": "vip1"
+        },
+        {
+          "match": "New Zealand vs Belgium",
+          "channelId": "bein-max-2",
+          "channel": "beIN MAX 2",
+          "embedKey": "vip2"
+        }
+      ],
+      "userReport": "Fix Egypt now"
+    },
     {
       "date": "2026-06-27T00:00:00.000Z",
       "issue": "Cape Verde vs Saudi Arabia (MAX 3) showed Uruguay pre-game; both MAX 3 and Sports 1 routed to vip2.",

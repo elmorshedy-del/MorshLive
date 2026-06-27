@@ -1,10 +1,10 @@
 /* Auto-synced from assets/data/channel-bindings.json by fetch-matches.js */
 window.KZ_CHANNEL_BINDINGS = {
-  "version": 6,
-  "updatedAt": "2026-06-27T00:00:00.000Z",
+  "version": 8,
+  "updatedAt": "2026-06-27T03:15:00.000Z",
   "embedBinding": {
-    "bein-max-1": "vip2",
-    "bein-max-2": "vip1",
+    "bein-max-1": "vip1",
+    "bein-max-2": "vip2",
     "bein-max-3": "vip1",
     "bein-max-4": "vip2",
     "bein-sports-1": "vip2",
@@ -12,10 +12,31 @@ window.KZ_CHANNEL_BINDINGS = {
   },
   "calibration": [
     {
+      "date": "2026-06-27T03:15:00.000Z",
+      "issue": "Egypt vs Iran (MAX 1) showed wrong stream at 03:00 UTC; collides with NZ vs Belgium on MAX 2.",
+      "rootCause": "vip1/vip2 inverted for MAX 1/2 pair during simultaneous 03:00 UTC kickoff.",
+      "fix": "Swap bein-max-1→vip1 (Egypt) and bein-max-2→vip2 (Belgium); pin embedKey on both matches.",
+      "liveAtTime": [
+        {
+          "match": "Egypt vs Iran",
+          "channelId": "bein-max-1",
+          "channel": "beIN MAX 1",
+          "embedKey": "vip1"
+        },
+        {
+          "match": "New Zealand vs Belgium",
+          "channelId": "bein-max-2",
+          "channel": "beIN MAX 2",
+          "embedKey": "vip2"
+        }
+      ],
+      "userReport": "Fix Egypt now"
+    },
+    {
       "date": "2026-06-27T00:00:00.000Z",
       "issue": "Cape Verde vs Saudi Arabia (MAX 3) showed Uruguay pre-game; both MAX 3 and Sports 1 routed to vip2.",
       "rootCause": "Static odd-MAX→vip2 rule put bein-max-3 and bein-sports-1 on the same vip slot during the 00:00 UTC window.",
-      "fix": "Route bein-max-3 and bein-max-4 to vip1; keep bein-sports-1 on vip2 for Uruguay/Spain.",
+      "fix": "Route bein-max-3 to vip1 (Saudi) and keep bein-sports-1 on vip2 (Uruguay); swap MAX 4 to vip2 so MAX 3/4 stay on different slots.",
       "liveAtTime": [
         {
           "match": "Cape Verde vs Saudi Arabia",
