@@ -2,6 +2,7 @@
 .github/**
 scripts/**
 docs/**
+vendor/**
 .env
 .env.*
 .wrangler/**
