@@ -371,6 +371,75 @@
         else loadStream(channel.stream);
       }
     }
+    scheduleAutoReload();
+  }
+
+  /* ---------------------------------------------- Stream reload
+   * The worldkoora source sometimes parks on a static frame while a match is
+   * live. A fresh load of the active player recovers it, so we expose a manual
+   * "reload" control AND auto-reload 15 minutes before each kickoff so the
+   * stream is primed by the time the game starts. */
+  const RELOAD_LEAD_MS = 15 * 60 * 1000;
+  let reloadTimer = null;
+
+  function parseKickoff(ts) {
+    if (!ts) return NaN;
+    const text = String(ts).trim();
+    const norm = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(text) ? `${text}Z` : text;
+    return Date.parse(norm);
+  }
+
+  function activeServerIndex() {
+    const sel = activePlayer === 1
+      ? document.querySelector("#servers .server-btn.active[data-srv]")
+      : document.querySelector("#vip-servers .server-btn.active[data-vip-srv]");
+    if (sel) return Number(sel.dataset.srv != null ? sel.dataset.srv : sel.dataset.vipSrv) || 0;
+    return activePlayer === 2 ? servIndexFromParam(vipEmbed(), params.get("serv")) : 0;
+  }
+
+  function reloadActivePlayer() {
+    if (activePlayer === 1) {
+      if (isEmbed) loadEmbed(activeServerIndex());
+      else if (channel.stream) { loadStream(channel.stream); if (started) play(); }
+    } else {
+      vipLoaded = false; // bypass the same-URL guard so the iframe truly reloads
+      loadVipEmbed(activeServerIndex());
+    }
+  }
+
+  // (Re)arm a single timer for the soonest "kickoff − 15 min" still in the future.
+  function scheduleAutoReload() {
+    if (reloadTimer) { clearTimeout(reloadTimer); reloadTimer = null; }
+    const now = Date.now();
+    const next = (MATCHES || [])
+      .map((m) => parseKickoff(m.kickoffUtc))
+      .filter((ms) => !isNaN(ms))
+      .map((ms) => ms - RELOAD_LEAD_MS)
+      .filter((ts) => ts > now + 1000)
+      .sort((a, b) => a - b)[0];
+    if (next == null) return;
+    reloadTimer = setTimeout(() => {
+      reloadActivePlayer();
+      scheduleAutoReload();
+    }, Math.min(next - now, 0x7fffffff));
+  }
+
+  function initReloadButton() {
+    const host = document.getElementById("player-switch");
+    if (!host || host.querySelector(".js-stream-reload")) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "player-switch-btn js-stream-reload";
+    btn.setAttribute("aria-label", t("watch.reload"));
+    btn.innerHTML =
+      `<svg class="ico reload-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><polyline points="21 4 21 10 15 10"/></svg> ` +
+      `<span data-i18n="watch.reload">${t("watch.reload")}</span>`;
+    btn.addEventListener("click", () => {
+      reloadActivePlayer();
+      btn.classList.add("is-spinning");
+      setTimeout(() => btn.classList.remove("is-spinning"), 700);
+    });
+    host.appendChild(btn);
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -392,6 +461,7 @@
       }
     }
     initPlayerSwitch();
+    initReloadButton();
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(recheckVisibleServers, 120 * 1000);
