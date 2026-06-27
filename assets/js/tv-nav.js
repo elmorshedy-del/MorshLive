@@ -66,13 +66,14 @@
   /* ------------------------------------------- Pick nearest in a direction */
   // Score candidates by primary-axis travel plus a penalty for cross-axis drift,
   // so "down" prefers the element most directly below the current one.
-  function bestInDirection(from, dir) {
+  function bestInDirection(from, dir, list) {
+    const candidates = list || focusables();
     const cur = from.getBoundingClientRect();
     const c = center(cur);
     let best = null;
     let bestScore = Infinity;
 
-    focusables().forEach((el) => {
+    candidates.forEach((el) => {
       if (el === from) return;
       const r = el.getBoundingClientRect();
       const t = center(r);
@@ -93,7 +94,9 @@
 
   function focusEl(el) {
     if (!el) return;
-    try { el.focus({ preventScroll: false }); } catch (e) { el.focus(); }
+    // preventScroll avoids the browser's instant jump fighting our smooth
+    // scrollIntoView below (double / jerky scroll on TVs).
+    try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
     if (el.scrollIntoView) {
       try { el.scrollIntoView({ block: "nearest", inline: "nearest", behavior: "smooth" }); } catch (e) { /* old TV */ }
     }
@@ -107,27 +110,40 @@
     if (!root.classList.contains("tv-mode")) return;
     const dir = DIRS[e.key] || CODE_DIRS[e.keyCode];
 
-    // Back / Escape — step focus out to the header so the user is never stuck.
+    // Back / Escape — step focus out to the header. If focus is already in the
+    // header, do nothing so the remote's native Back (exit page/app) still works.
     if (e.key === "Escape" || e.key === "GoBack" || e.key === "BrowserBack" || e.keyCode === 10009 /* Tizen back */) {
-      const header = document.querySelector(".site-header a, .nav-links a");
-      if (header) { focusEl(header); e.preventDefault(); }
+      let inHeader = false;
+      for (let n = document.activeElement; n && n !== document.body; n = n.parentElement) {
+        if (n.classList && (n.classList.contains("site-header") || n.classList.contains("nav-links"))) {
+          inHeader = true; break;
+        }
+      }
+      if (!inHeader) {
+        const header = document.querySelector(".site-header a, .nav-links a");
+        if (header) { focusEl(header); e.preventDefault(); }
+      }
       return;
     }
 
     if (dir) {
+      const list = focusables();
       const active = document.activeElement;
-      const start = active && active !== document.body && visible(active) ? active : focusables()[0];
+      const start = active && active !== document.body && visible(active) ? active : list[0];
       if (!start) return;
       if (!active || active === document.body) { focusEl(start); e.preventDefault(); return; }
-      const next = bestInDirection(start, dir);
+      const next = bestInDirection(start, dir, list);
       if (next) { focusEl(next); e.preventDefault(); }
       return;
     }
 
-    // Enter / OK on a non-native control → trigger a click.
+    // Enter / OK on a non-native control → trigger a click. Leave native
+    // interactive elements (which handle Enter themselves) alone.
     if ((e.key === "Enter" || e.keyCode === 13) && document.activeElement) {
       const el = document.activeElement;
-      if (el.tagName === "A" || el.tagName === "BUTTON" || el.tagName === "INPUT") return; // native
+      const tag = el.tagName;
+      if (tag === "A" || tag === "BUTTON" || tag === "INPUT" || tag === "SELECT" ||
+          tag === "TEXTAREA" || tag === "SUMMARY" || tag === "VIDEO" || tag === "IFRAME") return;
       el.click();
       e.preventDefault();
     }
