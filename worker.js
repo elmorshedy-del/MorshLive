@@ -21,19 +21,9 @@ const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
 
 const EMBED_SHIM = `<script id="kz-embed-shim">
 (function(){
-  var WK='https://vip.worldkoora.com';
   window.AplrDevprotocol='0';
   window.AplrDevredirect='';
   window.AplrPopUp=function(){};
-  var fakeLoc={hostname:'vip.worldkoora.com',host:'vip.worldkoora.com',href:WK+'/',origin:WK,protocol:'https:',pathname:'/',search:'',hash:'',toString:function(){return WK+'/';}};
-  var fakeWin={location:fakeLoc};
-  try{
-    Object.defineProperty(window,'top',{get:function(){return fakeWin;},configurable:true});
-    Object.defineProperty(window,'parent',{get:function(){return fakeWin;},configurable:true});
-  }catch(e){}
-  try{
-    Object.defineProperty(document,'referrer',{get:function(){return WK+'/albaplayer/vip1/';},configurable:true});
-  }catch(e){}
 })();
 </script>`;
 
@@ -133,9 +123,10 @@ async function proxyHls(request) {
   }
 
   const referer = `${WORLDKOORA}/albaplayer/vip1/?serv=1`;
+  const isHead = request.method === "HEAD";
   try {
     const res = await fetch(target, {
-      method: request.method,
+      method: isHead ? "HEAD" : request.method,
       headers: {
         "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
         Accept: "*/*",
@@ -146,13 +137,13 @@ async function proxyHls(request) {
     });
 
     if (!res.ok) {
-      return new Response(`Upstream error ${res.status}`, { status: res.status });
+      return new Response(isHead ? null : `Upstream error ${res.status}`, { status: res.status });
     }
 
     const type = (res.headers.get("Content-Type") || "").toLowerCase();
     const isManifest = type.includes("mpegurl") || type.includes("m3u8") || target.includes(".m3u8");
 
-    if (isManifest) {
+    if (isManifest && !isHead) {
       const text = await res.text();
       const rewritten = rewriteM3u8(text, target, origin);
       return new Response(rewritten, {
@@ -166,17 +157,30 @@ async function proxyHls(request) {
       });
     }
 
-    return new Response(res.body, {
+    if (isManifest && isHead) {
+      return new Response(null, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/vnd.apple.mpegurl",
+          "Cache-Control": "no-store",
+          "Access-Control-Allow-Origin": "*",
+          "X-KZ-Proxy": "hls-manifest",
+        },
+      });
+    }
+
+    const headers = {
+      "Content-Type": res.headers.get("Content-Type") || "application/octet-stream",
+      "Cache-Control": "public, max-age=30",
+      "Access-Control-Allow-Origin": "*",
+      "X-KZ-Proxy": "hls-segment",
+    };
+    return new Response(isHead ? null : res.body, {
       status: res.status,
-      headers: {
-        "Content-Type": res.headers.get("Content-Type") || "application/octet-stream",
-        "Cache-Control": "public, max-age=30",
-        "Access-Control-Allow-Origin": "*",
-        "X-KZ-Proxy": "hls-segment",
-      },
+      headers,
     });
   } catch {
-    return new Response("Upstream unavailable", { status: 502 });
+    return new Response(isHead ? null : "Upstream unavailable", { status: 502 });
   }
 }
 
@@ -218,11 +222,23 @@ async function proxyVip(request, slot) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    const method = request.method;
     const vip = url.pathname.match(VIP_RE);
-    if (vip && request.method === "GET") {
+    if (vip && (method === "GET" || method === "HEAD")) {
       return proxyVip(request, vip[1].toLowerCase());
     }
-    if (HLS_RE.test(url.pathname) && request.method === "GET") {
+    if (HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
+      if (method === "OPTIONS") {
+        return new Response(null, {
+          status: 204,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Max-Age": "86400",
+          },
+        });
+      }
       return proxyHls(request);
     }
     return env.ASSETS.fetch(request);
