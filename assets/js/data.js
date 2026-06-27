@@ -47,8 +47,8 @@ const BINDING_DOC = window.KZ_CHANNEL_BINDINGS || {
     "bein-max-2": "vip1",
     "bein-max-3": "vip2",
     "bein-max-4": "vip1",
-    "bein-sports-1": "vip2",
-    "bein-sports-2": "vip1",
+    "bein-sports-1": "vip1",
+    "bein-sports-2": "vip2",
   },
 };
 const EMBED_BINDING = BINDING_DOC.embedBinding;

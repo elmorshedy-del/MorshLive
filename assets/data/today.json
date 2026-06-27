@@ -248,6 +248,7 @@
       "venue": "NRG Stadium · Houston, TX",
       "channel": "beIN MAX 3",
       "channelId": "bein-max-3",
+      "embedKey": "vip2",
       "commentator": "علي الكعبي",
       "source": "thesportsdb+espn",
       "commentators": [
@@ -274,6 +275,7 @@
       "venue": "Estadio Akron · Guadalajara · Mexico",
       "channel": null,
       "channelId": "bein-sports-1",
+      "embedKey": "vip1",
       "commentator": null,
       "source": "espn"
     },

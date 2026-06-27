@@ -1,21 +1,42 @@
 /* Auto-synced from assets/data/channel-bindings.json by fetch-matches.js */
 window.KZ_CHANNEL_BINDINGS = {
-  "version": 6,
-  "updatedAt": "2026-06-27T00:00:00.000Z",
+  "version": 7,
+  "updatedAt": "2026-06-27T02:30:00.000Z",
   "embedBinding": {
     "bein-max-1": "vip2",
     "bein-max-2": "vip1",
-    "bein-max-3": "vip1",
-    "bein-max-4": "vip2",
-    "bein-sports-1": "vip2",
-    "bein-sports-2": "vip1"
+    "bein-max-3": "vip2",
+    "bein-max-4": "vip1",
+    "bein-sports-1": "vip1",
+    "bein-sports-2": "vip2"
   },
   "calibration": [
+    {
+      "date": "2026-06-27T02:30:00.000Z",
+      "issue": "During Uruguay vs Spain shootout both site streams showed Spain; Saudi Arabia (MAX 3) lost correct feed.",
+      "rootCause": "worldkoora vip1/vip2 swapped which upstream feed they carry at penalty shootout — v6 had max-3→vip1 (Saudi) and sports-1→vip2 (Spain); slots inverted mid-match.",
+      "fix": "Swap MAX 3→vip2 (Saudi) and Sports 1→vip1 (Spain); pin embedKey on both matches in today.json.",
+      "liveAtTime": [
+        {
+          "match": "Cape Verde vs Saudi Arabia",
+          "channelId": "bein-max-3",
+          "channel": "beIN MAX 3",
+          "embedKey": "vip2"
+        },
+        {
+          "match": "Uruguay vs Spain",
+          "channelId": "bein-sports-1",
+          "channel": "beIN Sports 1",
+          "embedKey": "vip1"
+        }
+      ],
+      "userReport": "Flipped between shootouts; both Spain — restore KSA"
+    },
     {
       "date": "2026-06-27T00:00:00.000Z",
       "issue": "Cape Verde vs Saudi Arabia (MAX 3) showed Uruguay pre-game; both MAX 3 and Sports 1 routed to vip2.",
       "rootCause": "Static odd-MAX→vip2 rule put bein-max-3 and bein-sports-1 on the same vip slot during the 00:00 UTC window.",
-      "fix": "Route bein-max-3 and bein-max-4 to vip1; keep bein-sports-1 on vip2 for Uruguay/Spain.",
+      "fix": "Route bein-max-3 to vip1 (Saudi) and keep bein-sports-1 on vip2 (Uruguay); swap MAX 4 to vip2 so MAX 3/4 stay on different slots.",
       "liveAtTime": [
         {
           "match": "Cape Verde vs Saudi Arabia",
