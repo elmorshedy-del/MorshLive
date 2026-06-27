@@ -125,6 +125,7 @@ window.keepDisplayMatch = keepDisplayMatch;
 // Corrects cached snapshot status using kickoff timestamp when API status is stale.
 const MATCH_WINDOW_MS = 135 * 60 * 1000;
 const RECENT_ENDED_MS = 18 * 60 * 60 * 1000;
+const POST_MATCH_STREAM_MS = 30 * 60 * 1000;
 function parseKickoffMs(ts) {
   if (!ts) return NaN;
   const text = String(ts).trim();
@@ -153,9 +154,14 @@ function keepDisplayMatch(m) {
   return Date.now() - kickoff <= MATCH_WINDOW_MS + RECENT_ENDED_MS;
 }
 
-/** Ended within the post-match commentary window — stream/commentary still available. */
+/** Ended within the post-match stream window — "just finished" + commentary still available. */
 function isRecentlyEndedMatch(m) {
-  return !!(m && m.status === "ended" && keepDisplayMatch(m));
+  if (!m || m.status !== "ended") return false;
+  const kickoff = parseKickoffMs(m.kickoffUtc);
+  if (isNaN(kickoff)) return false;
+  const elapsed = Date.now() - kickoff;
+  if (elapsed < MATCH_WINDOW_MS) return true;
+  return elapsed <= MATCH_WINDOW_MS + POST_MATCH_STREAM_MS;
 }
 
 function sortDisplayMatches(matches) {
