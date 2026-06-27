@@ -126,7 +126,7 @@ async function proxyHls(request) {
   const isHead = request.method === "HEAD";
   try {
     const res = await fetch(target, {
-      method: isHead ? "HEAD" : request.method,
+      method: request.method,
       headers: {
         "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
         Accept: "*/*",
@@ -188,10 +188,11 @@ async function proxyVip(request, slot) {
   const incoming = new URL(request.url);
   const upstream = new URL(`${WORLDKOORA}/albaplayer/${slot}/`);
   upstream.search = incoming.search;
+  const isHead = request.method === "HEAD";
 
   try {
     const res = await fetch(upstream.toString(), {
-      method: "GET",
+      method: request.method,
       headers: {
         "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
         Accept: "text/html,application/xhtml+xml",
@@ -201,7 +202,18 @@ async function proxyVip(request, slot) {
     });
 
     if (!res.ok) {
-      return new Response(`Upstream error ${res.status}`, { status: res.status });
+      return new Response(isHead ? null : `Upstream error ${res.status}`, { status: res.status });
+    }
+
+    if (isHead) {
+      return new Response(null, {
+        status: 200,
+        headers: {
+          "Content-Type": "text/html; charset=utf-8",
+          "Cache-Control": "no-store",
+          "X-KZ-Proxy": "worldkoora-vip",
+        },
+      });
     }
 
     const html = await res.text();
