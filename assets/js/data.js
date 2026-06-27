@@ -160,7 +160,7 @@ function isRecentlyEndedMatch(m) {
   const kickoff = parseKickoffMs(m.kickoffUtc);
   if (isNaN(kickoff)) return false;
   const elapsed = Date.now() - kickoff;
-  if (elapsed < MATCH_WINDOW_MS) return true;
+  if (elapsed < 0) return false;
   return elapsed <= MATCH_WINDOW_MS + POST_MATCH_STREAM_MS;
 }
 
