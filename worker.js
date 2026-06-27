@@ -7,7 +7,7 @@
  */
 const WORLDKOORA = "https://vip.worldkoora.com";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
-const HLS_RE = /^\/wk\/hls$/i;
+const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
 
 const ALLOWED_STREAM_HOST =
   /(^|\.)((heinzromanigi|teworld|smarop)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+)$/i;
@@ -24,6 +24,29 @@ const EMBED_SHIM = `<script id="kz-embed-shim">
   window.AplrDevprotocol='0';
   window.AplrDevredirect='';
   window.AplrPopUp=function(){};
+  function wrapPlayer(Orig){
+    if(!Orig||Orig.__kzPatched)return Orig;
+    function Patched(opts){
+      opts=opts||{};
+      var src=String(opts.source||'');
+      if(src&&!opts.mimeType&&(/\\/wk\\/(hls|stream\\.m3u8)/.test(src)||/\\.m3u8/i.test(src.split('?')[0]))){
+        opts.mimeType='application/vnd.apple.mpegurl';
+      }
+      return new Orig(opts);
+    }
+    Patched.__kzPatched=true;
+    return Patched;
+  }
+  var clappr;
+  Object.defineProperty(window,'Clappr',{
+    configurable:true,
+    enumerable:true,
+    get:function(){return clappr;},
+    set:function(v){
+      clappr=v;
+      if(v&&v.Player)v.Player=wrapPlayer(v.Player);
+    }
+  });
 })();
 </script>`;
 
@@ -36,7 +59,7 @@ function stripBlockedScripts(html) {
 }
 
 function hlsProxyUrl(target, origin) {
-  return `${origin}/wk/hls?u=${encodeURIComponent(target)}`;
+  return `${origin}/wk/stream.m3u8?u=${encodeURIComponent(target)}`;
 }
 
 function resolveStreamUrl(relative, base) {
@@ -54,6 +77,12 @@ function isAllowedStreamUrl(url) {
   } catch {
     return false;
   }
+}
+
+function segmentContentType(target) {
+  if (/\.ts(?:\?|$)/i.test(target)) return "video/mp2t";
+  if (/\.m3u8(?:\?|$)/i.test(target)) return "application/vnd.apple.mpegurl";
+  return null;
 }
 
 function rewriteM3u8(body, manifestUrl, origin) {
@@ -170,7 +199,7 @@ async function proxyHls(request) {
     }
 
     const headers = {
-      "Content-Type": res.headers.get("Content-Type") || "application/octet-stream",
+      "Content-Type": segmentContentType(target) || res.headers.get("Content-Type") || "application/octet-stream",
       "Cache-Control": "public, max-age=30",
       "Access-Control-Allow-Origin": "*",
       "X-KZ-Proxy": "hls-segment",
