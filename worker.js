@@ -35,6 +35,8 @@ const EMBED_SHIM = `<script id="kz-embed-shim">
       return new Orig(opts);
     }
     Patched.__kzPatched=true;
+    Patched.prototype=Orig.prototype;
+    Object.assign(Patched,Orig);
     return Patched;
   }
   var clappr;
@@ -47,6 +49,7 @@ const EMBED_SHIM = `<script id="kz-embed-shim">
       if(v&&v.Player)v.Player=wrapPlayer(v.Player);
     }
   });
+  if(window.Clappr&&window.Clappr.Player)window.Clappr.Player=wrapPlayer(window.Clappr.Player);
 })();
 </script>`;
 
