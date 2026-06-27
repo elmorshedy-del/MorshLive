@@ -25,7 +25,7 @@ const EMBED_SHIM = `<script id="kz-embed-shim">
   window.AplrDevprotocol='0';
   window.AplrDevredirect='';
   window.AplrPopUp=function(){};
-  var fakeLoc={hostname:'vip.worldkoora.com',host:'vip.worldkoora.com',href:WK+'/',origin:WK,protocol:'https:',toString:function(){return WK+'/';}};
+  var fakeLoc={hostname:'vip.worldkoora.com',host:'vip.worldkoora.com',href:WK+'/',origin:WK,protocol:'https:',pathname:'/',search:'',hash:'',toString:function(){return WK+'/';}};
   var fakeWin={location:fakeLoc};
   try{
     Object.defineProperty(window,'top',{get:function(){return fakeWin;},configurable:true});
@@ -166,9 +166,8 @@ async function proxyHls(request) {
       });
     }
 
-    const body = await res.arrayBuffer();
-    return new Response(body, {
-      status: 200,
+    return new Response(res.body, {
+      status: res.status,
       headers: {
         "Content-Type": res.headers.get("Content-Type") || "application/octet-stream",
         "Cache-Control": "public, max-age=30",
