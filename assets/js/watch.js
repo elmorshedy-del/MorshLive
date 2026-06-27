@@ -407,11 +407,17 @@
     }
   }
 
-  // (Re)arm a single timer for the soonest "kickoff − 15 min" still in the future.
+  // (Re)arm a single timer for the soonest "kickoff − 15 min" still in the
+  // future — but only for matches on the channel currently being watched (or the
+  // selected match), so an unrelated channel's kickoff never interrupts playback.
   function scheduleAutoReload() {
     if (reloadTimer) { clearTimeout(reloadTimer); reloadTimer = null; }
     const now = Date.now();
-    const next = (MATCHES || [])
+    const relevant = (MATCHES || []).filter((m) =>
+      (channel && m.channelId && m.channelId === channel.id) ||
+      (match && m.id === match.id)
+    );
+    const next = relevant
       .map((m) => parseKickoff(m.kickoffUtc))
       .filter((ms) => !isNaN(ms))
       .map((ms) => ms - RELOAD_LEAD_MS)
