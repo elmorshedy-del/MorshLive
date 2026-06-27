@@ -1,7 +1,37 @@
-# Keep HTML and assets in sync — always revalidate so a new deploy can't leave
-# a stale CSS/JS cached against fresh HTML (which caused oversized icons).
-/*
-  Cache-Control: public, max-age=0, must-revalidate
+# Cloudflare CDN edge caching (global PoPs). HTML stays fresh in the browser;
+# versioned JS/CSS use ?v= cache-bust on deploy so long browser cache is safe.
 
-/assets/*
+# Pages — browser revalidates; edge caches 1h for faster delivery worldwide
+/*.html
   Cache-Control: public, max-age=0, must-revalidate
+  CDN-Cache-Control: max-age=3600, stale-while-revalidate=86400
+
+/
+  Cache-Control: public, max-age=0, must-revalidate
+  CDN-Cache-Control: max-age=3600, stale-while-revalidate=86400
+
+# JS/CSS — immutable 1y (bump ?v= in HTML when you change these files)
+/assets/css/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/assets/js/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Live match data — short edge TTL; browsers always revalidate
+/assets/data/today.json
+  Cache-Control: public, max-age=0, must-revalidate
+  CDN-Cache-Control: max-age=60, stale-while-revalidate=120
+
+/assets/data/live-snapshot.json
+  Cache-Control: public, max-age=0, must-revalidate
+  CDN-Cache-Control: max-age=60, stale-while-revalidate=120
+
+# Channel bindings change rarely — longer edge cache
+/assets/data/channel-bindings.json
+  Cache-Control: public, max-age=0, must-revalidate
+  CDN-Cache-Control: max-age=300, stale-while-revalidate=600
+
+# Other static assets (images, etc.)
+/assets/*
+  Cache-Control: public, max-age=86400
+  CDN-Cache-Control: max-age=604800, stale-while-revalidate=86400

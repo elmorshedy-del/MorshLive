@@ -31,8 +31,15 @@ function cleanWorldkooraHtml(html) {
   return out;
 }
 
-async function proxyVip(request, slot) {
+async function proxyVip(request, slot, ctx) {
   const incoming = new URL(request.url);
+  const cacheKey = new Request(incoming.toString(), { method: "GET" });
+  const edge = caches.default;
+  const cached = await edge.match(cacheKey);
+  if (cached) {
+    return cached;
+  }
+
   const upstream = new URL(`${WORLDKOORA}/albaplayer/${slot}/`);
   upstream.search = incoming.search;
 
@@ -52,25 +59,28 @@ async function proxyVip(request, slot) {
     }
 
     const html = await res.text();
-    return new Response(cleanWorldkooraHtml(html), {
+    const response = new Response(cleanWorldkooraHtml(html), {
       status: 200,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "public, max-age=60",
+        "Cache-Control": "public, max-age=30",
+        "CDN-Cache-Control": "max-age=60, stale-while-revalidate=120",
         "X-KZ-Proxy": "worldkoora-vip",
       },
     });
+    ctx.waitUntil(edge.put(cacheKey, response.clone()));
+    return response;
   } catch (err) {
     return new Response("Upstream unavailable", { status: 502 });
   }
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const vip = url.pathname.match(VIP_RE);
     if (vip && request.method === "GET") {
-      return proxyVip(request, vip[1].toLowerCase());
+      return proxyVip(request, vip[1].toLowerCase(), ctx);
     }
     return env.ASSETS.fetch(request);
   },

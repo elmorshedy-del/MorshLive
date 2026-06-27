@@ -139,3 +139,45 @@ If **`morshlive.elmorshedy.workers.dev`** has the correct streams but **`korazer
 **Check it worked:** open korazero.com/watch and view page source — script URLs should include `watch.js?v=20260626b` (or newer), not `20260625c`.
 
 After the domain move, only **morshlive** needs Git deploys. The old Pages project can stay disconnected or be deleted later.
+
+---
+
+## Global CDN (faster in all countries)
+
+**You already have a CDN** when `korazero.com` is on Cloudflare with the orange-cloud proxy enabled. Traffic is served from the nearest Cloudflare data center (300+ cities), not from a single origin.
+
+The **morshlive Worker** + static assets binding deploys your HTML, JS, and CSS to that global edge network automatically.
+
+### What this repo configures
+
+| Asset | Browser | Cloudflare edge |
+|-------|---------|-----------------|
+| HTML (`*.html`, `/`) | Revalidate every visit | Cache 1 hour |
+| JS/CSS (`/assets/js`, `/assets/css`) | 1 year (`immutable`) | Same — bump `?v=` on deploy |
+| `today.json` / live snapshot | Always fresh | Cache 60s |
+| `channel-bindings.json` | Always fresh | Cache 5 min |
+| `/wk/albaplayer/vip1\|vip2` proxy | 30s | 60s at edge (Worker Cache API) |
+
+Rules live in `_headers` (static files) and `worker.js` (worldkoora proxy).
+
+### Dashboard settings (recommended)
+
+In [Cloudflare Dashboard](https://dash.cloudflare.com) → your zone **korazero.com**:
+
+1. **DNS** — `korazero.com` and `www` records must be **Proxied** (orange cloud), not DNS-only.
+2. **Speed → Optimization** — enable **Brotli** (on by default on most plans).
+3. **Caching → Configuration** — **Caching Level: Standard**; **Browser Cache TTL: Respect Existing Headers** (so our `_headers` file controls behavior).
+4. **Caching → Tiered Cache** — enable if available on your plan (fewer origin hits from distant regions).
+
+### Verify CDN is working
+
+After deploy, open DevTools → Network → pick any `assets/js/*.js` request:
+
+- Response header `cf-cache-status: HIT` means it was served from edge (not origin).
+- Second visit to the same page should show `HIT` for CSS/JS.
+
+Live video inside the iframe still streams from worldkoora; CDN speeds up the **site shell** and **player page HTML**, which is what makes the first load feel fast in Saudi Arabia, Europe, US, etc.
+
+### Important: one deployment path
+
+CDN headers in `_headers` only apply when traffic goes through the **morshlive Worker** (`wrangler deploy`). If `korazero.com` still points at an old **Pages** project, move the custom domain to the Worker (see section above) so edge caching and `/wk/` proxy both work.
