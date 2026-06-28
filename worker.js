@@ -10,7 +10,7 @@ const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
 
 const ALLOWED_STREAM_HOST =
-  /(^|\.)((heinzromanigi|teworld|smarop)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+)$/i;
+  /(^|\.)((heinzromanigi|teworld|smarop|golatooa)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+)$/i;
 
 const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
 .aplr-fxd-bnr,#aplr-fixedban,
