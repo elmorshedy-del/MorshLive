@@ -1202,4 +1202,4 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
 /* Reload-stream button spin feedback */
 .js-stream-reload .reload-ico { transition: transform .2s ease; }
 .js-stream-reload.is-spinning .reload-ico { animation: kzSpin .7s linear; }
-@keyframes kzSpin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@keyframes kzSpin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }

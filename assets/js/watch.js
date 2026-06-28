@@ -383,8 +383,10 @@
   let reloadTimer = null;
 
   function parseKickoff(ts) {
-    if (!ts) return NaN;
+    if (ts == null || ts === "") return NaN;
+    if (typeof ts === "number") return ts;            // already epoch millis
     const text = String(ts).trim();
+    if (/^\d+$/.test(text)) return Number(text);      // epoch millis as a string
     const norm = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(text) ? `${text}Z` : text;
     return Date.parse(norm);
   }
@@ -399,8 +401,14 @@
 
   function reloadActivePlayer() {
     if (activePlayer === 1) {
-      if (isEmbed) loadEmbed(activeServerIndex());
-      else if (channel.stream) { loadStream(channel.stream); if (started) play(); }
+      if (isEmbed) {
+        loadEmbed(activeServerIndex());
+      } else {
+        // Reload the server the user actually has selected, not the default.
+        const activeBtn = document.querySelector("#servers .server-btn.active");
+        const url = (activeBtn && activeBtn.dataset.url) || channel.stream;
+        if (url) { loadStream(url); if (started) play(); }
+      }
     } else {
       vipLoaded = false; // bypass the same-URL guard so the iframe truly reloads
       loadVipEmbed(activeServerIndex());
