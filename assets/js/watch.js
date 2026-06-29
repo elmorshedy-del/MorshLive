@@ -456,6 +456,43 @@
     host.appendChild(btn);
   }
 
+  /* ---------------------------------------------- Live-feed auto-recover
+   * There are only two real feeds (vip1/vip2). When a match link carries a wrong
+   * or stale channelId, Player 1 can land on the empty feed → a blackout even
+   * though the live game is on the other feed. The worker serves both players
+   * same-origin, so we can cheaply check which feed actually has a stream and
+   * switch Player 1 to the live one. */
+  function feedKeyOf(embed) {
+    return /vip2/.test((embed && embed.url) || "") ? "vip2" : "vip1";
+  }
+
+  async function feedHasStream(vipKey) {
+    try {
+      const res = await fetch(`/wk/albaplayer/${vipKey}/`, { cache: "no-store" });
+      if (!res.ok) return false;
+      const m = (await res.text()).match(/AlbaPlayerControl\('([^']*)'/);
+      return !!(m && m[1] && m[1].length > 0);
+    } catch (e) {
+      return false;
+    }
+  }
+
+  async function ensureLiveFeed() {
+    if (activePlayer !== 1 || !isEmbed || !channel.embed) return;
+    const curKey = feedKeyOf(channel.embed);
+    if (await feedHasStream(curKey)) return; // current feed is fine
+    const otherKey = curKey === "vip1" ? "vip2" : "vip1";
+    if (!(await feedHasStream(otherKey))) return; // neither is live — nothing to do
+    const otherEmbed = window.SITE_DATA && window.SITE_DATA.embedForKey
+      ? window.SITE_DATA.embedForKey(otherKey)
+      : null;
+    if (!otherEmbed) return;
+    channel = { ...channel, embed: otherEmbed };
+    isEmbed = true;
+    loadEmbed(0);
+    renderServers();
+  }
+
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();
     if (shell) savedShellMarkup = shell.innerHTML;
@@ -476,6 +513,7 @@
     }
     initPlayerSwitch();
     initReloadButton();
+    ensureLiveFeed().catch(() => {});
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(recheckVisibleServers, 120 * 1000);
