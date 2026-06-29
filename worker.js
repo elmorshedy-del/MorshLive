@@ -23,6 +23,11 @@ const WORLDKOORA = "https://vip.worldkoora.com";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
 
+// dlhd (daddylive) 24/7 source — fully isolated from the worldkoora /wk/ path.
+const DLHD_BASE = "https://dlhd.pk";
+const DL_EMBED_RE = /^\/dl\/(\d{1,6})\/?$/;  // /dl/{channelId} -> clean player page
+const DL_HLS_RE = /^\/dl\/hls$/i;            // signed HLS proxy for dlhd streams
+
 // Fallback trust for UN-signed ?u= values only (direct hits / legacy links).
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
 // needs to be edited every time worldkoora rotates its CDN host.
@@ -146,9 +151,10 @@ function stripBlockedScripts(html) {
   });
 }
 
-function hlsProxyUrl(target, origin, sig) {
+function hlsProxyUrl(target, origin, sig, basePath) {
+  const path = basePath || "/wk/stream.m3u8";
   const signature = sig ? `&sig=${encodeURIComponent(sig)}` : "";
-  return `${origin}/wk/stream.m3u8?u=${encodeURIComponent(target)}${signature}`;
+  return `${origin}${path}?u=${encodeURIComponent(target)}${signature}`;
 }
 
 function resolveStreamUrl(relative, base) {
@@ -189,7 +195,7 @@ function segmentContentType(target) {
 // Rewrite every stream URL a manifest references into a signed /wk proxy URL.
 // The manifest was fetched from a host we already trusted (signed or allowlisted),
 // so its child variants/segments inherit that trust regardless of their hostname.
-async function rewriteM3u8(body, manifestUrl, origin, secret) {
+async function rewriteM3u8(body, manifestUrl, origin, secret, basePath) {
   const base = manifestUrl.replace(/[^/]+$/, "");
   const lines = body.split("\n");
   const rewritten = await Promise.all(
@@ -201,13 +207,13 @@ async function rewriteM3u8(body, manifestUrl, origin, secret) {
           const abs = resolveStreamUrl(m[1], manifestUrl);
           if (!shouldProxyStream(abs, origin)) return m[0];
           const sig = await signTarget(abs, secret);
-          return `URI="${hlsProxyUrl(abs, origin, sig)}"`;
+          return `URI="${hlsProxyUrl(abs, origin, sig, basePath)}"`;
         });
       }
       const abs = resolveStreamUrl(trimmed, base || manifestUrl);
       if (!shouldProxyStream(abs, origin)) return trimmed;
       const sig = await signTarget(abs, secret);
-      return hlsProxyUrl(abs, origin, sig);
+      return hlsProxyUrl(abs, origin, sig, basePath);
     })
   );
   return rewritten.join("\n");
@@ -381,6 +387,114 @@ async function proxyVip(request, slot, env) {
   }
 }
 
+/* ----------------------------------------------- dlhd (daddylive) 24/7 source
+ * Isolated mirror of the worldkoora flow. dlhd embeds the real stream as a
+ * base64 source inside a rotating /premiumtv/ player page; we resolve it
+ * server-side and play it through the SAME signed proxy (/dl/hls), so the
+ * rotating CDN host needs no allowlist. The dlhd CDN rejects requests carrying
+ * an Origin header (400) and needs no Referer — its m3u8 URLs are
+ * self-authorizing (md5/expires) tokens, so we send neither. */
+async function resolveDlStream(id) {
+  const headers = { "User-Agent": "Mozilla/5.0", Referer: `${DLHD_BASE}/` };
+  try {
+    const sTxt = await (await fetch(`${DLHD_BASE}/stream/stream-${id}.php`, { headers })).text();
+    const embed = sTxt.match(/<iframe[^>]+src="([^"]+\/premiumtv\/[^"]+)"/i);
+    if (!embed) return null;
+    const eTxt = await (await fetch(embed[1], { headers })).text();
+    const b64 = eTxt.match(/atob\(\s*['"]([A-Za-z0-9+/=]+)['"]\s*\)/);
+    if (!b64) return null;
+    const url = atob(b64[1]);
+    return /^https?:\/\/[^\s]+\.m3u8/i.test(url) ? url : null;
+  } catch {
+    return null;
+  }
+}
+
+function dlPlayerHtml(src, id) {
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>beIN ${id}</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+</head><body>
+<video id="v" controls autoplay muted playsinline></video>
+<script>
+(function(){
+  var v=document.getElementById('v'), src=${JSON.stringify(src)};
+  if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; }
+  else if(window.Hls&&window.Hls.isSupported()){
+    var h=new Hls({maxBufferLength:30,liveSyncDurationCount:3,manifestLoadingMaxRetry:4});
+    h.loadSource(src); h.attachMedia(v);
+    h.on(Hls.Events.ERROR,function(_e,d){ if(d&&d.fatal&&d.type==='networkError'){ setTimeout(function(){h.loadSource(src);},2000); } });
+  } else { v.src=src; }
+  var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+})();
+</script>
+</body></html>`;
+}
+
+async function proxyDlEmbed(request, id, env) {
+  const origin = new URL(request.url).origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const htmlHeaders = { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-KZ-Proxy": "dlhd-embed" };
+  const m3u8 = await resolveDlStream(id);
+  if (!m3u8) {
+    return new Response(
+      `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#000;color:#fff;font-family:sans-serif;display:grid;place-items:center;height:100vh;text-align:center"><div>البث غير متاح حالياً — أعد المحاولة<br><small>channel ${id}</small></div></body>`,
+      { status: 200, headers: htmlHeaders }
+    );
+  }
+  const sig = await signTarget(m3u8, secret);
+  const src = hlsProxyUrl(m3u8, origin, sig, "/dl/hls");
+  return new Response(dlPlayerHtml(src, id), { status: 200, headers: htmlHeaders });
+}
+
+async function proxyDlHls(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const target = incoming.searchParams.get("u");
+  const sig = incoming.searchParams.get("sig");
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  // dlhd trust is purely by provenance signature (no host allowlist).
+  if (!target || !(await verifyTarget(target, sig, secret))) {
+    return new Response("Forbidden stream host", { status: 403 });
+  }
+  const isHead = request.method === "HEAD";
+  try {
+    const res = await fetch(target, {
+      method: request.method,
+      headers: { "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0", Accept: "*/*" },
+      redirect: "follow",
+    });
+    if (!res.ok) {
+      return new Response(isHead ? null : `Upstream error ${res.status}`, { status: res.status });
+    }
+    const type = (res.headers.get("Content-Type") || "").toLowerCase();
+    const isManifest = type.includes("mpegurl") || type.includes("m3u8") || /\.m3u8(?:\?|$)/i.test(target);
+    if (isManifest) {
+      const manifestHeaders = {
+        "Content-Type": "application/vnd.apple.mpegurl",
+        "Cache-Control": "no-store",
+        "Access-Control-Allow-Origin": "*",
+        "X-KZ-Proxy": "dlhd-manifest",
+      };
+      if (isHead) return new Response(null, { status: 200, headers: manifestHeaders });
+      const text = await res.text();
+      const rewritten = await rewriteM3u8(text, target, origin, secret, "/dl/hls");
+      return new Response(rewritten, { status: 200, headers: manifestHeaders });
+    }
+    const headers = {
+      "Content-Type": segmentContentType(target) || res.headers.get("Content-Type") || "application/octet-stream",
+      "Cache-Control": "public, max-age=2",
+      "Access-Control-Allow-Origin": "*",
+      "X-KZ-Proxy": "dlhd-segment",
+    };
+    return new Response(isHead ? null : res.body, { status: res.status, headers });
+  } catch {
+    return new Response(isHead ? null : "Upstream unavailable", { status: 502 });
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -402,6 +516,24 @@ export default {
         });
       }
       return proxyHls(request, env);
+    }
+    const dl = url.pathname.match(DL_EMBED_RE);
+    if (dl && (method === "GET" || method === "HEAD")) {
+      return proxyDlEmbed(request, dl[1], env);
+    }
+    if (DL_HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
+      if (method === "OPTIONS") {
+        return new Response(null, {
+          status: 204,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Max-Age": "86400",
+          },
+        });
+      }
+      return proxyDlHls(request, env);
     }
     return env.ASSETS.fetch(request);
   },
