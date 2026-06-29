@@ -125,7 +125,7 @@ window.keepDisplayMatch = keepDisplayMatch;
 // Corrects cached snapshot status using kickoff timestamp when API status is stale.
 const MATCH_WINDOW_MS = 135 * 60 * 1000;
 const RECENT_ENDED_MS = 18 * 60 * 60 * 1000;
-const POST_MATCH_STREAM_MS = 30 * 60 * 1000;
+const POST_MATCH_STREAM_MS = 2 * 60 * 60 * 1000;
 function parseKickoffMs(ts) {
   if (!ts) return NaN;
   const text = String(ts).trim();
