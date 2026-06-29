@@ -8,6 +8,12 @@ main = "worker.js"
 compatibility_date = "2024-06-01"
 account_id = "f06dda0c02d25976dcda319e942e432c" # pragma: allowlist secret
 
+# REQUIRED secret for the signed stream proxy (worker.js). Without it the /wk/hls
+# proxy falls back to the static host allowlist and will black out the next time
+# worldkoora rotates its CDN host. Set it once per environment (not committed):
+#   npx wrangler secret put STREAM_SIGNING_SECRET
+# Use any long random string, e.g.:  openssl rand -hex 32
+
 [assets]
 directory = "."
 binding = "ASSETS"

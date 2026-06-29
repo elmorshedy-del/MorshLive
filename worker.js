@@ -4,11 +4,28 @@
  * /wk/albaplayer/vip1|vip2/ fetches vip.worldkoora.com server-side, strips
  * preroll + embed-guard scripts, rewrites stream URLs through /wk/hls (spoofed
  * Referer), and serves player HTML from korazero.com so the iframe stays clean.
+ *
+ * STREAM-HOST TRUST IS BY PROVENANCE, NOT A STATIC ALLOWLIST.
+ * Every stream URL the worker rewrites out of an upstream worldkoora page or
+ * manifest is stamped with an HMAC signature (env.STREAM_SIGNING_SECRET).
+ * /wk/hls proxies any host whose ?u= value carries a valid signature — so when
+ * worldkoora rotates its CDN to a brand-new hostname mid-tournament, playback
+ * keeps working with zero code changes and zero redeploys. Un-signed ?u= values
+ * stay restricted to ALLOWED_STREAM_HOST below, so the worker never becomes an
+ * open proxy for third parties.
+ *
+ * REQUIRED CONFIG: set the signing secret once per environment, otherwise the
+ * worker falls back to the static allowlist and will black out on the next host
+ * rotation (the very bug this design removes):
+ *   npx wrangler secret put STREAM_SIGNING_SECRET
  */
 const WORLDKOORA = "https://vip.worldkoora.com";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
 
+// Fallback trust for UN-signed ?u= values only (direct hits / legacy links).
+// Signed URLs minted by this worker bypass this list entirely, so it no longer
+// needs to be edited every time worldkoora rotates its CDN host.
 const ALLOWED_STREAM_HOST =
   /(^|\.)((heinzromanigi|teworld|smarop|golatooa)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+)$/i;
 
@@ -53,6 +70,74 @@ const EMBED_SHIM = `<script id="kz-embed-shim">
 })();
 </script>`;
 
+/* ----------------------------------------------- Provenance signing (HMAC) */
+// Cache imported CryptoKeys so we don't re-import per request.
+const _keyCache = new Map();
+async function hmacKey(secret) {
+  let key = _keyCache.get(secret);
+  if (!key) {
+    key = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+    _keyCache.set(secret, key);
+  }
+  return key;
+}
+
+function b64url(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+// Sign the EXACT target URL string that will travel in ?u=. Empty when no
+// secret is configured (callers then fall back to the static allowlist).
+// Signatures are deterministic for (target, secret), so memoize them: live HLS
+// manifests refresh every few seconds with the same segment URLs, and every
+// segment request re-verifies, so this avoids re-running HMAC on hot paths and
+// keeps us well under the Worker CPU limit. Bounded so memory can't grow forever.
+const _sigCache = new Map();
+async function signTarget(target, secret) {
+  if (!secret) return "";
+  const cacheKey = secret + "\0" + target;
+  let sig = _sigCache.get(cacheKey);
+  if (sig === undefined) {
+    const key = await hmacKey(secret);
+    const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(target));
+    sig = b64url(mac);
+    if (_sigCache.size >= 1000) _sigCache.clear();
+    _sigCache.set(cacheKey, sig);
+  }
+  return sig;
+}
+
+async function verifyTarget(target, sig, secret) {
+  if (!secret || !sig) return false;
+  const expected = await signTarget(target, secret);
+  if (!expected || expected.length !== sig.length) return false;
+  let diff = 0; // length-equal constant-time-ish compare
+  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ sig.charCodeAt(i);
+  return diff === 0;
+}
+
+// Promise-aware String.prototype.replace for the rewrite passes (signing is async).
+async function asyncReplaceAll(input, regex, asyncFn) {
+  const parts = [];
+  let last = 0;
+  for (const m of String(input).matchAll(regex)) {
+    parts.push(input.slice(last, m.index));
+    parts.push(await asyncFn(m));
+    last = m.index + m[0].length;
+  }
+  parts.push(input.slice(last));
+  return parts.join("");
+}
+
 function stripBlockedScripts(html) {
   return String(html || "").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, (block) => {
     if (/agl006\.host|aplr-fxd-bnr|cvt-s\d*\.agl/i.test(block)) return "";
@@ -61,8 +146,9 @@ function stripBlockedScripts(html) {
   });
 }
 
-function hlsProxyUrl(target, origin) {
-  return `${origin}/wk/stream.m3u8?u=${encodeURIComponent(target)}`;
+function hlsProxyUrl(target, origin, sig) {
+  const signature = sig ? `&sig=${encodeURIComponent(sig)}` : "";
+  return `${origin}/wk/stream.m3u8?u=${encodeURIComponent(target)}${signature}`;
 }
 
 function resolveStreamUrl(relative, base) {
@@ -82,55 +168,81 @@ function isAllowedStreamUrl(url) {
   }
 }
 
+// Should this URL, found inside trusted upstream content, be routed through our
+// signed proxy? Yes for any external http(s) host (provenance trust); no for
+// non-http schemes or URLs already pointing back at us.
+function shouldProxyStream(url, origin) {
+  if (!/^https?:\/\//i.test(url)) return false;
+  try {
+    return new URL(url).origin !== origin;
+  } catch {
+    return false;
+  }
+}
+
 function segmentContentType(target) {
   if (/\.ts(?:\?|$)/i.test(target)) return "video/mp2t";
   if (/\.m3u8(?:\?|$)/i.test(target)) return "application/vnd.apple.mpegurl";
   return null;
 }
 
-function rewriteM3u8(body, manifestUrl, origin) {
+// Rewrite every stream URL a manifest references into a signed /wk proxy URL.
+// The manifest was fetched from a host we already trusted (signed or allowlisted),
+// so its child variants/segments inherit that trust regardless of their hostname.
+async function rewriteM3u8(body, manifestUrl, origin, secret) {
   const base = manifestUrl.replace(/[^/]+$/, "");
-  return body
-    .split("\n")
-    .map((line) => {
+  const lines = body.split("\n");
+  const rewritten = await Promise.all(
+    lines.map(async (line) => {
       const trimmed = line.trim();
       if (!trimmed) return line;
       if (trimmed.startsWith("#")) {
-        return line.replace(/URI="([^"]+)"/gi, (_, uri) => {
-          const abs = resolveStreamUrl(uri, manifestUrl);
-          return isAllowedStreamUrl(abs) ? `URI="${hlsProxyUrl(abs, origin)}"` : `URI="${uri}"`;
+        return asyncReplaceAll(line, /URI="([^"]+)"/gi, async (m) => {
+          const abs = resolveStreamUrl(m[1], manifestUrl);
+          if (!shouldProxyStream(abs, origin)) return m[0];
+          const sig = await signTarget(abs, secret);
+          return `URI="${hlsProxyUrl(abs, origin, sig)}"`;
         });
       }
       const abs = resolveStreamUrl(trimmed, base || manifestUrl);
-      return isAllowedStreamUrl(abs) ? hlsProxyUrl(abs, origin) : trimmed;
+      if (!shouldProxyStream(abs, origin)) return trimmed;
+      const sig = await signTarget(abs, secret);
+      return hlsProxyUrl(abs, origin, sig);
     })
-    .join("\n");
+  );
+  return rewritten.join("\n");
 }
 
-function rewriteStreamUrlsInHtml(html, origin) {
-  let out = html;
-  out = out.replace(
+async function rewriteStreamUrlsInHtml(html, origin, secret) {
+  let out = await asyncReplaceAll(
+    html,
     /(<(?:source|video)\b[^>]*\ssrc=)(["'])(https?:\/\/[^"']+)\2/gi,
-    (m, pre, q, url) => (isAllowedStreamUrl(url) ? `${pre}${q}${hlsProxyUrl(url, origin)}${q}` : m)
+    async (m) => {
+      const [whole, pre, q, url] = m;
+      if (!shouldProxyStream(url, origin)) return whole;
+      const sig = await signTarget(url, secret);
+      return `${pre}${q}${hlsProxyUrl(url, origin, sig)}${q}`;
+    }
   );
-  out = out.replace(/AlbaPlayerControl\('([A-Za-z0-9+/=]*)','([^']+)'\)/g, (m, b64, player) => {
-    if (!b64) return m;
+  out = await asyncReplaceAll(out, /AlbaPlayerControl\('([A-Za-z0-9+/=]*)','([^']+)'\)/g, async (m) => {
+    const [whole, b64, player] = m;
+    if (!b64) return whole;
     try {
       const raw = atob(b64);
-      if (!/^https?:\/\//i.test(raw) || !isAllowedStreamUrl(raw)) return m;
-      const proxied = hlsProxyUrl(raw, origin);
-      const enc = btoa(proxied);
-      return `AlbaPlayerControl('${enc}','${player}')`;
+      if (!shouldProxyStream(raw, origin)) return whole;
+      const sig = await signTarget(raw, secret);
+      const proxied = hlsProxyUrl(raw, origin, sig);
+      return `AlbaPlayerControl('${btoa(proxied)}','${player}')`;
     } catch {
-      return m;
+      return whole;
     }
   });
   return out;
 }
 
-function cleanWorldkooraHtml(html, slot, origin) {
+async function cleanWorldkooraHtml(html, slot, origin, secret) {
   let out = stripBlockedScripts(html);
-  out = rewriteStreamUrlsInHtml(out, origin);
+  out = await rewriteStreamUrlsInHtml(out, origin, secret);
   const headOpen = /<head[^>]*>/i;
   if (headOpen.test(out)) {
     out = out.replace(headOpen, (m) => m + EMBED_SHIM);
@@ -146,11 +258,16 @@ function cleanWorldkooraHtml(html, slot, origin) {
   return out;
 }
 
-async function proxyHls(request) {
+async function proxyHls(request, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
   const target = incoming.searchParams.get("u");
-  if (!target || !isAllowedStreamUrl(target)) {
+  const sig = incoming.searchParams.get("sig");
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  // Trust a target if we signed it (provenance — any host) OR it matches the
+  // static allowlist (un-signed legacy/direct access).
+  const trusted = target && ((await verifyTarget(target, sig, secret)) || isAllowedStreamUrl(target));
+  if (!trusted) {
     return new Response("Forbidden stream host", { status: 403 });
   }
 
@@ -177,7 +294,7 @@ async function proxyHls(request) {
 
     if (isManifest && !isHead) {
       const text = await res.text();
-      const rewritten = rewriteM3u8(text, target, origin);
+      const rewritten = await rewriteM3u8(text, target, origin, secret);
       return new Response(rewritten, {
         status: 200,
         headers: {
@@ -216,7 +333,7 @@ async function proxyHls(request) {
   }
 }
 
-async function proxyVip(request, slot) {
+async function proxyVip(request, slot, env) {
   const incoming = new URL(request.url);
   const upstream = new URL(`${WORLDKOORA}/albaplayer/${slot}/`);
   upstream.search = incoming.search;
@@ -250,7 +367,8 @@ async function proxyVip(request, slot) {
 
     const html = await res.text();
     const origin = new URL(request.url).origin;
-    return new Response(cleanWorldkooraHtml(html, slot, origin), {
+    const secret = env && env.STREAM_SIGNING_SECRET;
+    return new Response(await cleanWorldkooraHtml(html, slot, origin, secret), {
       status: 200,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
@@ -269,7 +387,7 @@ export default {
     const method = request.method;
     const vip = url.pathname.match(VIP_RE);
     if (vip && (method === "GET" || method === "HEAD")) {
-      return proxyVip(request, vip[1].toLowerCase());
+      return proxyVip(request, vip[1].toLowerCase(), env);
     }
     if (HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
       if (method === "OPTIONS") {
@@ -283,7 +401,7 @@ export default {
           },
         });
       }
-      return proxyHls(request);
+      return proxyHls(request, env);
     }
     return env.ASSETS.fetch(request);
   },
