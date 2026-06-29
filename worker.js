@@ -97,11 +97,23 @@ function b64url(buffer) {
 
 // Sign the EXACT target URL string that will travel in ?u=. Empty when no
 // secret is configured (callers then fall back to the static allowlist).
+// Signatures are deterministic for (target, secret), so memoize them: live HLS
+// manifests refresh every few seconds with the same segment URLs, and every
+// segment request re-verifies, so this avoids re-running HMAC on hot paths and
+// keeps us well under the Worker CPU limit. Bounded so memory can't grow forever.
+const _sigCache = new Map();
 async function signTarget(target, secret) {
   if (!secret) return "";
-  const key = await hmacKey(secret);
-  const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(target));
-  return b64url(mac);
+  const cacheKey = secret + "\0" + target;
+  let sig = _sigCache.get(cacheKey);
+  if (sig === undefined) {
+    const key = await hmacKey(secret);
+    const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(target));
+    sig = b64url(mac);
+    if (_sigCache.size >= 1000) _sigCache.clear();
+    _sigCache.set(cacheKey, sig);
+  }
+  return sig;
 }
 
 async function verifyTarget(target, sig, secret) {
