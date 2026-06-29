@@ -31,13 +31,8 @@ const DL_HLS_RE = /^\/dl\/hls$/i;            // signed HLS proxy for dlhd stream
 // Fallback trust for UN-signed ?u= values only (direct hits / legacy links).
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
 // needs to be edited every time worldkoora rotates its CDN host.
-// worldkoora rotates its stream CDN host constantly, so a hand-maintained host
-// allowlist guaranteed a blackout on every rotation. Instead we proxy any
-// PUBLIC stream host the player references and only block internal/private
-// targets (SSRF guard). The worker only ever rewrites URLs it extracted from the
-// worldkoora player, so this stays scoped to real stream hosts.
-const PRIVATE_HOST_RE =
-  /^(localhost$|127\.|10\.|169\.254\.|192\.168\.|0\.|172\.(1[6-9]|2[0-9]|3[01])\.|::1$|fe80:|fc00:|fd)/i;
+const ALLOWED_STREAM_HOST =
+  /(^|\.)((heinzromanigi|teworld|smarop|golatooa)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+)$/i;
 
 const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
 .aplr-fxd-bnr,#aplr-fixedban,
@@ -172,11 +167,8 @@ function resolveStreamUrl(relative, base) {
 
 function isAllowedStreamUrl(url) {
   try {
-    const u = new URL(url);
-    if (u.protocol !== "https:" && u.protocol !== "http:") return false;
-    const host = u.hostname.replace(/^\[|\]$/g, "");
-    if (!host || PRIVATE_HOST_RE.test(host)) return false;
-    return true;
+    const host = new URL(url).hostname;
+    return ALLOWED_STREAM_HOST.test(host);
   } catch {
     return false;
   }
