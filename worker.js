@@ -19,7 +19,10 @@
  * rotation (the very bug this design removes):
  *   npx wrangler secret put STREAM_SIGNING_SECRET
  */
-const WORLDKOORA = "https://vip.worldkoora.com";
+// vip.worldkoora.com now 301s to ws.worldkoora.com; use the canonical host so
+// the Referer/Origin we spoof match what the upstream player actually expects
+// and we skip the extra redirect hop on every proxy request.
+const WORLDKOORA = "https://ws.worldkoora.com";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
 
@@ -32,7 +35,7 @@ const DL_HLS_RE = /^\/dl\/hls$/i;            // signed HLS proxy for dlhd stream
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
 // needs to be edited every time worldkoora rotates its CDN host.
 const ALLOWED_STREAM_HOST =
-  /(^|\.)((heinzromanigi|teworld|smarop|golatooa)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+)$/i;
+  /(^|\.)((heinzromanigi|teworld|smarop|golatooa|coorting)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+)$/i;
 
 const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
 .aplr-fxd-bnr,#aplr-fixedban,
@@ -192,6 +195,35 @@ function segmentContentType(target) {
   return null;
 }
 
+// Recognize a Cloudflare WAF "Website Access Blocked" page so we surface that
+// in the response body instead of the opaque "Upstream error 403". This is the
+// failure mode when worldkoora rotates its stream CDN onto a CF-fronted origin
+// whose firewall denies Workers egress IPs / non-MENA geos. Identifying it
+// up-front means the next rotation shows up as a clear diagnostic in DevTools
+// instead of looking like a generic worker bug.
+function describeBlockPage(status, body) {
+  if (status !== 403 || !body) return null;
+  const snippet = body.slice(0, 4096);
+  if (!/Website Access Blocked|cf-error-details|cdn-cgi\/styles/i.test(snippet)) return null;
+  const ray = (snippet.match(/cf-ray["'>:\s]+([a-f0-9]{12,}-[A-Z]{3})/i) || [])[1] || null;
+  return { ray };
+}
+
+function upstreamErrorBody(target, status, body) {
+  const block = describeBlockPage(status, body);
+  if (!block) return `Upstream error ${status}`;
+  let host = target;
+  try { host = new URL(target).hostname; } catch {}
+  const ray = block.ray ? ` (cf-ray ${block.ray})` : "";
+  return (
+    `Upstream error 403: ${host} returned a Cloudflare "Website Access Blocked" page${ray}. ` +
+    `Likely a country / Cloudflare-Workers-IP firewall on the upstream CDN. ` +
+    `Not a worker bug — the stream provider is denying our edge. ` +
+    `Fix at the source by routing this host away from Cloudflare or whitelisting Workers, ` +
+    `or bypass the /wk/hls proxy for this host so the browser fetches it directly.`
+  );
+}
+
 // Rewrite every stream URL a manifest references into a signed /wk proxy URL.
 // The manifest was fetched from a host we already trusted (signed or allowlisted),
 // so its child variants/segments inherit that trust regardless of their hostname.
@@ -292,7 +324,16 @@ async function proxyHls(request, env) {
     });
 
     if (!res.ok) {
-      return new Response(isHead ? null : `Upstream error ${res.status}`, { status: res.status });
+      if (isHead) return new Response(null, { status: res.status });
+      // Peek at the error body so we can distinguish a CF WAF country block
+      // (recoverable only by changing the upstream) from a generic 4xx/5xx.
+      let body = "";
+      try { body = await res.text(); } catch {}
+      const message = upstreamErrorBody(target, res.status, body);
+      return new Response(message, {
+        status: res.status,
+        headers: { "Content-Type": "text/plain; charset=utf-8", "X-KZ-Proxy-Error": "upstream" },
+      });
     }
 
     const type = (res.headers.get("Content-Type") || "").toLowerCase();
@@ -357,7 +398,13 @@ async function proxyVip(request, slot, env) {
     });
 
     if (!res.ok) {
-      return new Response(isHead ? null : `Upstream error ${res.status}`, { status: res.status });
+      if (isHead) return new Response(null, { status: res.status });
+      let body = "";
+      try { body = await res.text(); } catch {}
+      return new Response(upstreamErrorBody(upstream.toString(), res.status, body), {
+        status: res.status,
+        headers: { "Content-Type": "text/plain; charset=utf-8", "X-KZ-Proxy-Error": "upstream" },
+      });
     }
 
     if (isHead) {
