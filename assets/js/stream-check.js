@@ -149,7 +149,7 @@
           if (!res.ok) return done(false);
           if (/\/wk\/albaplayer\/vip[12]\/?$/i.test(path)) {
             const html = await res.text();
-            return done(/AlbaPlayerControl\('([^']+)'/.test(html));
+            return done(htmlHasPlayableEmbed(html));
           }
           return done(true);
         }
@@ -157,6 +157,12 @@
       })
       .catch(() => done(false))
       .finally(() => clearTimeout(timer));
+  }
+
+  function htmlHasPlayableEmbed(html) {
+    return /AlbaPlayerControl\('([^']+)'/.test(html) ||
+      /<iframe\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html) ||
+      /<(?:source|video)\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html);
   }
 
   /* --------------------------------------------- UI helpers */

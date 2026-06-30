@@ -14,14 +14,13 @@
 // query param is cosmetic (all values return the same stream), so each embed
 // has exactly one real server.
 // ---------------------------------------------------------------------------
-// Worldkoora's visible "البث" buttons are effectively zero-based in the query:
-// our button 2 maps to serv=1 and button 4 maps to serv=3. Those are the
-// currently reliable choices, so default to button 2 while still exposing all
-// four for manual recovery when upstream rotates.
+// Worldkoora labels its upstream buttons as "البث 1" -> serv=1, "البث 2" ->
+// serv=2, and so on. Expose several choices because upstream rotates which
+// ones contain direct HLS, nested iframes, or blank/preroll-only loaders.
 // Same-origin /wk/ proxy (worker.js) serves worldkoora vip pages without preroll ads.
 const EMBEDS = {
-  vip1: { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 0, servers: 4, defaultServer: 1 },
-  vip2: { url: "/wk/albaplayer/vip2/", param: "serv", servStart: 0, servers: 4, defaultServer: 1 },
+  vip1: { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 4, defaultServer: 0 },
+  vip2: { url: "/wk/albaplayer/vip2/", param: "serv", servStart: 1, servers: 4, defaultServer: 0 },
 };
 
 function embedUrlFor(embed, serverIndex) {

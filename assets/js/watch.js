@@ -517,12 +517,17 @@
     return /vip2/.test((embed && embed.url) || "") ? "vip2" : "vip1";
   }
 
+  function htmlHasPlayableEmbed(html) {
+    return /AlbaPlayerControl\('([^']+)'/.test(html) ||
+      /<iframe\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html) ||
+      /<(?:source|video)\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html);
+  }
+
   async function feedHasStream(vipKey) {
     try {
       const res = await fetch(`/wk/albaplayer/${vipKey}/`, { cache: "no-store" });
       if (!res.ok) return false;
-      const m = (await res.text()).match(/AlbaPlayerControl\('([^']*)'/);
-      return !!(m && m[1] && m[1].length > 0);
+      return htmlHasPlayableEmbed(await res.text());
     } catch (e) {
       return false;
     }
