@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CZJCBRFC12"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CZJCBRFC12');
+  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>بحث المباريات | كورة زيرو</title>
+  <meta name="description" content="ابحث عن مباريات اليوم وكأس العالم 2026 على كورة زيرو حسب الفريق أو البطولة أو المعلّق وشاهدها مباشرة بدون إعلانات." />
+  <meta name="theme-color" content="#0a0e17" />
+  <link rel="canonical" href="https://korazero.com/search" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="KoraZero" />
+  <meta property="og:title" content="بحث المباريات | كورة زيرو" />
+  <meta property="og:url" content="https://korazero.com/search" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20260701c" />
+  <script src="assets/js/i18n.js?v=20260701c"></script>
+  <script type="application/ld+json" id="seo-schema">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "name": "KoraZero",
+        "alternateName": ["كورة زيرو", "كورة اون لاين", "KoraZero"],
+        "url": "https://korazero.com/",
+        "inLanguage": "ar",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": { "@type": "EntryPoint", "urlTemplate": "https://korazero.com/search?q={search_term_string}" },
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@type": "Organization",
+        "name": "KoraZero",
+        "alternateName": "كورة زيرو",
+        "url": "https://korazero.com/",
+        "logo": "https://korazero.com/logo.png",
+        "slogan": "بث مباشر بدون إعلانات ولا نوافذ منبثقة",
+        "sameAs": ["https://www.facebook.com/profile.php?id=61591583004232"]
+      }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a class="logo" href="index.html" aria-label="KoraZero">
+        <span class="kz-lockup">
+          <span class="kz-word">KoraZero</span>
+        </span>
+      </a>
+      <button class="nav-toggle" data-i18n-attr="aria-label:nav.menu" aria-label="القائمة">☰</button>
+      <nav class="nav-links">
+        <a href="index.html" data-i18n="nav.home">الرئيسية</a>
+        <a href="index.html#matches" data-i18n="nav.matches">مباريات اليوم</a>
+        <a href="search.html" class="active" data-i18n="search.nav">بحث</a>
+        <a href="watch.html?ch=live" data-i18n="nav.live">البث المباشر</a>
+      </nav>
+      <div class="nav-actions">
+        <button type="button" class="nav-pill nav-pill-lang js-lang-toggle" data-i18n-attr="aria-label:lang.toggleAria" aria-label="Switch to English">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span data-lang-label data-i18n="lang.toggleFull">English</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding-top:32px;min-height:60vh">
+    <section class="section" style="padding-top:0">
+      <div class="section-head">
+        <h1 class="section-title" data-i18n="search.title">ابحث عن مباراة</h1>
+      </div>
+      <p style="color:var(--muted);margin:-6px 0 18px" data-i18n="search.lede">اكتب اسم فريق أو بطولة أو معلّق للعثور على المباراة ومشاهدتها مباشرة.</p>
+
+      <form id="search-form" class="search-bar" role="search" autocomplete="off">
+        <svg class="ico search-bar-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="search-input" name="q" type="search" class="search-input"
+               data-i18n-attr="placeholder:search.placeholder" placeholder="ابحث عن فريق أو بطولة…"
+               aria-label="بحث" />
+        <button type="submit" class="search-submit" data-i18n="search.button">بحث</button>
+      </form>
+
+      <div class="count" id="search-count" style="margin:14px 0 10px"></div>
+      <p id="search-empty" style="color:var(--muted)" data-i18n="search.prompt">اكتب للبحث في مباريات اليوم.</p>
+      <div class="matches" id="search-grid"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-bottom" data-i18n="footer.bottom">© 2026 KoraZero · صُمم بواجهة نظيفة وبدون إعلانات.</div>
+    </div>
+  </footer>
+
+  <script src="assets/js/favorites.js?v=20260625c"></script>
+  <script src="assets/js/matches-api.js?v=20260625c"></script>
+  <script src="assets/js/channel-bindings.js?v=20260628c"></script>
+  <script src="assets/js/data.js?v=20260630e"></script>
+  <script src="assets/js/search.js?v=20260630a"></script>
+</body>
+</html>

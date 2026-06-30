@@ -203,6 +203,38 @@
     return (m && m.commentator) || "—";
   }
 
+  /* ---------------------------------------------- Per-match structured data
+   * Injects a SportsEvent JSON-LD for the resolved fixture so the watch page is
+   * eligible for Google's event rich results. Re-runs on every fixture change;
+   * skipped for ended matches (no longer an upcoming/live event). */
+  function injectMatchSchema(m) {
+    const old = document.getElementById("event-schema");
+    if (old) old.remove();
+    if (!m || !m.home || !m.away || m.status === "ended") return;
+    const data = {
+      "@context": "https://schema.org",
+      "@type": "SportsEvent",
+      name: `${m.home} vs ${m.away}`,
+      sport: "Soccer",
+      eventStatus: "https://schema.org/EventScheduled",
+      competitor: [
+        { "@type": "SportsTeam", name: m.home },
+        { "@type": "SportsTeam", name: m.away },
+      ],
+    };
+    const ms = parseKickoff(m.kickoffUtc);
+    if (!isNaN(ms)) data.startDate = new Date(ms).toISOString();
+    if (m.league) data.description = m.league;
+    data.location = m.venue
+      ? { "@type": "Place", name: m.venue }
+      : { "@type": "VirtualLocation", url: "https://korazero.com/watch" };
+    const s = document.createElement("script");
+    s.type = "application/ld+json";
+    s.id = "event-schema";
+    s.textContent = JSON.stringify(data);
+    document.head.appendChild(s);
+  }
+
   /* ---------------------------------------------- Head info */
   function matchIsCommentary() {
     return match && window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(match);
@@ -254,6 +286,8 @@
           : `${match.home} ${t("watch.vs")} ${match.away}`
         : `${t("watch.pressToPlayQ")} ${channel.quality}`;
     }
+
+    injectMatchSchema(match);
   }
 
   /* ---------------------------------------------- Servers (quality mirrors) */
