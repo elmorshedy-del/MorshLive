@@ -264,6 +264,32 @@ async function cleanWorldkooraHtml(html, slot, origin, secret) {
   return out;
 }
 
+function htmlHasPlayableEmbed(html) {
+  return /AlbaPlayerControl\('([^']+)'/.test(html) ||
+    /<iframe\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html) ||
+    /<(?:source|video)\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html);
+}
+
+function vipFallbackSearch(originalSearch, serv) {
+  const params = new URLSearchParams(originalSearch || "");
+  params.set("serv", String(serv));
+  return `?${params.toString()}`;
+}
+
+async function fetchVipUpstream(request, slot, search) {
+  const upstream = new URL(`${WORLDKOORA}/albaplayer/${slot}/`);
+  upstream.search = search;
+  return fetch(upstream.toString(), {
+    method: request.method,
+    headers: {
+      "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+      Accept: "text/html,application/xhtml+xml",
+      Referer: `${WORLDKOORA}/`,
+    },
+    redirect: "follow",
+  });
+}
+
 async function proxyHls(request, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
@@ -341,47 +367,58 @@ async function proxyHls(request, env) {
 
 async function proxyVip(request, slot, env) {
   const incoming = new URL(request.url);
-  const upstream = new URL(`${WORLDKOORA}/albaplayer/${slot}/`);
-  upstream.search = incoming.search;
   const isHead = request.method === "HEAD";
 
   try {
-    const res = await fetch(upstream.toString(), {
-      method: request.method,
-      headers: {
-        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
-        Accept: "text/html,application/xhtml+xml",
-        Referer: `${WORLDKOORA}/`,
-      },
-      redirect: "follow",
-    });
-
-    if (!res.ok) {
-      return new Response(isHead ? null : `Upstream error ${res.status}`, { status: res.status });
+    const attempts = [{ slot, search: incoming.search }];
+    if (slot === "vip2") {
+      attempts.push(
+        { slot: "vip1", search: incoming.search },
+        { slot: "vip1", search: vipFallbackSearch(incoming.search, 1) },
+        { slot: "vip1", search: vipFallbackSearch(incoming.search, 2) },
+        { slot: "vip1", search: vipFallbackSearch(incoming.search, 3) }
+      );
     }
 
-    if (isHead) {
-      return new Response(null, {
-        status: 200,
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "no-store",
-          "X-KZ-Proxy": "worldkoora-vip",
-        },
-      });
+    let lastStatus = 502;
+    for (const attempt of attempts) {
+      const res = await fetchVipUpstream(request, attempt.slot, attempt.search);
+      lastStatus = res.status;
+      if (!res.ok) continue;
+
+      const fallbackHeaders = attempt.slot !== slot
+        ? { "X-KZ-Fallback": `${slot}->${attempt.slot}${attempt.search || ""}` }
+        : {};
+
+      if (isHead) {
+        return new Response(null, {
+          status: 200,
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store",
+            "X-KZ-Proxy": "worldkoora-vip",
+            ...fallbackHeaders,
+          },
+        });
+      }
+
+      const html = await res.text();
+      if ((slot !== "vip2" && attempt.slot === slot) || htmlHasPlayableEmbed(html)) {
+        const origin = new URL(request.url).origin;
+        const secret = env && env.STREAM_SIGNING_SECRET;
+        return new Response(await cleanWorldkooraHtml(html, attempt.slot, origin, secret), {
+          status: 200,
+          headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store",
+            "X-KZ-Proxy": "worldkoora-vip",
+            ...fallbackHeaders,
+          },
+        });
+      }
     }
 
-    const html = await res.text();
-    const origin = new URL(request.url).origin;
-    const secret = env && env.STREAM_SIGNING_SECRET;
-    return new Response(await cleanWorldkooraHtml(html, slot, origin, secret), {
-      status: 200,
-      headers: {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "no-store",
-        "X-KZ-Proxy": "worldkoora-vip",
-      },
-    });
+    return new Response(isHead ? null : `Upstream error ${lastStatus}`, { status: lastStatus });
   } catch {
     return new Response("Upstream unavailable", { status: 502 });
   }
