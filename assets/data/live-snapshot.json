@@ -1,16 +1,30 @@
 {
-  "updatedAt": "2026-06-26T23:40:49.856Z",
-  "bindingVersion": 6,
+  "updatedAt": "2026-06-30T18:51:32.061Z",
+  "bindingVersion": 8,
   "embedBinding": {
-    "bein-max-1": "vip2",
-    "bein-max-2": "vip1",
+    "bein-max-1": "vip1",
+    "bein-max-2": "vip2",
     "bein-max-3": "vip1",
     "bein-max-4": "vip2",
     "bein-sports-1": "vip2",
     "bein-sports-2": "vip1"
   },
-  "liveCount": 0,
-  "routes": [],
+  "liveCount": 1,
+  "routes": [
+    {
+      "id": "espn-fifa.world-760490",
+      "home": "Ivory Coast",
+      "away": "Norway",
+      "score": "1 - 2",
+      "minute": "90'+1'",
+      "channelId": "bein-sports-1",
+      "channel": null,
+      "commentator": null,
+      "embedKey": "vip2",
+      "embedUrl": "https://vip.worldkoora.com/albaplayer/vip2/",
+      "kickoffUtc": "2026-06-30T17:00Z"
+    }
+  ],
   "conflicts": [],
   "ok": true,
   "warning": null
