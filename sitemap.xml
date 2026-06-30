@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  korazero.com sitemap
+  IMPORTANT: keep a <url> entry ONLY for pages that are live and return 200.
+  Add new ones (e.g. dedicated match pages) as you publish them, and update
+  <lastmod> when a page meaningfully changes.
+  NOTE: /bein247 is intentionally excluded — it is a noindex page.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Homepage / main watch hub (lists today's matches) -->
+  <url>
+    <loc>https://korazero.com/</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Watch player hub -->
+  <url>
+    <loc>https://korazero.com/watch</loc>
+    <lastmod>2026-06-30</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+</urlset>
