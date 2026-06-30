@@ -132,7 +132,15 @@
       referrerPolicy: "no-referrer",
       signal: controller ? controller.signal : undefined,
     })
-      .then(() => done(true))
+      .then((res) => {
+        // Cross-origin no-cors responses are opaque (status 0), so a fulfilled
+        // fetch is the only reachability signal. Same-origin proxy responses
+        // expose status and should not mark 403/500 pages as playable.
+        if (res && res.type !== "opaque" && typeof res.ok === "boolean") {
+          return done(res.ok);
+        }
+        return done(true);
+      })
       .catch(() => done(false))
       .finally(() => clearTimeout(timer));
   }
