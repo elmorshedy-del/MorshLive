@@ -17,6 +17,11 @@ account_id = "f06dda0c02d25976dcda319e942e432c" # pragma: allowlist secret
 [assets]
 directory = "."
 binding = "ASSETS"
+# worker.js intercepts /assets/data/today.json to serve a live ESPN snapshot
+# (60s edge cache, falls through to the bundled file on upstream failure).
+# Without this, Workers Static Assets serves the bundled file directly and
+# the worker fetch handler is never invoked for that path.
+run_worker_first = ["/assets/data/today.json"]
 
 # Attach korazero.com to this Worker (zone must be on the same Cloudflare account).
 # You can also add the domain in Dashboard → Workers → morshlive → Domains.
