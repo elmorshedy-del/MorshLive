@@ -588,12 +588,18 @@ function sirDecodeConfig(html) {
   const m = html.match(/var _0x="([^"]+)"/);
   const e = html.match(/var _e="([^"]+)"/);
   if (!m || !e) return null;
-  const bin = atob(m[1]);
-  const bytes = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i) ^ SIR_XOR.charCodeAt(i % SIR_XOR.length);
-  let cfg;
-  try { cfg = JSON.parse(new TextDecoder("utf-8").decode(bytes)); } catch { return null; }
-  return { cfg, secret: atob(e[1]) };
+  // Upstream HTML shape (or the base64 payloads themselves) can change without
+  // notice; atob()/JSON.parse() throwing here must degrade to "unavailable",
+  // not a 500 from the worker.
+  try {
+    const bin = atob(m[1]);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i) ^ SIR_XOR.charCodeAt(i % SIR_XOR.length);
+    const cfg = JSON.parse(new TextDecoder("utf-8").decode(bytes));
+    return { cfg, secret: atob(e[1]) };
+  } catch {
+    return null;
+  }
 }
 
 // Resolve a channel slug to a freshly-signed foozlive master playlist URL.
@@ -615,7 +621,8 @@ async function resolveSirMaster(slug) {
   const domains = (decoded.cfg.activeDomains && decoded.cfg.activeDomains.length)
     ? decoded.cfg.activeDomains : ["https://1rxolmirvosixpyfy.foozlive.co/"];
   const domain = domains[Math.floor(Math.random() * domains.length)];
-  return sirSign(domain, sirRewritePath(tab.path), decoded.secret);
+  const cleanDomain = domain.endsWith("/") ? domain : domain + "/";
+  return sirSign(cleanDomain, sirRewritePath(tab.path), decoded.secret);
 }
 
 // Un-signed fallback trust (when STREAM_SIGNING_SECRET isn't configured): the only
