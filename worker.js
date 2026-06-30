@@ -495,6 +495,256 @@ async function proxyDlHls(request, env) {
   }
 }
 
+/* ----------------------------------------------- sir / siiir tv (foozlive) 24/7
+ * EXPERIMENTAL second source (تجريبي). Same isolated, signed-proxy pattern as the
+ * dlhd flow above. The upstream player (912acsss8af382.shootny.com/playerv5.php)
+ * hides its channel list in a base64+XOR blob and signs every CDN request with an
+ * md5 token built from a per-page secret. We decode that config server-side, mint
+ * the signed foozlive master URL, and play it through /sir/hls. Two quirks the
+ * proxy handles that the worldkoora/dlhd sources don't:
+ *   1. foozlive's CDN gates on Referer/Origin = the shootny player host.
+ *   2. AR feeds disguise each TS segment as a JPEG (real video is appended after
+ *      the JPEG's FFD9 EOI); we lock onto the MPEG-TS sync byte and strip the
+ *      preamble so hls.js receives clean video/mp2t. FR/EN are already plain TS.
+ * The channel paths (6f86bdcsedfssins…) are fixed 24/7 slots, so the ?match= id
+ * only feeds the score strip — any value yields the same stream config. */
+const SIR_PLAYER = "https://912acsss8af382.shootny.com/playerv5.php";
+const SIR_KEY = "9f39972b67d6ce22189507d008acwc26"; // pragma: allowlist secret
+const SIR_REFERER = "https://912acsss8af382.shootny.com/";
+const SIR_ORIGIN = "https://912acsss8af382.shootny.com";
+const SIR_XOR = "k9f2m7x1";
+const SIR_PROBE_MATCH = "4748109"; // arbitrary — config is global to all matches
+const SIR_EMBED_RE = /^\/sir\/(ar1|ar2|fr|en)\/?$/i;
+const SIR_HLS_RE = /^\/sir\/hls$/i;
+// slug -> stable substring of the tab path (survives label/order changes upstream)
+const SIR_TAB_KEY = { ar1: "d0x1", ar2: "d0x2", fr: "xfr", en: "xen" };
+const SIR_LABELS = { ar1: "AR 1", ar2: "AR 2", fr: "FR", en: "EN" };
+
+// md5 — needed for the foozlive token; crypto.subtle has no md5. (blueimp-style)
+function md5(s) {
+  function L(k, d) { return (k << d) | (k >>> (32 - d)); }
+  function K(G, k) { var I, d, F, H, x; F = (G & 2147483648); H = (k & 2147483648); I = (G & 1073741824); d = (k & 1073741824); x = (G & 1073741823) + (k & 1073741823); if (I & d) return (x ^ 2147483648 ^ F ^ H); if (I | d) { if (x & 1073741824) return (x ^ 3221225472 ^ F ^ H); else return (x ^ 1073741824 ^ F ^ H); } else return (x ^ F ^ H); }
+  function r(d, F, k) { return (d & F) | ((~d) & k); }
+  function q(d, F, k) { return (d & k) | (F & (~k)); }
+  function p(d, F, k) { return (d ^ F ^ k); }
+  function nF(d, F, k) { return (F ^ (d | (~k))); }
+  function u(G, F, a, Z, k, H, I) { G = K(G, K(K(r(F, a, Z), k), I)); return K(L(G, H), F); }
+  function f(G, F, a, Z, k, H, I) { G = K(G, K(K(q(F, a, Z), k), I)); return K(L(G, H), F); }
+  function D(G, F, a, Z, k, H, I) { G = K(G, K(K(p(F, a, Z), k), I)); return K(L(G, H), F); }
+  function t(G, F, a, Z, k, H, I) { G = K(G, K(K(nF(F, a, Z), k), I)); return K(L(G, H), F); }
+  function e(G) { var Z, F = "", d = "", k; for (k = 0; k <= 3; k++) { Z = (G >>> (k * 8)) & 255; d = "0" + Z.toString(16); F = F + d.substr(d.length - 2, 2); } return F; }
+  function X(k) { k = k.replace(/\r\n/g, "\n"); var d = ""; for (var F = 0; F < k.length; F++) { var G = k.charCodeAt(F); if (G < 128) { d += String.fromCharCode(G); } else if ((G > 127) && (G < 2048)) { d += String.fromCharCode((G >> 6) | 192); d += String.fromCharCode((G & 63) | 128); } else { d += String.fromCharCode((G >> 12) | 224); d += String.fromCharCode(((G >> 6) & 63) | 128); d += String.fromCharCode((G & 63) | 128); } } return d; }
+  function B(k) { var F, d = k.length, G = d + 8, I = (G - (G % 64)) / 64, H = (I + 1) * 16, a = Array(H - 1), Z = 0, x = 0; while (x < d) { F = (x - (x % 4)) / 4; Z = (x % 4) * 8; a[F] = (a[F] | (k.charCodeAt(x) << Z)); x++; } F = (x - (x % 4)) / 4; Z = (x % 4) * 8; a[F] = a[F] | (128 << Z); a[H - 2] = d << 3; a[H - 1] = d >>> 29; return a; }
+  var C, P, h, E, v, g, Y, G, W, o, S = 7, Q = 12, N = 17, M = 22, A = 5, U = 9, T = 14, R = 20, J = 4, V = 11, y = 16, Za = 23, w = 6, c = 10, M2 = 15, b = 21;
+  s = X(s); C = B(s); Y = 1732584193; G = 4023233417; W = 2562383102; o = 271733878;
+  for (P = 0; P < C.length; P += 16) {
+    h = Y; E = G; v = W; g = o;
+    Y = u(Y, G, W, o, C[P + 0], S, 3614090360); o = u(o, Y, G, W, C[P + 1], Q, 3905402710); W = u(W, o, Y, G, C[P + 2], N, 606105819); G = u(G, W, o, Y, C[P + 3], M, 3250441966);
+    Y = u(Y, G, W, o, C[P + 4], S, 4118548399); o = u(o, Y, G, W, C[P + 5], Q, 1200080426); W = u(W, o, Y, G, C[P + 6], N, 2821735955); G = u(G, W, o, Y, C[P + 7], M, 4249261313);
+    Y = u(Y, G, W, o, C[P + 8], S, 1770035416); o = u(o, Y, G, W, C[P + 9], Q, 2336552879); W = u(W, o, Y, G, C[P + 10], N, 4294925233); G = u(G, W, o, Y, C[P + 11], M, 2304563134);
+    Y = u(Y, G, W, o, C[P + 12], S, 1804603682); o = u(o, Y, G, W, C[P + 13], Q, 4254626195); W = u(W, o, Y, G, C[P + 14], N, 2792965006); G = u(G, W, o, Y, C[P + 15], M, 1236535329);
+    Y = f(Y, G, W, o, C[P + 1], A, 4129170786); o = f(o, Y, G, W, C[P + 6], U, 3225465664); W = f(W, o, Y, G, C[P + 11], T, 643717713); G = f(G, W, o, Y, C[P + 0], R, 3921069994);
+    Y = f(Y, G, W, o, C[P + 5], A, 3593408605); o = f(o, Y, G, W, C[P + 10], U, 38016083); W = f(W, o, Y, G, C[P + 15], T, 3634488961); G = f(G, W, o, Y, C[P + 4], R, 3889429448);
+    Y = f(Y, G, W, o, C[P + 9], A, 568446438); o = f(o, Y, G, W, C[P + 14], U, 3275163606); W = f(W, o, Y, G, C[P + 3], T, 4107603335); G = f(G, W, o, Y, C[P + 8], R, 1163531501);
+    Y = f(Y, G, W, o, C[P + 13], A, 2850285829); o = f(o, Y, G, W, C[P + 2], U, 4243563512); W = f(W, o, Y, G, C[P + 7], T, 1735328473); G = f(G, W, o, Y, C[P + 12], R, 2368359562);
+    Y = D(Y, G, W, o, C[P + 5], J, 4294588738); o = D(o, Y, G, W, C[P + 8], V, 2272392833); W = D(W, o, Y, G, C[P + 11], y, 1839030562); G = D(G, W, o, Y, C[P + 14], Za, 4259657740);
+    Y = D(Y, G, W, o, C[P + 1], J, 2763975236); o = D(o, Y, G, W, C[P + 4], V, 1272893353); W = D(W, o, Y, G, C[P + 7], y, 4139469664); G = D(G, W, o, Y, C[P + 10], Za, 3200236656);
+    Y = D(Y, G, W, o, C[P + 13], J, 681279174); o = D(o, Y, G, W, C[P + 0], V, 3936430074); W = D(W, o, Y, G, C[P + 3], y, 3572445317); G = D(G, W, o, Y, C[P + 6], Za, 76029189);
+    Y = D(Y, G, W, o, C[P + 9], J, 3654602809); o = D(o, Y, G, W, C[P + 12], V, 3873151461); W = D(W, o, Y, G, C[P + 15], y, 530742520); G = D(G, W, o, Y, C[P + 2], Za, 3299628645);
+    Y = t(Y, G, W, o, C[P + 0], w, 4096336452); o = t(o, Y, G, W, C[P + 7], c, 1126891415); W = t(W, o, Y, G, C[P + 14], M2, 2878612391); G = t(G, W, o, Y, C[P + 5], b, 4237533241);
+    Y = t(Y, G, W, o, C[P + 12], w, 1700485571); o = t(o, Y, G, W, C[P + 3], c, 2399980690); W = t(W, o, Y, G, C[P + 10], M2, 4293915773); G = t(G, W, o, Y, C[P + 1], b, 2240044497);
+    Y = t(Y, G, W, o, C[P + 8], w, 1873313359); o = t(o, Y, G, W, C[P + 15], c, 4264355552); W = t(W, o, Y, G, C[P + 6], M2, 2734768916); G = t(G, W, o, Y, C[P + 13], b, 1309151649);
+    Y = t(Y, G, W, o, C[P + 4], w, 4149444226); o = t(o, Y, G, W, C[P + 11], c, 3174756917); W = t(W, o, Y, G, C[P + 2], M2, 718787259); G = t(G, W, o, Y, C[P + 9], b, 3951481745);
+    Y = K(Y, h); G = K(G, E); W = K(W, v); o = K(o, g);
+  }
+  return (e(Y) + e(G) + e(W) + e(o)).toLowerCase();
+}
+
+function sirRand(n, set) { var s = ""; for (var i = 0; i < n; i++) s += set[Math.floor(Math.random() * set.length)]; return s; }
+function sirB36(n) { var d = "0123456789abcdefghijklmnopqrstuvwxyz", s = ""; while (n) { s = d[n % 36] + s; n = Math.floor(n / 36); } return s || "0"; }
+
+// tab path -> real CDN path (matches the upstream player's rewrite rules)
+function sirRewritePath(path) {
+  let p = path.startsWith("/") ? path.slice(1) : path;
+  let q = p.startsWith("kooora/") ? p.slice(7) : p;
+  if (q.startsWith("kc/")) return "kooora/" + q.slice(3) + "_kc";
+  if (q.startsWith("sc/")) return "kooora/" + q.slice(3) + "_sc";
+  if (q.startsWith("mx/")) return "kooora/" + q.slice(3) + "_mux";
+  if (q.startsWith("loco/")) return "kooora/" + q.slice(5) + "_loco";
+  return p;
+}
+
+// foozlive request signing: token = md5(realPath + sid + secret)
+function sirSign(domain, real, secret) {
+  const sid = sirRand(32, "0123456789abcdef");
+  const ts = Math.floor(Date.now() / 1000);
+  const token = md5(real + sid + secret);
+  const nonce = sirRand(4, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") + sirB36(ts % 100000);
+  return `${domain}${real}?ts=${ts}&nonce=${nonce}&token=${token}&sid=${sid}`;
+}
+
+// decode the playerv5 config (base64 -> XOR k9f2m7x1) and the page token secret
+function sirDecodeConfig(html) {
+  const m = html.match(/var _0x="([^"]+)"/);
+  const e = html.match(/var _e="([^"]+)"/);
+  if (!m || !e) return null;
+  const bin = atob(m[1]);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i) ^ SIR_XOR.charCodeAt(i % SIR_XOR.length);
+  let cfg;
+  try { cfg = JSON.parse(new TextDecoder("utf-8").decode(bytes)); } catch { return null; }
+  return { cfg, secret: atob(e[1]) };
+}
+
+// Resolve a channel slug to a freshly-signed foozlive master playlist URL.
+async function resolveSirMaster(slug) {
+  let html;
+  try {
+    const res = await fetch(`${SIR_PLAYER}?match=${SIR_PROBE_MATCH}&key=${SIR_KEY}`, {
+      headers: { "User-Agent": "Mozilla/5.0", Accept: "text/html", Referer: "https://siiiiiiir.tv/" },
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    html = await res.text();
+  } catch { return null; }
+  const decoded = sirDecodeConfig(html);
+  if (!decoded || !decoded.cfg || !Array.isArray(decoded.cfg.tabs)) return null;
+  const key = SIR_TAB_KEY[slug];
+  const tab = decoded.cfg.tabs.find((t) => t.type === "regular" && t.path && t.path.includes(key));
+  if (!tab) return null;
+  const domains = (decoded.cfg.activeDomains && decoded.cfg.activeDomains.length)
+    ? decoded.cfg.activeDomains : ["https://1rxolmirvosixpyfy.foozlive.co/"];
+  const domain = domains[Math.floor(Math.random() * domains.length)];
+  return sirSign(domain, sirRewritePath(tab.path), decoded.secret);
+}
+
+// Un-signed fallback trust (when STREAM_SIGNING_SECRET isn't configured): the only
+// hosts SIR manifests ever reference are foozlive (manifests) and cloudfront (segments).
+function isSirAllowedHost(url) {
+  try {
+    const h = new URL(url).hostname;
+    return /(^|\.)foozlive\.co$/i.test(h) || /(^|\.)cloudfront\.net$/i.test(h);
+  } catch { return false; }
+}
+
+// Strip the JPEG decoy preamble: AR segments prepend a full JPEG, then real MPEG-TS.
+// Lock onto 4 consecutive TS sync bytes (188-spaced) and return from there. FR/EN
+// segments are already TS (first byte 0x47) and pass straight through.
+function sirStripToTs(buf) {
+  if (buf.length && buf[0] === 0x47) return buf;
+  const max = Math.min(buf.length - 564, 300000);
+  for (let i = 0; i < max; i++) {
+    if (buf[i] === 0x47 && buf[i + 188] === 0x47 && buf[i + 376] === 0x47 && buf[i + 564] === 0x47) {
+      return buf.subarray(i);
+    }
+  }
+  return buf;
+}
+
+function sirPlayerHtml(src, slug) {
+  const tabs = ["ar1", "ar2", "fr", "en"]
+    .map((s) => `<a href="/sir/${s}"${s === slug ? ' class="on"' : ""}>${SIR_LABELS[s]}</a>`)
+    .join("");
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SIR ${SIR_LABELS[slug] || slug} — تجريبي</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif}
+#bar{position:fixed;top:0;left:0;right:0;display:flex;gap:4px;padding:6px;background:rgba(10,12,24,.72);z-index:5;backdrop-filter:blur(6px)}
+#bar a{flex:1;text-align:center;padding:7px 4px;border-radius:8px;color:#cbd5e1;text-decoration:none;font-size:13px;font-weight:700;background:rgba(255,255,255,.05)}
+#bar a.on{background:linear-gradient(135deg,#2e0d5e,#421480);color:#fff}
+#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+</head><body>
+<div id="bar">${tabs}</div>
+<video id="v" controls autoplay muted playsinline></video>
+<script>
+(function(){
+  var v=document.getElementById('v'), src=${JSON.stringify(src)};
+  function start(){
+    if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; }
+    else if(window.Hls&&window.Hls.isSupported()){
+      var h=new Hls({maxBufferLength:30,liveSyncDurationCount:3,manifestLoadingMaxRetry:6,fragLoadingMaxRetry:6});
+      h.loadSource(src); h.attachMedia(v);
+      h.on(Hls.Events.ERROR,function(_e,d){ if(d&&d.fatal){ if(d.type==='networkError'){ setTimeout(function(){try{h.startLoad();}catch(e){h.loadSource(src);}},2000);} else if(d.type==='mediaError'){ try{h.recoverMediaError();}catch(e){} } } });
+    } else { v.src=src; }
+    var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+  }
+  start();
+})();
+</script>
+</body></html>`;
+}
+
+async function proxySirEmbed(request, slug, env) {
+  const origin = new URL(request.url).origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const htmlHeaders = { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-KZ-Proxy": "sir-embed" };
+  const master = await resolveSirMaster(slug);
+  if (!master) {
+    return new Response(
+      `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#000;color:#fff;font-family:sans-serif;display:grid;place-items:center;height:100vh;text-align:center"><div>البث غير متاح حالياً — أعد المحاولة<br><small>SIR ${SIR_LABELS[slug] || slug}</small></div></body>`,
+      { status: 200, headers: htmlHeaders }
+    );
+  }
+  const sig = await signTarget(master, secret);
+  const src = hlsProxyUrl(master, origin, sig, "/sir/hls");
+  return new Response(sirPlayerHtml(src, slug), { status: 200, headers: htmlHeaders });
+}
+
+async function proxySirHls(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const target = incoming.searchParams.get("u");
+  const sig = incoming.searchParams.get("sig");
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  // Trust by provenance signature (any host) OR the SIR host fallback (un-signed).
+  const trusted = target && ((await verifyTarget(target, sig, secret)) || isSirAllowedHost(target));
+  if (!trusted) {
+    return new Response("Forbidden stream host", { status: 403 });
+  }
+  const isHead = request.method === "HEAD";
+  let host = "";
+  try { host = new URL(target).hostname; } catch { return new Response("Bad target", { status: 400 }); }
+  const headers = {
+    "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+    Accept: "*/*",
+    Referer: SIR_REFERER,
+  };
+  if (/(^|\.)foozlive\.co$/i.test(host)) headers.Origin = SIR_ORIGIN; // foozlive gates on Origin; cloudfront doesn't need it
+  try {
+    const res = await fetch(target, { method: request.method, headers, redirect: "follow" });
+    if (!res.ok) {
+      return new Response(isHead ? null : `Upstream error ${res.status}`, { status: res.status });
+    }
+    const type = (res.headers.get("Content-Type") || "").toLowerCase();
+    const isManifest = type.includes("mpegurl") || type.includes("m3u8") || /\.m3u8(?:\?|$)/i.test(target);
+    if (isManifest) {
+      const manifestHeaders = {
+        "Content-Type": "application/vnd.apple.mpegurl",
+        "Cache-Control": "no-store",
+        "Access-Control-Allow-Origin": "*",
+        "X-KZ-Proxy": "sir-manifest",
+      };
+      if (isHead) return new Response(null, { status: 200, headers: manifestHeaders });
+      const text = await res.text();
+      const rewritten = await rewriteM3u8(text, target, origin, secret, "/sir/hls");
+      return new Response(rewritten, { status: 200, headers: manifestHeaders });
+    }
+    // Segment: strip any JPEG-decoy preamble, serve clean MPEG-TS.
+    const segHeaders = {
+      "Content-Type": "video/mp2t",
+      "Cache-Control": "public, max-age=2",
+      "Access-Control-Allow-Origin": "*",
+      "X-KZ-Proxy": "sir-segment",
+    };
+    if (isHead) return new Response(null, { status: 200, headers: segHeaders });
+    const buf = new Uint8Array(await res.arrayBuffer());
+    return new Response(sirStripToTs(buf), { status: 200, headers: segHeaders });
+  } catch {
+    return new Response(isHead ? null : "Upstream unavailable", { status: 502 });
+  }
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -534,6 +784,24 @@ export default {
         });
       }
       return proxyDlHls(request, env);
+    }
+    const sir = url.pathname.match(SIR_EMBED_RE);
+    if (sir && (method === "GET" || method === "HEAD")) {
+      return proxySirEmbed(request, sir[1].toLowerCase(), env);
+    }
+    if (SIR_HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
+      if (method === "OPTIONS") {
+        return new Response(null, {
+          status: 204,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Max-Age": "86400",
+          },
+        });
+      }
+      return proxySirHls(request, env);
     }
     return env.ASSETS.fetch(request);
   },
