@@ -19,7 +19,6 @@
       : 0;
 
   function vipEmbed() {
-    if (vipOverrideEmbed) return vipOverrideEmbed;
     const key = (match && match.embedKey) || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id));
     const fromKey = window.SITE_DATA && window.SITE_DATA.embedForKey
       ? window.SITE_DATA.embedForKey(key)
@@ -46,7 +45,6 @@
   let savedShellMarkup = null;
   let vipLoaded = false;
   let vipLoadedUrl = "";
-  let vipOverrideEmbed = null;
 
   /* HLS tuned for stable live playback on mobile (buffer over ultra-low latency). */
   function createHls() {
@@ -149,7 +147,6 @@
       ensureLiveFeed().catch(() => {});
     } else {
       loadVipEmbed(servIndexFromParam(vipEmbed(), params.get("serv")));
-      ensureVipFeed().catch(() => {});
     }
 
     const next = new URL(location.href);
@@ -397,16 +394,11 @@
   }
 
   function resolveSelection() {
-    const previousChannelId = channel && channel.id;
-    const previousMatchId = match && match.id;
     const picked = window.resolveWatchSelection
       ? window.resolveWatchSelection(MATCHES, CHANNELS, params)
       : { channel: CHANNELS[0], match: null };
     channel = picked.channel;
     match = picked.match;
-    if (channel.id !== previousChannelId || (match && match.id) !== previousMatchId) {
-      vipOverrideEmbed = null;
-    }
     isEmbed = !!(channel.embed && channel.embed.url) && activePlayer === 1;
   }
 
@@ -430,7 +422,6 @@
     }
     scheduleAutoReload();
     ensureLiveFeed().catch(() => {});
-    ensureVipFeed().catch(() => {});
   }
 
   /* ---------------------------------------------- Stream reload
@@ -472,7 +463,6 @@
     } else {
       vipLoaded = false; // bypass the same-URL guard so the iframe truly reloads
       loadVipEmbed(activeServerIndex());
-      ensureVipFeed().catch(() => {});
     }
   }
 
@@ -519,10 +509,10 @@
 
   /* ---------------------------------------------- Live-feed auto-recover
    * There are only two real feeds (vip1/vip2). When a match link carries a wrong
-   * or stale channelId, a player can land on the empty feed → a blackout even
+   * or stale channelId, Player 1 can land on the empty feed → a blackout even
    * though the live game is on the other feed. The worker serves both players
    * same-origin, so we can cheaply check which feed actually has a stream and
-   * switch to the live one. */
+   * switch Player 1 to the live one. */
   function feedKeyOf(embed) {
     return /vip2/.test((embed && embed.url) || "") ? "vip2" : "vip1";
   }
@@ -559,23 +549,6 @@
     renderServers();
   }
 
-  async function ensureVipFeed() {
-    if (activePlayer !== 2 || !vipFrame) return;
-    const curEmbed = vipEmbed();
-    const curKey = feedKeyOf(curEmbed);
-    if (await feedHasStream(curKey)) return;
-    const otherKey = curKey === "vip1" ? "vip2" : "vip1";
-    if (!(await feedHasStream(otherKey))) return;
-    const otherEmbed = window.SITE_DATA && window.SITE_DATA.embedForKey
-      ? window.SITE_DATA.embedForKey(otherKey)
-      : null;
-    if (!otherEmbed) return;
-    vipOverrideEmbed = otherEmbed;
-    vipLoaded = false;
-    renderVipServers();
-    loadVipEmbed(currentEmbedServerIndex(vipEmbed()));
-  }
-
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();
     if (shell) savedShellMarkup = shell.innerHTML;
@@ -586,7 +559,6 @@
     renderSidebar();
     if (activePlayer === 2) {
       loadVipEmbed(servIndexFromParam(vipEmbed(), params.get("serv")));
-      ensureVipFeed().catch(() => {});
     }
     if (activePlayer === 1) {
       if (isEmbed) loadEmbed(currentEmbedServerIndex(channel.embed));
@@ -598,7 +570,6 @@
     initPlayerSwitch();
     initReloadButton();
     ensureLiveFeed().catch(() => {});
-    ensureVipFeed().catch(() => {});
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(recheckVisibleServers, 120 * 1000);
