@@ -124,20 +124,34 @@
     const controller = typeof AbortController !== "undefined" ? new AbortController() : null;
     const timer = setTimeout(() => controller && controller.abort(), timeout);
     const done = (ok) => ({ ok, ms: Math.round((global.performance || Date).now() - started) });
+    let sameOrigin = false;
+    let path = "";
+    try {
+      const u = new URL(url, global.location && global.location.href);
+      sameOrigin = !!(global.location && u.origin === global.location.origin);
+      path = u.pathname;
+    } catch (e) {
+      sameOrigin = false;
+    }
 
     return fetch(url, {
-      mode: "no-cors",
+      mode: sameOrigin ? "same-origin" : "no-cors",
       cache: "no-store",
       redirect: "follow",
       referrerPolicy: "no-referrer",
       signal: controller ? controller.signal : undefined,
     })
-      .then((res) => {
+      .then(async (res) => {
         // Cross-origin no-cors responses are opaque (status 0), so a fulfilled
         // fetch is the only reachability signal. Same-origin proxy responses
         // expose status and should not mark 403/500 pages as playable.
         if (res && res.type !== "opaque" && typeof res.ok === "boolean") {
-          return done(res.ok);
+          if (!res.ok) return done(false);
+          if (/\/wk\/albaplayer\/vip[12]\/?$/i.test(path)) {
+            const html = await res.text();
+            return done(/AlbaPlayerControl\('([^']+)'/.test(html));
+          }
+          return done(true);
         }
         return done(true);
       })

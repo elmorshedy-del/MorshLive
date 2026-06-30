@@ -93,6 +93,10 @@
     return embedUrlFor(channel.embed, serverIndex);
   }
 
+  function currentEmbedServerIndex(embed) {
+    return servIndexFromParam(embed, params.get("serv"));
+  }
+
   function loadEmbed(serverIndex) {
     if (!savedShellMarkup) savedShellMarkup = shell.innerHTML;
     shell.innerHTML =
@@ -131,7 +135,7 @@
 
     if (n === 1) {
       if (isEmbed) {
-        loadEmbed(0);
+        loadEmbed(currentEmbedServerIndex(channel.embed));
       } else if (savedShellMarkup) {
         shell.innerHTML = savedShellMarkup;
         video = document.getElementById("video");
@@ -146,6 +150,7 @@
     }
 
     const next = new URL(location.href);
+    params.set("player", n);
     next.searchParams.set("player", n);
     history.replaceState(null, "", next);
   }
@@ -175,6 +180,7 @@
         loadVipEmbed(srv);
         const next = new URL(location.href);
         const start = vipEmbed().servStart != null ? vipEmbed().servStart : 0;
+        params.set("serv", start + srv);
         next.searchParams.set("serv", start + srv);
         history.replaceState(null, "", next);
       });
@@ -298,14 +304,21 @@
 
     if (isEmbed) {
       const n = channel.embed.servers || 1;
+      const activeServ = currentEmbedServerIndex(channel.embed);
       row.innerHTML = Array.from({ length: n }, (_, i) =>
-        `<button class="server-btn ${i === 0 ? "active" : ""}" data-srv="${i}" data-kind="reachable" data-url="${embedUrl(i)}" data-label="${t("watch.server")} ${i + 1}"><span class="srv-label">${t("watch.server")} ${i + 1}</span></button>`
+        `<button class="server-btn ${i === activeServ ? "active" : ""}" data-srv="${i}" data-kind="reachable" data-url="${embedUrl(i)}" data-label="${t("watch.server")} ${i + 1}"><span class="srv-label">${t("watch.server")} ${i + 1}</span></button>`
       ).join("");
       row.querySelectorAll(".server-btn").forEach((btn) => {
         btn.addEventListener("click", () => {
+          const srv = Number(btn.dataset.srv);
           row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
           btn.classList.add("active");
-          loadEmbed(Number(btn.dataset.srv));
+          loadEmbed(srv);
+          const next = new URL(location.href);
+          const start = channel.embed.servStart != null ? channel.embed.servStart : 0;
+          params.set("serv", start + srv);
+          next.searchParams.set("serv", start + srv);
+          history.replaceState(null, "", next);
         });
       });
       checkServers(row);
@@ -401,9 +414,9 @@
     if (channel.id !== previousChannelId || matchChanged) {
       renderServers();
       renderVipServers();
-      if (activePlayer === 2) loadVipEmbed(Number(params.get("serv") || 0));
+      if (activePlayer === 2) loadVipEmbed(currentEmbedServerIndex(vipEmbed()));
       if (activePlayer === 1) {
-        if (isEmbed) loadEmbed(0);
+        if (isEmbed) loadEmbed(currentEmbedServerIndex(channel.embed));
         else loadStream(channel.stream);
       }
     }
@@ -433,7 +446,7 @@
       ? document.querySelector("#servers .server-btn.active[data-srv]")
       : document.querySelector("#vip-servers .server-btn.active[data-vip-srv]");
     if (sel) return Number(sel.dataset.srv != null ? sel.dataset.srv : sel.dataset.vipSrv) || 0;
-    return activePlayer === 2 ? servIndexFromParam(vipEmbed(), params.get("serv")) : 0;
+    return activePlayer === 2 ? currentEmbedServerIndex(vipEmbed()) : currentEmbedServerIndex(channel.embed);
   }
 
   function reloadActivePlayer() {
@@ -527,7 +540,7 @@
     if (!otherEmbed) return;
     channel = { ...channel, embed: otherEmbed };
     isEmbed = true;
-    loadEmbed(0);
+    loadEmbed(currentEmbedServerIndex(channel.embed));
     renderServers();
   }
 
@@ -543,7 +556,7 @@
       loadVipEmbed(servIndexFromParam(vipEmbed(), params.get("serv")));
     }
     if (activePlayer === 1) {
-      if (isEmbed) loadEmbed(0);
+      if (isEmbed) loadEmbed(currentEmbedServerIndex(channel.embed));
       else {
         loadStream(channel.stream);
         overlay.addEventListener("click", play);

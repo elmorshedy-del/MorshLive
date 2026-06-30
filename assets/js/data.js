@@ -14,12 +14,14 @@
 // query param is cosmetic (all values return the same stream), so each embed
 // has exactly one real server.
 // ---------------------------------------------------------------------------
-// Worldkoora uses serv=1 for "البث 1" (serv=2 is often empty). servStart aligns our
-// server buttons (0-based) with their 1-based query param.
+// Worldkoora's visible "البث" buttons are effectively zero-based in the query:
+// our button 2 maps to serv=1 and button 4 maps to serv=3. Those are the
+// currently reliable choices, so default to button 2 while still exposing all
+// four for manual recovery when upstream rotates.
 // Same-origin /wk/ proxy (worker.js) serves worldkoora vip pages without preroll ads.
 const EMBEDS = {
-  vip1: { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 },
-  vip2: { url: "/wk/albaplayer/vip2/", param: "serv", servStart: 1, servers: 1 },
+  vip1: { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 0, servers: 4, defaultServer: 1 },
+  vip2: { url: "/wk/albaplayer/vip2/", param: "serv", servStart: 0, servers: 4, defaultServer: 1 },
 };
 
 function embedUrlFor(embed, serverIndex) {
@@ -35,9 +37,11 @@ function embedUrlFor(embed, serverIndex) {
 
 function servIndexFromParam(embed, raw) {
   const start = embed && embed.servStart != null ? embed.servStart : 0;
+  const fallback = embed && embed.defaultServer != null ? embed.defaultServer : 0;
   const serv = Number(raw);
-  if (raw == null || raw === "" || Number.isNaN(serv)) return 0;
-  return Math.max(0, serv - start);
+  const max = embed && embed.servers ? embed.servers - 1 : Infinity;
+  if (raw == null || raw === "" || Number.isNaN(serv)) return Math.min(fallback, max);
+  return Math.max(0, Math.min(max, serv - start));
 }
 
 // Embed routing — loaded from channel-bindings.js (synced from channel-bindings.json).

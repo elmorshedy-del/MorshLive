@@ -109,6 +109,7 @@
         const next = new URL(location.href);
         const embed = channelEmbed();
         const start = embed.servStart != null ? embed.servStart : 0;
+        params.set("serv", start + srv);
         next.searchParams.set("serv", start + srv);
         history.replaceState(null, "", next);
       });
