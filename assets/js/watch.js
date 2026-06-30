@@ -28,6 +28,7 @@
 
   const { CHANNELS } = window.SITE_DATA;
   const params = new URLSearchParams(location.search);
+  const teamLabel = (n) => (window.TeamNames ? window.TeamNames.localize(n) : n);
 
   let MATCHES = [];
   let channel = CHANNELS[0];
@@ -250,14 +251,14 @@
         ? `<span class="status-pill status-ended">${t("watch.endedCommentary")}</span>`
         : `<span class="status-pill status-upcoming">${t("watch.ready")}</span>`;
     document.title = commentary
-      ? `${match.home} ${t("watch.vs")} ${match.away} — ${t("watch.commentary")}`
+      ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} — ${t("watch.commentary")}`
       : `${channel.name} — ${t("watch.titleSuffix")}`;
 
     const sub = document.getElementById("now-sub");
     sub.textContent = match
       ? commentary
-        ? `${match.home} ${t("watch.vs")} ${match.away} · ${match.score} · ${t("watch.commentary")}`
-        : `${match.home} ${t("watch.vs")} ${match.away} · ${match.league}`
+        ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.score} · ${t("watch.commentary")}`
+        : `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.league}`
       : `${t("watch.pressToPlayQ")} ${channel.quality}`;
 
     document.getElementById("info-quality").textContent = channel.quality;
@@ -282,8 +283,8 @@
     if (overlaySub) {
       overlaySub.textContent = match
         ? commentary
-          ? `${match.home} ${t("watch.vs")} ${match.away} · ${t("watch.commentary")}`
-          : `${match.home} ${t("watch.vs")} ${match.away}`
+          ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${t("watch.commentary")}`
+          : `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)}`
         : `${t("watch.pressToPlayQ")} ${channel.quality}`;
     }
 

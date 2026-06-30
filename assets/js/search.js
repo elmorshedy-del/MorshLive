@@ -22,7 +22,7 @@
     .toString()
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")        // strip Latin accents
-    .replace(/[ً-ْٰ]/g, "") // strip Arabic harakat
+    .replace(/[\u064b-\u065f\u0670]/g, "") // strip Arabic harakat
     .replace(/[آأإ]/g, "ا") // alef variants
     .replace(/ة/g, "ه")           // ta marbuta -> ha
     .replace(/ى/g, "ي")           // alef maqsura -> ya
@@ -89,9 +89,9 @@
           <span class="status-pill status-${m.status}">${statusLabel(m.status)}${minute}</span>
         </div>
         <div class="teams">
-          <div class="team">${crest(m.homeBadge, m.homeAbbr)}<div class="tname">${m.home}</div></div>
+          <div class="team">${crest(m.homeBadge, m.homeAbbr)}<div class="tname">${teamLabel(m.home)}</div></div>
           <div class="score">${m.score || "×"}</div>
-          <div class="team">${crest(m.awayBadge, m.awayAbbr)}<div class="tname">${m.away}</div></div>
+          <div class="team">${crest(m.awayBadge, m.awayAbbr)}<div class="tname">${teamLabel(m.away)}</div></div>
         </div>
         ${timeZoneChips(m)}
         <div class="match-foot">
@@ -101,9 +101,16 @@
       </article>`;
   }
 
+  function teamAliases(name) {
+    return window.TeamNames ? window.TeamNames.aliases(name).join(" ") : name;
+  }
+  function teamLabel(name) {
+    return window.TeamNames ? window.TeamNames.localize(name) : name;
+  }
+
   function haystack(m) {
     return norm([
-      m.home, m.away, m.homeAbbr, m.awayAbbr,
+      teamAliases(m.home), teamAliases(m.away), m.homeAbbr, m.awayAbbr,
       m.league, m.venue, m.channel, commentatorText(m),
     ].join(" "));
   }

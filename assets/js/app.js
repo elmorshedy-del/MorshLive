@@ -7,6 +7,7 @@
 
   const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
   const statusLabel = (s) => t("status." + s);
+  const teamLabel = (n) => (window.TeamNames ? window.TeamNames.localize(n) : n);
 
   const ICON = {
     mic: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>',
@@ -110,9 +111,9 @@
           <a class="featured-card" href="${watchHref(m)}">
             <div class="featured-league">${m.league}${m.minute ? ` · ${m.minute}` : ""}</div>
             <div class="featured-teams">
-              <span>${m.home}</span>
+              <span>${teamLabel(m.home)}</span>
               <b class="featured-score">${m.score}</b>
-              <span>${m.away}</span>
+              <span>${teamLabel(m.away)}</span>
             </div>
             ${commentatorText(m) ? `<div class="featured-commentator">${ICON.mic} ${commentatorText(m)}</div>` : ""}
             ${timeZoneChips(m, { compact: true })}
@@ -128,9 +129,9 @@
           <a class="featured-card featured-card--commentary" href="${watchHref(m)}">
             <div class="featured-league">${m.league} · ${t("status.ended")}</div>
             <div class="featured-teams">
-              <span>${m.home}</span>
+              <span>${teamLabel(m.home)}</span>
               <b class="featured-score">${m.score}</b>
-              <span>${m.away}</span>
+              <span>${teamLabel(m.away)}</span>
             </div>
             ${commentatorText(m) ? `<div class="featured-commentator">${ICON.mic} ${commentatorText(m)}</div>` : ""}
             <div class="featured-foot">${ICON.mic} ${t("card.watchCommentary")}</div>
@@ -156,12 +157,12 @@
         <div class="teams">
           <div class="team">
             ${crest(m.homeBadge, m.homeAbbr)}
-            <div class="tname">${m.home}</div>
+            <div class="tname">${teamLabel(m.home)}</div>
           </div>
           <div class="score">${m.score}</div>
           <div class="team">
             ${crest(m.awayBadge, m.awayAbbr)}
-            <div class="tname">${m.away}</div>
+            <div class="tname">${teamLabel(m.away)}</div>
           </div>
         </div>
         ${timeZoneChips(m)}
@@ -196,9 +197,9 @@
             aria-label="${t("card.removeSaved")}" title="${t("card.removeSaved")}">${ICON.trash}</button>
         </div>
         <div class="teams">
-          <div class="team">${crest(m.homeBadge, m.homeAbbr)}<div class="tname">${m.home}</div></div>
+          <div class="team">${crest(m.homeBadge, m.homeAbbr)}<div class="tname">${teamLabel(m.home)}</div></div>
           <div class="score">×</div>
-          <div class="team">${crest(m.awayBadge, m.awayAbbr)}<div class="tname">${m.away}</div></div>
+          <div class="team">${crest(m.awayBadge, m.awayAbbr)}<div class="tname">${teamLabel(m.away)}</div></div>
         </div>
         <div class="match-foot">
           <span class="match-meta">${m.channel ? `${ICON.tv} ${m.channel}` : ""}</span>
