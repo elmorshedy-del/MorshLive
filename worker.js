@@ -649,24 +649,71 @@ function sirStripToTs(buf) {
 }
 
 function sirPlayerHtml(src, slug) {
-  const tabs = ["ar1", "ar2", "fr", "en"]
-    .map((s) => `<a href="/sir/${s}"${s === slug ? ' class="on"' : ""}>${SIR_LABELS[s]}</a>`)
-    .join("");
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SIR ${SIR_LABELS[slug] || slug} — تجريبي</title>
 <style>html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif}
-#bar{position:fixed;top:0;left:0;right:0;display:flex;gap:4px;padding:6px;background:rgba(10,12,24,.72);z-index:5;backdrop-filter:blur(6px)}
-#bar a{flex:1;text-align:center;padding:7px 4px;border-radius:8px;color:#cbd5e1;text-decoration:none;font-size:13px;font-weight:700;background:rgba(255,255,255,.05)}
-#bar a.on{background:linear-gradient(135deg,#2e0d5e,#421480);color:#fff}
-#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
+#stage{position:relative;width:100vw;height:100vh;background:#000}
+#v{width:100%;height:100%;background:#000;object-fit:contain;display:block}
+#stage:fullscreen #v,#stage:-webkit-full-screen #v{object-fit:contain}
+.ctl{position:absolute;display:flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:10px;background:rgba(10,12,24,.62);color:#fff;cursor:pointer;backdrop-filter:blur(6px);font-family:inherit;font-weight:700}
+#unmute-overlay{top:0;left:0;right:0;bottom:0;width:100%;height:100%;border-radius:0;background:rgba(8,10,20,.55);font-size:16px;flex-direction:column;gap:10px;z-index:4}
+#unmute-overlay .ico{font-size:40px;line-height:1}
+#bottom-bar{left:10px;right:10px;bottom:10px;height:0;z-index:5;justify-content:space-between;background:none;backdrop-filter:none;pointer-events:none}
+#bottom-bar > *{pointer-events:auto}
+#mute-btn,#fs-btn{position:static;width:42px;height:42px;font-size:18px}
+.hidden{display:none!important}
+</style>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
 </head><body>
-<div id="bar">${tabs}</div>
-<video id="v" controls autoplay muted playsinline></video>
+<div id="stage">
+  <video id="v" autoplay muted playsinline></video>
+  <button type="button" id="unmute-overlay" class="ctl"><span class="ico">🔇</span><span>اضغط لتشغيل الصوت</span></button>
+  <div id="bottom-bar" class="ctl" style="position:absolute">
+    <button type="button" id="mute-btn" class="ctl">🔇</button>
+    <button type="button" id="fs-btn" class="ctl">⛶</button>
+  </div>
+</div>
 <script>
 (function(){
   var v=document.getElementById('v'), src=${JSON.stringify(src)};
+  var stage=document.getElementById('stage');
+  var overlay=document.getElementById('unmute-overlay');
+  var muteBtn=document.getElementById('mute-btn');
+  var fsBtn=document.getElementById('fs-btn');
+
+  function syncMuteUi(){
+    var icon=v.muted?'🔇':'🔊';
+    muteBtn.textContent=icon;
+    overlay.classList.toggle('hidden', !v.muted || v.paused);
+  }
+  function unmute(){
+    v.muted=false;
+    var p=v.play&&v.play();
+    if(p&&p.catch)p.catch(function(){ v.muted=true; });
+    syncMuteUi();
+  }
+  overlay.addEventListener('click', unmute);
+  muteBtn.addEventListener('click', function(){ if(v.muted){ unmute(); } else { v.muted=true; syncMuteUi(); } });
+  v.addEventListener('volumechange', syncMuteUi);
+  v.addEventListener('playing', syncMuteUi);
+
+  function isFullscreen(){ return !!(document.fullscreenElement||document.webkitFullscreenElement); }
+  function syncFsUi(){ fsBtn.textContent = isFullscreen() ? '⤢' : '⛶'; }
+  fsBtn.addEventListener('click', function(){
+    if(isFullscreen()){
+      (document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document);
+    } else if(stage.requestFullscreen){
+      stage.requestFullscreen().catch(function(){ if(v.webkitEnterFullscreen)v.webkitEnterFullscreen(); });
+    } else if(stage.webkitRequestFullscreen){
+      stage.webkitRequestFullscreen();
+    } else if(v.webkitEnterFullscreen){
+      v.webkitEnterFullscreen(); // iOS Safari: only the <video> itself supports native fullscreen
+    }
+  });
+  document.addEventListener('fullscreenchange', syncFsUi);
+  document.addEventListener('webkitfullscreenchange', syncFsUi);
+
   function start(){
     if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; }
     else if(window.Hls&&window.Hls.isSupported()){
@@ -674,7 +721,14 @@ function sirPlayerHtml(src, slug) {
       h.loadSource(src); h.attachMedia(v);
       h.on(Hls.Events.ERROR,function(_e,d){ if(d&&d.fatal){ if(d.type==='networkError'){ setTimeout(function(){try{h.startLoad();}catch(e){h.loadSource(src);}},2000);} else if(d.type==='mediaError'){ try{h.recoverMediaError();}catch(e){} } } });
     } else { v.src=src; }
-    var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+    // Try unmuted first (works once the site has enough engagement / the browser allows it);
+    // fall back to muted autoplay + the tap-to-unmute overlay when the browser blocks it.
+    v.muted=false;
+    var p=v.play&&v.play();
+    if(p&&p.catch){
+      p.catch(function(){ v.muted=true; v.play&&v.play().catch(function(){}); syncMuteUi(); });
+    }
+    syncMuteUi();
   }
   start();
 })();
