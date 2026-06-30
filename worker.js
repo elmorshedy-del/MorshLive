@@ -731,11 +731,21 @@ function sirPlayerHtml(src, slug) {
     // calling it earlier (e.g. right after hls.js attachMedia, before it has
     // loaded anything) rejects for unrelated reasons and would wrongly be read
     // as "autoplay blocked", forcing mute even on browsers that'd allow sound.
+    var autoplayDecided=false;
+    function resumePlay(){
+      var p=v.play&&v.play();
+      if(p&&p.catch)p.catch(function(){});
+    }
     function attemptPlay(){
+      // hls.js can re-fire MANIFEST_PARSED after recovering from a fatal network
+      // error (loadSource() re-runs); only decide the mute/autoplay outcome once,
+      // otherwise that recovery path would force-unmute over a deliberate mute.
+      if(autoplayDecided){ resumePlay(); return; }
+      autoplayDecided=true;
       v.muted=false;
       var p=v.play&&v.play();
       if(p&&p.catch){
-        p.catch(function(){ v.muted=true; var p2=v.play&&v.play(); if(p2&&p2.catch)p2.catch(function(){}); syncMuteUi(); });
+        p.catch(function(){ v.muted=true; resumePlay(); syncMuteUi(); });
       }
       syncMuteUi();
     }
