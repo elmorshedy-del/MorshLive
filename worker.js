@@ -243,6 +243,12 @@ async function rewriteStreamUrlsInHtml(html, origin, secret) {
       return whole;
     }
   });
+  out = await asyncReplaceAll(out, /(["'])(https?:\/\/[^"']+\.m3u8(?:[?#][^"']*)?)\1/gi, async (m) => {
+    const [whole, q, url] = m;
+    if (!shouldProxyStream(url, origin)) return whole;
+    const sig = await signTarget(url, secret);
+    return `${q}${hlsProxyUrl(url, origin, sig)}${q}`;
+  });
   return out;
 }
 
