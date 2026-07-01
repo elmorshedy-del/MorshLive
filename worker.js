@@ -526,20 +526,13 @@ const SIR_LABELS = { ar1: "AR 1", ar2: "AR 2", fr: "FR", en: "EN" };
 // same domain pattern) so it reuses this config; FR/EN come from a visibly
 // different upstream path (kooora/*xfr|xen, not kc/*) and haven't been
 // confirmed to carry the same overlay, so they're left unmasked until checked.
-const SIR_MASK_REGIONS = {
-  ar1: [
-    { top: 2, left: 0, width: 5, height: 7 },      // top-left corner mark
-    { top: 2, left: 79, width: 21, height: 14 },   // top-right "SIR TV" / LIVE badge
-    { top: 78, left: 88, width: 12, height: 15 },  // bottom-right QR code + caption
-    { top: 91, left: 0, width: 100, height: 9 },   // bottom-width promo bar
-  ],
-  ar2: [
-    { top: 2, left: 0, width: 5, height: 7 },
-    { top: 2, left: 79, width: 21, height: 14 },
-    { top: 78, left: 88, width: 12, height: 15 },
-    { top: 91, left: 0, width: 100, height: 9 },
-  ],
-};
+const AR_MASK_REGIONS = [
+  { top: 2, left: 0, width: 5, height: 7 },      // top-left corner mark
+  { top: 2, left: 79, width: 21, height: 14 },   // top-right "SIR TV" / LIVE badge
+  { top: 78, left: 88, width: 12, height: 15 },  // bottom-right QR code + caption
+  { top: 91, left: 0, width: 100, height: 9 },   // bottom-width promo bar
+];
+const SIR_MASK_REGIONS = { ar1: AR_MASK_REGIONS, ar2: AR_MASK_REGIONS };
 
 // md5 — needed for the foozlive token; crypto.subtle has no md5. (blueimp-style)
 function md5(s) {
@@ -713,16 +706,20 @@ function sirPlayerHtml(src, slug) {
   // than just filling the container.
   var MASKS=${JSON.stringify(SIR_MASK_REGIONS[slug] || [])};
   var maskEls=Array.prototype.slice.call(document.querySelectorAll('.mask'));
+  var lastCw,lastCh,lastVw,lastVh;
   function positionMasks(){
     if(!MASKS.length || !v.videoWidth || !v.videoHeight) return;
     var cw=stage.clientWidth, ch=stage.clientHeight;
     if(!cw || !ch) return;
+    if(cw===lastCw && ch===lastCh && v.videoWidth===lastVw && v.videoHeight===lastVh) return;
+    lastCw=cw; lastCh=ch; lastVw=v.videoWidth; lastVh=v.videoHeight;
     var videoAR=v.videoWidth/v.videoHeight, containerAR=cw/ch;
     var rectW,rectH,rectX,rectY;
     if(videoAR>containerAR){ rectW=cw; rectH=cw/videoAR; rectX=0; rectY=(ch-rectH)/2; }
     else { rectH=ch; rectW=ch*videoAR; rectY=0; rectX=(cw-rectW)/2; }
-    maskEls.forEach(function(el,i){
-      var r=MASKS[i];
+    MASKS.forEach(function(r,i){
+      var el=maskEls[i];
+      if(!el) return;
       el.style.left=(rectX+r.left/100*rectW)+'px';
       el.style.top=(rectY+r.top/100*rectH)+'px';
       el.style.width=(r.width/100*rectW)+'px';
@@ -735,6 +732,7 @@ function sirPlayerHtml(src, slug) {
   document.addEventListener('webkitfullscreenchange', positionMasks);
   v.addEventListener('webkitbeginfullscreen', positionMasks);
   v.addEventListener('webkitendfullscreen', positionMasks);
+  positionMasks();
   if(MASKS.length) setInterval(positionMasks, 1000); // cheap safety net for resize paths that don't fire an event (e.g. some iOS rotations)
 
   function syncMuteUi(){
