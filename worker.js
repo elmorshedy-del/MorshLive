@@ -34,6 +34,15 @@ const DL_HLS_RE = /^\/dl\/hls$/i;            // signed HLS proxy for dlhd stream
 const ALLOWED_STREAM_HOST =
   /(^|\.)((heinzromanigi|teworld|smarop|golatooa)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+)$/i;
 
+// Last-known-good streams for the SAME upstream VIP slot. These are not used to
+// alias one feed to another; they only preserve a stream after worldkoora briefly
+// replaces that slot's player markup with a blank/preroll-only wrapper.
+const LAST_KNOWN_VIP_STREAMS = {
+  vip1: {
+    3: [{ source: "https://1.554564.sbs/hls/1/stream.m3u8", player: "plyr" }],
+  },
+};
+
 const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
 .aplr-fxd-bnr,#aplr-fixedban,
 [class^="agl-"],[class*=" agl-"],[id^="agl-"],
@@ -219,6 +228,121 @@ async function rewriteM3u8(body, manifestUrl, origin, secret, basePath) {
   return rewritten.join("\n");
 }
 
+function isHlsUrl(url) {
+  return /^https?:\/\/[^\s"'<>`]+\.m3u8(?:[?#][^\s"'<>`]*)?$/i.test(url || "");
+}
+
+function uniqueItems(items) {
+  return Array.from(new Set(items.filter(Boolean)));
+}
+
+function decodeBase64(value) {
+  try {
+    return atob(value);
+  } catch {
+    return "";
+  }
+}
+
+function extractHlsCandidates(html) {
+  const out = [];
+  const text = String(html || "");
+  for (const m of text.matchAll(/AlbaPlayerControl\('([A-Za-z0-9+/=]*)','([^']+)'\)/g)) {
+    const source = decodeBase64(m[1]);
+    if (isHlsUrl(source)) out.push({ source, player: m[2] || "clappr" });
+  }
+  for (const m of text.matchAll(/["'](https?:\/\/[^"']+\.m3u8(?:[?#][^"']*)?)["']/gi)) {
+    if (isHlsUrl(m[1])) out.push({ source: m[1], player: "clappr" });
+  }
+  const seen = new Set();
+  return out.filter((item) => {
+    if (seen.has(item.source)) return false;
+    seen.add(item.source);
+    return true;
+  });
+}
+
+function extractNestedPlayerUrls(html) {
+  const urls = [];
+  for (const m of String(html || "").matchAll(/<iframe\b[^>]*\bsrc=(["'])(https?:\/\/[^"']+)\1[^>]*>/gi)) {
+    if (/\/albaplayer\//i.test(m[2])) urls.push(m[2]);
+  }
+  return uniqueItems(urls);
+}
+
+async function fetchPlayerHtml(url, request) {
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+      Accept: "text/html,application/xhtml+xml",
+      Referer: WORLDKOORA + "/",
+    },
+    redirect: "follow",
+  });
+  if (!res.ok) return null;
+  return res.text();
+}
+
+async function resolvePlayableSourceFromHtml(html, request, depth = 0, seen = new Set()) {
+  for (const candidate of extractHlsCandidates(html)) return candidate;
+  if (depth >= 3) return null;
+  for (const iframeUrl of extractNestedPlayerUrls(html)) {
+    if (seen.has(iframeUrl)) continue;
+    seen.add(iframeUrl);
+    try {
+      const nestedHtml = await fetchPlayerHtml(iframeUrl, request);
+      if (!nestedHtml) continue;
+      const nested = await resolvePlayableSourceFromHtml(nestedHtml, request, depth + 1, seen);
+      if (nested) return nested;
+    } catch {
+      // Try the next nested candidate; upstream hosts rotate and occasionally reset.
+    }
+  }
+  return null;
+}
+
+async function hlsManifestIsLive(source, request) {
+  try {
+    const res = await fetch(source, {
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "application/vnd.apple.mpegurl,*/*",
+        Referer: WORLDKOORA + "/",
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return false;
+    const text = await res.text();
+    return text.trimStart().startsWith("#EXTM3U");
+  } catch {
+    return false;
+  }
+}
+
+function injectPlayerScript(html, source, player, origin, secret) {
+  return signTarget(source, secret).then((sig) => {
+    const proxied = hlsProxyUrl(source, origin, sig);
+    const script = `<script>AlbaPlayerControl('${btoa(proxied)}','${player || "clappr"}')</script>`;
+    const content = /(<div\b[^>]*class=["'][^"']*\baplr-player-content\b[^"']*["'][^>]*>)([\s\S]*?)(<\/div>)/i;
+    if (content.test(html)) {
+      return html.replace(content, (_m, open, _inner, close) => `${open}${script}${close}`);
+    }
+    return html.replace(/<\/body>/i, script + "</body>");
+  });
+}
+
+async function resolveLastKnownVipStream(html, slot, origin, secret, request) {
+  if (extractHlsCandidates(html).length) return html;
+  const serv = Number(new URL(request.url).searchParams.get("serv") || 1);
+  const candidates = (LAST_KNOWN_VIP_STREAMS[slot] && LAST_KNOWN_VIP_STREAMS[slot][serv]) || [];
+  for (const candidate of candidates) {
+    if (isHlsUrl(candidate.source) && await hlsManifestIsLive(candidate.source, request)) {
+      return injectPlayerScript(html, candidate.source, candidate.player, origin, secret);
+    }
+  }
+  return html;
+}
+
 async function rewriteStreamUrlsInHtml(html, origin, secret) {
   let out = await asyncReplaceAll(
     html,
@@ -252,28 +376,6 @@ async function rewriteStreamUrlsInHtml(html, origin, secret) {
   return out;
 }
 
-async function resolveNestedPlayer(iframeUrl, request) {
-  try {
-    const res = await fetch(iframeUrl, {
-      headers: {
-        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
-        Accept: "text/html,application/xhtml+xml",
-        Referer: WORLDKOORA + "/",
-      },
-      redirect: "follow",
-    });
-    if (!res.ok) return null;
-    const html = await res.text();
-    const m = html.match(/AlbaPlayerControl\('([A-Za-z0-9+/=]*)','([^']+)'\)/);
-    if (!m || !m[1]) return null;
-    const source = atob(m[1]);
-    if (!/^https?:\/\/[^\s]+\.m3u8(?:[?#][^\s]*)?$/i.test(source)) return null;
-    return { source, player: m[2] || "clappr" };
-  } catch {
-    return null;
-  }
-}
-
 async function resolveNestedIframesInHtml(html, origin, secret, request) {
   return asyncReplaceAll(
     html,
@@ -281,11 +383,18 @@ async function resolveNestedIframesInHtml(html, origin, secret, request) {
     async (m) => {
       const [whole, , iframeUrl] = m;
       if (!/\/albaplayer\//i.test(iframeUrl)) return whole;
-      const nested = await resolveNestedPlayer(iframeUrl, request);
-      if (!nested || !shouldProxyStream(nested.source, origin)) return whole;
-      const sig = await signTarget(nested.source, secret);
-      const proxied = hlsProxyUrl(nested.source, origin, sig);
-      return `<script>AlbaPlayerControl('${btoa(proxied)}','${nested.player}')</script>`;
+      const resolved = await (async () => {
+        try {
+          const nestedHtml = await fetchPlayerHtml(iframeUrl, request);
+          return nestedHtml ? resolvePlayableSourceFromHtml(nestedHtml, request, 1, new Set([iframeUrl])) : null;
+        } catch {
+          return null;
+        }
+      })();
+      if (!resolved || !shouldProxyStream(resolved.source, origin)) return whole;
+      const sig = await signTarget(resolved.source, secret);
+      const proxied = hlsProxyUrl(resolved.source, origin, sig);
+      return `<script>AlbaPlayerControl('${btoa(proxied)}','${resolved.player}')</script>`;
     }
   );
 }
@@ -293,6 +402,7 @@ async function resolveNestedIframesInHtml(html, origin, secret, request) {
 async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
   let out = stripBlockedScripts(html);
   out = await resolveNestedIframesInHtml(out, origin, secret, request);
+  out = await resolveLastKnownVipStream(out, slot, origin, secret, request);
   out = await rewriteStreamUrlsInHtml(out, origin, secret);
   const headOpen = /<head[^>]*>/i;
   if (headOpen.test(out)) {
