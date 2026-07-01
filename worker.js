@@ -519,6 +519,27 @@ const SIR_HLS_RE = /^\/sir\/hls$/i;
 // slug -> stable substring of the tab path (survives label/order changes upstream)
 const SIR_TAB_KEY = { ar1: "d0x1", ar2: "d0x2", fr: "xfr", en: "xen" };
 const SIR_LABELS = { ar1: "AR 1", ar2: "AR 2", fr: "FR", en: "EN" };
+// Regions (percent of the VIDEO FRAME, not the player container) where the
+// upstream burns its own branding into the picture: top-left corner mark,
+// top-right "SIR TV / LIVE" badge, and a bottom promo bar + QR code. Measured
+// from a live AR1 capture. AR2 shares the same underlying feed (kooora/kc/*,
+// same domain pattern) so it reuses this config; FR/EN come from a visibly
+// different upstream path (kooora/*xfr|xen, not kc/*) and haven't been
+// confirmed to carry the same overlay, so they're left unmasked until checked.
+const SIR_MASK_REGIONS = {
+  ar1: [
+    { top: 2, left: 0, width: 5, height: 7 },      // top-left corner mark
+    { top: 2, left: 79, width: 21, height: 14 },   // top-right "SIR TV" / LIVE badge
+    { top: 78, left: 88, width: 12, height: 15 },  // bottom-right QR code + caption
+    { top: 91, left: 0, width: 100, height: 9 },   // bottom-width promo bar
+  ],
+  ar2: [
+    { top: 2, left: 0, width: 5, height: 7 },
+    { top: 2, left: 79, width: 21, height: 14 },
+    { top: 78, left: 88, width: 12, height: 15 },
+    { top: 91, left: 0, width: 100, height: 9 },
+  ],
+};
 
 // md5 — needed for the foozlive token; crypto.subtle has no md5. (blueimp-style)
 function md5(s) {
@@ -663,12 +684,14 @@ function sirPlayerHtml(src, slug) {
 #bottom-bar{left:10px;right:10px;bottom:10px;height:0;z-index:5;justify-content:space-between;background:none;backdrop-filter:none;pointer-events:none}
 #bottom-bar > *{pointer-events:auto}
 #mute-btn,#fs-btn{position:static;width:42px;height:42px;font-size:18px}
+.mask{position:absolute;pointer-events:none;background:rgba(0,0,0,.1);backdrop-filter:blur(22px) saturate(1.15);-webkit-backdrop-filter:blur(22px) saturate(1.15);z-index:3}
 .hidden{display:none!important}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
 </head><body>
 <div id="stage">
   <video id="v" autoplay muted playsinline></video>
+  <div id="mask-layer">${(SIR_MASK_REGIONS[slug] || []).map(() => '<div class="mask"></div>').join('')}</div>
   <button type="button" id="unmute-overlay" class="ctl"><span class="ico">🔇</span><span>اضغط لتشغيل الصوت</span></button>
   <div id="bottom-bar" class="ctl" style="position:absolute">
     <button type="button" id="mute-btn" class="ctl">🔇</button>
@@ -683,6 +706,36 @@ function sirPlayerHtml(src, slug) {
   var muteBtn=document.getElementById('mute-btn');
   var fsBtn=document.getElementById('fs-btn');
   var userMuted=false; // true only when the user deliberately muted via mute-btn (not a policy-forced mute)
+
+  // Blur out the upstream's burned-in branding (see SIR_MASK_REGIONS). Regions are
+  // percentages of the VIDEO FRAME itself, so this has to track the video's actual
+  // rendered rectangle inside #stage (object-fit:contain letterboxes it) rather
+  // than just filling the container.
+  var MASKS=${JSON.stringify(SIR_MASK_REGIONS[slug] || [])};
+  var maskEls=Array.prototype.slice.call(document.querySelectorAll('.mask'));
+  function positionMasks(){
+    if(!MASKS.length || !v.videoWidth || !v.videoHeight) return;
+    var cw=stage.clientWidth, ch=stage.clientHeight;
+    if(!cw || !ch) return;
+    var videoAR=v.videoWidth/v.videoHeight, containerAR=cw/ch;
+    var rectW,rectH,rectX,rectY;
+    if(videoAR>containerAR){ rectW=cw; rectH=cw/videoAR; rectX=0; rectY=(ch-rectH)/2; }
+    else { rectH=ch; rectW=ch*videoAR; rectY=0; rectX=(cw-rectW)/2; }
+    maskEls.forEach(function(el,i){
+      var r=MASKS[i];
+      el.style.left=(rectX+r.left/100*rectW)+'px';
+      el.style.top=(rectY+r.top/100*rectH)+'px';
+      el.style.width=(r.width/100*rectW)+'px';
+      el.style.height=(r.height/100*rectH)+'px';
+    });
+  }
+  v.addEventListener('loadedmetadata', positionMasks);
+  window.addEventListener('resize', positionMasks);
+  document.addEventListener('fullscreenchange', positionMasks);
+  document.addEventListener('webkitfullscreenchange', positionMasks);
+  v.addEventListener('webkitbeginfullscreen', positionMasks);
+  v.addEventListener('webkitendfullscreen', positionMasks);
+  if(MASKS.length) setInterval(positionMasks, 1000); // cheap safety net for resize paths that don't fire an event (e.g. some iOS rotations)
 
   function syncMuteUi(){
     muteBtn.textContent = v.muted ? '🔇' : '🔊';
