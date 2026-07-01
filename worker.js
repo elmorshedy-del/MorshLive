@@ -22,7 +22,6 @@
 const WORLDKOORA = "https://vip.worldkoora.com";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
-const EMBED_PROXY_RE = /^\/wk\/embed$/i;
 
 // dlhd (daddylive) 24/7 source — fully isolated from the worldkoora /wk/ path.
 const DLHD_BASE = "https://dlhd.pk";
@@ -247,23 +246,9 @@ async function rewriteStreamUrlsInHtml(html, origin, secret) {
   return out;
 }
 
-async function rewriteNestedIframesInHtml(html, origin, secret) {
-  return asyncReplaceAll(
-    html,
-    /(<iframe\b[^>]*\bsrc=)(["'])(https?:\/\/[^"']+)\2/gi,
-    async (m) => {
-      const [whole, pre, q, url] = m;
-      if (!shouldProxyStream(url, origin)) return whole;
-      const sig = await signTarget(url, secret);
-      return `${pre}${q}${hlsProxyUrl(url, origin, sig, "/wk/embed")}${q}`;
-    }
-  );
-}
-
 async function cleanWorldkooraHtml(html, slot, origin, secret) {
   let out = stripBlockedScripts(html);
   out = await rewriteStreamUrlsInHtml(out, origin, secret);
-  out = await rewriteNestedIframesInHtml(out, origin, secret);
   const headOpen = /<head[^>]*>/i;
   if (headOpen.test(out)) {
     out = out.replace(headOpen, (m) => m + EMBED_SHIM);
@@ -348,58 +333,6 @@ async function proxyHls(request, env) {
     return new Response(isHead ? null : res.body, {
       status: res.status,
       headers,
-    });
-  } catch {
-    return new Response(isHead ? null : "Upstream unavailable", { status: 502 });
-  }
-}
-
-async function proxyNestedEmbed(request, env) {
-  const incoming = new URL(request.url);
-  const origin = incoming.origin;
-  const target = incoming.searchParams.get("u");
-  const sig = incoming.searchParams.get("sig");
-  const secret = env && env.STREAM_SIGNING_SECRET;
-  const trusted = target && (await verifyTarget(target, sig, secret));
-  if (!trusted) {
-    return new Response("Forbidden embed", { status: 403 });
-  }
-
-  const isHead = request.method === "HEAD";
-  try {
-    const res = await fetch(target, {
-      method: request.method,
-      headers: {
-        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
-        Accept: "text/html,application/xhtml+xml",
-        Referer: WORLDKOORA + "/",
-      },
-      redirect: "follow",
-    });
-
-    if (!res.ok) {
-      return new Response(isHead ? null : `Upstream error ${res.status}`, { status: res.status });
-    }
-
-    if (isHead) {
-      return new Response(null, {
-        status: 200,
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "no-store",
-          "X-KZ-Proxy": "nested-embed",
-        },
-      });
-    }
-
-    const html = await res.text();
-    return new Response(await cleanWorldkooraHtml(html, "nested", origin, secret), {
-      status: 200,
-      headers: {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "no-store",
-        "X-KZ-Proxy": "nested-embed",
-      },
     });
   } catch {
     return new Response(isHead ? null : "Upstream unavailable", { status: 502 });
@@ -583,9 +516,6 @@ export default {
         });
       }
       return proxyHls(request, env);
-    }
-    if (EMBED_PROXY_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
-      return proxyNestedEmbed(request, env);
     }
     const dl = url.pathname.match(DL_EMBED_RE);
     if (dl && (method === "GET" || method === "HEAD")) {
