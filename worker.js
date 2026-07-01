@@ -246,8 +246,47 @@ async function rewriteStreamUrlsInHtml(html, origin, secret) {
   return out;
 }
 
-async function cleanWorldkooraHtml(html, slot, origin, secret) {
+async function resolveNestedPlayer(iframeUrl, request) {
+  try {
+    const res = await fetch(iframeUrl, {
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "text/html,application/xhtml+xml",
+        Referer: WORLDKOORA + "/",
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const m = html.match(/AlbaPlayerControl\('([A-Za-z0-9+/=]*)','([^']+)'\)/);
+    if (!m || !m[1]) return null;
+    const source = atob(m[1]);
+    if (!/^https?:\/\/[^\s]+\.m3u8(?:[?#][^\s]*)?$/i.test(source)) return null;
+    return { source, player: m[2] || "clappr" };
+  } catch {
+    return null;
+  }
+}
+
+async function resolveNestedIframesInHtml(html, origin, secret, request) {
+  return asyncReplaceAll(
+    html,
+    /<iframe\b[^>]*\bsrc=(["'])(https?:\/\/[^"']+)\1[^>]*>\s*<\/iframe>/gi,
+    async (m) => {
+      const [whole, , iframeUrl] = m;
+      if (!/\/albaplayer\//i.test(iframeUrl)) return whole;
+      const nested = await resolveNestedPlayer(iframeUrl, request);
+      if (!nested || !shouldProxyStream(nested.source, origin)) return whole;
+      const sig = await signTarget(nested.source, secret);
+      const proxied = hlsProxyUrl(nested.source, origin, sig);
+      return `<script>AlbaPlayerControl('${btoa(proxied)}','${nested.player}')</script>`;
+    }
+  );
+}
+
+async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
   let out = stripBlockedScripts(html);
+  out = await resolveNestedIframesInHtml(out, origin, secret, request);
   out = await rewriteStreamUrlsInHtml(out, origin, secret);
   const headOpen = /<head[^>]*>/i;
   if (headOpen.test(out)) {
@@ -374,7 +413,7 @@ async function proxyVip(request, slot, env) {
     const html = await res.text();
     const origin = new URL(request.url).origin;
     const secret = env && env.STREAM_SIGNING_SECRET;
-    return new Response(await cleanWorldkooraHtml(html, slot, origin, secret), {
+    return new Response(await cleanWorldkooraHtml(html, slot, origin, secret, request), {
       status: 200,
       headers: {
         "Content-Type": "text/html; charset=utf-8",
