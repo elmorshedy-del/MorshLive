@@ -25,9 +25,11 @@
       : null;
     const base = fromKey || channel.embed || { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
     const extras = {};
-    if (channel && channel.embed && channel.embed.defaultServer != null) {
-      extras.defaultServer = channel.embed.defaultServer;
+    if (channel && channel.embed) {
+      if (channel.embed.streamPatchKey) extras.streamPatchKey = channel.embed.streamPatchKey;
+      if (channel.embed.defaultServer != null) extras.defaultServer = channel.embed.defaultServer;
     }
+    if (match && match.streamPatchKey) extras.streamPatchKey = match.streamPatchKey;
     if (match && match.defaultServer != null) extras.defaultServer = match.defaultServer;
     return {
       ...base,
@@ -506,6 +508,7 @@
       const ch = (channel && channel.id) || "";
       const u = new URL(`/wk/albaplayer/${key}/`, location.origin);
       u.searchParams.set("ch", ch);
+      if (embed.streamPatchKey) u.searchParams.set("mk", embed.streamPatchKey);
       const res = await fetch(u.toString(), { cache: "no-store" });
       if (!res.ok) return false;
       return htmlHasPlayableEmbed(await res.text());

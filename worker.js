@@ -45,8 +45,12 @@ const DLHD_CHANNEL_IDS = {
 // Extra same-channel HLS mirrors — unused while on worldkoora-only playback.
 const EXTRA_CHANNEL_STREAMS = {};
 
-// Match patches — disabled; playback is worldkoora upstream only.
-const MATCH_STREAM_PATCHES = {};
+// Quick match patch — Portugal vs Croatia, beIN MAX 2. REMOVE after the match.
+const MATCH_STREAM_PATCHES = {
+  "croatia~portugal": [
+    { url: "https://cv.kooran72.cfd/donse1.m3u8", kind: "wk" },
+  ],
+};
 
 // Fallback trust for UN-signed ?u= values only (direct hits / legacy links).
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
@@ -723,6 +727,7 @@ async function resolveMatchPatchMirrors(matchKey, origin, secret) {
 async function proxyVip(request, slot, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
+  const matchKey = incoming.searchParams.get("mk") || "";
   const secret = env && env.STREAM_SIGNING_SECRET;
   const isHead = request.method === "HEAD";
   const htmlHeaders = {
@@ -730,6 +735,18 @@ async function proxyVip(request, slot, env) {
     "Cache-Control": "no-store",
     "X-KZ-Proxy": "worldkoora-vip",
   };
+
+  const patchMirrors = await resolveMatchPatchMirrors(matchKey, origin, secret);
+  if (patchMirrors.length) {
+    const proxied = patchMirrors.map((m) => m.url);
+    if (isHead) {
+      return new Response(null, { status: 200, headers: htmlHeaders });
+    }
+    return new Response(cleanHlsPlayerHtml(proxied, `${slot} بث`), {
+      status: 200,
+      headers: { ...htmlHeaders, "X-KZ-Patch": matchKey },
+    });
+  }
 
   const requestedServ = incoming.searchParams.get("serv") || 1;
   let html = null;
