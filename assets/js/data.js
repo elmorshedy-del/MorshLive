@@ -34,7 +34,6 @@ function embedUrlFor(embed, serverIndex) {
   // Pass the channel id so the worker can add that channel's stable dlhd mirror
   // to the failover pool (same channel, 24/7 backup).
   if (embed.channelId) u.searchParams.set("ch", embed.channelId);
-  if (embed.streamPatchKey) u.searchParams.set("mk", embed.streamPatchKey);
   return u.toString();
 }
 
@@ -117,7 +116,6 @@ function resolveWatchSelection(matches, channels, searchParams) {
   const embedBase = embedForKey(embedKey);
   const embedExtras = {};
   if (match && match.defaultServer != null) embedExtras.defaultServer = match.defaultServer;
-  if (match && match.streamPatchKey) embedExtras.streamPatchKey = match.streamPatchKey;
   const channelWithEmbed = {
     ...channel,
     embed: { ...embedBase, channelId: chId, ...embedExtras },
@@ -230,24 +228,11 @@ function commentaryKey(home, away) {
   return [norm(home), norm(away)].sort().join("~");
 }
 
-// Baked-in overrides for live fixtures — survives stale today.json on CDN.
-// REMOVE after the match.
-const LIVE_MATCH_OVERRIDES = {
-  "croatia~portugal": {
-    channel: "beIN MAX 2",
-    channelId: "bein-max-2",
-    embedKey: "vip1",
-    defaultServer: 0,
-    streamPatchKey: "croatia~portugal",
-  },
-};
+// Baked-in overrides for live fixtures — disabled; worldkoora bindings only.
+const LIVE_MATCH_OVERRIDES = {};
 
 function applyLiveMatchOverrides(matches) {
-  return matches.map((m) => {
-    const patch = LIVE_MATCH_OVERRIDES[commentaryKey(m.home, m.away)];
-    if (!patch || m.status === "ended") return m;
-    return { ...m, ...patch };
-  });
+  return matches;
 }
 
 let _commentaryIdx = null;
@@ -285,7 +270,6 @@ function applyCommentary(matches, idx) {
       if (entry.channelId) out.channelId = entry.channelId;
       if (entry.embedKey) out.embedKey = entry.embedKey;
       if (entry.defaultServer != null) out.defaultServer = entry.defaultServer;
-      if (entry.streamPatchKey) out.streamPatchKey = entry.streamPatchKey;
       return out;
     }
 

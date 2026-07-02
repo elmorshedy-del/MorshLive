@@ -42,28 +42,11 @@ const DLHD_CHANNEL_IDS = {
   "bein-sports-4": 94,
 };
 
-// Extra same-channel HLS mirrors from other public sources (e.g. kooracitty),
-// keyed by our channel id. Each entry is a direct HLS/master URL. They join the
-// SAME smoothness-ranked, deep-liveness-verified pool as worldkoora/dlhd, so a
-// dead entry is simply dropped. Empty by default.
-//
-// HOW TO ADD A KOORACITTY (or similar) MIRROR: kooracitty injects its player
-// client-side and serves no stream markup to servers, so the URL can't be
-// resolved headlessly. Open a live kooracitty match in a browser, and from
-// DevTools > Network copy the actual `*.m3u8` request URL, then add it here:
-//   "bein-sports-1": [{ url: "https://.../index.m3u8", kind: "plain" }],
-// `kind` controls the CDN fetch headers: "plain" (UA only), "wk" (worldkoora
-// Referer/Origin), or "dl" (no Referer/Origin).
+// Extra same-channel HLS mirrors — unused while on worldkoora-only playback.
 const EXTRA_CHANNEL_STREAMS = {};
 
-// One-off match patches — pinned HLS URLs that worked before upstream rotated.
-// Keyed by commentaryKey (sorted home~away). Passed from the watch page as ?mk=.
-// REMOVE after the match. Portugal vs Croatia, beIN MAX 2, 2026-07-02.
-const MATCH_STREAM_PATCHES = {
-  "croatia~portugal": [
-    { url: "https://cv.kooran72.cfd/donse1.m3u8", kind: "wk", score: -500 },
-  ],
-};
+// Match patches — disabled; playback is worldkoora upstream only.
+const MATCH_STREAM_PATCHES = {};
 
 // Fallback trust for UN-signed ?u= values only (direct hits / legacy links).
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
@@ -740,8 +723,6 @@ async function resolveMatchPatchMirrors(matchKey, origin, secret) {
 async function proxyVip(request, slot, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
-  const channelId = incoming.searchParams.get("ch") || "";
-  const matchKey = incoming.searchParams.get("mk") || "";
   const secret = env && env.STREAM_SIGNING_SECRET;
   const isHead = request.method === "HEAD";
   const htmlHeaders = {
@@ -750,71 +731,30 @@ async function proxyVip(request, slot, env) {
     "X-KZ-Proxy": "worldkoora-vip",
   };
 
+  const requestedServ = incoming.searchParams.get("serv") || 1;
+  let html = null;
+  let status = 502;
+  for (const serv of vipServerOrder(requestedServ)) {
+    const page = await fetchVipServerHtml(request, slot, serv);
+    status = page.status;
+    if (page.html) {
+      html = page.html;
+      break;
+    }
+  }
+
   if (isHead) {
-    const requestedServ = incoming.searchParams.get("serv") || 1;
-    const page = await fetchVipServerHtml(request, slot, requestedServ);
-    const status = page.html ? 200 : (DLHD_CHANNEL_IDS[channelId] ? 200 : page.status);
-    return new Response(null, { status, headers: htmlHeaders });
+    return new Response(null, { status: html ? 200 : status, headers: htmlHeaders });
   }
 
-  try {
-    // Pinned fixture mirrors (?mk=) must be exclusive — mixing them with
-    // worldkoora slot servers caused failover onto unrelated feeds (wrong game /
-    // Periscope) that sounded like two streams overlapped.
-    const patchMirrors = await resolveMatchPatchMirrors(matchKey, origin, secret);
-    if (patchMirrors.length) {
-      const proxied = patchMirrors.map((m) => m.url);
-      return new Response(cleanHlsPlayerHtml(proxied, `${slot} بث`), {
-        status: 200,
-        headers: {
-          ...htmlHeaders,
-          "X-KZ-Mirrors": String(proxied.length),
-          "X-KZ-Patch": matchKey,
-        },
-      });
-    }
-
-    const { candidates, firstHtml } = await resolveVipSlotStream(request, slot);
-    // Unified pool of {url, score}. worldkoora slot servers first (already probed
-    // + ranked), plus the stable dlhd mirror of the SAME channel. Everything is
-    // re-sorted by smoothness so the player opens on the smoothest live mirror and
-    // fails over to the next-smoothest if it dies.
-    const pool = [];
-    for (const c of candidates || []) {
-      const sig = await signTarget(c.source, secret);
-      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: c.score });
-    }
-    const dlMirror = await resolveDlChannelMirror(channelId, origin, secret, request);
-    if (dlMirror) pool.push(dlMirror);
-    for (const extra of await resolveExtraChannelMirrors(channelId, origin, secret, request)) pool.push(extra);
-
-    pool.sort((a, b) => a.score - b.score);
-    const proxied = [];
-    for (const m of pool) if (!proxied.includes(m.url)) proxied.push(m.url);
-
-    if (proxied.length) {
-      return new Response(cleanHlsPlayerHtml(proxied, `${slot} بث`), {
-        status: 200,
-        headers: {
-          ...htmlHeaders,
-          "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
-          "X-KZ-Mirrors": String(proxied.length),
-        },
-      });
-    }
-    // Last resort: nothing resolved live (e.g. slot is 403/blank this game).
-    // Serve the preroll-stripped upstream page so any client-side player still
-    // has a chance, rather than a hard error.
-    if (firstHtml) {
-      return new Response(await cleanWorldkooraHtml(firstHtml, slot, origin, secret, request), {
-        status: 200,
-        headers: htmlHeaders,
-      });
-    }
-    return new Response("Upstream unavailable", { status: 502 });
-  } catch {
-    return new Response("Upstream unavailable", { status: 502 });
+  if (!html) {
+    return new Response("Upstream unavailable", { status: status || 502 });
   }
+
+  return new Response(await cleanWorldkooraHtml(html, slot, origin, secret, request), {
+    status: 200,
+    headers: htmlHeaders,
+  });
 }
 
 /* ----------------------------------------------- dlhd (daddylive) 24/7 source
