@@ -493,14 +493,17 @@ function cleanHlsPlayerHtml(sources, title) {
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title || "KoraZero"}</title>
-<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{width:100vw;height:100vh;background:#000;object-fit:contain}#tap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.6);color:#fff;font:600 18px system-ui,sans-serif;cursor:pointer;z-index:9;-webkit-tap-highlight-color:transparent}</style>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
 </head><body>
-<video id="v" controls autoplay muted playsinline data-kz-src=${JSON.stringify(list[0] || "")}></video>
+<div id="tap">▶ اضغط للتشغيل</div>
+<video id="v" controls autoplay muted playsinline webkit-playsinline data-kz-src=${JSON.stringify(list[0] || "")}></video>
 <script>
 (function(){
-  var v=document.getElementById('v'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0;
+  var v=document.getElementById('v'), tap=document.getElementById('tap'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0;
   function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
+  function hideTap(){ if(tap) tap.style.display='none'; }
+  function tryPlay(){ var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){}); }
   function next(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*3){ setTimeout(load, 800); } }
   function load(){
     var src=sources[i]; if(!src) return;
@@ -510,15 +513,18 @@ function cleanHlsPlayerHtml(sources, title) {
     } else if(window.Hls&&window.Hls.isSupported()){
       hls=new Hls({maxBufferLength:30,liveSyncDurationCount:3,manifestLoadingMaxRetry:4,levelLoadingMaxRetry:4,fragLoadingMaxRetry:4});
       hls.loadSource(src); hls.attachMedia(v);
+      hls.on(Hls.Events.MANIFEST_PARSED,function(){ tryPlay(); });
       hls.on(Hls.Events.ERROR,function(_e,d){
         if(!d||!d.fatal) return;
         if(d.type==='mediaError'){ try{hls.recoverMediaError();return;}catch(e){} }
-        // network/other fatal: this mirror is down — advance to the next live one.
         next();
       });
     } else { v.src=src; }
-    var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+    tryPlay();
   }
+  if(tap){ tap.addEventListener('click',function(){ hideTap(); v.muted=false; tryPlay(); }); }
+  v.addEventListener('playing', hideTap);
+  v.addEventListener('click',function(){ hideTap(); v.muted=false; tryPlay(); });
   load();
 })();
 </script>
