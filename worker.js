@@ -391,29 +391,44 @@ async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
 
 // Our own clean HLS player. Serving this (instead of the rotating upstream
 // Clappr/JW/preroll markup) decouples playback from whatever wrapper worldkoora
-// ships this game — the recurring source of "stream is off" breakage. The signed
-// /wk/stream.m3u8 URL is what changes per game; the player around it stays fixed.
-function cleanHlsPlayerHtml(src, title) {
+// ships this game — the recurring source of "stream is off" breakage.
+//
+// It is fed a RANKED LIST of already-verified-live signed mirror URLs, not one
+// URL. If the playing mirror dies mid-match (worldkoora's CDN hosts rotate and
+// die constantly), the player advances to the next live mirror on its own, so a
+// single dead host no longer takes the stream off.
+function cleanHlsPlayerHtml(sources, title) {
+  const list = Array.isArray(sources) ? sources.filter(Boolean) : [sources].filter(Boolean);
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title || "KoraZero"}</title>
 <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
 </head><body>
-<video id="v" controls autoplay muted playsinline data-kz-src=${JSON.stringify(src)}></video>
+<video id="v" controls autoplay muted playsinline data-kz-src=${JSON.stringify(list[0] || "")}></video>
 <script>
 (function(){
-  var v=document.getElementById('v'), src=${JSON.stringify(src)}, hls=null;
-  function attach(){
-    if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; }
-    else if(window.Hls&&window.Hls.isSupported()){
-      hls=new Hls({maxBufferLength:30,liveSyncDurationCount:3,manifestLoadingMaxRetry:6,levelLoadingMaxRetry:6,fragLoadingMaxRetry:6});
+  var v=document.getElementById('v'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0;
+  function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
+  function next(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*3){ setTimeout(load, 800); } }
+  function load(){
+    var src=sources[i]; if(!src) return;
+    destroy();
+    if(v.canPlayType('application/vnd.apple.mpegurl')){
+      v.src=src; v.addEventListener('error', next, {once:true});
+    } else if(window.Hls&&window.Hls.isSupported()){
+      hls=new Hls({maxBufferLength:30,liveSyncDurationCount:3,manifestLoadingMaxRetry:4,levelLoadingMaxRetry:4,fragLoadingMaxRetry:4});
       hls.loadSource(src); hls.attachMedia(v);
-      hls.on(Hls.Events.ERROR,function(_e,d){ if(d&&d.fatal){ if(d.type==='networkError'){ setTimeout(function(){ try{hls.startLoad();}catch(e){ hls.loadSource(src);} },2000); } else if(d.type==='mediaError'){ try{hls.recoverMediaError();}catch(e){} } } });
+      hls.on(Hls.Events.ERROR,function(_e,d){
+        if(!d||!d.fatal) return;
+        if(d.type==='mediaError'){ try{hls.recoverMediaError();return;}catch(e){} }
+        // network/other fatal: this mirror is down — advance to the next live one.
+        next();
+      });
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
   }
-  attach();
+  load();
 })();
 </script>
 </body></html>`;
@@ -525,21 +540,28 @@ function vipServerOrder(requestedServ) {
   return order;
 }
 
-// Actively resolve a slot to a VERIFIED-live HLS source at request time. Returns
-// { source, player, serv } or null. Only servers of the SAME slot are tried.
+// Actively build a ranked pool of VERIFIED-live HLS mirrors for a slot at request
+// time. Every "بث N" server of the SAME slot is resolved and liveness-checked, so
+// dead CDN hosts (worldkoora rotates and kills these constantly) are dropped and
+// the live ones become failover mirrors. Only servers of the SAME slot are used —
+// never a different channel/slot. Returns { candidates, firstHtml }.
 async function resolveVipSlotStream(request, slot) {
   const requestedServ = new URL(request.url).searchParams.get("serv") || 1;
   let firstHtml = null;
+  const candidates = [];
+  const seenSources = new Set();
   for (const serv of vipServerOrder(requestedServ)) {
     const page = await fetchVipServerHtml(request, slot, serv);
     if (!page.html) continue;
     if (firstHtml == null) firstHtml = page.html;
     const resolved = await resolvePlayableSourceFromHtml(page.html, request, 0, new Set());
-    if (resolved && await hlsManifestIsLive(resolved.source, request)) {
-      return { ...resolved, serv };
+    if (!resolved || seenSources.has(resolved.source)) continue;
+    if (await hlsManifestIsLive(resolved.source, request)) {
+      seenSources.add(resolved.source);
+      candidates.push({ ...resolved, serv });
     }
   }
-  return { firstHtml };
+  return { candidates, firstHtml };
 }
 
 async function proxyVip(request, slot, env) {
@@ -559,21 +581,25 @@ async function proxyVip(request, slot, env) {
   }
 
   try {
-    const resolved = await resolveVipSlotStream(request, slot);
-    // Preferred path: a verified-live stream, wrapped in our own clean player.
-    if (resolved && resolved.source) {
-      const sig = await signTarget(resolved.source, secret);
-      const proxied = hlsProxyUrl(resolved.source, origin, sig);
+    const { candidates, firstHtml } = await resolveVipSlotStream(request, slot);
+    // Preferred path: one or more verified-live mirrors, wrapped in our own clean
+    // player with automatic mirror failover.
+    if (candidates && candidates.length) {
+      const proxied = [];
+      for (const c of candidates) {
+        const sig = await signTarget(c.source, secret);
+        proxied.push(hlsProxyUrl(c.source, origin, sig));
+      }
       return new Response(cleanHlsPlayerHtml(proxied, `${slot} بث`), {
         status: 200,
-        headers: { ...htmlHeaders, "X-KZ-Serv": String(resolved.serv) },
+        headers: { ...htmlHeaders, "X-KZ-Serv": String(candidates[0].serv), "X-KZ-Mirrors": String(proxied.length) },
       });
     }
     // Last resort: nothing resolved live (e.g. slot is 403/blank this game).
     // Serve the preroll-stripped upstream page so any client-side player still
     // has a chance, rather than a hard error.
-    if (resolved && resolved.firstHtml) {
-      return new Response(await cleanWorldkooraHtml(resolved.firstHtml, slot, origin, secret, request), {
+    if (firstHtml) {
+      return new Response(await cleanWorldkooraHtml(firstHtml, slot, origin, secret, request), {
         status: 200,
         headers: htmlHeaders,
       });
