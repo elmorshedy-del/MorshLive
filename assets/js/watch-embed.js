@@ -4,7 +4,7 @@
  * ==========================================================================*/
 (function () {
   function channelEmbed() {
-    return channel.embed || { url: "/dl/91", servers: 1 };
+    return (channel && channel.embed) || { url: "/dl/91", servers: 1 };
   }
 
   const embedUrlFor = (embed, i) =>
