@@ -42,6 +42,20 @@ const DLHD_CHANNEL_IDS = {
   "bein-sports-4": 94,
 };
 
+// Extra same-channel HLS mirrors from other public sources (e.g. kooracitty),
+// keyed by our channel id. Each entry is a direct HLS/master URL. They join the
+// SAME smoothness-ranked, deep-liveness-verified pool as worldkoora/dlhd, so a
+// dead entry is simply dropped. Empty by default.
+//
+// HOW TO ADD A KOORACITTY (or similar) MIRROR: kooracitty injects its player
+// client-side and serves no stream markup to servers, so the URL can't be
+// resolved headlessly. Open a live kooracitty match in a browser, and from
+// DevTools > Network copy the actual `*.m3u8` request URL, then add it here:
+//   "bein-sports-1": [{ url: "https://.../index.m3u8", kind: "plain" }],
+// `kind` controls the CDN fetch headers: "plain" (UA only), "wk" (worldkoora
+// Referer/Origin), or "dl" (no Referer/Origin).
+const EXTRA_CHANNEL_STREAMS = {};
+
 // Fallback trust for UN-signed ?u= values only (direct hits / legacy links).
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
 // needs to be edited every time worldkoora rotates its CDN host.
@@ -323,56 +337,71 @@ function firstMediaLine(manifest) {
   return null;
 }
 
-// DEEP liveness: a mirror only counts as playable if we can walk master ->
-// variant -> and actually pull the first segment. This is what stops the
-// recurring "master says #EXTM3U but the segments 403, so the stream is off"
-// class of bug (e.g. dlhd tokens, rotated/expired worldkoora CDN hosts).
-async function streamPlays(source, kind, request) {
+function parseTargetDuration(manifest) {
+  const m = manifest.match(/#EXT-X-TARGETDURATION:\s*([0-9.]+)/i);
+  return m ? Number(m[1]) : null;
+}
+
+// DEEP liveness + smoothness probe: walk master -> variant -> first segment and
+// actually pull segment bytes. This stops the recurring "master says #EXTM3U but
+// the segments 403, so the stream is off" bug, AND measures how quickly the whole
+// chain responds so we can auto-play the SMOOTHEST mirror (lowest edge latency,
+// most buffered segments, sane target duration) rather than a random live one.
+// Returns { ok, ms, score } — lower score = smoother.
+async function streamProbe(source, kind, request) {
   const headers = streamFetchHeaders(kind, request);
+  const started = Date.now();
   try {
     const res = await fetch(source, { headers, redirect: "follow" });
-    if (!res.ok) return false;
+    if (!res.ok) return { ok: false };
     const text = await res.text();
-    if (!text.trimStart().startsWith("#EXTM3U")) return false;
+    if (!text.trimStart().startsWith("#EXTM3U")) return { ok: false };
 
     let mediaManifestUrl = source;
     let mediaText = text;
-    // Master playlist -> follow the first variant to its media playlist.
     if (/#EXT-X-STREAM-INF/i.test(text)) {
       const variant = firstMediaLine(text);
-      if (!variant) return false;
+      if (!variant) return { ok: false };
       const variantUrl = new URL(variant, source).toString();
       const vres = await fetch(variantUrl, { headers, redirect: "follow" });
-      if (!vres.ok) return false;
+      if (!vres.ok) return { ok: false };
       mediaText = await vres.text();
-      if (!mediaText.trimStart().startsWith("#EXTM3U")) return false;
+      if (!mediaText.trimStart().startsWith("#EXTM3U")) return { ok: false };
       mediaManifestUrl = variantUrl;
     }
 
-    // Pull the first segment (or nested media playlist) and require real bytes.
     const seg = firstMediaLine(mediaText);
-    if (!seg) return false;
+    if (!seg) return { ok: false };
     const segUrl = new URL(seg, mediaManifestUrl).toString();
-    const sres = await fetch(segUrl, {
-      headers: { ...headers, Range: "bytes=0-2047" },
-      redirect: "follow",
-    });
-    if (!(sres.status === 200 || sres.status === 206)) return false;
-    const ctype = (sres.headers.get("Content-Type") || "").toLowerCase();
-    if (ctype.includes("text/html")) return false; // 403/error page dressed as 200
-    // A media playlist step (segment line was itself an .m3u8): accept as live.
-    if (isHlsUrl(segUrl)) return true;
-    // Read only the first chunk, then cancel — never download the whole segment.
-    if (!sres.body) {
-      const buf = await sres.arrayBuffer();
-      return buf.byteLength > 0;
+    let segBytesOk = true;
+    if (!isHlsUrl(segUrl)) {
+      const sres = await fetch(segUrl, { headers: { ...headers, Range: "bytes=0-2047" }, redirect: "follow" });
+      if (!(sres.status === 200 || sres.status === 206)) return { ok: false };
+      const ctype = (sres.headers.get("Content-Type") || "").toLowerCase();
+      if (ctype.includes("text/html")) return { ok: false };
+      if (sres.body) {
+        const reader = sres.body.getReader();
+        const { value, done } = await reader.read();
+        try { await reader.cancel(); } catch { /* noop */ }
+        segBytesOk = !done && !!value && value.byteLength > 0;
+      } else {
+        const buf = await sres.arrayBuffer();
+        segBytesOk = buf.byteLength > 0;
+      }
+      if (!segBytesOk) return { ok: false };
     }
-    const reader = sres.body.getReader();
-    const { value, done } = await reader.read();
-    try { await reader.cancel(); } catch { /* noop */ }
-    return !done && !!value && value.byteLength > 0;
+
+    const ms = Date.now() - started;
+    // Smoothness score: primarily round-trip latency of the whole walk. A tiny
+    // penalty for streams that list very few segments (less buffer) and for an
+    // unusually large target duration (coarser, jumpier live edge).
+    const segCount = (mediaText.match(/#EXTINF/gi) || []).length;
+    const targetDur = parseTargetDuration(mediaText) || 6;
+    const bufferPenalty = segCount >= 3 ? 0 : 400;
+    const targetPenalty = targetDur > 8 ? (targetDur - 8) * 50 : 0;
+    return { ok: true, ms, score: ms + bufferPenalty + targetPenalty };
   } catch {
-    return false;
+    return { ok: false };
   }
 }
 
@@ -609,20 +638,27 @@ function vipServerOrder(requestedServ) {
 // never a different channel/slot. Returns { candidates, firstHtml }.
 async function resolveVipSlotStream(request, slot) {
   const requestedServ = new URL(request.url).searchParams.get("serv") || 1;
-  let firstHtml = null;
-  const candidates = [];
+  // Resolve every server of the slot to its HLS (sequentially — cheap HTML gets),
+  // dedup, then probe them concurrently for liveness + smoothness.
   const seenSources = new Set();
+  const resolvedList = [];
+  let firstHtml = null;
   for (const serv of vipServerOrder(requestedServ)) {
     const page = await fetchVipServerHtml(request, slot, serv);
     if (!page.html) continue;
     if (firstHtml == null) firstHtml = page.html;
     const resolved = await resolvePlayableSourceFromHtml(page.html, request, 0, new Set());
     if (!resolved || seenSources.has(resolved.source)) continue;
-    if (await streamPlays(resolved.source, "wk", request)) {
-      seenSources.add(resolved.source);
-      candidates.push({ ...resolved, serv });
-    }
+    seenSources.add(resolved.source);
+    resolvedList.push({ ...resolved, serv });
   }
+  const probed = await Promise.all(
+    resolvedList.map(async (r) => ({ r, p: await streamProbe(r.source, "wk", request) }))
+  );
+  const candidates = probed
+    .filter((x) => x.p.ok)
+    .sort((a, b) => a.p.score - b.p.score) // smoothest first
+    .map((x) => ({ ...x.r, score: x.p.score }));
   return { candidates, firstHtml };
 }
 
@@ -634,9 +670,25 @@ async function resolveDlChannelMirror(channelId, origin, secret, request) {
   if (!id) return null;
   const m3u8 = await resolveDlStream(id);
   if (!m3u8 || !isHlsUrl(m3u8)) return null;
-  if (!(await streamPlays(m3u8, "dl", request))) return null;
+  const probe = await streamProbe(m3u8, "dl", request);
+  if (!probe.ok) return null;
   const sig = await signTarget(m3u8, secret);
-  return hlsProxyUrl(m3u8, origin, sig, "/dl/hls");
+  return { url: hlsProxyUrl(m3u8, origin, sig, "/dl/hls"), score: probe.score };
+}
+
+// Resolve any configured extra same-channel mirrors (e.g. kooracitty), verified
+// live + smoothness-scored, signed through /wk/hls. Returns [{url, score}].
+async function resolveExtraChannelMirrors(channelId, origin, secret, request) {
+  const entries = EXTRA_CHANNEL_STREAMS[channelId] || [];
+  const out = [];
+  for (const entry of entries) {
+    if (!entry || !isHlsUrl(entry.url)) continue;
+    const probe = await streamProbe(entry.url, entry.kind || "plain", request);
+    if (!probe.ok) continue;
+    const sig = await signTarget(entry.url, secret);
+    out.push({ url: hlsProxyUrl(entry.url, origin, sig), score: probe.score });
+  }
+  return out;
 }
 
 async function proxyVip(request, slot, env) {
@@ -660,15 +712,22 @@ async function proxyVip(request, slot, env) {
 
   try {
     const { candidates, firstHtml } = await resolveVipSlotStream(request, slot);
-    const proxied = [];
+    // Unified pool of {url, score}. worldkoora slot servers first (already probed
+    // + ranked), plus the stable dlhd mirror of the SAME channel. Everything is
+    // re-sorted by smoothness so the player opens on the smoothest live mirror and
+    // fails over to the next-smoothest if it dies.
+    const pool = [];
     for (const c of candidates || []) {
       const sig = await signTarget(c.source, secret);
-      proxied.push(hlsProxyUrl(c.source, origin, sig));
+      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: c.score });
     }
-    // Append the stable dlhd mirror for the SAME beIN channel as a last-priority
-    // backup, so a fully-dead worldkoora slot still keeps the channel playing.
     const dlMirror = await resolveDlChannelMirror(channelId, origin, secret, request);
-    if (dlMirror && !proxied.includes(dlMirror)) proxied.push(dlMirror);
+    if (dlMirror) pool.push(dlMirror);
+    for (const extra of await resolveExtraChannelMirrors(channelId, origin, secret, request)) pool.push(extra);
+
+    pool.sort((a, b) => a.score - b.score);
+    const proxied = [];
+    for (const m of pool) if (!proxied.includes(m.url)) proxied.push(m.url);
 
     if (proxied.length) {
       return new Response(cleanHlsPlayerHtml(proxied, `${slot} بث`), {

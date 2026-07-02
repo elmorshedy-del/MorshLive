@@ -428,10 +428,15 @@
   /* ---------------------------------------------- Stream reload
    * The worldkoora source sometimes parks on a static frame while a match is
    * live. A fresh load of the active player recovers it, so we expose a manual
-   * "reload" control AND auto-reload 15 minutes before each kickoff so the
-   * stream is primed by the time the game starts. */
-  const RELOAD_LEAD_MS = 15 * 60 * 1000;
+   * "reload" control AND start prewarming 30 minutes before each kickoff: from
+   * then we poll until the channel actually has a live stream, then load the
+   * worker's smoothest-ranked mirror and auto-play it — so the game is already
+   * playing the smoothest feed by kick-off. */
+  const RELOAD_LEAD_MS = 30 * 60 * 1000;
+  const PREWARM_POLL_MS = 45 * 1000;
+  const PREWARM_TAIL_MS = 20 * 60 * 1000; // keep trying until 20 min after kickoff
   let reloadTimer = null;
+  let prewarmTimer = null;
 
   function parseKickoff(ts) {
     if (ts == null || ts === "") return NaN;
@@ -467,27 +472,67 @@
     }
   }
 
-  // (Re)arm a single timer for the soonest "kickoff − 15 min" still in the
-  // future — but only for matches on the channel currently being watched (or the
-  // selected match), so an unrelated channel's kickoff never interrupts playback.
-  function scheduleAutoReload() {
-    if (reloadTimer) { clearTimeout(reloadTimer); reloadTimer = null; }
-    const now = Date.now();
+  // Kickoff (ms) of the soonest match on the channel currently being watched (or
+  // the selected match). Used to time the 30-minute prewarm.
+  function nextRelevantKickoff() {
     const relevant = (MATCHES || []).filter((m) =>
       (channel && m.channelId && m.channelId === channel.id) ||
       (match && m.id === match.id)
     );
-    const next = relevant
+    return relevant
       .map((m) => parseKickoff(m.kickoffUtc))
       .filter((ms) => !isNaN(ms))
-      .map((ms) => ms - RELOAD_LEAD_MS)
-      .filter((ts) => ts > now + 1000)
-      .sort((a, b) => a - b)[0];
-    if (next == null) return;
-    reloadTimer = setTimeout(() => {
+      .sort((a, b) => a - b)
+      .find((ms) => ms > Date.now() - PREWARM_TAIL_MS);
+  }
+
+  // Does the channel currently being watched actually have a live stream ready?
+  // The worker only serves a playable page when a mirror verifies live, so this
+  // doubles as the "is the smoothest feed available yet" check.
+  async function activeChannelHasStream() {
+    try {
+      const key = activePlayer === 1 ? feedKeyOf(channel.embed) : feedKeyOf(vipEmbed());
+      const ch = (channel && channel.id) || "";
+      const res = await fetch(`/wk/albaplayer/${key}/?ch=${encodeURIComponent(ch)}`, { cache: "no-store" });
+      if (!res.ok) return false;
+      return htmlHasPlayableEmbed(await res.text());
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // From kickoff − 30 min, poll until the stream is live, then load + auto-play
+  // the worker's smoothest-ranked mirror. Stops once playing (or after the tail).
+  async function prewarmTick(kickoff) {
+    if (prewarmTimer) { clearTimeout(prewarmTimer); prewarmTimer = null; }
+    if (Date.now() > kickoff + PREWARM_TAIL_MS) return; // window passed
+    const live = await activeChannelHasStream();
+    if (live) {
       reloadActivePlayer();
+      play();
+    }
+    // Keep polling: even after it starts, a later poll is a no-op if already live.
+    prewarmTimer = setTimeout(() => prewarmTick(kickoff), PREWARM_POLL_MS);
+  }
+
+  // (Re)arm a single timer for the soonest "kickoff − 30 min" still in the future
+  // — scoped to the channel being watched so an unrelated kickoff never interrupts
+  // playback. At that point the prewarm poll takes over.
+  function scheduleAutoReload() {
+    if (reloadTimer) { clearTimeout(reloadTimer); reloadTimer = null; }
+    const now = Date.now();
+    const kickoff = nextRelevantKickoff();
+    if (kickoff == null) return;
+    const prewarmAt = kickoff - RELOAD_LEAD_MS;
+    // Already inside the 30-min window (or just after kickoff): start prewarming now.
+    if (prewarmAt <= now) {
+      if (!prewarmTimer) prewarmTick(kickoff);
+      return;
+    }
+    reloadTimer = setTimeout(() => {
+      prewarmTick(kickoff);
       scheduleAutoReload();
-    }, Math.min(next - now, 0x7fffffff));
+    }, Math.min(prewarmAt - now, 0x7fffffff));
   }
 
   function initReloadButton() {
