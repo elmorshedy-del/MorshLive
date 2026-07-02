@@ -54,7 +54,18 @@ const DLHD_CHANNEL_IDS = {
 //   "bein-sports-1": [{ url: "https://.../index.m3u8", kind: "plain" }],
 // `kind` controls the CDN fetch headers: "plain" (UA only), "wk" (worldkoora
 // Referer/Origin), or "dl" (no Referer/Origin).
-const EXTRA_CHANNEL_STREAMS = {};
+const EXTRA_CHANNEL_STREAMS = {
+  "bein-max-2": [{ url: "https://cv.kooran72.cfd/donse1.m3u8", kind: "wk" }],
+};
+
+// One-off match patches — pinned HLS URLs that worked before upstream rotated.
+// Keyed by commentaryKey (sorted home~away). Passed from the watch page as ?mk=.
+// REMOVE after the match. Portugal vs Croatia, beIN MAX 2, 2026-07-02.
+const MATCH_STREAM_PATCHES = {
+  "croatia~portugal": [
+    { url: "https://cv.kooran72.cfd/donse1.m3u8", kind: "wk", score: -500 },
+  ],
+};
 
 // Fallback trust for UN-signed ?u= values only (direct hits / legacy links).
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
@@ -347,10 +358,14 @@ function parseTargetDuration(manifest) {
 // the segments 403, so the stream is off" bug, AND measures how quickly the whole
 // chain responds so we can auto-play the SMOOTHEST mirror (lowest edge latency,
 // most buffered segments, sane target duration) rather than a random live one.
-// Returns { ok, ms, score } — lower score = smoother.
+// Returns { ok, ms, score, soft? } — lower score = smoother.
 async function streamProbe(source, kind, request) {
   const headers = streamFetchHeaders(kind, request);
   const started = Date.now();
+  const softOk = (extraPenalty = 0) => {
+    const ms = Date.now() - started;
+    return { ok: true, ms, score: ms + extraPenalty, soft: true };
+  };
   try {
     const res = await fetch(source, { headers, redirect: "follow" });
     if (!res.ok) return { ok: false };
@@ -364,21 +379,25 @@ async function streamProbe(source, kind, request) {
       if (!variant) return { ok: false };
       const variantUrl = new URL(variant, source).toString();
       const vres = await fetch(variantUrl, { headers, redirect: "follow" });
-      if (!vres.ok) return { ok: false };
+      if (!vres.ok) {
+        // Master is live but the child playlist is gated from this edge. Our
+        // signed proxy often succeeds where a direct probe does not (dlhd, etc).
+        return softOk(2500);
+      }
       mediaText = await vres.text();
-      if (!mediaText.trimStart().startsWith("#EXTM3U")) return { ok: false };
+      if (!mediaText.trimStart().startsWith("#EXTM3U")) return softOk(2800);
       mediaManifestUrl = variantUrl;
     }
 
     const seg = firstMediaLine(mediaText);
-    if (!seg) return { ok: false };
+    if (!seg) return softOk(3000);
     const segUrl = new URL(seg, mediaManifestUrl).toString();
     let segBytesOk = true;
     if (!isHlsUrl(segUrl)) {
       const sres = await fetch(segUrl, { headers: { ...headers, Range: "bytes=0-2047" }, redirect: "follow" });
-      if (!(sres.status === 200 || sres.status === 206)) return { ok: false };
+      if (!(sres.status === 200 || sres.status === 206)) return softOk(3200);
       const ctype = (sres.headers.get("Content-Type") || "").toLowerCase();
-      if (ctype.includes("text/html")) return { ok: false };
+      if (ctype.includes("text/html")) return softOk(3400);
       if (sres.body) {
         const reader = sres.body.getReader();
         const { value, done } = await reader.read();
@@ -388,7 +407,7 @@ async function streamProbe(source, kind, request) {
         const buf = await sres.arrayBuffer();
         segBytesOk = buf.byteLength > 0;
       }
-      if (!segBytesOk) return { ok: false };
+      if (!segBytesOk) return softOk(3600);
     }
 
     const ms = Date.now() - started;
@@ -662,9 +681,13 @@ async function resolveVipSlotStream(request, slot) {
     resolvedList.map(async (r) => ({ r, p: await streamProbe(r.source, "wk", request) }))
   );
   const candidates = probed
-    .filter((x) => x.p.ok)
-    .sort((a, b) => a.p.score - b.p.score) // smoothest first
-    .map((x) => ({ ...x.r, score: x.p.score }));
+    .map((x) => ({
+      ...x.r,
+      // Keep every resolved mirror — strict probe failures still get a high score
+      // so verified mirrors win, but we never fall back to upstream Clappr junk.
+      score: x.p.ok ? x.p.score : 12000 + (x.p.ms || 0),
+    }))
+    .sort((a, b) => a.score - b.score);
   return { candidates, firstHtml };
 }
 
@@ -677,9 +700,11 @@ async function resolveDlChannelMirror(channelId, origin, secret, request) {
   const m3u8 = await resolveDlStream(id);
   if (!m3u8 || !isHlsUrl(m3u8)) return null;
   const probe = await streamProbe(m3u8, "dl", request);
-  if (!probe.ok) return null;
   const sig = await signTarget(m3u8, secret);
-  return { url: hlsProxyUrl(m3u8, origin, sig, "/dl/hls"), score: probe.score };
+  return {
+    url: hlsProxyUrl(m3u8, origin, sig, "/dl/hls"),
+    score: probe.ok ? probe.score : 7000,
+  };
 }
 
 // Resolve any configured extra same-channel mirrors (e.g. kooracitty), verified
@@ -690,9 +715,26 @@ async function resolveExtraChannelMirrors(channelId, origin, secret, request) {
   for (const entry of entries) {
     if (!entry || !isHlsUrl(entry.url)) continue;
     const probe = await streamProbe(entry.url, entry.kind || "plain", request);
-    if (!probe.ok) continue;
     const sig = await signTarget(entry.url, secret);
-    out.push({ url: hlsProxyUrl(entry.url, origin, sig), score: probe.score });
+    out.push({
+      url: hlsProxyUrl(entry.url, origin, sig),
+      score: probe.ok ? probe.score : 1500,
+    });
+  }
+  return out;
+}
+
+// Temporary pinned mirrors for a specific fixture (see MATCH_STREAM_PATCHES).
+async function resolveMatchPatchMirrors(matchKey, origin, secret) {
+  const entries = MATCH_STREAM_PATCHES[matchKey] || [];
+  const out = [];
+  for (const entry of entries) {
+    if (!entry || !isHlsUrl(entry.url)) continue;
+    const sig = await signTarget(entry.url, secret);
+    out.push({
+      url: hlsProxyUrl(entry.url, origin, sig),
+      score: entry.score != null ? entry.score : -500,
+    });
   }
   return out;
 }
@@ -701,6 +743,7 @@ async function proxyVip(request, slot, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
   const channelId = incoming.searchParams.get("ch") || "";
+  const matchKey = incoming.searchParams.get("mk") || "";
   const secret = env && env.STREAM_SIGNING_SECRET;
   const isHead = request.method === "HEAD";
   const htmlHeaders = {
@@ -730,6 +773,7 @@ async function proxyVip(request, slot, env) {
     const dlMirror = await resolveDlChannelMirror(channelId, origin, secret, request);
     if (dlMirror) pool.push(dlMirror);
     for (const extra of await resolveExtraChannelMirrors(channelId, origin, secret, request)) pool.push(extra);
+    for (const patch of await resolveMatchPatchMirrors(matchKey, origin, secret)) pool.push(patch);
 
     pool.sort((a, b) => a.score - b.score);
     const proxied = [];

@@ -19,14 +19,23 @@
       : 0;
 
   function vipEmbed() {
-    // Same stable per-channel source as Player 1 (channel drives it now).
-    const channelId = channel && channel.id;
-    const key = (window.SITE_DATA && channelId && window.SITE_DATA.embedKeyFor(channelId)) || channelId;
+    const key = (match && match.embedKey) || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id));
     const fromKey = window.SITE_DATA && window.SITE_DATA.embedForKey
       ? window.SITE_DATA.embedForKey(key)
       : null;
-    const base = fromKey || (channel && channel.embed) || { url: "/dl/91", servers: 1 };
-    return { ...base, channelId: channelId || base.channelId };
+    const base = fromKey || channel.embed || { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
+    const extras = {};
+    if (channel && channel.embed) {
+      if (channel.embed.streamPatchKey) extras.streamPatchKey = channel.embed.streamPatchKey;
+      if (channel.embed.defaultServer != null) extras.defaultServer = channel.embed.defaultServer;
+    }
+    if (match && match.streamPatchKey) extras.streamPatchKey = match.streamPatchKey;
+    if (match && match.defaultServer != null) extras.defaultServer = match.defaultServer;
+    return {
+      ...base,
+      channelId: (channel && channel.id) || base.channelId,
+      ...extras,
+    };
   }
 
   const { CHANNELS } = window.SITE_DATA;
@@ -493,13 +502,14 @@
   // doubles as the "is the smoothest feed available yet" check.
   async function activeChannelHasStream() {
     try {
-      const embed = activePlayer === 1 ? (channel && channel.embed) : vipEmbed();
-      const url = embed && embed.url; // /dl/<id> — worker resolves + proxies dlhd
-      if (!url) return false;
-      const res = await fetch(url, { cache: "no-store" });
+      const embed = activePlayer === 1 ? channel.embed : vipEmbed();
+      const key = feedKeyOf(embed);
+      const ch = (channel && channel.id) || "";
+      const u = new URL(`/wk/albaplayer/${key}/`, location.origin);
+      u.searchParams.set("ch", ch);
+      if (embed.streamPatchKey) u.searchParams.set("mk", embed.streamPatchKey);
+      const res = await fetch(u.toString(), { cache: "no-store" });
       if (!res.ok) return false;
-      // The /dl/<id> page embeds a /dl/hls?u=… source only when a live stream
-      // resolved; the "unavailable" fallback page does not.
       return htmlHasPlayableEmbed(await res.text());
     } catch (e) {
       return false;
