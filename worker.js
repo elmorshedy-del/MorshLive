@@ -306,19 +306,71 @@ async function resolvePlayableSourceFromHtml(html, request, depth = 0, seen = ne
   return null;
 }
 
-async function hlsManifestIsLive(source, request) {
+// Headers the origin CDN expects. worldkoora CDNs want the worldkoora Referer;
+// dlhd CDNs reject an Origin/Referer, so send UA only. Mirrors the real proxy
+// fetch headers so a liveness check matches what playback will actually send.
+function streamFetchHeaders(kind, request) {
+  const ua = request.headers.get("User-Agent") || "Mozilla/5.0";
+  if (kind === "dl") return { "User-Agent": ua, Accept: "*/*" };
+  return { "User-Agent": ua, Accept: "*/*", Referer: WORLDKOORA + "/", Origin: WORLDKOORA };
+}
+
+function firstMediaLine(manifest) {
+  for (const line of manifest.split("\n")) {
+    const s = line.trim();
+    if (s && !s.startsWith("#")) return s;
+  }
+  return null;
+}
+
+// DEEP liveness: a mirror only counts as playable if we can walk master ->
+// variant -> and actually pull the first segment. This is what stops the
+// recurring "master says #EXTM3U but the segments 403, so the stream is off"
+// class of bug (e.g. dlhd tokens, rotated/expired worldkoora CDN hosts).
+async function streamPlays(source, kind, request) {
+  const headers = streamFetchHeaders(kind, request);
   try {
-    const res = await fetch(source, {
-      headers: {
-        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
-        Accept: "application/vnd.apple.mpegurl,*/*",
-        Referer: WORLDKOORA + "/",
-      },
-      redirect: "follow",
-    });
+    const res = await fetch(source, { headers, redirect: "follow" });
     if (!res.ok) return false;
     const text = await res.text();
-    return text.trimStart().startsWith("#EXTM3U");
+    if (!text.trimStart().startsWith("#EXTM3U")) return false;
+
+    let mediaManifestUrl = source;
+    let mediaText = text;
+    // Master playlist -> follow the first variant to its media playlist.
+    if (/#EXT-X-STREAM-INF/i.test(text)) {
+      const variant = firstMediaLine(text);
+      if (!variant) return false;
+      const variantUrl = new URL(variant, source).toString();
+      const vres = await fetch(variantUrl, { headers, redirect: "follow" });
+      if (!vres.ok) return false;
+      mediaText = await vres.text();
+      if (!mediaText.trimStart().startsWith("#EXTM3U")) return false;
+      mediaManifestUrl = variantUrl;
+    }
+
+    // Pull the first segment (or nested media playlist) and require real bytes.
+    const seg = firstMediaLine(mediaText);
+    if (!seg) return false;
+    const segUrl = new URL(seg, mediaManifestUrl).toString();
+    const sres = await fetch(segUrl, {
+      headers: { ...headers, Range: "bytes=0-2047" },
+      redirect: "follow",
+    });
+    if (!(sres.status === 200 || sres.status === 206)) return false;
+    const ctype = (sres.headers.get("Content-Type") || "").toLowerCase();
+    if (ctype.includes("text/html")) return false; // 403/error page dressed as 200
+    // A media playlist step (segment line was itself an .m3u8): accept as live.
+    if (isHlsUrl(segUrl)) return true;
+    // Read only the first chunk, then cancel — never download the whole segment.
+    if (!sres.body) {
+      const buf = await sres.arrayBuffer();
+      return buf.byteLength > 0;
+    }
+    const reader = sres.body.getReader();
+    const { value, done } = await reader.read();
+    try { await reader.cancel(); } catch { /* noop */ }
+    return !done && !!value && value.byteLength > 0;
   } catch {
     return false;
   }
@@ -566,7 +618,7 @@ async function resolveVipSlotStream(request, slot) {
     if (firstHtml == null) firstHtml = page.html;
     const resolved = await resolvePlayableSourceFromHtml(page.html, request, 0, new Set());
     if (!resolved || seenSources.has(resolved.source)) continue;
-    if (await hlsManifestIsLive(resolved.source, request)) {
+    if (await streamPlays(resolved.source, "wk", request)) {
       seenSources.add(resolved.source);
       candidates.push({ ...resolved, serv });
     }
@@ -582,7 +634,7 @@ async function resolveDlChannelMirror(channelId, origin, secret, request) {
   if (!id) return null;
   const m3u8 = await resolveDlStream(id);
   if (!m3u8 || !isHlsUrl(m3u8)) return null;
-  if (!(await hlsManifestIsLive(m3u8, request))) return null;
+  if (!(await streamPlays(m3u8, "dl", request))) return null;
   const sig = await signTarget(m3u8, secret);
   return hlsProxyUrl(m3u8, origin, sig, "/dl/hls");
 }
