@@ -448,6 +448,7 @@
   const PREWARM_TAIL_MS = 20 * 60 * 1000; // keep trying until 20 min after kickoff
   let reloadTimer = null;
   let prewarmTimer = null;
+  let prewarmStarted = false;
 
   function parseKickoff(ts) {
     if (ts == null || ts === "") return NaN;
@@ -521,12 +522,14 @@
   async function prewarmTick(kickoff) {
     if (prewarmTimer) { clearTimeout(prewarmTimer); prewarmTimer = null; }
     if (Date.now() > kickoff + PREWARM_TAIL_MS) return; // window passed
+    if (prewarmStarted) return;
     const live = await activeChannelHasStream();
     if (live) {
+      prewarmStarted = true;
       reloadActivePlayer();
       play();
+      return;
     }
-    // Keep polling: even after it starts, a later poll is a no-op if already live.
     prewarmTimer = setTimeout(() => prewarmTick(kickoff), PREWARM_POLL_MS);
   }
 
@@ -535,6 +538,7 @@
   // playback. At that point the prewarm poll takes over.
   function scheduleAutoReload() {
     if (reloadTimer) { clearTimeout(reloadTimer); reloadTimer = null; }
+    prewarmStarted = false;
     const now = Date.now();
     const kickoff = nextRelevantKickoff();
     if (kickoff == null) return;

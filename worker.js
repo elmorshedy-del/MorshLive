@@ -54,9 +54,7 @@ const DLHD_CHANNEL_IDS = {
 //   "bein-sports-1": [{ url: "https://.../index.m3u8", kind: "plain" }],
 // `kind` controls the CDN fetch headers: "plain" (UA only), "wk" (worldkoora
 // Referer/Origin), or "dl" (no Referer/Origin).
-const EXTRA_CHANNEL_STREAMS = {
-  "bein-max-2": [{ url: "https://cv.kooran72.cfd/donse1.m3u8", kind: "wk" }],
-};
+const EXTRA_CHANNEL_STREAMS = {};
 
 // One-off match patches — pinned HLS URLs that worked before upstream rotated.
 // Keyed by commentaryKey (sorted home~away). Passed from the watch page as ?mk=.
@@ -760,6 +758,22 @@ async function proxyVip(request, slot, env) {
   }
 
   try {
+    // Pinned fixture mirrors (?mk=) must be exclusive — mixing them with
+    // worldkoora slot servers caused failover onto unrelated feeds (wrong game /
+    // Periscope) that sounded like two streams overlapped.
+    const patchMirrors = await resolveMatchPatchMirrors(matchKey, origin, secret);
+    if (patchMirrors.length) {
+      const proxied = patchMirrors.map((m) => m.url);
+      return new Response(cleanHlsPlayerHtml(proxied, `${slot} بث`), {
+        status: 200,
+        headers: {
+          ...htmlHeaders,
+          "X-KZ-Mirrors": String(proxied.length),
+          "X-KZ-Patch": matchKey,
+        },
+      });
+    }
+
     const { candidates, firstHtml } = await resolveVipSlotStream(request, slot);
     // Unified pool of {url, score}. worldkoora slot servers first (already probed
     // + ranked), plus the stable dlhd mirror of the SAME channel. Everything is
@@ -773,7 +787,6 @@ async function proxyVip(request, slot, env) {
     const dlMirror = await resolveDlChannelMirror(channelId, origin, secret, request);
     if (dlMirror) pool.push(dlMirror);
     for (const extra of await resolveExtraChannelMirrors(channelId, origin, secret, request)) pool.push(extra);
-    for (const patch of await resolveMatchPatchMirrors(matchKey, origin, secret)) pool.push(patch);
 
     pool.sort((a, b) => a.score - b.score);
     const proxied = [];
