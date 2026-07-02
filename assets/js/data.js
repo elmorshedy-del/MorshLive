@@ -8,75 +8,66 @@
  * ==========================================================================*/
 
 // ---------------------------------------------------------------------------
-// Playable embeds (worldkoora). Only these two exist — every other player slug
-// (vip3, bein-max-1, …) returns 404. Each is a GENERIC feed that is NOT tied to
-// a fixed beIN channel; which match it carries is decided upstream. The `serv`
-// query param is cosmetic (all values return the same stream), so each embed
-// has exactly one real server.
+// Per-channel streaming source (CANONICAL binding).
 // ---------------------------------------------------------------------------
-// Worldkoora labels its upstream buttons as "البث 1" -> serv=1, "البث 2" ->
-// serv=2, and so on. Expose several choices because upstream rotates which
-// ones contain direct HLS, nested iframes, or blank/preroll-only loaders.
-// Same-origin /wk/ proxy (worker.js) serves worldkoora vip pages without preroll ads.
-const EMBEDS = {
-  vip1: { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 3, defaultServer: 0 },
-  vip2: { url: "/wk/albaplayer/vip2/", param: "serv", servStart: 1, servers: 3, defaultServer: 0 },
+// Every beIN channel resolves to a STABLE dlhd (daddylive) 24/7 endpoint through
+// the worker's /dl/<id> proxy. These ids are FIXED — beIN Sports 1 is always
+// dlhd 91 — so a match's channel maps to the exact same feed every game, with
+// zero per-match calibration. This replaces the old worldkoora vip1/vip2 model,
+// where 2 generic slots were hand-guessed onto N channels every kickoff (the
+// root cause of "recode every game" + simultaneous-match collisions).
+//
+// The worker follows dlhd's domain rotations and signs/proxies the stream, so no
+// CDN host is ever hardcoded here. To retarget a channel, change only its number.
+// Verified live. (dlhd beIN Sports 1–9 Arabic = 91–99; MENA English 1/2 = 61/90.)
+const DLHD_CHANNEL = {
+  "bein-sports-1": 91, // beIN Sports 1 (Arabic)
+  "bein-sports-2": 92, // beIN Sports 2 (Arabic)
+  "bein-max-1": 94,    // beIN Sports 4 (Arabic)
+  "bein-max-2": 95,    // beIN Sports 5 (Arabic)
+  "bein-max-3": 96,    // beIN Sports 6 (Arabic)
+  "bein-max-4": 97,    // beIN Sports 7 (Arabic)
 };
+const DEFAULT_CHANNEL_ID = "bein-sports-1";
+
+// An "embed" is now just a per-channel player URL. Kept as an object (with a
+// stable `key` == channelId, and `servers: 1` since dlhd has one feed per
+// channel) so existing callers in watch.js / watch-embed.js keep working.
+function normalizedChannelId(channelId) {
+  return DLHD_CHANNEL[channelId] != null ? channelId : DEFAULT_CHANNEL_ID;
+}
+function embedKeyFor(channelId) {
+  return normalizedChannelId(channelId);
+}
+function embedFor(channelId) {
+  const id = normalizedChannelId(channelId);
+  return { url: "/dl/" + DLHD_CHANNEL[id], channelId: id, key: id, servers: 1 };
+}
+// key == channelId in the new model, so keying by channel or by "key" is the same.
+function embedForKey(key) {
+  return embedFor(key);
+}
 
 function embedUrlFor(embed, serverIndex) {
   if (!embed || !embed.url) return "";
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
-  const u = new URL(embed.url, base);
-  if (embed.param != null) {
-    const start = embed.servStart != null ? embed.servStart : 0;
-    u.searchParams.set(embed.param, start + serverIndex);
-  }
-  // Pass the channel id so the worker can add that channel's stable dlhd mirror
-  // to the failover pool (same channel, 24/7 backup).
-  if (embed.channelId) u.searchParams.set("ch", embed.channelId);
-  return u.toString();
+  // /dl/<id> is a complete self-contained player; no serv/ch query needed.
+  return new URL(embed.url, base).toString();
 }
 
-function servIndexFromParam(embed, raw) {
-  const start = embed && embed.servStart != null ? embed.servStart : 0;
-  const fallback = embed && embed.defaultServer != null ? embed.defaultServer : 0;
-  const serv = Number(raw);
-  const max = embed && embed.servers ? embed.servers - 1 : Infinity;
-  if (raw == null || raw === "" || Number.isNaN(serv)) return Math.min(fallback, max);
-  return Math.max(0, Math.min(max, serv - start));
+// Retained for signature compatibility — dlhd channels have a single feed.
+function servIndexFromParam() {
+  return 0;
 }
 
-// Embed routing — loaded from channel-bindings.js (synced from channel-bindings.json).
-const BINDING_DOC = window.KZ_CHANNEL_BINDINGS || {
-  embedBinding: {
-    "bein-max-1": "vip1",
-    "bein-max-2": "vip2",
-    "bein-max-3": "vip2",
-    "bein-max-4": "vip1",
-    "bein-sports-1": "vip2",
-    "bein-sports-2": "vip1",
-  },
-};
-const EMBED_BINDING = BINDING_DOC.embedBinding;
-const DEFAULT_EMBED = "vip1";
-
-function embedKeyFor(channelId) {
-  return EMBED_BINDING[channelId] || DEFAULT_EMBED;
-}
-
-function embedFor(channelId) {
-  const key = embedKeyFor(channelId);
-  return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];
-}
-
-function embedForKey(key) {
-  return EMBEDS[key] || EMBEDS[DEFAULT_EMBED];
-}
+// Legacy no-op: the worldkoora calibration doc is retired (binding is now
+// deterministic). Kept defined so any lingering reference stays harmless.
+const EMBED_BINDING = {};
 
 // Real beIN channels the schedule can reference. Each channel keeps its true
-// name (shown in the UI) and resolves its playable embed through the calibration
-// above, so a single match always maps to its actual channel — not a parity guess.
-// beIN Sports 1 stays first so it remains the default fallback channel.
+// name (shown in the UI) and resolves to its stable dlhd feed above, so a match
+// always maps to the same real channel every game — no parity guess, no
+// per-kickoff recalibration. beIN Sports 1 stays first as the default fallback.
 const CHANNEL_DEFS = [
   { id: "bein-sports-1", name: "beIN Sports 1", group: "beIN", quality: "1080p", badge: "HD" },
   { id: "bein-sports-2", name: "beIN Sports 2", group: "beIN", quality: "1080p", badge: "HD" },
@@ -112,13 +103,15 @@ function resolveWatchSelection(matches, channels, searchParams) {
 
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
-  const embedKey = (match && match.embedKey) || embedKeyFor(chId);
+  // Channel drives the source now (deterministic). Any stale per-match embedKey
+  // (a leftover vip1/vip2 tag from the old model) is ignored.
+  const embedKey = embedKeyFor(chId);
   const channelWithEmbed = { ...channel, embed: { ...embedForKey(embedKey), channelId: chId } };
   return { channel: channelWithEmbed, match, embedKey };
 }
 
 // Expose for non-module scripts.
-window.SITE_DATA = { CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor, servIndexFromParam, EMBED_BINDING };
+window.SITE_DATA = { CHANNELS, MATCHES, embedKeyFor, embedForKey, embedUrlFor, servIndexFromParam, EMBED_BINDING, DLHD_CHANNEL };
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;
 window.keepDisplayMatch = keepDisplayMatch;

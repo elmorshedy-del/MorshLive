@@ -23,7 +23,9 @@ const {
   pairKey,
   pinEndedChannels,
 } = require("./commentators-lib");
-const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
+// NOTE: worldkoora vip embed-binding + live-snapshot writers are retired.
+// Channel→stream binding is now deterministic in assets/js/data.js (stable dlhd
+// per-channel ids), so there is no per-kickoff calibration to regenerate.
 
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
 
@@ -155,8 +157,6 @@ async function fetchEspnLeague(slug, dateRange) {
   }
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
-  writeBindingsJs();
-  const snapshot = writeLiveSnapshot(matches);
   fs.writeFileSync(
     OUT,
     JSON.stringify(
@@ -175,9 +175,6 @@ async function fetchEspnLeague(slug, dateRange) {
   );
   console.log(
     `Wrote ${matches.length} matches (${commentaryMatched} with commentators) -> ${path.relative(process.cwd(), OUT)}`
-  );
-  console.log(
-    `Live snapshot: ${snapshot.liveCount} live, ${snapshot.conflicts.length} conflict(s) -> assets/data/live-snapshot.json`
   );
 })().catch((err) => {
   console.error("fetch-matches failed:", err.message);

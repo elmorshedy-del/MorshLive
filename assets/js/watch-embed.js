@@ -1,10 +1,10 @@
 /* ============================================================================
- * watch-embed.js — VIP iframe player (vip.worldkoora.com/albaplayer/vip1)
+ * watch-embed.js — per-channel iframe player (worker /dl/<id> dlhd source)
  * Same layout as watch.html; opens in its own tab via watch-embed.html
  * ==========================================================================*/
 (function () {
   function channelEmbed() {
-    return channel.embed || { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
+    return (channel && channel.embed) || { url: "/dl/91", servers: 1 };
   }
 
   const embedUrlFor = (embed, i) =>

@@ -19,12 +19,14 @@
       : 0;
 
   function vipEmbed() {
-    const key = (match && match.embedKey) || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id));
+    // Same stable per-channel source as Player 1 (channel drives it now).
+    const channelId = channel && channel.id;
+    const key = (window.SITE_DATA && channelId && window.SITE_DATA.embedKeyFor(channelId)) || channelId;
     const fromKey = window.SITE_DATA && window.SITE_DATA.embedForKey
       ? window.SITE_DATA.embedForKey(key)
       : null;
-    const base = fromKey || channel.embed || { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
-    return { ...base, channelId: (channel && channel.id) || base.channelId };
+    const base = fromKey || (channel && channel.embed) || { url: "/dl/91", servers: 1 };
+    return { ...base, channelId: channelId || base.channelId };
   }
 
   const { CHANNELS } = window.SITE_DATA;
@@ -491,10 +493,13 @@
   // doubles as the "is the smoothest feed available yet" check.
   async function activeChannelHasStream() {
     try {
-      const key = activePlayer === 1 ? feedKeyOf(channel.embed) : feedKeyOf(vipEmbed());
-      const ch = (channel && channel.id) || "";
-      const res = await fetch(`/wk/albaplayer/${key}/?ch=${encodeURIComponent(ch)}`, { cache: "no-store" });
+      const embed = activePlayer === 1 ? (channel && channel.embed) : vipEmbed();
+      const url = embed && embed.url; // /dl/<id> — worker resolves + proxies dlhd
+      if (!url) return false;
+      const res = await fetch(url, { cache: "no-store" });
       if (!res.ok) return false;
+      // The /dl/<id> page embeds a /dl/hls?u=… source only when a live stream
+      // resolved; the "unavailable" fallback page does not.
       return htmlHasPlayableEmbed(await res.text());
     } catch (e) {
       return false;
@@ -553,16 +558,11 @@
     host.appendChild(btn);
   }
 
-  /* ---------------------------------------------- Live-feed auto-recover
-   * There are only two real feeds (vip1/vip2). When a match link carries a wrong
-   * or stale channelId, Player 1 can land on the empty feed → a blackout even
-   * though the live game is on the other feed. The worker serves both players
-   * same-origin, so we can cheaply check which feed actually has a stream and
-   * switch Player 1 to the live one. */
-  function feedKeyOf(embed) {
-    return /vip2/.test((embed && embed.url) || "") ? "vip2" : "vip1";
-  }
-
+  /* ---------------------------------------------- Live-feed detection
+   * Each channel now has its OWN stable dlhd feed, so the old 2-slot "swap to the
+   * other vip" recovery is gone. We keep a cheap probe (used by the kickoff
+   * prewarm) that asks the worker whether the channel's /dl/<id> page currently
+   * resolves a playable stream. */
   function htmlHasPlayableEmbed(html) {
     return /AlbaPlayerControl\('([^']+)'/.test(html) ||
       /\/(?:wk\/stream\.m3u8|wk\/hls|dl\/hls)\?u=/.test(html) ||
@@ -571,31 +571,9 @@
       /<(?:source|video)\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html);
   }
 
-  async function feedHasStream(vipKey) {
-    try {
-      const res = await fetch(`/wk/albaplayer/${vipKey}/`, { cache: "no-store" });
-      if (!res.ok) return false;
-      return htmlHasPlayableEmbed(await res.text());
-    } catch (e) {
-      return false;
-    }
-  }
-
-  async function ensureLiveFeed() {
-    if (activePlayer !== 1 || !isEmbed || !channel.embed) return;
-    const curKey = feedKeyOf(channel.embed);
-    if (await feedHasStream(curKey)) return; // current feed is fine
-    const otherKey = curKey === "vip1" ? "vip2" : "vip1";
-    if (!(await feedHasStream(otherKey))) return; // neither is live — nothing to do
-    const otherEmbed = window.SITE_DATA && window.SITE_DATA.embedForKey
-      ? window.SITE_DATA.embedForKey(otherKey)
-      : null;
-    if (!otherEmbed) return;
-    channel = { ...channel, embed: otherEmbed };
-    isEmbed = true;
-    loadEmbed(currentEmbedServerIndex(channel.embed));
-    renderServers();
-  }
+  // The /dl/<id> player self-recovers via its internal hls.js retry loop, so
+  // there's nothing to swap here anymore. Kept as a no-op for its callers.
+  async function ensureLiveFeed() { return; }
 
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();
