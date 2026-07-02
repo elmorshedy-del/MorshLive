@@ -34,6 +34,7 @@ function embedUrlFor(embed, serverIndex) {
   // Pass the channel id so the worker can add that channel's stable dlhd mirror
   // to the failover pool (same channel, 24/7 backup).
   if (embed.channelId) u.searchParams.set("ch", embed.channelId);
+  if (embed.streamPatchKey) u.searchParams.set("mk", embed.streamPatchKey);
   return u.toString();
 }
 
@@ -113,7 +114,14 @@ function resolveWatchSelection(matches, channels, searchParams) {
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
   const embedKey = (match && match.embedKey) || embedKeyFor(chId);
-  const channelWithEmbed = { ...channel, embed: { ...embedForKey(embedKey), channelId: chId } };
+  const embedBase = embedForKey(embedKey);
+  const embedExtras = {};
+  if (match && match.defaultServer != null) embedExtras.defaultServer = match.defaultServer;
+  if (match && match.streamPatchKey) embedExtras.streamPatchKey = match.streamPatchKey;
+  const channelWithEmbed = {
+    ...channel,
+    embed: { ...embedBase, channelId: chId, ...embedExtras },
+  };
   return { channel: channelWithEmbed, match, embedKey };
 }
 
@@ -255,6 +263,9 @@ function applyCommentary(matches, idx) {
     if (!ended) {
       if (entry.channel) out.channel = entry.channel;
       if (entry.channelId) out.channelId = entry.channelId;
+      if (entry.embedKey) out.embedKey = entry.embedKey;
+      if (entry.defaultServer != null) out.defaultServer = entry.defaultServer;
+      if (entry.streamPatchKey) out.streamPatchKey = entry.streamPatchKey;
       return out;
     }
 

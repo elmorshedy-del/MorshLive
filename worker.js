@@ -56,6 +56,15 @@ const DLHD_CHANNEL_IDS = {
 // Referer/Origin), or "dl" (no Referer/Origin).
 const EXTRA_CHANNEL_STREAMS = {};
 
+// One-off match patches — pinned HLS URLs that worked before upstream rotated.
+// Keyed by commentaryKey (sorted home~away). Passed from the watch page as ?mk=.
+// REMOVE after the match. Portugal vs Croatia, beIN MAX 2, 2026-07-02.
+const MATCH_STREAM_PATCHES = {
+  "croatia~portugal": [
+    { url: "https://cv.kooran72.cfd/donse1.m3u8", kind: "wk", score: -500 },
+  ],
+};
+
 // Fallback trust for UN-signed ?u= values only (direct hits / legacy links).
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
 // needs to be edited every time worldkoora rotates its CDN host.
@@ -705,10 +714,26 @@ async function resolveExtraChannelMirrors(channelId, origin, secret, request) {
   return out;
 }
 
+// Temporary pinned mirrors for a specific fixture (see MATCH_STREAM_PATCHES).
+async function resolveMatchPatchMirrors(matchKey, origin, secret) {
+  const entries = MATCH_STREAM_PATCHES[matchKey] || [];
+  const out = [];
+  for (const entry of entries) {
+    if (!entry || !isHlsUrl(entry.url)) continue;
+    const sig = await signTarget(entry.url, secret);
+    out.push({
+      url: hlsProxyUrl(entry.url, origin, sig),
+      score: entry.score != null ? entry.score : -500,
+    });
+  }
+  return out;
+}
+
 async function proxyVip(request, slot, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
   const channelId = incoming.searchParams.get("ch") || "";
+  const matchKey = incoming.searchParams.get("mk") || "";
   const secret = env && env.STREAM_SIGNING_SECRET;
   const isHead = request.method === "HEAD";
   const htmlHeaders = {
@@ -738,6 +763,7 @@ async function proxyVip(request, slot, env) {
     const dlMirror = await resolveDlChannelMirror(channelId, origin, secret, request);
     if (dlMirror) pool.push(dlMirror);
     for (const extra of await resolveExtraChannelMirrors(channelId, origin, secret, request)) pool.push(extra);
+    for (const patch of await resolveMatchPatchMirrors(matchKey, origin, secret)) pool.push(patch);
 
     pool.sort((a, b) => a.score - b.score);
     const proxied = [];
