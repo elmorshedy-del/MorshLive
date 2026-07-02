@@ -32,6 +32,16 @@ const DLHD_BASE = "https://dlhd.pk";
 const DL_EMBED_RE = /^\/dl\/(\d{1,6})\/?$/;  // /dl/{channelId} -> clean player page
 const DL_HLS_RE = /^\/dl\/hls$/i;            // signed HLS proxy for dlhd streams
 
+// Stable, identity-fixed dlhd ids for the fixed beIN Sports Arabic channels.
+// These are 24/7 mirrors of the SAME channel, added to the mirror pool as a
+// resilient backup so a fully-dead worldkoora slot doesn't take the stream off.
+const DLHD_CHANNEL_IDS = {
+  "bein-sports-1": 91,
+  "bein-sports-2": 92,
+  "bein-sports-3": 93,
+  "bein-sports-4": 94,
+};
+
 // Fallback trust for UN-signed ?u= values only (direct hits / legacy links).
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
 // needs to be edited every time worldkoora rotates its CDN host.
@@ -564,8 +574,23 @@ async function resolveVipSlotStream(request, slot) {
   return { candidates, firstHtml };
 }
 
+// Resolve the stable dlhd mirror for a fixed beIN Sports channel (same channel,
+// 24/7). Used only as a lower-priority backup in the mirror pool. Signed for the
+// /dl/hls proxy because the dlhd CDN rejects the worldkoora Referer/Origin.
+async function resolveDlChannelMirror(channelId, origin, secret, request) {
+  const id = DLHD_CHANNEL_IDS[channelId];
+  if (!id) return null;
+  const m3u8 = await resolveDlStream(id);
+  if (!m3u8 || !isHlsUrl(m3u8)) return null;
+  if (!(await hlsManifestIsLive(m3u8, request))) return null;
+  const sig = await signTarget(m3u8, secret);
+  return hlsProxyUrl(m3u8, origin, sig, "/dl/hls");
+}
+
 async function proxyVip(request, slot, env) {
-  const origin = new URL(request.url).origin;
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const channelId = incoming.searchParams.get("ch") || "";
   const secret = env && env.STREAM_SIGNING_SECRET;
   const isHead = request.method === "HEAD";
   const htmlHeaders = {
@@ -575,24 +600,32 @@ async function proxyVip(request, slot, env) {
   };
 
   if (isHead) {
-    const requestedServ = new URL(request.url).searchParams.get("serv") || 1;
+    const requestedServ = incoming.searchParams.get("serv") || 1;
     const page = await fetchVipServerHtml(request, slot, requestedServ);
-    return new Response(null, { status: page.html ? 200 : page.status, headers: htmlHeaders });
+    const status = page.html ? 200 : (DLHD_CHANNEL_IDS[channelId] ? 200 : page.status);
+    return new Response(null, { status, headers: htmlHeaders });
   }
 
   try {
     const { candidates, firstHtml } = await resolveVipSlotStream(request, slot);
-    // Preferred path: one or more verified-live mirrors, wrapped in our own clean
-    // player with automatic mirror failover.
-    if (candidates && candidates.length) {
-      const proxied = [];
-      for (const c of candidates) {
-        const sig = await signTarget(c.source, secret);
-        proxied.push(hlsProxyUrl(c.source, origin, sig));
-      }
+    const proxied = [];
+    for (const c of candidates || []) {
+      const sig = await signTarget(c.source, secret);
+      proxied.push(hlsProxyUrl(c.source, origin, sig));
+    }
+    // Append the stable dlhd mirror for the SAME beIN channel as a last-priority
+    // backup, so a fully-dead worldkoora slot still keeps the channel playing.
+    const dlMirror = await resolveDlChannelMirror(channelId, origin, secret, request);
+    if (dlMirror && !proxied.includes(dlMirror)) proxied.push(dlMirror);
+
+    if (proxied.length) {
       return new Response(cleanHlsPlayerHtml(proxied, `${slot} بث`), {
         status: 200,
-        headers: { ...htmlHeaders, "X-KZ-Serv": String(candidates[0].serv), "X-KZ-Mirrors": String(proxied.length) },
+        headers: {
+          ...htmlHeaders,
+          "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
+          "X-KZ-Mirrors": String(proxied.length),
+        },
       });
     }
     // Last resort: nothing resolved live (e.g. slot is 403/blank this game).

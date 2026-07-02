@@ -23,7 +23,8 @@
     const fromKey = window.SITE_DATA && window.SITE_DATA.embedForKey
       ? window.SITE_DATA.embedForKey(key)
       : null;
-    return fromKey || channel.embed || { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
+    const base = fromKey || channel.embed || { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
+    return { ...base, channelId: (channel && channel.id) || base.channelId };
   }
 
   const { CHANNELS } = window.SITE_DATA;
