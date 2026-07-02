@@ -230,6 +230,26 @@ function commentaryKey(home, away) {
   return [norm(home), norm(away)].sort().join("~");
 }
 
+// Baked-in overrides for live fixtures — survives stale today.json on CDN.
+// REMOVE after the match.
+const LIVE_MATCH_OVERRIDES = {
+  "croatia~portugal": {
+    channel: "beIN MAX 2",
+    channelId: "bein-max-2",
+    embedKey: "vip1",
+    defaultServer: 0,
+    streamPatchKey: "croatia~portugal",
+  },
+};
+
+function applyLiveMatchOverrides(matches) {
+  return matches.map((m) => {
+    const patch = LIVE_MATCH_OVERRIDES[commentaryKey(m.home, m.away)];
+    if (!patch || m.status === "ended") return m;
+    return { ...m, ...patch };
+  });
+}
+
 let _commentaryIdx = null;
 let _commentaryAt = 0;
 async function loadCommentaryIndex() {
@@ -285,7 +305,7 @@ window.getMatches = async function getMatches({ force } = {}) {
       const live = await window.MatchesAPI.fetchLiveSoccer({ force });
       if (live.matches && live.matches.length) {
         const idx = await loadCommentaryIndex();
-        return { ...live, matches: applyCommentary(live.matches, idx) };
+        return { ...live, matches: applyLiveMatchOverrides(applyCommentary(live.matches, idx)) };
       }
     } catch (e) {
       console.warn("Live API fetch failed, using cache:", e.message);
@@ -298,8 +318,14 @@ window.getMatches = async function getMatches({ force } = {}) {
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
     const raw = Array.isArray(data.matches) ? data.matches : [];
+    const idx = await loadCommentaryIndex();
     const matches = sortDisplayMatches(
-      raw.map((m) => ({ ...m, status: refineStatus(m, data.date) })).filter(keepDisplayMatch)
+      applyLiveMatchOverrides(
+        applyCommentary(
+          raw.map((m) => ({ ...m, status: refineStatus(m, data.date) })).filter(keepDisplayMatch),
+          idx
+        )
+      )
     );
     return {
       matches,
