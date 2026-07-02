@@ -22,6 +22,10 @@
 const WORLDKOORA = "https://vip.worldkoora.com";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
+// Worldkoora exposes "البث 1..N" as redundant servers for the SAME channel in a
+// slot. We probe them in order so a dead/blank server this game falls over to a
+// live one WITHIN the same slot (never to a different channel/slot).
+const VIP_SERVER_COUNT = 3;
 
 // dlhd (daddylive) 24/7 source — fully isolated from the worldkoora /wk/ path.
 const DLHD_BASE = "https://dlhd.pk";
@@ -33,15 +37,6 @@ const DL_HLS_RE = /^\/dl\/hls$/i;            // signed HLS proxy for dlhd stream
 // needs to be edited every time worldkoora rotates its CDN host.
 const ALLOWED_STREAM_HOST =
   /(^|\.)((heinzromanigi|teworld|smarop|golatooa)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+)$/i;
-
-// Last-known-good streams for the SAME upstream VIP slot. These are not used to
-// alias one feed to another; they only preserve a stream after worldkoora briefly
-// replaces that slot's player markup with a blank/preroll-only wrapper.
-const LAST_KNOWN_VIP_STREAMS = {
-  vip1: {
-    3: [{ source: "https://1.554564.sbs/hls/1/stream.m3u8", player: "plyr" }],
-  },
-};
 
 const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
 .aplr-fxd-bnr,#aplr-fixedban,
@@ -319,30 +314,6 @@ async function hlsManifestIsLive(source, request) {
   }
 }
 
-function injectPlayerScript(html, source, player, origin, secret) {
-  return signTarget(source, secret).then((sig) => {
-    const proxied = hlsProxyUrl(source, origin, sig);
-    const script = `<script>AlbaPlayerControl('${btoa(proxied)}','${player || "clappr"}')</script>`;
-    const content = /(<div\b[^>]*class=["'][^"']*\baplr-player-content\b[^"']*["'][^>]*>)([\s\S]*?)(<\/div>)/i;
-    if (content.test(html)) {
-      return html.replace(content, (_m, open, _inner, close) => `${open}${script}${close}`);
-    }
-    return html.replace(/<\/body>/i, script + "</body>");
-  });
-}
-
-async function resolveLastKnownVipStream(html, slot, origin, secret, request) {
-  if (extractHlsCandidates(html).length) return html;
-  const serv = Number(new URL(request.url).searchParams.get("serv") || 1);
-  const candidates = (LAST_KNOWN_VIP_STREAMS[slot] && LAST_KNOWN_VIP_STREAMS[slot][serv]) || [];
-  for (const candidate of candidates) {
-    if (isHlsUrl(candidate.source) && await hlsManifestIsLive(candidate.source, request)) {
-      return injectPlayerScript(html, candidate.source, candidate.player, origin, secret);
-    }
-  }
-  return html;
-}
-
 async function rewriteStreamUrlsInHtml(html, origin, secret) {
   let out = await asyncReplaceAll(
     html,
@@ -402,7 +373,6 @@ async function resolveNestedIframesInHtml(html, origin, secret, request) {
 async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
   let out = stripBlockedScripts(html);
   out = await resolveNestedIframesInHtml(out, origin, secret, request);
-  out = await resolveLastKnownVipStream(out, slot, origin, secret, request);
   out = await rewriteStreamUrlsInHtml(out, origin, secret);
   const headOpen = /<head[^>]*>/i;
   if (headOpen.test(out)) {
@@ -417,6 +387,36 @@ async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
     out = HIDE_OVERLAY_STYLE + out;
   }
   return out;
+}
+
+// Our own clean HLS player. Serving this (instead of the rotating upstream
+// Clappr/JW/preroll markup) decouples playback from whatever wrapper worldkoora
+// ships this game — the recurring source of "stream is off" breakage. The signed
+// /wk/stream.m3u8 URL is what changes per game; the player around it stays fixed.
+function cleanHlsPlayerHtml(src, title) {
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title || "KoraZero"}</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+</head><body>
+<video id="v" controls autoplay muted playsinline data-kz-src=${JSON.stringify(src)}></video>
+<script>
+(function(){
+  var v=document.getElementById('v'), src=${JSON.stringify(src)}, hls=null;
+  function attach(){
+    if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; }
+    else if(window.Hls&&window.Hls.isSupported()){
+      hls=new Hls({maxBufferLength:30,liveSyncDurationCount:3,manifestLoadingMaxRetry:6,levelLoadingMaxRetry:6,fragLoadingMaxRetry:6});
+      hls.loadSource(src); hls.attachMedia(v);
+      hls.on(Hls.Events.ERROR,function(_e,d){ if(d&&d.fatal){ if(d.type==='networkError'){ setTimeout(function(){ try{hls.startLoad();}catch(e){ hls.loadSource(src);} },2000); } else if(d.type==='mediaError'){ try{hls.recoverMediaError();}catch(e){} } } });
+    } else { v.src=src; }
+    var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+  }
+  attach();
+})();
+</script>
+</body></html>`;
 }
 
 async function proxyHls(request, env) {
@@ -494,15 +494,13 @@ async function proxyHls(request, env) {
   }
 }
 
-async function proxyVip(request, slot, env) {
-  const incoming = new URL(request.url);
+// Fetch one worldkoora VIP server page (a single "البث N" for a slot).
+async function fetchVipServerHtml(request, slot, serv) {
   const upstream = new URL(`${WORLDKOORA}/albaplayer/${slot}/`);
-  upstream.search = incoming.search;
-  const isHead = request.method === "HEAD";
-
+  upstream.searchParams.set("serv", String(serv));
   try {
     const res = await fetch(upstream.toString(), {
-      method: request.method,
+      method: "GET",
       headers: {
         "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
         Accept: "text/html,application/xhtml+xml",
@@ -510,33 +508,77 @@ async function proxyVip(request, slot, env) {
       },
       redirect: "follow",
     });
+    if (!res.ok) return { status: res.status, html: null };
+    return { status: 200, html: await res.text() };
+  } catch {
+    return { status: 502, html: null };
+  }
+}
 
-    if (!res.ok) {
-      return new Response(isHead ? null : `Upstream error ${res.status}`, { status: res.status });
+// Server order within a slot: the requested "البث N" first, then the rest, so a
+// blank/dead server this game self-heals to another server of the SAME channel.
+function vipServerOrder(requestedServ) {
+  const order = [];
+  const req = Number(requestedServ);
+  if (Number.isFinite(req) && req >= 1 && req <= VIP_SERVER_COUNT) order.push(req);
+  for (let s = 1; s <= VIP_SERVER_COUNT; s++) if (!order.includes(s)) order.push(s);
+  return order;
+}
+
+// Actively resolve a slot to a VERIFIED-live HLS source at request time. Returns
+// { source, player, serv } or null. Only servers of the SAME slot are tried.
+async function resolveVipSlotStream(request, slot) {
+  const requestedServ = new URL(request.url).searchParams.get("serv") || 1;
+  let firstHtml = null;
+  for (const serv of vipServerOrder(requestedServ)) {
+    const page = await fetchVipServerHtml(request, slot, serv);
+    if (!page.html) continue;
+    if (firstHtml == null) firstHtml = page.html;
+    const resolved = await resolvePlayableSourceFromHtml(page.html, request, 0, new Set());
+    if (resolved && await hlsManifestIsLive(resolved.source, request)) {
+      return { ...resolved, serv };
     }
+  }
+  return { firstHtml };
+}
 
-    if (isHead) {
-      return new Response(null, {
+async function proxyVip(request, slot, env) {
+  const origin = new URL(request.url).origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store",
+    "X-KZ-Proxy": "worldkoora-vip",
+  };
+
+  if (isHead) {
+    const requestedServ = new URL(request.url).searchParams.get("serv") || 1;
+    const page = await fetchVipServerHtml(request, slot, requestedServ);
+    return new Response(null, { status: page.html ? 200 : page.status, headers: htmlHeaders });
+  }
+
+  try {
+    const resolved = await resolveVipSlotStream(request, slot);
+    // Preferred path: a verified-live stream, wrapped in our own clean player.
+    if (resolved && resolved.source) {
+      const sig = await signTarget(resolved.source, secret);
+      const proxied = hlsProxyUrl(resolved.source, origin, sig);
+      return new Response(cleanHlsPlayerHtml(proxied, `${slot} بث`), {
         status: 200,
-        headers: {
-          "Content-Type": "text/html; charset=utf-8",
-          "Cache-Control": "no-store",
-          "X-KZ-Proxy": "worldkoora-vip",
-        },
+        headers: { ...htmlHeaders, "X-KZ-Serv": String(resolved.serv) },
       });
     }
-
-    const html = await res.text();
-    const origin = new URL(request.url).origin;
-    const secret = env && env.STREAM_SIGNING_SECRET;
-    return new Response(await cleanWorldkooraHtml(html, slot, origin, secret, request), {
-      status: 200,
-      headers: {
-        "Content-Type": "text/html; charset=utf-8",
-        "Cache-Control": "no-store",
-        "X-KZ-Proxy": "worldkoora-vip",
-      },
-    });
+    // Last resort: nothing resolved live (e.g. slot is 403/blank this game).
+    // Serve the preroll-stripped upstream page so any client-side player still
+    // has a chance, rather than a hard error.
+    if (resolved && resolved.firstHtml) {
+      return new Response(await cleanWorldkooraHtml(resolved.firstHtml, slot, origin, secret, request), {
+        status: 200,
+        headers: htmlHeaders,
+      });
+    }
+    return new Response("Upstream unavailable", { status: 502 });
   } catch {
     return new Response("Upstream unavailable", { status: 502 });
   }
@@ -566,26 +608,7 @@ async function resolveDlStream(id) {
 }
 
 function dlPlayerHtml(src, id) {
-  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>beIN ${id}</title>
-<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
-</head><body>
-<video id="v" controls autoplay muted playsinline></video>
-<script>
-(function(){
-  var v=document.getElementById('v'), src=${JSON.stringify(src)};
-  if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; }
-  else if(window.Hls&&window.Hls.isSupported()){
-    var h=new Hls({maxBufferLength:30,liveSyncDurationCount:3,manifestLoadingMaxRetry:4});
-    h.loadSource(src); h.attachMedia(v);
-    h.on(Hls.Events.ERROR,function(_e,d){ if(d&&d.fatal&&d.type==='networkError'){ setTimeout(function(){h.loadSource(src);},2000); } });
-  } else { v.src=src; }
-  var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
-})();
-</script>
-</body></html>`;
+  return cleanHlsPlayerHtml(src, `beIN ${id}`);
 }
 
 async function proxyDlEmbed(request, id, env) {
