@@ -77,9 +77,9 @@ const WATCH_URL =
     });
     console.log(`probe ${i + 1}:`, state);
     if (state?.kind === "video" && state.dual) {
-      const twitchSide = await frame.evaluate(() => !!document.querySelector("#kz-twitch"));
-      if (twitchSide) {
-        console.log("Dual player: HLS + Twitch");
+      const topbar = await frame.evaluate(() => !!document.querySelector(".kz-topbar"));
+      if (topbar) {
+        console.log("Dual player with topbar tabs");
         playable = true;
         break;
       }

@@ -853,28 +853,76 @@ function cleanDualPlayerHtml(hlsSources, twitchChannel, origin) {
 <title>KoraZero</title>
 <style>
 html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif}
-.kz-dual{display:flex;flex-direction:row;width:100vw;height:100vh}
+.kz-shell{display:flex;flex-direction:column;width:100vw;height:100vh}
+.kz-topbar{display:flex;align-items:center;gap:8px;padding:8px 10px;background:linear-gradient(180deg,#12141c,#0a0c12);border-bottom:1px solid rgba(255,255,255,.14);flex-shrink:0;z-index:30}
+.kz-tab{border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:#e8ecf4;font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;cursor:pointer}
+.kz-tab.on{border-color:#18e29a;background:rgba(24,226,154,.18);color:#fff}
+.kz-tab[data-view="twitch"].on{border-color:#9147ff;background:rgba(145,71,255,.22)}
+.kz-sound{margin-inline-start:auto;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;cursor:pointer}
+.kz-dual{display:flex;flex-direction:row;flex:1;min-height:0;background:#000}
 .kz-hls{flex:3;min-width:0;position:relative;background:#000}
 .kz-hls video{width:100%;height:100%;object-fit:contain;background:#000}
-.kz-twitch-side{flex:1;min-width:0;position:relative;background:#000;border-inline-start:1px solid rgba(255,255,255,.12)}
+.kz-twitch-side{flex:1;min-width:0;position:relative;background:#000;border-inline-start:2px solid rgba(24,226,154,.35)}
 #kz-twitch{width:100%;height:100%}
-.kz-label{position:absolute;top:8px;right:8px;z-index:10;font-size:11px;padding:4px 8px;border-radius:4px;background:rgba(0,0,0,.65);color:#fff;pointer-events:none}
+.kz-label{position:absolute;top:10px;right:10px;z-index:10;font-size:12px;font-weight:700;padding:6px 10px;border-radius:6px;color:#fff;pointer-events:none}
+.kz-label--hls{background:rgba(24,226,154,.85);color:#04120c}
+.kz-label--tw{background:rgba(145,71,255,.88)}
 #kz-quality{position:absolute;left:8px;bottom:8px;z-index:20;display:flex;flex-wrap:wrap;gap:4px;max-width:calc(100% - 16px);padding:4px 6px;border-radius:6px;background:rgba(0,0,0,.72)}
 #kz-quality button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:10px;padding:5px 7px;border-radius:4px;cursor:pointer}
 #kz-quality button.active{border-color:#9147ff;background:rgba(145,71,255,.35)}
 #kz-quality:empty{display:none}
-@media(max-width:900px){.kz-dual{flex-direction:column}.kz-hls{flex:3}.kz-twitch-side{flex:2;border-inline-start:0;border-top:1px solid rgba(255,255,255,.12)}}
+#kz-unmute{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:0;background:rgba(6,8,14,.72);color:#fff;font-size:16px;font-weight:700;cursor:pointer;backdrop-filter:blur(4px)}
+#kz-unmute .ico{font-size:42px;line-height:1}
+#kz-unmute.hidden{display:none!important}
+.kz-shell.view-hls .kz-twitch-side{display:none}
+.kz-shell.view-hls .kz-hls{flex:1;border:none}
+.kz-shell.view-twitch .kz-hls{display:none}
+.kz-shell.view-twitch .kz-twitch-side{flex:1;border:none}
+@media(max-width:900px){.kz-dual{flex-direction:column}.kz-hls{flex:3}.kz-twitch-side{flex:2;border-inline-start:0;border-top:2px solid rgba(145,71,255,.35)}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
 <script src="https://player.twitch.tv/js/embed/v1.js"></script>
 </head><body>
-<div class="kz-dual">
-  <div class="kz-hls"><span class="kz-label">بث مباشر</span><video id="v" controls autoplay muted playsinline></video></div>
-  <div class="kz-twitch-side"><span class="kz-label">Twitch</span><div id="kz-twitch"></div><div id="kz-quality" aria-label="جودة البث"></div></div>
+<div class="kz-shell view-split" id="kz-shell">
+  <div class="kz-topbar">
+    <button type="button" class="kz-tab on" data-view="split">بث مباشر + Twitch</button>
+    <button type="button" class="kz-tab" data-view="hls">بث مباشر</button>
+    <button type="button" class="kz-tab" data-view="twitch">Twitch</button>
+    <button type="button" id="kz-sound" class="kz-sound">🔇 صوت</button>
+  </div>
+  <div class="kz-dual">
+    <div class="kz-hls"><span class="kz-label kz-label--hls">بث مباشر</span><video id="v" controls autoplay muted playsinline></video></div>
+    <div class="kz-twitch-side"><span class="kz-label kz-label--tw">Twitch</span><div id="kz-twitch"></div><div id="kz-quality" aria-label="جودة البث"></div></div>
+  </div>
+  <button type="button" id="kz-unmute"><span class="ico">🔊</span><span>اضغط لتشغيل الصوت</span></button>
 </div>
 <script>
 (function(){
   var sources=${JSON.stringify(list)}, i=0, hls=null, tries=0, v=document.getElementById('v');
+  var shell=document.getElementById('kz-shell'), soundBtn=document.getElementById('kz-sound'), unmute=document.getElementById('kz-unmute');
+  var userMuted=false;
+  function syncSoundUi(){
+    var muted=v.muted;
+    soundBtn.textContent=(muted?'🔇':'🔊')+' صوت';
+    unmute.classList.toggle('hidden', !v.muted||userMuted);
+  }
+  function enableSound(){
+    userMuted=false; v.muted=false;
+    try{ if(player&&player.setMuted) player.setMuted(false); }catch(e){}
+    try{ if(player&&player.play) player.play(); }catch(e){}
+    var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+    syncSoundUi();
+  }
+  unmute.addEventListener('click', enableSound);
+  soundBtn.addEventListener('click', function(){ if(v.muted) enableSound(); else { v.muted=true; userMuted=true; try{ if(player&&player.setMuted) player.setMuted(true); }catch(e){} syncSoundUi(); } });
+  v.addEventListener('volumechange', syncSoundUi);
+  shell.querySelectorAll('.kz-tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      shell.querySelectorAll('.kz-tab').forEach(function(b){ b.classList.remove('on'); });
+      btn.classList.add('on');
+      shell.className='kz-shell view-'+btn.dataset.view;
+    });
+  });
   function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
   function nextHls(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*3) setTimeout(loadHls,800); }
   function loadHls(){
@@ -887,10 +935,11 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
       hls.on(Hls.Events.ERROR,function(_e,d){ if(!d||!d.fatal) return; if(d.type==='mediaError'){ try{hls.recoverMediaError();return;}catch(e){} } nextHls(); });
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+    syncSoundUi();
   }
   loadHls();
-  var channel=${JSON.stringify(ch)}, parents=${JSON.stringify(parents)}, bar=document.getElementById('kz-quality');
-  var player=new Twitch.Player('kz-twitch',{width:'100%',height:'100%',channel:channel,parent:parents,muted:false,autoplay:true});
+  var channel=${JSON.stringify(ch)}, parents=${JSON.stringify(parents)}, bar=document.getElementById('kz-quality'), player;
+  player=new Twitch.Player('kz-twitch',{width:'100%',height:'100%',channel:channel,parent:parents,muted:true,autoplay:true});
   var labels={chunked:'Source',high:'1080p',medium:'720p',low:'480p',mobile:'360p'};
   function qId(q){ return typeof q==='string'?q:(q.group||q.name||''); }
   function qLabel(q){ return typeof q==='string'?(labels[q]||q):(q.name||labels[q.group]||q.group||''); }
@@ -902,13 +951,13 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
     items.forEach(function(it){ var btn=document.createElement('button'); btn.type='button'; btn.textContent=it.label;
       if(it.id===cur) btn.className='active'; btn.addEventListener('click',function(){ try{player.setQuality(it.id);}catch(e){} render(); }); bar.appendChild(btn); });
   }
-  var wasPlaying=false,lastPlayingAt=0,lastNudgeAt=0;
   function nudgePlay(){ try{player.play();}catch(e){} }
-  player.addEventListener(Twitch.Player.PLAYING,function(){ wasPlaying=true; lastPlayingAt=Date.now(); render(); });
+  player.addEventListener(Twitch.Player.PLAYING,function(){ render(); });
   player.addEventListener(Twitch.Player.READY,function(){ setTimeout(render,1500); });
   player.addEventListener(Twitch.Player.PLAYBACK_BLOCKED,function(){ setTimeout(nudgePlay,800); });
   player.addEventListener(Twitch.Player.ONLINE,function(){ setTimeout(nudgePlay,500); });
   document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') setTimeout(nudgePlay,300); });
+  syncSoundUi();
 })();
 </script>
 </body></html>`;
@@ -1112,7 +1161,8 @@ async function proxyVip(request, slot, env) {
   const isHead = request.method === "HEAD";
   const htmlHeaders = {
     "Content-Type": "text/html; charset=utf-8",
-    "Cache-Control": "no-store",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
     "X-KZ-Proxy": "worldkoora-vip",
   };
 
