@@ -29,7 +29,7 @@ const VIP_SERVER_COUNT = 3;
 // Hard caps so VIP pages never hang on a dead CDN during deep probes.
 const FETCH_TIMEOUT_MS = 4500;
 const PROBE_TIMEOUT_MS = 5000;
-const VIP_RESOLVE_DEADLINE_MS = 9000;
+const VIP_RESOLVE_DEADLINE_MS = 6000;
 
 // dlhd (daddylive) 24/7 source — fully isolated from the worldkoora /wk/ path.
 const DLHD_BASE = "https://dlhd.pk";
@@ -1214,6 +1214,34 @@ async function resolveExtraChannelMirrors(channelId, origin, secret, request) {
   return out;
 }
 
+function cachedHlsForSlot(slot, serv) {
+  const out = [];
+  const seen = new Set();
+  for (const s of vipServerOrder(serv)) {
+    const known = (LAST_KNOWN_VIP_STREAMS[slot] && LAST_KNOWN_VIP_STREAMS[slot][s]) || [];
+    for (const item of known) {
+      if (!item?.source || seen.has(item.source)) continue;
+      seen.add(item.source);
+      out.push(item);
+    }
+  }
+  return out;
+}
+
+async function buildProxiedPool(candidates, dlMirrors, extras, origin, secret) {
+  const pool = [];
+  for (const c of candidates || []) {
+    const sig = await signTarget(c.source, secret);
+    pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: c.score ?? 9999 });
+  }
+  for (const m of dlMirrors || []) pool.push(m);
+  for (const e of extras || []) pool.push(e);
+  pool.sort((a, b) => a.score - b.score);
+  const proxied = [];
+  for (const m of pool) if (!proxied.includes(m.url)) proxied.push(m.url);
+  return proxied;
+}
+
 async function proxyVip(request, slot, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
@@ -1235,7 +1263,28 @@ async function proxyVip(request, slot, env) {
   }
 
   try {
+    const serv = Number(incoming.searchParams.get("serv") || 1);
     const twitchCached = LAST_KNOWN_TWITCH_CHANNELS[slot] || null;
+    const knownHls = cachedHlsForSlot(slot, serv);
+
+    // Instant path: cached Twitch + last-known HLS (Egypt / beIN MAX) — no upstream probes.
+    if (twitchCached && knownHls.length) {
+      const proxied = await buildProxiedPool(
+        knownHls.map((item) => ({ ...item, score: 400 })),
+        [],
+        [],
+        origin,
+        secret
+      );
+      if (proxied.length) {
+        return dualPlayerResponse(proxied, twitchCached, origin, htmlHeaders, {
+          "X-KZ-Mirrors": String(proxied.length),
+          "X-KZ-Fast": "1",
+          "X-KZ-Serv": String(serv),
+        });
+      }
+    }
+
     const resolveWork = Promise.all([
       resolveVipSlotStream(request, slot),
       resolveDlChannelMirrors(channelId, origin, secret, request),
@@ -1263,24 +1312,12 @@ async function proxyVip(request, slot, env) {
       extras = timed[2] || [];
       twitchChannel = timed[3] || twitchCached;
     } else {
-      // Deadline hit — return immediately with cached Twitch + last-known HLS.
-      const serv = Number(incoming.searchParams.get("serv") || 1);
-      const known = (LAST_KNOWN_VIP_STREAMS[slot] && LAST_KNOWN_VIP_STREAMS[slot][serv]) || [];
-      candidates = known.map((item) => ({ ...item, score: 500, cached: true }));
+      // Deadline hit — return with cached Twitch + last-known HLS.
+      candidates = knownHls.map((item) => ({ ...item, score: 500, cached: true }));
       resolveWork.catch(() => {});
     }
 
-    const pool = [];
-    for (const c of candidates || []) {
-      const sig = await signTarget(c.source, secret);
-      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: c.score ?? 9999 });
-    }
-    for (const m of dlMirrors || []) pool.push(m);
-    for (const e of extras || []) pool.push(e);
-
-    pool.sort((a, b) => a.score - b.score);
-    const proxied = [];
-    for (const m of pool) if (!proxied.includes(m.url)) proxied.push(m.url);
+    const proxied = await buildProxiedPool(candidates, dlMirrors, extras, origin, secret);
 
     if (twitchChannel && proxied.length) {
       return dualPlayerResponse(proxied, twitchChannel, origin, htmlHeaders, {
