@@ -19,18 +19,15 @@
 // ones contain direct HLS, nested iframes, or blank/preroll-only loaders.
 // Same-origin /wk/ proxy (worker.js) serves worldkoora vip pages without preroll ads.
 const EMBEDS = {
-  vip1: { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 3, defaultServer: 2 },
-  vip2: { url: "/wk/albaplayer/vip2/", param: "serv", servStart: 1, servers: 3, defaultServer: 0 },
+  vip1: { url: "/wk/albaplayer/vip1/" },
+  vip2: { url: "/wk/albaplayer/vip2/" },
 };
 
-function embedUrlFor(embed, serverIndex) {
+function embedUrlFor(embed) {
   if (!embed || !embed.url) return "";
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(embed.url, base);
-  if (embed.param != null) {
-    const start = embed.servStart != null ? embed.servStart : 0;
-    u.searchParams.set(embed.param, start + serverIndex);
-  }
+  if (embed.channelId) u.searchParams.set("ch", embed.channelId);
   return u.toString();
 }
 
@@ -82,7 +79,7 @@ const CHANNEL_DEFS = [
   { id: "bein-max-3", name: "beIN MAX 3", group: "beIN", quality: "1080p", badge: "HD" },
   { id: "bein-max-4", name: "beIN MAX 4", group: "beIN", quality: "1080p", badge: "HD" },
 ];
-const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: embedFor(c.id) }));
+const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: { ...embedFor(c.id), channelId: c.id } }));
 
 // Fallback only — shown if both the live API and cached today.json fail to load.
 const MATCHES = [];
@@ -110,7 +107,7 @@ function resolveWatchSelection(matches, channels, searchParams) {
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
   const embedKey = (match && match.embedKey) || embedKeyFor(chId);
-  const channelWithEmbed = { ...channel, embed: embedForKey(embedKey) };
+  const channelWithEmbed = { ...channel, embed: { ...embedForKey(embedKey), channelId: chId } };
   return { channel: channelWithEmbed, match, embedKey };
 }
 

@@ -161,6 +161,8 @@
 
   function htmlHasPlayableEmbed(html) {
     return /AlbaPlayerControl\('([^']+)'/.test(html) ||
+      /\/(?:wk\/stream\.m3u8|wk\/hls|dl\/hls)\?u=/.test(html) ||
+      /\bdata-kz-src=/.test(html) ||
       /<iframe\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html) ||
       /<(?:source|video)\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html);
   }
