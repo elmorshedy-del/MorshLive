@@ -1041,18 +1041,20 @@ async function proxyVip(request, slot, env) {
   }
 
   try {
-    const { candidates, firstHtml } = await resolveVipSlotStream(request, slot);
-    const hasWkHls = !!(candidates && candidates.length);
-    const twitchChannel = await resolveTwitchChannel(request, slot, [firstHtml]);
+    // Cached Twitch channel → always serve it. No HLS probe, no mirror flip-flop.
+    const cachedTwitch = LAST_KNOWN_TWITCH_CHANNELS[slot];
+    if (cachedTwitch) {
+      return twitchPlayerResponse(cachedTwitch, origin, htmlHeaders);
+    }
 
-    // When worldkoora HLS is dead, keep the stable Twitch feed (don't let dlhd
-    // HLS mirrors replace it — that was the regression users hit).
-    if (twitchChannel && !hasWkHls) {
+    const { candidates, firstHtml } = await resolveVipSlotStream(request, slot);
+    const twitchChannel = await resolveTwitchChannel(request, slot, [firstHtml]);
+    if (twitchChannel) {
       return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
     }
 
-    // Unified pool of {url, score}. worldkoora slot servers first (already probed
-    // + ranked), plus dlhd mirrors when a live wk feed exists or twitch is unknown.
+    // HLS only when Twitch channel is completely unknown (no cache, no upstream).
+    const hasWkHls = !!(candidates && candidates.length);
     const pool = [];
     for (const c of candidates || []) {
       const sig = await signTarget(c.source, secret);
@@ -1076,9 +1078,6 @@ async function proxyVip(request, slot, env) {
           "X-KZ-Mirrors": String(proxied.length),
         },
       });
-    }
-    if (twitchChannel) {
-      return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
     }
     if (firstHtml) {
       return new Response(await cleanWorldkooraHtml(firstHtml, slot, origin, secret, request), {
