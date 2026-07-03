@@ -80,13 +80,13 @@ const WATCH_URL =
       break;
     }
     if (state?.kind === "twitch-api" && state.hasPlayer) {
-      playable = true;
-      if (state.qualityButtons < 2) {
-        console.warn("Twitch quality bar has fewer than 2 options (stream may be source-only)");
-      } else {
+      if (state.qualityButtons >= 2) {
         console.log("Twitch quality choices:", state.qualityButtons);
+        playable = true;
+        break;
       }
-      break;
+      // Qualities populate after Twitch.Player.PLAYING — keep polling.
+      continue;
     }
     if (state?.kind === "twitch" && /parent=korazero\.com/i.test(state.src || "")) {
       playable = true;
@@ -101,6 +101,6 @@ const WATCH_URL =
   await browser.close();
 
   if (reloadLoop) throw new Error("Iframe reload loop detected");
-  if (!playable) throw new Error("No playable video or Twitch embed detected");
+  if (!playable) throw new Error("No playable video or Twitch embed with quality choices detected");
   console.log("\n✓ Single-player watch page has live content");
 })();
