@@ -445,8 +445,6 @@ async function manifestLooksLive(source, kind, request) {
   }
 }
 
-}
-
 async function hlsManifestIsLive(source, request) {
   try {
     const res = await fetch(source, {
