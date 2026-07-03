@@ -67,25 +67,28 @@ attaches, for every match that has ended:
 - **`summaryAr`** — a templated Arabic recap (winner/draw, final score, venue,
   commentator) built entirely from data already in the fixture. Always present,
   no extra setup or external call required.
-- **`highlight`** — a matched highlight clip, only when a free
-  [Scorebat](https://www.scorebat.com/video-api/) API token is configured via
-  the `SCOREBAT_TOKEN` secret/env var. Scorebat only distributes clips the
-  leagues/clubs have already licensed for redistribution; we never inject its
-  raw embed HTML — the iframe `src` is extracted and validated against
-  `scorebat.com` before we rebuild our own sandboxed `<iframe>`.
+- **`highlight`** — an **Arabic-commentary** highlights video, found via a
+  targeted YouTube search (`ملخص وأهداف مباراة <الفريق> و<الفريق> تعليق عربي`)
+  when a free `YOUTUBE_API_KEY` is configured. A result is only kept if its
+  title/description is actually in Arabic script — a highlight clip with
+  English or no commentary is treated the same as no clip at all, since
+  Arabic commentary is the whole point. The embed URL is built from a
+  validated YouTube video id, never from a raw URL in the API response.
 
 Both fields ride along in `assets/data/today.json` per match plus a
 `highlightsIndex` (same join pattern as `commentaryIndex`), so the summary and
 clip also show up when the browser is using the live TheSportsDB/ESPN fetch
 instead of the cached file. They render as a collapsible "ملخص المباراة"
 panel on ended match cards on the home page, and a static panel on the watch
-page for that match.
+page for that match. Once a match has a matched clip it's pinned in
+`highlightsIndex` and never re-queried, so a full day of World Cup fixtures
+stays well inside YouTube Data API's free quota (100 units/search, 10,000/day).
 
-To enable highlight clips: sign up for a free token at
-[scorebat.com/video-api](https://www.scorebat.com/video-api/) and add it as
-the `SCOREBAT_TOKEN` repository secret (GitHub → Settings → Secrets). Without
-a token the site still ships the Arabic text summary for every match — only
-the video clip is skipped.
+To enable highlight clips: create a free API key with the **YouTube Data
+API v3** enabled in the [Google Cloud Console](https://console.cloud.google.com/apis/library/youtube.googleapis.com)
+and add it as the `YOUTUBE_API_KEY` repository secret (GitHub → Settings →
+Secrets). Without a key the site still ships the Arabic text summary for
+every match — only the video clip is skipped.
 
 ## Deploy (korazero + Cloudflare)
 

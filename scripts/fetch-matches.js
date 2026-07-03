@@ -23,11 +23,11 @@ const {
   pairKey,
   pinEndedChannels,
 } = require("./commentators-lib");
-const { attachHighlights, mergeHighlightsIndex } = require("./highlights-lib");
+const { attachSummaries, buildHighlightQuery, pickArabicVideo } = require("./highlights-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
-const SCOREBAT_FEED_URL = "https://www.scorebat.com/video-api/v3/feed/";
+const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
 
 const KEY = process.env.SPORTSDB_KEY || "3";
 const centerDate = process.argv[2] || new Date().toISOString().slice(0, 10);
@@ -89,6 +89,26 @@ async function fetchEspnLeague(slug, dateRange) {
   const league = json.leagues && json.leagues[0] ? json.leagues[0] : { slug };
   const events = Array.isArray(json.events) ? json.events : [];
   return events.map((event) => normalizeEspnEvent(event, league));
+}
+
+/** Search YouTube for an Arabic-commentary highlights video for one match. */
+async function fetchYouTubeHighlight(match) {
+  const params = new URLSearchParams({
+    part: "snippet",
+    type: "video",
+    maxResults: "5",
+    order: "relevance",
+    relevanceLanguage: "ar",
+    videoEmbeddable: "true",
+    safeSearch: "strict",
+    q: buildHighlightQuery(match),
+    key: process.env.YOUTUBE_API_KEY,
+  });
+  const kickoffMs = Date.parse(match.kickoffUtc || "");
+  if (!isNaN(kickoffMs)) params.set("publishedAfter", new Date(kickoffMs).toISOString());
+  const json = await get(`${YOUTUBE_SEARCH_URL}?${params.toString()}`);
+  if (json.error) throw new Error(json.error.message || "YouTube API error");
+  return pickArabicVideo(json.items);
 }
 
 (async () => {
@@ -157,36 +177,43 @@ async function fetchEspnLeague(slug, dateRange) {
   }
 
   // ملخص المباريات: Arabic text summary for every ended match (always, no
-  // network needed) plus a matched highlight clip from Scorebat when a free
-  // SCOREBAT_TOKEN is configured (https://www.scorebat.com/video-api/).
-  let scorebatFeed = [];
-  if (process.env.SCOREBAT_TOKEN) {
+  // network needed) plus an Arabic-commentary highlight video from YouTube
+  // (https://developers.google.com/youtube/v3) when a free YOUTUBE_API_KEY is
+  // configured. Once a match has a pinned clip we never re-query for it, so a
+  // day of World Cup fixtures stays well inside YouTube's free search quota.
+  attachSummaries(matches);
+  const highlightsByKey = new Map(
+    ((previousPayload && previousPayload.highlightsIndex) || []).map((h) => [h.key, h])
+  );
+  let highlightsMatched = 0;
+  for (const m of matches) {
+    if (m.status !== "ended") continue;
+    const key = pairKey(m.home, m.away);
+    const pinned = highlightsByKey.get(key);
+    if (pinned) {
+      m.highlight = {
+        videoUrl: pinned.videoUrl,
+        title: pinned.title,
+        channelTitle: pinned.channelTitle,
+        thumbnail: pinned.thumbnail,
+        source: pinned.source,
+      };
+      highlightsMatched++;
+      continue;
+    }
+    if (!process.env.YOUTUBE_API_KEY) continue;
     try {
-      const feed = await get(`${SCOREBAT_FEED_URL}?token=${process.env.SCOREBAT_TOKEN}`);
-      scorebatFeed = Array.isArray(feed.response) ? feed.response : Array.isArray(feed) ? feed : [];
+      const found = await fetchYouTubeHighlight(m);
+      if (found) {
+        m.highlight = found;
+        highlightsByKey.set(key, { key, home: m.home, away: m.away, ...found });
+        highlightsMatched++;
+      }
     } catch (err) {
-      console.warn("scorebat feed fetch failed:", err.message);
+      console.warn(`youtube highlight search failed for ${m.home} vs ${m.away}:`, err.message);
     }
   }
-  const { matched: highlightsMatched, highlightsIndex: freshHighlightsIndex } =
-    attachHighlights(matches, scorebatFeed);
-  const highlightsIndex = mergeHighlightsIndex(
-    freshHighlightsIndex,
-    (previousPayload && previousPayload.highlightsIndex) || []
-  );
-  const highlightsByKey = new Map(highlightsIndex.map((h) => [h.key, h]));
-  for (const m of matches) {
-    if (m.status !== "ended" || m.highlight) continue;
-    const row = highlightsByKey.get(pairKey(m.home, m.away));
-    if (!row) continue;
-    m.highlight = {
-      videoUrl: row.videoUrl,
-      title: row.title,
-      competition: row.competition,
-      thumbnail: row.thumbnail,
-      source: row.source,
-    };
-  }
+  const highlightsIndex = Array.from(highlightsByKey.values());
 
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   writeBindingsJs();

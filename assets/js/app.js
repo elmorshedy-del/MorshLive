@@ -157,7 +157,7 @@
     const videoBlock = m.highlight && m.highlight.videoUrl
       ? `<div class="match-highlight-video">
            <iframe src="${m.highlight.videoUrl}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
-             allow="autoplay; fullscreen" allowfullscreen
+             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
              sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
          </div>`
       : `<p class="match-summary-novideo">${t("card.noHighlightVideo")}</p>`;
