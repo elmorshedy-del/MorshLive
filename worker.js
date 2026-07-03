@@ -26,6 +26,10 @@ const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
 // slot. We probe them in order so a dead/blank server this game falls over to a
 // live one WITHIN the same slot (never to a different channel/slot).
 const VIP_SERVER_COUNT = 3;
+// Hard caps so VIP pages never hang on a dead CDN during deep probes.
+const FETCH_TIMEOUT_MS = 4500;
+const PROBE_TIMEOUT_MS = 5000;
+const VIP_RESOLVE_DEADLINE_MS = 9000;
 
 // dlhd (daddylive) 24/7 source — fully isolated from the worldkoora /wk/ path.
 const DLHD_BASE = "https://dlhd.pk";
@@ -74,11 +78,12 @@ const EXTRA_CHANNEL_STREAMS = {};
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
 // needs to be edited every time worldkoora rotates its CDN host.
 const ALLOWED_STREAM_HOST =
-  /(^|\.)((heinzromanigi|teworld|smarop|golatooa|554564\.sbs)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+|1\.554564\.sbs)$/i;
+  /(^|\.)((heinzromanigi|teworld|smarop|golatooa|554564\.sbs|futeure\.space)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+|1\.554564\.sbs|mev\.futeure\.space)$/i;
 
 // Last-known-good streams per VIP slot/serv when upstream HTML is blank or stale.
 const LAST_KNOWN_VIP_STREAMS = {
   vip1: {
+    1: [{ source: "https://mev.futeure.space/egcity1.m3u8", player: "clappr" }],
     3: [{ source: "https://1.554564.sbs/hls/1/stream.m3u8", player: "clappr" }],
   },
 };
@@ -213,6 +218,13 @@ function hlsProxyUrl(target, origin, sig, basePath) {
   return `${origin}${path}?u=${encodeURIComponent(target)}${signature}`;
 }
 
+function fetchWithTimeout(url, init, ms = FETCH_TIMEOUT_MS) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  const merged = { ...init, signal: controller.signal };
+  return fetch(url, merged).finally(() => clearTimeout(timer));
+}
+
 function resolveStreamUrl(relative, base) {
   try {
     const abs = new URL(relative, base);
@@ -333,16 +345,20 @@ function extractNestedPlayerUrls(html) {
 }
 
 async function fetchPlayerHtml(url, request) {
-  const res = await fetch(url, {
-    headers: {
-      "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
-      Accept: "text/html,application/xhtml+xml",
-      Referer: WORLDKOORA + "/",
-    },
-    redirect: "follow",
-  });
-  if (!res.ok) return null;
-  return res.text();
+  try {
+    const res = await fetchWithTimeout(url, {
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "text/html,application/xhtml+xml",
+        Referer: WORLDKOORA + "/",
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    return res.text();
+  } catch {
+    return null;
+  }
 }
 
 async function resolvePlayableSourceFromHtml(html, request, depth = 0, seen = new Set()) {
@@ -390,12 +406,16 @@ function parseTargetDuration(manifest) {
 // the segments 403, so the stream is off" bug, AND measures how quickly the whole
 // chain responds so we can auto-play the SMOOTHEST mirror (lowest edge latency,
 // most buffered segments, sane target duration) rather than a random live one.
-// Returns { ok, ms, score } — lower score = smoother.
+// Returns { ok, ms, score, soft? } — lower score = smoother.
 async function streamProbe(source, kind, request) {
   const headers = streamFetchHeaders(kind, request);
   const started = Date.now();
+  const softOk = (extraPenalty = 0) => {
+    const ms = Date.now() - started;
+    return { ok: true, ms, score: ms + extraPenalty, soft: true };
+  };
   try {
-    const res = await fetch(source, { headers, redirect: "follow" });
+    const res = await fetchWithTimeout(source, { headers, redirect: "follow" }, PROBE_TIMEOUT_MS);
     if (!res.ok) return { ok: false };
     const text = await res.text();
     if (!text.trimStart().startsWith("#EXTM3U")) return { ok: false };
@@ -407,23 +427,30 @@ async function streamProbe(source, kind, request) {
       const variant = firstMediaLine(text);
       if (!variant) return { ok: false };
       const variantUrl = resolveStreamUrl(variant, source);
-      const vres = await fetch(variantUrl, { headers, redirect: "follow" });
-      if (!vres.ok) return { ok: false };
+      const vres = await fetchWithTimeout(variantUrl, { headers, redirect: "follow" }, PROBE_TIMEOUT_MS);
+      if (!vres.ok) {
+        // Master is live but child playlist may be edge-gated; our signed proxy often works.
+        return softOk(2500);
+      }
       mediaText = await vres.text();
-      if (!mediaText.trimStart().startsWith("#EXTM3U")) return { ok: false };
-      if (manifestIsStale(mediaText)) return { ok: false };
+      if (!mediaText.trimStart().startsWith("#EXTM3U")) return softOk(2800);
+      if (manifestIsStale(mediaText)) return softOk(2900);
       mediaManifestUrl = variantUrl;
     }
 
     const seg = firstMediaLine(mediaText);
-    if (!seg) return { ok: false };
+    if (!seg) return softOk(3000);
     const segUrl = resolveStreamUrl(seg, mediaManifestUrl);
     let segBytesOk = true;
     if (!isHlsUrl(segUrl)) {
-      const sres = await fetch(segUrl, { headers: { ...headers, Range: "bytes=0-2047" }, redirect: "follow" });
-      if (!(sres.status === 200 || sres.status === 206)) return { ok: false };
+      const sres = await fetchWithTimeout(
+        segUrl,
+        { headers: { ...headers, Range: "bytes=0-2047" }, redirect: "follow" },
+        PROBE_TIMEOUT_MS
+      );
+      if (!(sres.status === 200 || sres.status === 206)) return softOk(3200);
       const ctype = (sres.headers.get("Content-Type") || "").toLowerCase();
-      if (ctype.includes("text/html")) return { ok: false };
+      if (ctype.includes("text/html")) return softOk(3400);
       if (sres.body) {
         const reader = sres.body.getReader();
         const { value, done } = await reader.read();
@@ -433,7 +460,7 @@ async function streamProbe(source, kind, request) {
         const buf = await sres.arrayBuffer();
         segBytesOk = buf.byteLength > 0;
       }
-      if (!segBytesOk) return { ok: false };
+      if (!segBytesOk) return softOk(3600);
     }
 
     const ms = Date.now() - started;
@@ -446,14 +473,18 @@ async function streamProbe(source, kind, request) {
     // fall through to soft manifest check
   }
   if (await manifestLooksLive(source, kind, request)) {
-    return { ok: true, ms: 9999, score: 9000 };
+    return { ok: true, ms: 9999, score: 9000, soft: true };
   }
   return { ok: false };
 }
 
 async function manifestLooksLive(source, kind, request) {
   try {
-    const res = await fetch(source, { headers: streamFetchHeaders(kind, request), redirect: "follow" });
+    const res = await fetchWithTimeout(
+      source,
+      { headers: streamFetchHeaders(kind, request), redirect: "follow" },
+      PROBE_TIMEOUT_MS
+    );
     if (!res.ok) return false;
     const text = await res.text();
     return (
@@ -468,14 +499,18 @@ async function manifestLooksLive(source, kind, request) {
 
 async function hlsManifestIsLive(source, request) {
   try {
-    const res = await fetch(source, {
-      headers: {
-        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
-        Accept: "application/vnd.apple.mpegurl,*/*",
-        Referer: WORLDKOORA + "/",
+    const res = await fetchWithTimeout(
+      source,
+      {
+        headers: {
+          "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+          Accept: "application/vnd.apple.mpegurl,*/*",
+          Referer: WORLDKOORA + "/",
+        },
+        redirect: "follow",
       },
-      redirect: "follow",
-    });
+      PROBE_TIMEOUT_MS
+    );
     if (!res.ok) return false;
     const text = await res.text();
     return text.trimStart().startsWith("#EXTM3U") && !manifestIsStale(text);
@@ -874,6 +909,8 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
 #kz-unmute{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;border:0;background:rgba(6,8,14,.72);color:#fff;font-size:16px;font-weight:700;cursor:pointer;backdrop-filter:blur(4px)}
 #kz-unmute .ico{font-size:42px;line-height:1}
 #kz-unmute.hidden{display:none!important}
+#kz-unmute.compact{inset:auto;left:12px;bottom:12px;width:auto;height:auto;flex-direction:row;gap:8px;padding:10px 14px;border-radius:10px;font-size:13px;background:rgba(6,8,14,.88)}
+#kz-unmute.compact .ico{font-size:20px}
 .kz-shell.view-hls .kz-twitch-side{display:none}
 .kz-shell.view-hls .kz-hls{flex:1;border:none}
 .kz-shell.view-twitch .kz-hls{display:none}
@@ -904,8 +941,17 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
   function syncSoundUi(){
     var muted=v.muted;
     soundBtn.textContent=(muted?'🔇':'🔊')+' صوت';
-    unmute.classList.toggle('hidden', !v.muted||userMuted);
+    if(!muted||userMuted){ unmute.classList.add('hidden'); return; }
+    unmute.classList.remove('hidden');
   }
+  function onVideoPlaying(){
+    if(!userMuted&&v.muted){
+      unmute.classList.add('compact');
+      unmute.querySelector('span:last-child').textContent='اضغط للصوت';
+    }
+  }
+  v.addEventListener('playing', onVideoPlaying);
+  v.addEventListener('timeupdate', function(){ if(v.currentTime>0.3) onVideoPlaying(); }, {once:true});
   function enableSound(){
     userMuted=false; v.muted=false;
     try{ if(player&&player.setMuted) player.setMuted(false); }catch(e){}
@@ -1055,7 +1101,7 @@ async function fetchVipServerHtml(request, slot, serv) {
   const upstream = new URL(`${WORLDKOORA}/albaplayer/${slot}/`);
   upstream.searchParams.set("serv", String(serv));
   try {
-    const res = await fetch(upstream.toString(), {
+    const res = await fetchWithTimeout(upstream.toString(), {
       method: "GET",
       headers: {
         "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
@@ -1088,13 +1134,17 @@ function vipServerOrder(requestedServ) {
 // never a different channel/slot. Returns { candidates, firstHtml }.
 async function resolveVipSlotStream(request, slot) {
   const requestedServ = new URL(request.url).searchParams.get("serv") || 1;
-  // Resolve every server of the slot to its HLS (sequentially — cheap HTML gets),
-  // dedup, then probe them concurrently for liveness + smoothness.
   const seenSources = new Set();
   const resolvedList = [];
   let firstHtml = null;
-  for (const serv of vipServerOrder(requestedServ)) {
-    const page = await fetchVipServerHtml(request, slot, serv);
+
+  // Fetch all VIP servers in parallel — sequential fetches were blocking VIP for 10–60s.
+  const pages = await Promise.all(
+    vipServerOrder(requestedServ).map((serv) =>
+      fetchVipServerHtml(request, slot, serv).then((page) => ({ serv, page }))
+    )
+  );
+  for (const { serv, page } of pages) {
     if (!page.html) continue;
     if (firstHtml == null) firstHtml = page.html;
     const resolved = await resolvePlayableSourceFromHtml(page.html, request, 0, new Set());
@@ -1106,17 +1156,31 @@ async function resolveVipSlotStream(request, slot) {
     for (const item of known) {
       if (!item?.source || seenSources.has(item.source)) continue;
       seenSources.add(item.source);
-      resolvedList.push({ source: item.source, player: item.player || "clappr", serv });
+      resolvedList.push({ source: item.source, player: item.player || "clappr", serv, cached: true });
     }
   }
+
   const probed = await Promise.all(
-    resolvedList.map(async (r) => ({ r, p: await streamProbe(r.source, "wk", request) }))
+    resolvedList.map(async (r) => {
+      if (r.cached) return { r, p: { ok: true, score: r.score ?? 500, soft: true } };
+      const p = await streamProbe(r.source, "wk", request);
+      return { r, p };
+    })
   );
   const candidates = probed
     .filter((x) => x.p.ok)
-    .sort((a, b) => a.p.score - b.p.score) // smoothest first
+    .sort((a, b) => a.p.score - b.p.score)
     .map((x) => ({ ...x.r, score: x.p.score }));
   return { candidates, firstHtml };
+}
+
+async function resolveDlMirror(id, origin, secret, request) {
+  const m3u8 = await resolveDlStream(id);
+  if (!m3u8 || !isHlsUrl(m3u8)) return null;
+  const probe = await streamProbe(m3u8, "dl", request);
+  if (!probe.ok) return null;
+  const sig = await signTarget(m3u8, secret);
+  return { url: hlsProxyUrl(m3u8, origin, sig, "/dl/hls"), score: probe.score, dlhdId: id };
 }
 
 // Resolve all configured dlhd mirrors for a channel (ordered). Each verified-live
@@ -1124,16 +1188,13 @@ async function resolveVipSlotStream(request, slot) {
 async function resolveDlChannelMirrors(channelId, origin, secret, request) {
   const ids = DLHD_CHANNEL_MIRROR_IDS[channelId];
   if (!ids || !ids.length) return [];
+  const mirrors = await Promise.all(ids.map((id) => resolveDlMirror(id, origin, secret, request)));
   const out = [];
   const seen = new Set();
-  for (const id of ids) {
-    const m3u8 = await resolveDlStream(id);
-    if (!m3u8 || !isHlsUrl(m3u8) || seen.has(m3u8)) continue;
-    const probe = await streamProbe(m3u8, "dl", request);
-    if (!probe.ok) continue;
-    seen.add(m3u8);
-    const sig = await signTarget(m3u8, secret);
-    out.push({ url: hlsProxyUrl(m3u8, origin, sig, "/dl/hls"), score: probe.score, dlhdId: id });
+  for (const m of mirrors) {
+    if (!m || seen.has(m.url)) continue;
+    seen.add(m.url);
+    out.push(m);
   }
   return out;
 }
@@ -1174,19 +1235,48 @@ async function proxyVip(request, slot, env) {
   }
 
   try {
-    const { candidates, firstHtml } = await resolveVipSlotStream(request, slot);
-    const twitchChannel =
-      LAST_KNOWN_TWITCH_CHANNELS[slot] || (await resolveTwitchChannel(request, slot, [firstHtml]));
+    const twitchCached = LAST_KNOWN_TWITCH_CHANNELS[slot] || null;
+    const resolveWork = Promise.all([
+      resolveVipSlotStream(request, slot),
+      resolveDlChannelMirrors(channelId, origin, secret, request),
+      resolveExtraChannelMirrors(channelId, origin, secret, request),
+      twitchCached
+        ? Promise.resolve(twitchCached)
+        : resolveTwitchChannel(request, slot, []),
+    ]);
+    const timed = await Promise.race([
+      resolveWork,
+      new Promise((resolve) => setTimeout(() => resolve(null), VIP_RESOLVE_DEADLINE_MS)),
+    ]);
 
-    // Always probe HLS mirrors (worldkoora + dlhd 24/7) so the beIN feed stays
-    // constant next to Twitch — never one-or-the-other flip-flop.
+    let candidates = [];
+    let firstHtml = null;
+    let dlMirrors = [];
+    let extras = [];
+    let twitchChannel = twitchCached;
+
+    if (timed) {
+      const vip = timed[0] || {};
+      candidates = vip.candidates || [];
+      firstHtml = vip.firstHtml || null;
+      dlMirrors = timed[1] || [];
+      extras = timed[2] || [];
+      twitchChannel = timed[3] || twitchCached;
+    } else {
+      // Deadline hit — return immediately with cached Twitch + last-known HLS.
+      const serv = Number(incoming.searchParams.get("serv") || 1);
+      const known = (LAST_KNOWN_VIP_STREAMS[slot] && LAST_KNOWN_VIP_STREAMS[slot][serv]) || [];
+      candidates = known.map((item) => ({ ...item, score: 500, cached: true }));
+      resolveWork.catch(() => {});
+    }
+
     const pool = [];
     for (const c of candidates || []) {
       const sig = await signTarget(c.source, secret);
-      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: c.score });
+      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: c.score ?? 9999 });
     }
-    for (const dlMirror of await resolveDlChannelMirrors(channelId, origin, secret, request)) pool.push(dlMirror);
-    for (const extra of await resolveExtraChannelMirrors(channelId, origin, secret, request)) pool.push(extra);
+    for (const m of dlMirrors || []) pool.push(m);
+    for (const e of extras || []) pool.push(e);
 
     pool.sort((a, b) => a.score - b.score);
     const proxied = [];
@@ -1233,10 +1323,10 @@ async function proxyVip(request, slot, env) {
 async function resolveDlStream(id) {
   const headers = { "User-Agent": "Mozilla/5.0", Referer: `${DLHD_BASE}/` };
   try {
-    const sTxt = await (await fetch(`${DLHD_BASE}/stream/stream-${id}.php`, { headers })).text();
+    const sTxt = await (await fetchWithTimeout(`${DLHD_BASE}/stream/stream-${id}.php`, { headers })).text();
     const embed = sTxt.match(/<iframe[^>]+src="([^"]+\/premiumtv\/[^"]+)"/i);
     if (!embed) return null;
-    const eTxt = await (await fetch(embed[1], { headers })).text();
+    const eTxt = await (await fetchWithTimeout(embed[1], { headers })).text();
     const b64 = eTxt.match(/atob\(\s*['"]([A-Za-z0-9+/=]+)['"]\s*\)/);
     if (!b64) return null;
     const url = atob(b64[1]);
