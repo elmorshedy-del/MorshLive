@@ -39,7 +39,7 @@ const ALLOWED_STREAM_HOST =
 // replaces that slot's player markup with a blank/preroll-only wrapper.
 const LAST_KNOWN_VIP_STREAMS = {
   vip1: {
-    3: [{ source: "https://1.554564.sbs/hls/1/stream.m3u8", player: "plyr" }],
+    3: [{ source: "https://ye.techulse.store/sgfhlo3.m3u8", player: "clappr" }],
   },
 };
 
@@ -399,11 +399,34 @@ async function resolveNestedIframesInHtml(html, origin, secret, request) {
   );
 }
 
+// Twitch embeds from worldkoora ship parent=mysportv.live — rewrite to our host
+// or Twitch blocks playback when embedded on korazero.com (بث 2).
+function fixTwitchEmbedParents(html, request) {
+  try {
+    const host = new URL(request.url).hostname;
+    return String(html || "").replace(
+      /src=(["'])(https:\/\/player\.twitch\.tv\/\?[^"']+)\1/gi,
+      (_m, q, src) => {
+        const u = new URL(src);
+        u.searchParams.set("parent", host);
+        return `src=${q}${u.toString()}${q}`;
+      }
+    );
+  } catch {
+    return html;
+  }
+}
+
 async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
   let out = stripBlockedScripts(html);
+  out = fixTwitchEmbedParents(out, request);
   out = await resolveNestedIframesInHtml(out, origin, secret, request);
   out = await resolveLastKnownVipStream(out, slot, origin, secret, request);
   out = await rewriteStreamUrlsInHtml(out, origin, secret);
+  if (!/AlbaPlayerControl\s*\(/i.test(out)) {
+    const resolved = await resolvePlayableSourceFromHtml(html, request);
+    if (resolved) out = await injectPlayerScript(out, resolved.source, resolved.player, origin, secret);
+  }
   const headOpen = /<head[^>]*>/i;
   if (headOpen.test(out)) {
     out = out.replace(headOpen, (m) => m + EMBED_SHIM);
