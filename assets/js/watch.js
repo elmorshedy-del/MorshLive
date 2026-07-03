@@ -145,7 +145,6 @@
         if (overlay) overlay.addEventListener("click", play);
       }
       renderServers();
-      ensureLiveFeed().catch(() => {});
     } else {
       loadVipEmbed(servIndexFromParam(vipEmbed(), params.get("serv")));
     }
@@ -422,7 +421,6 @@
       }
     }
     scheduleAutoReload();
-    ensureLiveFeed().catch(() => {});
   }
 
   /* ---------------------------------------------- Stream reload
@@ -454,7 +452,6 @@
     if (activePlayer === 1) {
       if (isEmbed) {
         loadEmbed(activeServerIndex());
-        ensureLiveFeed().catch(() => {});
       } else {
         // Reload the server the user actually has selected, not the default.
         const activeBtn = document.querySelector("#servers .server-btn.active");
@@ -486,7 +483,6 @@
     if (next == null) return;
     reloadTimer = setTimeout(() => {
       reloadActivePlayer();
-      scheduleAutoReload();
     }, Math.min(next - now, 0x7fffffff));
   }
 

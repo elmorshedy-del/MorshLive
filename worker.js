@@ -376,6 +376,25 @@ async function streamPlays(source, kind, request) {
   }
 }
 
+async function streamManifestLive(source, kind, request) {
+  const headers = streamFetchHeaders(kind, request);
+  try {
+    const res = await fetch(source, { headers, redirect: "follow" });
+    if (!res.ok) return false;
+    const text = await res.text();
+    return text.trimStart().startsWith("#EXTM3U");
+  } catch {
+    return false;
+  }
+}
+
+// Deep probe first; accept manifest-only when segments 403 from the edge but the
+// signed proxy can still play (common with rotated worldkoora CDNs).
+async function streamResolvable(source, kind, request) {
+  if (await streamPlays(source, kind, request)) return true;
+  return streamManifestLive(source, kind, request);
+}
+
 async function rewriteStreamUrlsInHtml(html, origin, secret) {
   let out = await asyncReplaceAll(
     html,
@@ -432,8 +451,26 @@ async function resolveNestedIframesInHtml(html, origin, secret, request) {
   );
 }
 
+// Twitch pages cannot join the HLS mirror pool — fix parent host and serve upstream.
+function fixTwitchEmbedParents(html, request) {
+  try {
+    const host = new URL(request.url).hostname;
+    return String(html || "").replace(
+      /src=(["'])(https:\/\/player\.twitch\.tv\/\?[^"']+)\1/gi,
+      (_m, q, src) => {
+        const u = new URL(src);
+        u.searchParams.set("parent", host);
+        return `src=${q}${u.toString()}${q}`;
+      }
+    );
+  } catch {
+    return html;
+  }
+}
+
 async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
   let out = stripBlockedScripts(html);
+  out = fixTwitchEmbedParents(out, request);
   out = await resolveNestedIframesInHtml(out, origin, secret, request);
   out = await rewriteStreamUrlsInHtml(out, origin, secret);
   const headOpen = /<head[^>]*>/i;
@@ -618,7 +655,7 @@ async function resolveVipSlotStream(request, slot) {
     if (firstHtml == null) firstHtml = page.html;
     const resolved = await resolvePlayableSourceFromHtml(page.html, request, 0, new Set());
     if (!resolved || seenSources.has(resolved.source)) continue;
-    if (await streamPlays(resolved.source, "wk", request)) {
+    if (await streamResolvable(resolved.source, "wk", request)) {
       seenSources.add(resolved.source);
       candidates.push({ ...resolved, serv });
     }
@@ -659,9 +696,23 @@ async function proxyVip(request, slot, env) {
   }
 
   try {
+    const requestedServ = Number(incoming.searchParams.get("serv") || 1);
+    const requestedPage = await fetchVipServerHtml(request, slot, requestedServ);
+    if (requestedPage.html && /player\.twitch\.tv/i.test(requestedPage.html)) {
+      return new Response(await cleanWorldkooraHtml(requestedPage.html, slot, origin, secret, request), {
+        status: 200,
+        headers: { ...htmlHeaders, "X-KZ-Serv": String(requestedServ) },
+      });
+    }
+
     const { candidates, firstHtml } = await resolveVipSlotStream(request, slot);
+    const ranked = (candidates || []).slice().sort((a, b) => {
+      if (a.serv === requestedServ && b.serv !== requestedServ) return -1;
+      if (b.serv === requestedServ && a.serv !== requestedServ) return 1;
+      return 0;
+    });
     const proxied = [];
-    for (const c of candidates || []) {
+    for (const c of ranked) {
       const sig = await signTarget(c.source, secret);
       proxied.push(hlsProxyUrl(c.source, origin, sig));
     }
@@ -675,7 +726,7 @@ async function proxyVip(request, slot, env) {
         status: 200,
         headers: {
           ...htmlHeaders,
-          "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
+          "X-KZ-Serv": String((ranked[0] && ranked[0].serv) || ""),
           "X-KZ-Mirrors": String(proxied.length),
         },
       });

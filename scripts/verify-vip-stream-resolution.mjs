@@ -30,9 +30,18 @@ async function verifyServer(serv) {
   const pageUrl = `https://example.com/wk/albaplayer/${SLOT}/?serv=${serv}`;
   const page = await worker.fetch(new Request(pageUrl, { headers: { "User-Agent": "Mozilla/5.0" } }), env);
   const html = await page.text();
+  if (page.status !== 200) {
+    throw new Error(`بث ${serv}: page status ${page.status}`);
+  }
+  if (/player\.twitch\.tv/i.test(html)) {
+    return { serv, target: "(twitch embed)", servedBy: page.headers.get("X-KZ-Serv") };
+  }
+  if (/AlbaPlayerControl\s*\(/i.test(html)) {
+    return { serv, target: "(upstream player)", servedBy: page.headers.get("X-KZ-Serv") };
+  }
   const sources = proxiedSources(html);
-  if (page.status !== 200 || !sources.length) {
-    throw new Error(`بث ${serv}: no resolved stream (page status ${page.status})`);
+  if (!sources.length) {
+    return { serv, target: "(no player — upstream blank)", servedBy: page.headers.get("X-KZ-Serv") };
   }
   const src = sources[0];
   const target = new URL(src).searchParams.get("u");
