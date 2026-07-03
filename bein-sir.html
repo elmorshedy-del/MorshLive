@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>beIN عبر SIR — تجريبي ٢ | KoraZero</title>
+  <meta name="robots" content="noindex" />
+  <style>
+    :root {
+      --bg: #f4f6fb; --card: #ffffff; --ink: #0e1424; --muted: #5b6478;
+      --brand: #18a558; --brand-ink: #0c7a3f; --line: #e4e8f0; --accent: #7c3aed;
+      --shadow: 0 6px 24px rgba(20, 30, 60, .08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--bg); color: var(--ink);
+      font-family: "Tajawal", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 1000px; margin: 0 auto; padding: 20px 16px 48px; }
+    header { display: flex; align-items: center; gap: 12px; margin: 8px 0 18px; flex-wrap: wrap; }
+    .logo { font-weight: 800; font-size: 22px; letter-spacing: .2px; }
+    .logo b { color: var(--brand-ink); }
+    .badge {
+      font-size: 12px; font-weight: 700; color: var(--accent);
+      background: #f1ecff; border: 1px solid #e6dcff; padding: 4px 10px; border-radius: 999px;
+    }
+    .badge.live { color: var(--brand-ink); background: #e7f7ee; border-color: #cdeede; }
+    .badge.alt { color: #b45309; background: #fef3e2; border-color: #fadcb0; }
+    .lead { color: var(--muted); font-size: 14px; margin: 0 0 16px; line-height: 1.7; }
+    .tabs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+    .tab {
+      flex: 1 1 auto; min-width: 130px; cursor: pointer; border: 1px solid var(--line);
+      background: var(--card); color: var(--ink); font-weight: 700; font-size: 15px;
+      padding: 12px 14px; border-radius: 14px; box-shadow: var(--shadow);
+      transition: transform .08s ease, border-color .15s ease, background .15s ease;
+      font-family: inherit;
+    }
+    .tab small { display: block; font-weight: 500; font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .tab:hover { transform: translateY(-1px); }
+    .tab.active { border-color: var(--brand); background: #f0fbf5; }
+    .tab.active small { color: var(--brand-ink); }
+    .player-card {
+      background: #000; border-radius: 18px; overflow: hidden; box-shadow: var(--shadow);
+      aspect-ratio: 16 / 9; position: relative;
+    }
+    .player-card iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 14px 2px 0; flex-wrap: wrap; }
+    .now { font-size: 14px; color: var(--muted); }
+    .now b { color: var(--ink); }
+    .reload {
+      cursor: pointer; border: 1px solid var(--line); background: var(--card); color: var(--ink);
+      font-weight: 700; font-size: 14px; padding: 9px 16px; border-radius: 12px; font-family: inherit;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .reload:hover { border-color: var(--brand); color: var(--brand-ink); }
+    .reload svg { width: 16px; height: 16px; }
+    .note { margin-top: 22px; font-size: 12.5px; color: var(--muted); line-height: 1.8; border-top: 1px solid var(--line); padding-top: 14px; }
+    a.back { color: var(--brand-ink); font-weight: 700; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <span class="logo">Kora<b>Zero</b></span>
+      <span class="badge alt">تجريبي ٢ · مصدر SIR</span>
+      <span class="badge live">بث ٢٤/٧</span>
+    </header>
+
+    <p class="lead">
+      مصدر بديل ثانٍ (تجريبي) لقنوات beIN عبر شبكة SIR/foozlive — يُحلَّل ويُوقَّع على الخادم ويُمرَّر
+      كبثّ HLS نظيف عبر <code>/sir/&lt;قناة&gt;</code>. صفحة منفصلة للتجربة فقط، لا تؤثر على المشغّل الأساسي.
+      إذا كانت الجودة أفضل، يمكن اعتمادها لاحقًا كمصدر رئيسي.
+    </p>
+
+    <div class="tabs" id="tabs"></div>
+
+    <div class="player-card">
+      <iframe id="player" allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+              allowfullscreen referrerpolicy="no-referrer" scrolling="no" src="about:blank"></iframe>
+    </div>
+
+    <div class="toolbar">
+      <div class="now">القناة الحالية: <b id="now-label">—</b></div>
+      <button class="reload" id="reload" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><polyline points="21 4 21 10 15 10"/></svg>
+        إعادة تحميل البث
+      </button>
+    </div>
+
+    <p class="note">
+      المصدر: shootny/foozlive (داخلي عبر <code>/sir/&lt;قناة&gt;</code>). تُفكَّك إعدادات المشغّل وتُوقَّع روابط
+      الـCDN على الخادم، وتُزال طبقة التمويه (JPEG) من المقاطع قبل تمريرها، فلا يتأثر التشغيل بتدوير الخوادم.
+      &nbsp;·&nbsp; <a class="back" href="bein247.html">المصدر الأول (dlhd)</a>
+      &nbsp;·&nbsp; <a class="back" href="index.html">العودة للرئيسية</a>
+    </p>
+  </div>
+
+  <script>
+    var CHANNELS = [
+      { slug: "ar1", name: "beIN 1 — عربي", sub: "تعليق عربي" },
+      { slug: "ar2", name: "beIN 2 — عربي", sub: "تعليق عربي" },
+      { slug: "fr",  name: "FR — فرنسي",   sub: "تعليق فرنسي" },
+      { slug: "en",  name: "EN — إنجليزي", sub: "تعليق إنجليزي" }
+    ];
+    var tabs = document.getElementById("tabs");
+    var player = document.getElementById("player");
+    var nowLabel = document.getElementById("now-label");
+    var current = "ar1";
+
+    function load(slug) {
+      current = slug;
+      var ch = CHANNELS.find(function (c) { return c.slug === slug; });
+      player.src = "/sir/" + slug;
+      nowLabel.textContent = ch ? (ch.name + " — " + ch.sub) : slug;
+      Array.prototype.forEach.call(tabs.children, function (b) {
+        b.classList.toggle("active", b.dataset.slug === slug);
+      });
+    }
+
+    CHANNELS.forEach(function (c) {
+      var b = document.createElement("button");
+      b.className = "tab";
+      b.type = "button";
+      b.dataset.slug = c.slug;
+      b.innerHTML = c.name + "<small>" + c.sub + "</small>";
+      b.addEventListener("click", function () { load(c.slug); });
+      tabs.appendChild(b);
+    });
+
+    document.getElementById("reload").addEventListener("click", function () {
+      var keep = current; player.src = "about:blank"; setTimeout(function () { load(keep); }, 120);
+    });
+
+    load("ar1");
+  </script>
+</body>
+</html>

@@ -48,6 +48,23 @@
       "locked": false
     },
     {
+      "key": "croatia~portugal",
+      "home": "Portugal",
+      "away": "Croatia",
+      "commentators": [
+        {
+          "name": "غير معروف",
+          "channel": "beIN MAX 2"
+        }
+      ],
+      "channel": "beIN MAX 2",
+      "channelId": "bein-max-2",
+      "embedKey": "vip1",
+      "defaultServer": 0,
+      "streamPatchKey": "croatia~portugal",
+      "locked": true
+    },
+    {
       "key": "congodr~uzbekistan",
       "home": "Congo DR",
       "away": "Uzbekistan",
