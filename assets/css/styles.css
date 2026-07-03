@@ -493,6 +493,15 @@ img { max-width: 100%; display: block; }
 .player-switch {
   display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
 }
+.player-toolbar {
+  display: flex; justify-content: flex-end; margin-bottom: 10px;
+}
+.player-reload-btn {
+  background: var(--surface); border: 1px solid var(--border); color: var(--muted);
+  padding: 10px 16px; border-radius: 11px; cursor: pointer; font-weight: 700; font-size: .9rem;
+}
+.player-reload-btn:hover { color: var(--text); border-color: var(--brand); }
+.player-reload-btn.is-spinning .reload-ico { animation: spin .7s linear; }
 .player-switch-btn {
   flex: 1; min-width: 140px;
   background: var(--surface); border: 1px solid var(--border); color: var(--muted);

@@ -7,7 +7,7 @@ window.KZ_CHANNEL_BINDINGS = {
     "bein-max-2": "vip2",
     "bein-max-3": "vip1",
     "bein-max-4": "vip2",
-    "bein-sports-1": "vip2",
+    "bein-sports-1": "vip1",
     "bein-sports-2": "vip1"
   },
   "calibration": [

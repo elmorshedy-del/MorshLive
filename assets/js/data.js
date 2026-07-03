@@ -19,20 +19,14 @@
 // ones contain direct HLS, nested iframes, or blank/preroll-only loaders.
 // Same-origin /wk/ proxy (worker.js) serves worldkoora vip pages without preroll ads.
 const EMBEDS = {
-  vip1: { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 3, defaultServer: 0 },
-  vip2: { url: "/wk/albaplayer/vip2/", param: "serv", servStart: 1, servers: 3, defaultServer: 0 },
+  vip1: { url: "/wk/albaplayer/vip1/" },
+  vip2: { url: "/wk/albaplayer/vip2/" },
 };
 
-function embedUrlFor(embed, serverIndex) {
+function embedUrlFor(embed) {
   if (!embed || !embed.url) return "";
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(embed.url, base);
-  if (embed.param != null) {
-    const start = embed.servStart != null ? embed.servStart : 0;
-    u.searchParams.set(embed.param, start + serverIndex);
-  }
-  // Pass the channel id so the worker can add that channel's stable dlhd mirror
-  // to the failover pool (same channel, 24/7 backup).
   if (embed.channelId) u.searchParams.set("ch", embed.channelId);
   return u.toString();
 }
@@ -53,7 +47,7 @@ const BINDING_DOC = window.KZ_CHANNEL_BINDINGS || {
     "bein-max-2": "vip2",
     "bein-max-3": "vip2",
     "bein-max-4": "vip1",
-    "bein-sports-1": "vip2",
+    "bein-sports-1": "vip1",
     "bein-sports-2": "vip1",
   },
 };

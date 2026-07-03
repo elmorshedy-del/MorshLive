@@ -1,31 +1,14 @@
 /* ============================================================================
- * watch.js — watch page: HLS player + server switching + sidebar.
- * Uses hls.js for browsers without native HLS, native playback on Safari/iOS.
- * Match data is loaded live via window.getMatches() (assets/data/today.json).
+ * watch.js — single-player watch page. Worker picks the live mirror; no fake
+ * server buttons or duplicate player tabs.
  * ==========================================================================*/
 (function () {
   const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
-  // Player 2 VIP uses the same worldkoora embed as Player 1 for this channel.
-  // The `serv` param is cosmetic — each embed has one real server.
-  // Chrome needs a real referrer for Clappr/HLS inside the worldkoora iframe; Safari is lenient.
   const EMBED_REFERRER = "strict-origin-when-cross-origin";
-  const embedUrlFor = (embed, i) =>
+  const embedUrlFor = (embed) =>
     (window.SITE_DATA && window.SITE_DATA.embedUrlFor)
-      ? window.SITE_DATA.embedUrlFor(embed, i)
+      ? window.SITE_DATA.embedUrlFor(embed)
       : "";
-  const servIndexFromParam = (embed, raw) =>
-    (window.SITE_DATA && window.SITE_DATA.servIndexFromParam)
-      ? window.SITE_DATA.servIndexFromParam(embed, raw)
-      : 0;
-
-  function vipEmbed() {
-    const key = (match && match.embedKey) || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id));
-    const fromKey = window.SITE_DATA && window.SITE_DATA.embedForKey
-      ? window.SITE_DATA.embedForKey(key)
-      : null;
-    const base = fromKey || channel.embed || { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
-    return { ...base, channelId: (channel && channel.id) || base.channelId };
-  }
 
   const { CHANNELS } = window.SITE_DATA;
   const params = new URLSearchParams(location.search);
@@ -34,160 +17,27 @@
   let MATCHES = [];
   let channel = CHANNELS[0];
   let match = null;
-  let isEmbed = false;
-  let activePlayer = params.get("player") === "2" ? 2 : 1;
-
   const shell = document.getElementById("player-shell");
-  let video = document.getElementById("video");
-  let overlay = document.getElementById("overlay");
-  const vipFrame = document.getElementById("vip-frame");
-  let hls = null;
-  let started = false;
-  let savedShellMarkup = null;
-  let vipLoaded = false;
-  let vipLoadedUrl = "";
+  let loadedUrl = "";
 
-  /* HLS tuned for stable live playback on mobile (buffer over ultra-low latency). */
-  function createHls() {
-    return new window.Hls({
-      enableWorker: true,
-      lowLatencyMode: false,
-      maxBufferLength: 30,
-      maxMaxBufferLength: 60,
-      backBufferLength: 90,
-      liveSyncDurationCount: 3,
-      liveMaxLatencyDurationCount: 10,
-      manifestLoadingTimeOut: 12000,
-      manifestLoadingMaxRetry: 4,
-      levelLoadingTimeOut: 12000,
-    });
+  function currentEmbed() {
+    return channel.embed || { url: "/wk/albaplayer/vip1/", channelId: channel.id };
   }
 
-  /* ---------------------------------------------- Player core */
-  function loadStream(url) {
-    video = document.getElementById("video");
-    if (!video || !url) return;
-    if (hls) { hls.destroy(); hls = null; }
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.preload = "auto";
-      video.src = url; // native HLS (Safari / iOS)
-    } else if (window.Hls && window.Hls.isSupported()) {
-      hls = createHls();
-      hls.loadSource(url);
-      hls.attachMedia(video);
-    } else {
-      video.src = url; // last-resort fallback
-    }
-  }
-
-  function play() {
-    video = document.getElementById("video");
-    overlay = document.getElementById("overlay");
-    if (!video || !overlay) return;
-    started = true;
-    overlay.classList.add("hidden");
-    video.play().catch(() => {/* user gesture may still be required */});
-  }
-
-  /* ---------------------------------------------- Embed (iframe) mode */
-  function embedUrl(serverIndex) {
-    return embedUrlFor(channel.embed, serverIndex);
-  }
-
-  function currentEmbedServerIndex(embed) {
-    return servIndexFromParam(embed, params.get("serv"));
-  }
-
-  function loadEmbed(serverIndex) {
-    if (!savedShellMarkup) savedShellMarkup = shell.innerHTML;
+  function loadPlayer() {
+    if (!shell) return;
+    const url = embedUrlFor(currentEmbed());
+    if (!url || loadedUrl === url) return;
+    loadedUrl = url;
     shell.innerHTML =
-      `<iframe class="embed-frame" src="${embedUrl(serverIndex)}" ` +
+      `<iframe class="embed-frame" src="${url}" ` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
       `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
   }
 
-  function vipEmbedUrl(serverIndex) {
-    return embedUrlFor(vipEmbed(), serverIndex);
-  }
-
-  function loadVipEmbed(serverIndex) {
-    if (!vipFrame) return;
-    const next = vipEmbedUrl(serverIndex);
-    if (vipLoaded && vipLoadedUrl === next) return;
-    vipFrame.src = next;
-    vipLoaded = true;
-    vipLoadedUrl = next;
-  }
-
-  function setActivePlayer(n) {
-    activePlayer = n;
-    isEmbed = !!channel.embed && n === 1;
-
-    document.querySelectorAll(".player-switch-btn").forEach((btn) => {
-      btn.classList.toggle("active", Number(btn.dataset.player) === n);
-    });
-    document.getElementById("player-panel-1").classList.toggle("active", n === 1);
-    document.getElementById("player-panel-2").classList.toggle("active", n === 2);
-
-    const servers = document.getElementById("servers");
-    const vipServers = document.getElementById("vip-servers");
-    if (servers) servers.hidden = n !== 1;
-    if (vipServers) vipServers.hidden = n !== 2;
-
-    if (n === 1) {
-      if (isEmbed) {
-        loadEmbed(currentEmbedServerIndex(channel.embed));
-      } else if (savedShellMarkup) {
-        shell.innerHTML = savedShellMarkup;
-        video = document.getElementById("video");
-        overlay = document.getElementById("overlay");
-        if (video && channel.stream) loadStream(channel.stream);
-        if (overlay) overlay.addEventListener("click", play);
-      }
-      renderServers();
-      ensureLiveFeed().catch(() => {});
-    } else {
-      loadVipEmbed(servIndexFromParam(vipEmbed(), params.get("serv")));
-    }
-
-    const next = new URL(location.href);
-    params.set("player", n);
-    next.searchParams.set("player", n);
-    history.replaceState(null, "", next);
-  }
-
-  function initPlayerSwitch() {
-    document.querySelectorAll(".player-switch-btn").forEach((btn) => {
-      btn.addEventListener("click", () => setActivePlayer(Number(btn.dataset.player)));
-    });
-    setActivePlayer(activePlayer);
-  }
-
-  function renderVipServers() {
-    const row = document.getElementById("vip-servers");
-    if (!row) return;
-    const activeServ = servIndexFromParam(vipEmbed(), params.get("serv"));
-
-    const n = vipEmbed().servers || 1;
-    row.innerHTML = Array.from({ length: n }, (_, i) =>
-      `<button class="server-btn ${i === activeServ ? "active" : ""}" data-vip-srv="${i}" data-kind="reachable" data-url="${vipEmbedUrl(i)}" data-label="${t("watch.vipServer")} ${i + 1}"><span class="srv-label">${t("watch.vipServer")} ${i + 1}</span></button>`
-    ).join("");
-
-    row.querySelectorAll("[data-vip-srv]").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const srv = Number(btn.dataset.vipSrv);
-        row.querySelectorAll("[data-vip-srv]").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        loadVipEmbed(srv);
-        const next = new URL(location.href);
-        const start = vipEmbed().servStart != null ? vipEmbed().servStart : 0;
-        params.set("serv", start + srv);
-        next.searchParams.set("serv", start + srv);
-        history.replaceState(null, "", next);
-      });
-    });
-
-    checkServers(row);
+  function reloadPlayer() {
+    loadedUrl = "";
+    loadPlayer();
   }
 
   function timeZoneHtml(m) {
@@ -212,10 +62,6 @@
     return (m && m.commentator) || "—";
   }
 
-  /* ---------------------------------------------- Per-match structured data
-   * Injects a SportsEvent JSON-LD for the resolved fixture so the watch page is
-   * eligible for Google's event rich results. Re-runs on every fixture change;
-   * skipped for ended matches (no longer an upcoming/live event). */
   function injectMatchSchema(m) {
     const old = document.getElementById("event-schema");
     if (old) old.remove();
@@ -231,7 +77,7 @@
         { "@type": "SportsTeam", name: m.away },
       ],
     };
-    const ms = parseKickoff(m.kickoffUtc);
+    const ms = Date.parse(String(m.kickoffUtc || "").replace(/Z?$/, "Z"));
     if (!isNaN(ms)) data.startDate = new Date(ms).toISOString();
     if (m.league) data.description = m.league;
     data.location = m.venue
@@ -244,7 +90,6 @@
     document.head.appendChild(s);
   }
 
-  /* ---------------------------------------------- Head info */
   function matchIsCommentary() {
     return match && window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(match);
   }
@@ -267,7 +112,7 @@
       ? commentary
         ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.score} · ${t("watch.commentary")}`
         : `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.league}`
-      : `${t("watch.pressToPlayQ")} ${channel.quality}`;
+      : channel.quality;
 
     document.getElementById("info-quality").textContent = channel.quality;
     document.getElementById("info-group").textContent = channel.group;
@@ -284,84 +129,9 @@
     document.getElementById("info-league").textContent = (match && match.league) || "—";
     const infoTimes = document.getElementById("info-times");
     if (infoTimes) infoTimes.innerHTML = timeZoneHtml(match);
-
-    const overlayTitle = document.getElementById("overlay-title");
-    const overlaySub = document.getElementById("overlay-sub");
-    if (overlayTitle) overlayTitle.textContent = channel.name;
-    if (overlaySub) {
-      overlaySub.textContent = match
-        ? commentary
-          ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${t("watch.commentary")}`
-          : `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)}`
-        : `${t("watch.pressToPlayQ")} ${channel.quality}`;
-    }
-
     injectMatchSchema(match);
   }
 
-  /* ---------------------------------------------- Servers (quality mirrors) */
-  function renderServers() {
-    const row = document.getElementById("servers");
-
-    if (isEmbed) {
-      const n = channel.embed.servers || 1;
-      const activeServ = currentEmbedServerIndex(channel.embed);
-      row.innerHTML = Array.from({ length: n }, (_, i) =>
-        `<button class="server-btn ${i === activeServ ? "active" : ""}" data-srv="${i}" data-kind="reachable" data-url="${embedUrl(i)}" data-label="${t("watch.server")} ${i + 1}"><span class="srv-label">${t("watch.server")} ${i + 1}</span></button>`
-      ).join("");
-      row.querySelectorAll(".server-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          const srv = Number(btn.dataset.srv);
-          row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
-          btn.classList.add("active");
-          loadEmbed(srv);
-          const next = new URL(location.href);
-          const start = channel.embed.servStart != null ? channel.embed.servStart : 0;
-          params.set("serv", start + srv);
-          next.searchParams.set("serv", start + srv);
-          history.replaceState(null, "", next);
-        });
-      });
-      checkServers(row);
-      return;
-    }
-
-    const servers = [
-      { label: t("watch.serverHd"), url: channel.stream },
-      { label: t("watch.serverSd"), url: channel.stream },
-      { label: t("watch.serverBackup"), url: channel.stream },
-    ];
-    row.innerHTML = servers
-      .map((s, i) => `<button class="server-btn ${i === 0 ? "active" : ""}" data-kind="hls" data-url="${s.url}" data-label="${s.label}"><span class="srv-label">${s.label}</span></button>`)
-      .join("");
-    row.querySelectorAll(".server-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        loadStream(btn.dataset.url);
-        if (started) video.play().catch(() => {});
-      });
-    });
-    checkServers(row);
-  }
-
-  /* ---------------------------------------------- Live server detection */
-  function checkServers(row, opts) {
-    if (row && window.StreamCheck) {
-      const embedRow = (row.id === "servers" && isEmbed) || row.id === "vip-servers";
-      const options = embedRow ? { autoSelect: false, ...opts } : opts;
-      window.StreamCheck.autoHighlight(row, options).catch(() => {});
-    }
-  }
-
-  function recheckVisibleServers() {
-    const servers = document.getElementById("servers");
-    const vip = document.getElementById("vip-servers");
-    if (servers && !servers.hidden) checkServers(servers, { autoSelect: false });
-    if (vip && !vip.hidden) checkServers(vip, { autoSelect: false });
-  }
-
-  /* ---------------------------------------------- Sidebar (today's matches) */
   function renderSidebar() {
     const panel = document.getElementById("side-channels");
     if (!panel) return;
@@ -394,13 +164,30 @@
     if (toggle && links) toggle.addEventListener("click", () => links.classList.toggle("open"));
   }
 
+  function initReloadButton() {
+    const host = document.getElementById("player-toolbar");
+    if (!host || host.querySelector(".js-stream-reload")) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "player-reload-btn js-stream-reload";
+    btn.setAttribute("aria-label", t("watch.reload"));
+    btn.innerHTML =
+      `<svg class="ico reload-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><polyline points="21 4 21 10 15 10"/></svg> ` +
+      `<span data-i18n="watch.reload">${t("watch.reload")}</span>`;
+    btn.addEventListener("click", () => {
+      reloadPlayer();
+      btn.classList.add("is-spinning");
+      setTimeout(() => btn.classList.remove("is-spinning"), 700);
+    });
+    host.appendChild(btn);
+  }
+
   function resolveSelection() {
     const picked = window.resolveWatchSelection
       ? window.resolveWatchSelection(MATCHES, CHANNELS, params)
       : { channel: CHANNELS[0], match: null };
     channel = picked.channel;
     match = picked.match;
-    isEmbed = !!(channel.embed && channel.embed.url) && activePlayer === 1;
   }
 
   async function refreshMatches({ force } = {}) {
@@ -413,213 +200,18 @@
     renderSidebar();
     const matchChanged = (match && match.id) !== previousMatchId;
     if (channel.id !== previousChannelId || matchChanged) {
-      renderServers();
-      renderVipServers();
-      if (activePlayer === 2) loadVipEmbed(currentEmbedServerIndex(vipEmbed()));
-      if (activePlayer === 1) {
-        if (isEmbed) loadEmbed(currentEmbedServerIndex(channel.embed));
-        else loadStream(channel.stream);
-      }
-    }
-    scheduleAutoReload();
-    ensureLiveFeed().catch(() => {});
-  }
-
-  /* ---------------------------------------------- Stream reload
-   * The worldkoora source sometimes parks on a static frame while a match is
-   * live. A fresh load of the active player recovers it, so we expose a manual
-   * "reload" control AND start prewarming 30 minutes before each kickoff: from
-   * then we poll until the channel actually has a live stream, then load the
-   * worker's smoothest-ranked mirror and auto-play it — so the game is already
-   * playing the smoothest feed by kick-off. */
-  const RELOAD_LEAD_MS = 30 * 60 * 1000;
-  const PREWARM_POLL_MS = 45 * 1000;
-  const PREWARM_TAIL_MS = 20 * 60 * 1000; // keep trying until 20 min after kickoff
-  let reloadTimer = null;
-  let prewarmTimer = null;
-
-  function parseKickoff(ts) {
-    if (ts == null || ts === "") return NaN;
-    if (typeof ts === "number") return ts;            // already epoch millis
-    const text = String(ts).trim();
-    if (/^\d+$/.test(text)) return Number(text);      // epoch millis as a string
-    const norm = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(text) ? `${text}Z` : text;
-    return Date.parse(norm);
-  }
-
-  function activeServerIndex() {
-    const sel = activePlayer === 1
-      ? document.querySelector("#servers .server-btn.active[data-srv]")
-      : document.querySelector("#vip-servers .server-btn.active[data-vip-srv]");
-    if (sel) return Number(sel.dataset.srv != null ? sel.dataset.srv : sel.dataset.vipSrv) || 0;
-    return activePlayer === 2 ? currentEmbedServerIndex(vipEmbed()) : currentEmbedServerIndex(channel.embed);
-  }
-
-  function reloadActivePlayer() {
-    if (activePlayer === 1) {
-      if (isEmbed) {
-        loadEmbed(activeServerIndex());
-        ensureLiveFeed().catch(() => {});
-      } else {
-        // Reload the server the user actually has selected, not the default.
-        const activeBtn = document.querySelector("#servers .server-btn.active");
-        const url = (activeBtn && activeBtn.dataset.url) || channel.stream;
-        if (url) { loadStream(url); if (started) play(); }
-      }
-    } else {
-      vipLoaded = false; // bypass the same-URL guard so the iframe truly reloads
-      loadVipEmbed(activeServerIndex());
+      reloadPlayer();
     }
   }
 
-  // Kickoff (ms) of the soonest match on the channel currently being watched (or
-  // the selected match). Used to time the 30-minute prewarm.
-  function nextRelevantKickoff() {
-    const relevant = (MATCHES || []).filter((m) =>
-      (channel && m.channelId && m.channelId === channel.id) ||
-      (match && m.id === match.id)
-    );
-    return relevant
-      .map((m) => parseKickoff(m.kickoffUtc))
-      .filter((ms) => !isNaN(ms))
-      .sort((a, b) => a - b)
-      .find((ms) => ms > Date.now() - PREWARM_TAIL_MS);
-  }
-
-  // Does the channel currently being watched actually have a live stream ready?
-  // The worker only serves a playable page when a mirror verifies live, so this
-  // doubles as the "is the smoothest feed available yet" check.
-  async function activeChannelHasStream() {
-    try {
-      const key = activePlayer === 1 ? feedKeyOf(channel.embed) : feedKeyOf(vipEmbed());
-      const ch = (channel && channel.id) || "";
-      const res = await fetch(`/wk/albaplayer/${key}/?ch=${encodeURIComponent(ch)}`, { cache: "no-store" });
-      if (!res.ok) return false;
-      return htmlHasPlayableEmbed(await res.text());
-    } catch (e) {
-      return false;
-    }
-  }
-
-  // From kickoff − 30 min, poll until the stream is live, then load + auto-play
-  // the worker's smoothest-ranked mirror. Stops once playing (or after the tail).
-  async function prewarmTick(kickoff) {
-    if (prewarmTimer) { clearTimeout(prewarmTimer); prewarmTimer = null; }
-    if (Date.now() > kickoff + PREWARM_TAIL_MS) return; // window passed
-    const live = await activeChannelHasStream();
-    if (live) {
-      reloadActivePlayer();
-      play();
-    }
-    // Keep polling: even after it starts, a later poll is a no-op if already live.
-    prewarmTimer = setTimeout(() => prewarmTick(kickoff), PREWARM_POLL_MS);
-  }
-
-  // (Re)arm a single timer for the soonest "kickoff − 30 min" still in the future
-  // — scoped to the channel being watched so an unrelated kickoff never interrupts
-  // playback. At that point the prewarm poll takes over.
-  function scheduleAutoReload() {
-    if (reloadTimer) { clearTimeout(reloadTimer); reloadTimer = null; }
-    const now = Date.now();
-    const kickoff = nextRelevantKickoff();
-    if (kickoff == null) return;
-    const prewarmAt = kickoff - RELOAD_LEAD_MS;
-    // Already inside the 30-min window (or just after kickoff): start prewarming now.
-    if (prewarmAt <= now) {
-      if (!prewarmTimer) prewarmTick(kickoff);
-      return;
-    }
-    reloadTimer = setTimeout(() => {
-      prewarmTick(kickoff);
-      scheduleAutoReload();
-    }, Math.min(prewarmAt - now, 0x7fffffff));
-  }
-
-  function initReloadButton() {
-    const host = document.getElementById("player-switch");
-    if (!host || host.querySelector(".js-stream-reload")) return;
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "player-switch-btn js-stream-reload";
-    btn.setAttribute("aria-label", t("watch.reload"));
-    btn.innerHTML =
-      `<svg class="ico reload-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><polyline points="21 4 21 10 15 10"/></svg> ` +
-      `<span data-i18n="watch.reload">${t("watch.reload")}</span>`;
-    btn.addEventListener("click", () => {
-      reloadActivePlayer();
-      btn.classList.add("is-spinning");
-      setTimeout(() => btn.classList.remove("is-spinning"), 700);
-    });
-    host.appendChild(btn);
-  }
-
-  /* ---------------------------------------------- Live-feed auto-recover
-   * There are only two real feeds (vip1/vip2). When a match link carries a wrong
-   * or stale channelId, Player 1 can land on the empty feed → a blackout even
-   * though the live game is on the other feed. The worker serves both players
-   * same-origin, so we can cheaply check which feed actually has a stream and
-   * switch Player 1 to the live one. */
-  function feedKeyOf(embed) {
-    return /vip2/.test((embed && embed.url) || "") ? "vip2" : "vip1";
-  }
-
-  function htmlHasPlayableEmbed(html) {
-    return /AlbaPlayerControl\('([^']+)'/.test(html) ||
-      /\/(?:wk\/stream\.m3u8|wk\/hls|dl\/hls)\?u=/.test(html) ||
-      /\bdata-kz-src=/.test(html) ||
-      /<iframe\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html) ||
-      /<(?:source|video)\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html);
-  }
-
-  async function feedHasStream(vipKey) {
-    try {
-      const res = await fetch(`/wk/albaplayer/${vipKey}/`, { cache: "no-store" });
-      if (!res.ok) return false;
-      return htmlHasPlayableEmbed(await res.text());
-    } catch (e) {
-      return false;
-    }
-  }
-
-  async function ensureLiveFeed() {
-    if (activePlayer !== 1 || !isEmbed || !channel.embed) return;
-    const curKey = feedKeyOf(channel.embed);
-    if (await feedHasStream(curKey)) return; // current feed is fine
-    const otherKey = curKey === "vip1" ? "vip2" : "vip1";
-    if (!(await feedHasStream(otherKey))) return; // neither is live — nothing to do
-    const otherEmbed = window.SITE_DATA && window.SITE_DATA.embedForKey
-      ? window.SITE_DATA.embedForKey(otherKey)
-      : null;
-    if (!otherEmbed) return;
-    channel = { ...channel, embed: otherEmbed };
-    isEmbed = true;
-    loadEmbed(currentEmbedServerIndex(channel.embed));
-    renderServers();
-  }
-
-  document.addEventListener("DOMContentLoaded", async () => {
+  document.addEventListener("DOMContentLoaded", () => {
     initNav();
-    if (shell) savedShellMarkup = shell.innerHTML;
     resolveSelection();
     fillInfo();
-    renderServers();
-    renderVipServers();
     renderSidebar();
-    if (activePlayer === 2) {
-      loadVipEmbed(servIndexFromParam(vipEmbed(), params.get("serv")));
-    }
-    if (activePlayer === 1) {
-      if (isEmbed) loadEmbed(currentEmbedServerIndex(channel.embed));
-      else {
-        loadStream(channel.stream);
-        overlay.addEventListener("click", play);
-      }
-    }
-    initPlayerSwitch();
+    loadPlayer();
     initReloadButton();
-    ensureLiveFeed().catch(() => {});
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
-    setInterval(recheckVisibleServers, 120 * 1000);
   });
 })();

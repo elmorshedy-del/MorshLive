@@ -60,7 +60,14 @@ const EXTRA_CHANNEL_STREAMS = {};
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
 // needs to be edited every time worldkoora rotates its CDN host.
 const ALLOWED_STREAM_HOST =
-  /(^|\.)((heinzromanigi|teworld|smarop|golatooa)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+)$/i;
+  /(^|\.)((heinzromanigi|teworld|smarop|golatooa|554564\.sbs)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+|1\.554564\.sbs)$/i;
+
+// Last-known-good streams per VIP slot/serv when upstream HTML is blank or stale.
+const LAST_KNOWN_VIP_STREAMS = {
+  vip1: {
+    3: [{ source: "https://1.554564.sbs/hls/1/stream.m3u8", player: "clappr" }],
+  },
+};
 
 const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
 .aplr-fxd-bnr,#aplr-fixedban,
@@ -187,10 +194,26 @@ function hlsProxyUrl(target, origin, sig, basePath) {
 
 function resolveStreamUrl(relative, base) {
   try {
-    return new URL(relative, base).toString();
+    const abs = new URL(relative, base);
+    const baseUrl = new URL(base);
+    // dlhd (and similar) sign only the master URL — child playlists inherit its ?md5… params.
+    if (baseUrl.search && !abs.search) {
+      for (const [key, value] of baseUrl.searchParams.entries()) {
+        abs.searchParams.set(key, value);
+      }
+    }
+    return abs.toString();
   } catch {
     return relative;
   }
+}
+
+function manifestIsStale(text) {
+  const dates = [...String(text || "").matchAll(/#EXT-X-PROGRAM-DATE-TIME:([^\n]+)/gi)]
+    .map((m) => Date.parse(m[1]))
+    .filter((ms) => !Number.isNaN(ms));
+  if (!dates.length) return false;
+  return Date.now() - Math.max(...dates) > 5 * 60 * 1000;
 }
 
 function isAllowedStreamUrl(url) {
@@ -224,7 +247,6 @@ function segmentContentType(target) {
 // The manifest was fetched from a host we already trusted (signed or allowlisted),
 // so its child variants/segments inherit that trust regardless of their hostname.
 async function rewriteM3u8(body, manifestUrl, origin, secret, basePath) {
-  const base = manifestUrl.replace(/[^/]+$/, "");
   const lines = body.split("\n");
   const rewritten = await Promise.all(
     lines.map(async (line) => {
@@ -238,7 +260,7 @@ async function rewriteM3u8(body, manifestUrl, origin, secret, basePath) {
           return `URI="${hlsProxyUrl(abs, origin, sig, basePath)}"`;
         });
       }
-      const abs = resolveStreamUrl(trimmed, base || manifestUrl);
+      const abs = resolveStreamUrl(trimmed, manifestUrl);
       if (!shouldProxyStream(abs, origin)) return trimmed;
       const sig = await signTarget(abs, secret);
       return hlsProxyUrl(abs, origin, sig, basePath);
@@ -356,23 +378,25 @@ async function streamProbe(source, kind, request) {
     if (!res.ok) return { ok: false };
     const text = await res.text();
     if (!text.trimStart().startsWith("#EXTM3U")) return { ok: false };
+    if (manifestIsStale(text)) return { ok: false };
 
     let mediaManifestUrl = source;
     let mediaText = text;
     if (/#EXT-X-STREAM-INF/i.test(text)) {
       const variant = firstMediaLine(text);
       if (!variant) return { ok: false };
-      const variantUrl = new URL(variant, source).toString();
+      const variantUrl = resolveStreamUrl(variant, source);
       const vres = await fetch(variantUrl, { headers, redirect: "follow" });
       if (!vres.ok) return { ok: false };
       mediaText = await vres.text();
       if (!mediaText.trimStart().startsWith("#EXTM3U")) return { ok: false };
+      if (manifestIsStale(mediaText)) return { ok: false };
       mediaManifestUrl = variantUrl;
     }
 
     const seg = firstMediaLine(mediaText);
     if (!seg) return { ok: false };
-    const segUrl = new URL(seg, mediaManifestUrl).toString();
+    const segUrl = resolveStreamUrl(seg, mediaManifestUrl);
     let segBytesOk = true;
     if (!isHlsUrl(segUrl)) {
       const sres = await fetch(segUrl, { headers: { ...headers, Range: "bytes=0-2047" }, redirect: "follow" });
@@ -392,16 +416,32 @@ async function streamProbe(source, kind, request) {
     }
 
     const ms = Date.now() - started;
-    // Smoothness score: primarily round-trip latency of the whole walk. A tiny
-    // penalty for streams that list very few segments (less buffer) and for an
-    // unusually large target duration (coarser, jumpier live edge).
     const segCount = (mediaText.match(/#EXTINF/gi) || []).length;
     const targetDur = parseTargetDuration(mediaText) || 6;
     const bufferPenalty = segCount >= 3 ? 0 : 400;
     const targetPenalty = targetDur > 8 ? (targetDur - 8) * 50 : 0;
     return { ok: true, ms, score: ms + bufferPenalty + targetPenalty };
   } catch {
-    return { ok: false };
+    // fall through to soft manifest check
+  }
+  if (await manifestLooksLive(source, kind, request)) {
+    return { ok: true, ms: 9999, score: 9000 };
+  }
+  return { ok: false };
+}
+
+async function manifestLooksLive(source, kind, request) {
+  try {
+    const res = await fetch(source, { headers: streamFetchHeaders(kind, request), redirect: "follow" });
+    if (!res.ok) return false;
+    const text = await res.text();
+    return (
+      text.trimStart().startsWith("#EXTM3U") &&
+      /#EXT(?:INF|-X-STREAM-INF)/i.test(text) &&
+      !manifestIsStale(text)
+    );
+  } catch {
+    return false;
   }
 }
 
@@ -461,10 +501,28 @@ async function resolveNestedIframesInHtml(html, origin, secret, request) {
   );
 }
 
+function fixTwitchEmbedParents(html, origin) {
+  const host = (() => {
+    try {
+      return new URL(origin).hostname;
+    } catch {
+      return "korazero.com";
+    }
+  })();
+  return String(html || "").replace(
+    /(player\.twitch\.tv\/\?[^"'<>]*?)parent=[^&"'<>]+/gi,
+    `$1parent=${host}`
+  ).replace(
+    /(https:\/\/player\.twitch\.tv\/[^"'<>]*?)parent=[^&"'<>]+/gi,
+    `$1parent=${host}`
+  );
+}
+
 async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
   let out = stripBlockedScripts(html);
   out = await resolveNestedIframesInHtml(out, origin, secret, request);
   out = await rewriteStreamUrlsInHtml(out, origin, secret);
+  out = fixTwitchEmbedParents(out, origin);
   const headOpen = /<head[^>]*>/i;
   if (headOpen.test(out)) {
     out = out.replace(headOpen, (m) => m + EMBED_SHIM);
@@ -648,9 +706,16 @@ async function resolveVipSlotStream(request, slot) {
     if (!page.html) continue;
     if (firstHtml == null) firstHtml = page.html;
     const resolved = await resolvePlayableSourceFromHtml(page.html, request, 0, new Set());
-    if (!resolved || seenSources.has(resolved.source)) continue;
-    seenSources.add(resolved.source);
-    resolvedList.push({ ...resolved, serv });
+    if (resolved && !seenSources.has(resolved.source)) {
+      seenSources.add(resolved.source);
+      resolvedList.push({ ...resolved, serv });
+    }
+    const known = (LAST_KNOWN_VIP_STREAMS[slot] && LAST_KNOWN_VIP_STREAMS[slot][serv]) || [];
+    for (const item of known) {
+      if (!item?.source || seenSources.has(item.source)) continue;
+      seenSources.add(item.source);
+      resolvedList.push({ source: item.source, player: item.player || "clappr", serv });
+    }
   }
   const probed = await Promise.all(
     resolvedList.map(async (r) => ({ r, p: await streamProbe(r.source, "wk", request) }))
@@ -739,11 +804,14 @@ async function proxyVip(request, slot, env) {
         },
       });
     }
-    // Last resort: nothing resolved live (e.g. slot is 403/blank this game).
-    // Serve the preroll-stripped upstream page so any client-side player still
-    // has a chance, rather than a hard error.
-    if (firstHtml) {
-      return new Response(await cleanWorldkooraHtml(firstHtml, slot, origin, secret, request), {
+    // Last resort: no verified HLS — serve stripped upstream (often Twitch on serv=1).
+    let fallbackHtml = firstHtml;
+    if (!fallbackHtml || !/player\.twitch\.tv/i.test(fallbackHtml)) {
+      const twitchPage = await fetchVipServerHtml(request, slot, 1);
+      if (twitchPage.html && /player\.twitch\.tv/i.test(twitchPage.html)) fallbackHtml = twitchPage.html;
+    }
+    if (fallbackHtml) {
+      return new Response(await cleanWorldkooraHtml(fallbackHtml, slot, origin, secret, request), {
         status: 200,
         headers: htmlHeaders,
       });
