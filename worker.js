@@ -343,6 +343,43 @@ async function resolveLastKnownVipStream(html, slot, origin, secret, request) {
   return html;
 }
 
+function stripExistingPlayerControls(html) {
+  return String(html || "")
+    .replace(/AlbaPlayerControl\('[^']*','[^']*'\)/g, "")
+    .replace(/<script\b[^>]*>[\s\S]*?AlbaPlayerControl[\s\S]*?<\/script>/gi, "");
+}
+
+async function healDeadVipStream(html, slot, origin, secret, request) {
+  const candidates = extractHlsCandidates(html);
+  if (candidates.length && (await hlsManifestIsLive(candidates[0].source, request))) return html;
+
+  const currentServ = Number(new URL(request.url).searchParams.get("serv") || 1);
+  for (const serv of [3, 2, 1]) {
+    if (serv === currentServ) continue;
+    const fallbackSources = [];
+    const pageHtml = await fetchPlayerHtml(`${WORLDKOORA}/albaplayer/${slot}/?serv=${serv}`, request);
+    if (pageHtml) {
+      const resolved = await resolvePlayableSourceFromHtml(pageHtml, request);
+      if (resolved?.source) fallbackSources.push(resolved);
+    }
+    const known = (LAST_KNOWN_VIP_STREAMS[slot] && LAST_KNOWN_VIP_STREAMS[slot][serv]) || [];
+    fallbackSources.push(...known);
+
+    for (const item of fallbackSources) {
+      if (!item?.source || !isHlsUrl(item.source)) continue;
+      if (!(await hlsManifestIsLive(item.source, request))) continue;
+      return injectPlayerScript(
+        stripExistingPlayerControls(html),
+        item.source,
+        item.player || "clappr",
+        origin,
+        secret
+      );
+    }
+  }
+  return html;
+}
+
 async function rewriteStreamUrlsInHtml(html, origin, secret) {
   let out = await asyncReplaceAll(
     html,
@@ -402,6 +439,7 @@ async function resolveNestedIframesInHtml(html, origin, secret, request) {
 async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
   let out = stripBlockedScripts(html);
   out = await resolveNestedIframesInHtml(out, origin, secret, request);
+  out = await healDeadVipStream(out, slot, origin, secret, request);
   out = await resolveLastKnownVipStream(out, slot, origin, secret, request);
   out = await rewriteStreamUrlsInHtml(out, origin, secret);
   const headOpen = /<head[^>]*>/i;

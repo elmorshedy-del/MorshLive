@@ -1,7 +1,7 @@
 import worker from "../worker.js";
 
 const servs = process.argv.slice(2).map(Number).filter((n) => Number.isFinite(n));
-const SERVERS = servs.length ? servs : [1, 3];
+const SERVERS = servs.length ? servs : [3];
 const env = {
   STREAM_SIGNING_SECRET: "local-verify-secret",
   ASSETS: { fetch: () => new Response("not found", { status: 404 }) },

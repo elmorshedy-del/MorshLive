@@ -518,14 +518,18 @@
   }
 
   function htmlHasPlayableEmbed(html) {
-    return /AlbaPlayerControl\('([^']+)'/.test(html) ||
-      /<iframe\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html) ||
-      /<(?:source|video)\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html);
+    return /AlbaPlayerControl\('([^']+)'/.test(html);
   }
 
-  async function feedHasStream(vipKey) {
+  function defaultServIndex(embed) {
+    return servIndexFromParam(embed, null);
+  }
+
+  async function feedHasStream(vipKey, embed) {
+    const servStart = (embed && embed.servStart != null ? embed.servStart : 1);
+    const serv = servStart + defaultServIndex(embed);
     try {
-      const res = await fetch(`/wk/albaplayer/${vipKey}/`, { cache: "no-store" });
+      const res = await fetch(`/wk/albaplayer/${vipKey}/?serv=${serv}`, { cache: "no-store" });
       if (!res.ok) return false;
       return htmlHasPlayableEmbed(await res.text());
     } catch (e) {
@@ -536,13 +540,12 @@
   async function ensureLiveFeed() {
     if (activePlayer !== 1 || !isEmbed || !channel.embed) return;
     const curKey = feedKeyOf(channel.embed);
-    if (await feedHasStream(curKey)) return; // current feed is fine
+    if (await feedHasStream(curKey, channel.embed)) return;
     const otherKey = curKey === "vip1" ? "vip2" : "vip1";
-    if (!(await feedHasStream(otherKey))) return; // neither is live — nothing to do
     const otherEmbed = window.SITE_DATA && window.SITE_DATA.embedForKey
       ? window.SITE_DATA.embedForKey(otherKey)
       : null;
-    if (!otherEmbed) return;
+    if (!otherEmbed || !(await feedHasStream(otherKey, otherEmbed))) return;
     channel = { ...channel, embed: otherEmbed };
     isEmbed = true;
     loadEmbed(currentEmbedServerIndex(channel.embed));
