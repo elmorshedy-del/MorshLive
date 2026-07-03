@@ -19,7 +19,7 @@
 // ones contain direct HLS, nested iframes, or blank/preroll-only loaders.
 // Same-origin /wk/ proxy (worker.js) serves worldkoora vip pages without preroll ads.
 const EMBEDS = {
-  vip1: { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 3, defaultServer: 0 },
+  vip1: { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 3, defaultServer: 2 },
   vip2: { url: "/wk/albaplayer/vip2/", param: "serv", servStart: 1, servers: 3, defaultServer: 0 },
 };
 
@@ -50,7 +50,7 @@ const BINDING_DOC = window.KZ_CHANNEL_BINDINGS || {
     "bein-max-2": "vip2",
     "bein-max-3": "vip2",
     "bein-max-4": "vip1",
-    "bein-sports-1": "vip2",
+    "bein-sports-1": "vip1",
     "bein-sports-2": "vip1",
   },
 };
