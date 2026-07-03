@@ -32,15 +32,29 @@ const DLHD_BASE = "https://dlhd.pk";
 const DL_EMBED_RE = /^\/dl\/(\d{1,6})\/?$/;  // /dl/{channelId} -> clean player page
 const DL_HLS_RE = /^\/dl\/hls$/i;            // signed HLS proxy for dlhd streams
 
-// Stable, identity-fixed dlhd ids for the fixed beIN Sports Arabic channels.
-// These are 24/7 mirrors of the SAME channel, added to the mirror pool as a
-// resilient backup so a fully-dead worldkoora slot doesn't take the stream off.
-const DLHD_CHANNEL_IDS = {
-  "bein-sports-1": 91,
-  "bein-sports-2": 92,
-  "bein-sports-3": 93,
-  "bein-sports-4": 94,
+// Stable dlhd.pk 24/7 channel ids, keyed by our channel id. Each entry is an
+// ordered list of dlhd stream-{id}.php sources to probe — first live mirror wins
+// a slot in the VIP mirror pool. Sourced from dlhd.pk/24-7-channels.php (2026-07).
+//
+// Arabic beIN MAX 1–4 do NOT exist as separate dlhd entries. dlhd only lists
+// "beIN SPORTS MAX AR" (597). When 597's CDN is down, MAX pages fall back to the
+// matching beIN Sports Arabic 24/7 feed (91–95) so the channel still has stable
+// Arabic sports backup. worldkoora vip1/vip2 remain primary for live MAX matches.
+const DLHD_CHANNEL_MIRROR_IDS = {
+  "bein-sports-1": [91],  // beIN Sports 1 Arabic
+  "bein-sports-2": [92],
+  "bein-sports-3": [93],  // often 500 on CDN — skipped when dead
+  "bein-sports-4": [94],
+  "bein-max-1": [597, 91], // MAX AR → Sports 1 Arabic fallback
+  "bein-max-2": [597, 92],
+  "bein-max-3": [597, 94], // skip dead 93; Sports 4 Arabic fallback
+  "bein-max-4": [597, 95], // Sports 5 Arabic fallback
 };
+
+// Primary dlhd id per channel (first mirror). Used for HEAD /dl/{id} shortcuts.
+const DLHD_CHANNEL_IDS = Object.fromEntries(
+  Object.entries(DLHD_CHANNEL_MIRROR_IDS).map(([ch, ids]) => [ch, ids[0]])
+);
 
 // Extra same-channel HLS mirrors from other public sources (e.g. kooracitty),
 // keyed by our channel id. Each entry is a direct HLS/master URL. They join the
@@ -808,18 +822,23 @@ async function resolveVipSlotStream(request, slot) {
   return { candidates, firstHtml };
 }
 
-// Resolve the stable dlhd mirror for a fixed beIN Sports channel (same channel,
-// 24/7). Used only as a lower-priority backup in the mirror pool. Signed for the
-// /dl/hls proxy because the dlhd CDN rejects the worldkoora Referer/Origin.
-async function resolveDlChannelMirror(channelId, origin, secret, request) {
-  const id = DLHD_CHANNEL_IDS[channelId];
-  if (!id) return null;
-  const m3u8 = await resolveDlStream(id);
-  if (!m3u8 || !isHlsUrl(m3u8)) return null;
-  const probe = await streamProbe(m3u8, "dl", request);
-  if (!probe.ok) return null;
-  const sig = await signTarget(m3u8, secret);
-  return { url: hlsProxyUrl(m3u8, origin, sig, "/dl/hls"), score: probe.score };
+// Resolve all configured dlhd mirrors for a channel (ordered). Each verified-live
+// mirror joins the VIP pool. Signed for /dl/hls (dlhd CDN rejects wk Referer).
+async function resolveDlChannelMirrors(channelId, origin, secret, request) {
+  const ids = DLHD_CHANNEL_MIRROR_IDS[channelId];
+  if (!ids || !ids.length) return [];
+  const out = [];
+  const seen = new Set();
+  for (const id of ids) {
+    const m3u8 = await resolveDlStream(id);
+    if (!m3u8 || !isHlsUrl(m3u8) || seen.has(m3u8)) continue;
+    const probe = await streamProbe(m3u8, "dl", request);
+    if (!probe.ok) continue;
+    seen.add(m3u8);
+    const sig = await signTarget(m3u8, secret);
+    out.push({ url: hlsProxyUrl(m3u8, origin, sig, "/dl/hls"), score: probe.score, dlhdId: id });
+  }
+  return out;
 }
 
 // Resolve any configured extra same-channel mirrors (e.g. kooracitty), verified
@@ -867,8 +886,7 @@ async function proxyVip(request, slot, env) {
       const sig = await signTarget(c.source, secret);
       pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: c.score });
     }
-    const dlMirror = await resolveDlChannelMirror(channelId, origin, secret, request);
-    if (dlMirror) pool.push(dlMirror);
+    for (const dlMirror of await resolveDlChannelMirrors(channelId, origin, secret, request)) pool.push(dlMirror);
     for (const extra of await resolveExtraChannelMirrors(channelId, origin, secret, request)) pool.push(extra);
 
     pool.sort((a, b) => a.score - b.score);
