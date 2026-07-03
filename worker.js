@@ -580,7 +580,7 @@ async function resolveNestedIframesInHtml(html, origin, secret, request) {
   );
 }
 
-function fixTwitchEmbedParents(html, origin) {
+function twitchParentDomains(origin) {
   const host = (() => {
     try {
       return new URL(origin).hostname;
@@ -588,13 +588,113 @@ function fixTwitchEmbedParents(html, origin) {
       return "korazero.com";
     }
   })();
-  return String(html || "").replace(
-    /(player\.twitch\.tv\/\?[^"'<>]*?)parent=[^&"'<>]+/gi,
-    `$1parent=${host}`
-  ).replace(
-    /(https:\/\/player\.twitch\.tv\/[^"'<>]*?)parent=[^&"'<>]+/gi,
-    `$1parent=${host}`
-  );
+  const parents = [host];
+  if (host !== "localhost") parents.push("localhost");
+  return parents;
+}
+
+function extractTwitchChannel(html) {
+  const s = String(html || "");
+  const m =
+    s.match(/player\.twitch\.tv\/\?[^"'<>]*?(?:^|[?&])channel=([^&"'<>\s]+)/i) ||
+    s.match(/player\.twitch\.tv\/[^"'<>]*?[?&]channel=([^&"'<>\s]+)/i) ||
+    s.match(/twitch\.tv\/([a-zA-Z0-9_]+)(?:[/"'\s>]|$)/i);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
+function fixTwitchEmbedParents(html, origin) {
+  const host = twitchParentDomains(origin)[0];
+  return String(html || "")
+    .replace(/(player\.twitch\.tv\/\?[^"'<>]*?)parent=[^&"'<>]+/gi, `$1parent=${host}`)
+    .replace(/(https:\/\/player\.twitch\.tv\/[^"'<>]*?)parent=[^&"'<>]+/gi, `$1parent=${host}`);
+}
+
+// Twitch embed with explicit quality buttons (Twitch.Player getQualities/setQuality).
+function cleanTwitchPlayerHtml(channel, origin) {
+  const parents = twitchParentDomains(origin);
+  const ch = String(channel || "").replace(/[^a-zA-Z0-9_]/g, "");
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KoraZero</title>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif}
+#kz-twitch-wrap{position:relative;width:100vw;height:100vh}
+#kz-twitch{width:100%;height:100%}
+#kz-quality{
+  position:absolute;left:12px;bottom:12px;z-index:20;display:flex;flex-wrap:wrap;gap:6px;
+  max-width:calc(100% - 24px);padding:6px 8px;border-radius:8px;
+  background:rgba(0,0,0,.72);backdrop-filter:blur(4px);
+}
+#kz-quality button{
+  border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;
+  font-size:12px;line-height:1;padding:7px 10px;border-radius:6px;cursor:pointer;
+}
+#kz-quality button:hover{background:rgba(255,255,255,.18)}
+#kz-quality button.active{border-color:#9147ff;background:rgba(145,71,255,.35)}
+#kz-quality:empty{display:none}
+</style>
+<script src="https://player.twitch.tv/js/embed/v1.js"></script>
+</head><body>
+<div id="kz-twitch-wrap">
+  <div id="kz-twitch"></div>
+  <div id="kz-quality" aria-label="جودة البث"></div>
+</div>
+<script>
+(function(){
+  var channel=${JSON.stringify(ch)};
+  var parents=${JSON.stringify(parents)};
+  var bar=document.getElementById('kz-quality');
+  var player=new Twitch.Player('kz-twitch',{
+    width:'100%',height:'100%',channel:channel,parent:parents,muted:false,autoplay:true
+  });
+  var labels={chunked:'Source',high:'1080p',medium:'720p',low:'480p',mobile:'360p'};
+  function qId(q){ return typeof q==='string' ? q : (q.group||q.name||''); }
+  function qLabel(q){
+    if(typeof q==='string') return labels[q]||q;
+    return q.name||labels[q.group]||q.group||'';
+  }
+  function rank(id){
+    if(!id||id==='auto') return 99;
+    if(/chunked|source|1080/i.test(id)) return 0;
+    if(/720/i.test(id)) return 1;
+    if(/480|medium|high/i.test(id)) return 2;
+    if(/360|low/i.test(id)) return 3;
+    if(/160|mobile/i.test(id)) return 4;
+    return 5;
+  }
+  function render(){
+    var raw=player.getQualities()||[];
+    if(!raw.length) return;
+    var seen={}, items=[];
+    raw.forEach(function(q){
+      var id=qId(q); if(!id||seen[id]) return;
+      seen[id]=1; items.push({id:id,label:qLabel(q)});
+    });
+    items.sort(function(a,b){ return rank(a.id)-rank(b.id); });
+    if(items.length<2) return;
+    var cur=player.getQuality();
+    bar.innerHTML='';
+    items.forEach(function(it){
+      var btn=document.createElement('button');
+      btn.type='button';
+      btn.textContent=it.label;
+      btn.dataset.quality=it.id;
+      if(it.id===cur) btn.className='active';
+      btn.addEventListener('click',function(){
+        try{ player.setQuality(it.id); }catch(e){}
+        render();
+      });
+      bar.appendChild(btn);
+    });
+  }
+  player.addEventListener(Twitch.Player.PLAYING,function(){ render(); });
+  player.addEventListener(Twitch.Player.READY,function(){
+    setTimeout(render,1500);
+    setInterval(render,8000);
+  });
+})();
+</script>
+</body></html>`;
 }
 
 async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
@@ -892,9 +992,16 @@ async function proxyVip(request, slot, env) {
       if (twitchPage.html && /player\.twitch\.tv/i.test(twitchPage.html)) fallbackHtml = twitchPage.html;
     }
     if (fallbackHtml) {
-      return new Response(await cleanWorldkooraHtml(fallbackHtml, slot, origin, secret, request), {
+      const twitchChannel = extractTwitchChannel(fallbackHtml);
+      const body = twitchChannel
+        ? cleanTwitchPlayerHtml(twitchChannel, origin)
+        : await cleanWorldkooraHtml(fallbackHtml, slot, origin, secret, request);
+      return new Response(body, {
         status: 200,
-        headers: htmlHeaders,
+        headers: {
+          ...htmlHeaders,
+          ...(twitchChannel ? { "X-KZ-Player": "twitch" } : {}),
+        },
       });
     }
     return new Response("Upstream unavailable", { status: 502 });

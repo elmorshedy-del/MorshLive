@@ -60,6 +60,14 @@ const WATCH_URL =
           paused: video.paused,
         };
       }
+      const qualityBar = document.querySelector("#kz-quality");
+      if (qualityBar) {
+        return {
+          kind: "twitch-api",
+          qualityButtons: qualityBar.querySelectorAll("button").length,
+          hasPlayer: !!document.querySelector("#kz-twitch"),
+        };
+      }
       const twitch = document.querySelector('iframe[src*="twitch"]');
       if (twitch) {
         return { kind: "twitch", src: twitch.src };
@@ -69,6 +77,15 @@ const WATCH_URL =
     console.log(`probe ${i + 1}:`, state);
     if (state?.kind === "video" && state.readyState >= 2 && (state.currentTime > 0 || !state.paused)) {
       playable = true;
+      break;
+    }
+    if (state?.kind === "twitch-api" && state.hasPlayer) {
+      playable = true;
+      if (state.qualityButtons < 2) {
+        console.warn("Twitch quality bar has fewer than 2 options (stream may be source-only)");
+      } else {
+        console.log("Twitch quality choices:", state.qualityButtons);
+      }
       break;
     }
     if (state?.kind === "twitch" && /parent=korazero\.com/i.test(state.src || "")) {
