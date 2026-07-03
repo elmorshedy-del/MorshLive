@@ -144,7 +144,6 @@
         if (overlay) overlay.addEventListener("click", play);
       }
       renderServers();
-      ensureLiveFeed().catch(() => {});
     } else {
       loadVipEmbed(servIndexFromParam(vipEmbed(), params.get("serv")));
     }
@@ -421,22 +420,14 @@
       }
     }
     scheduleAutoReload();
-    ensureLiveFeed().catch(() => {});
   }
 
-  /* ---------------------------------------------- Stream reload
-   * The worldkoora source sometimes parks on a static frame while a match is
-   * live. A fresh load of the active player recovers it, so we expose a manual
-   * "reload" control AND auto-reload 15 minutes before each kickoff so the
-   * stream is primed by the time the game starts. */
-  const RELOAD_LEAD_MS = 15 * 60 * 1000;
-  let reloadTimer = null;
-
+  /* ---------------------------------------------- Stream reload (manual only) */
   function parseKickoff(ts) {
     if (ts == null || ts === "") return NaN;
-    if (typeof ts === "number") return ts;            // already epoch millis
+    if (typeof ts === "number") return ts;
     const text = String(ts).trim();
-    if (/^\d+$/.test(text)) return Number(text);      // epoch millis as a string
+    if (/^\d+$/.test(text)) return Number(text);
     const norm = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2})?$/.test(text) ? `${text}Z` : text;
     return Date.parse(norm);
   }
@@ -453,7 +444,6 @@
     if (activePlayer === 1) {
       if (isEmbed) {
         loadEmbed(activeServerIndex());
-        ensureLiveFeed().catch(() => {});
       } else {
         // Reload the server the user actually has selected, not the default.
         const activeBtn = document.querySelector("#servers .server-btn.active");
@@ -466,27 +456,8 @@
     }
   }
 
-  // (Re)arm a single timer for the soonest "kickoff − 15 min" still in the
-  // future — but only for matches on the channel currently being watched (or the
-  // selected match), so an unrelated channel's kickoff never interrupts playback.
   function scheduleAutoReload() {
-    if (reloadTimer) { clearTimeout(reloadTimer); reloadTimer = null; }
-    const now = Date.now();
-    const relevant = (MATCHES || []).filter((m) =>
-      (channel && m.channelId && m.channelId === channel.id) ||
-      (match && m.id === match.id)
-    );
-    const next = relevant
-      .map((m) => parseKickoff(m.kickoffUtc))
-      .filter((ms) => !isNaN(ms))
-      .map((ms) => ms - RELOAD_LEAD_MS)
-      .filter((ts) => ts > now + 1000)
-      .sort((a, b) => a - b)[0];
-    if (next == null) return;
-    reloadTimer = setTimeout(() => {
-      reloadActivePlayer();
-      scheduleAutoReload();
-    }, Math.min(next - now, 0x7fffffff));
+    // Disabled — auto-reload was switching بث mid-stream without user action.
   }
 
   function initReloadButton() {
@@ -505,48 +476,6 @@
       setTimeout(() => btn.classList.remove("is-spinning"), 700);
     });
     host.appendChild(btn);
-  }
-
-  /* ---------------------------------------------- Live-feed auto-recover
-   * There are only two real feeds (vip1/vip2). When a match link carries a wrong
-   * or stale channelId, Player 1 can land on the empty feed → a blackout even
-   * though the live game is on the other feed. The worker serves both players
-   * same-origin, so we can cheaply check which feed actually has a stream and
-   * switch Player 1 to the live one. */
-  function feedKeyOf(embed) {
-    return /vip2/.test((embed && embed.url) || "") ? "vip2" : "vip1";
-  }
-
-  function htmlHasPlayableEmbed(html) {
-    return /AlbaPlayerControl\('([^']+)'/.test(html) ||
-      /<iframe\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html) ||
-      /<(?:source|video)\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html);
-  }
-
-  async function feedHasStream(vipKey) {
-    try {
-      const res = await fetch(`/wk/albaplayer/${vipKey}/`, { cache: "no-store" });
-      if (!res.ok) return false;
-      return htmlHasPlayableEmbed(await res.text());
-    } catch (e) {
-      return false;
-    }
-  }
-
-  async function ensureLiveFeed() {
-    if (activePlayer !== 1 || !isEmbed || !channel.embed) return;
-    const curKey = feedKeyOf(channel.embed);
-    if (await feedHasStream(curKey)) return; // current feed is fine
-    const otherKey = curKey === "vip1" ? "vip2" : "vip1";
-    if (!(await feedHasStream(otherKey))) return; // neither is live — nothing to do
-    const otherEmbed = window.SITE_DATA && window.SITE_DATA.embedForKey
-      ? window.SITE_DATA.embedForKey(otherKey)
-      : null;
-    if (!otherEmbed) return;
-    channel = { ...channel, embed: otherEmbed };
-    isEmbed = true;
-    loadEmbed(currentEmbedServerIndex(channel.embed));
-    renderServers();
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -569,7 +498,6 @@
     }
     initPlayerSwitch();
     initReloadButton();
-    ensureLiveFeed().catch(() => {});
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(recheckVisibleServers, 120 * 1000);
