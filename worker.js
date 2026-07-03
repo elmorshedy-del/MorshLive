@@ -81,17 +81,20 @@ const ALLOWED_STREAM_HOST =
   /(^|\.)((heinzromanigi|teworld|smarop|golatooa|554564\.sbs|futeure\.space)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+|1\.554564\.sbs|mev\.futeure\.space)$/i;
 
 // Last-known-good streams per VIP slot/serv when upstream HTML is blank or stale.
+// Do NOT pin promo-loop slates here (e.g. egcity1 yallakora redirect loops).
 const LAST_KNOWN_VIP_STREAMS = {
   vip1: {
-    1: [{ source: "https://mev.futeure.space/egcity1.m3u8", player: "clappr" }],
     3: [{ source: "https://1.554564.sbs/hls/1/stream.m3u8", player: "clappr" }],
   },
 };
 
+// Upstream promo/rehearsal slates — never serve these even if the manifest parses.
+const BLOCKED_STREAM_PATTERNS = [/egcity1\.m3u8/i];
+
 // Last-known-good Twitch channels per VIP slot (serv=1 embed). Upstream often
 // drops the Twitch iframe; this cache keeps playback on the stable Twitch feed.
 const LAST_KNOWN_TWITCH_CHANNELS = {
-  vip1: "mamam991",
+  vip1: "majed20267",
   vip2: "mamam991",
 };
 
@@ -304,6 +307,10 @@ async function rewriteM3u8(body, manifestUrl, origin, secret, basePath) {
 
 function isHlsUrl(url) {
   return /^https?:\/\/[^\s"'<>`]+\.m3u8(?:[?#][^\s"'<>`]*)?$/i.test(url || "");
+}
+
+function isBlockedStreamUrl(url) {
+  return BLOCKED_STREAM_PATTERNS.some((re) => re.test(String(url || "")));
 }
 
 function uniqueItems(items) {
@@ -789,8 +796,24 @@ async function resolveTwitchChannel(request, slot, htmlHints) {
       return ch;
     }
   }
-  for (let serv = 1; serv <= VIP_SERVER_COUNT; serv++) {
+  // Twitch embeds usually sit on serv=3 — check that first.
+  for (const serv of [3, 2, 1]) {
     const page = await fetchVipServerHtml(request, slot, serv);
+    const ch = page.html && extractTwitchChannel(page.html);
+    if (ch) {
+      LAST_KNOWN_TWITCH_CHANNELS[slot] = ch;
+      return ch;
+    }
+  }
+  return LAST_KNOWN_TWITCH_CHANNELS[slot] || null;
+}
+
+// Parallel upstream Twitch lookup (~2s) — always refresh before serving cached channel.
+async function resolveTwitchChannelQuick(request, slot) {
+  const pages = await Promise.all(
+    [3, 2, 1].map((serv) => fetchVipServerHtml(request, slot, serv))
+  );
+  for (const page of pages) {
     const ch = page.html && extractTwitchChannel(page.html);
     if (ch) {
       LAST_KNOWN_TWITCH_CHANNELS[slot] = ch;
@@ -1148,13 +1171,13 @@ async function resolveVipSlotStream(request, slot) {
     if (!page.html) continue;
     if (firstHtml == null) firstHtml = page.html;
     const resolved = await resolvePlayableSourceFromHtml(page.html, request, 0, new Set());
-    if (resolved && !seenSources.has(resolved.source)) {
+    if (resolved && !seenSources.has(resolved.source) && !isBlockedStreamUrl(resolved.source)) {
       seenSources.add(resolved.source);
       resolvedList.push({ ...resolved, serv });
     }
     const known = (LAST_KNOWN_VIP_STREAMS[slot] && LAST_KNOWN_VIP_STREAMS[slot][serv]) || [];
     for (const item of known) {
-      if (!item?.source || seenSources.has(item.source)) continue;
+      if (!item?.source || seenSources.has(item.source) || isBlockedStreamUrl(item.source)) continue;
       seenSources.add(item.source);
       resolvedList.push({ source: item.source, player: item.player || "clappr", serv, cached: true });
     }
@@ -1220,7 +1243,7 @@ function cachedHlsForSlot(slot, serv) {
   for (const s of vipServerOrder(serv)) {
     const known = (LAST_KNOWN_VIP_STREAMS[slot] && LAST_KNOWN_VIP_STREAMS[slot][s]) || [];
     for (const item of known) {
-      if (!item?.source || seen.has(item.source)) continue;
+      if (!item?.source || seen.has(item.source) || isBlockedStreamUrl(item.source)) continue;
       seen.add(item.source);
       out.push(item);
     }
@@ -1228,9 +1251,18 @@ function cachedHlsForSlot(slot, serv) {
   return out;
 }
 
+async function filterLiveCachedHls(slot, serv, request) {
+  const live = [];
+  for (const item of cachedHlsForSlot(slot, serv)) {
+    if (await hlsManifestIsLive(item.source, request)) live.push(item);
+  }
+  return live;
+}
+
 async function buildProxiedPool(candidates, dlMirrors, extras, origin, secret) {
   const pool = [];
   for (const c of candidates || []) {
+    if (isBlockedStreamUrl(c.source)) continue;
     const sig = await signTarget(c.source, secret);
     pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: c.score ?? 9999 });
   }
@@ -1264,26 +1296,37 @@ async function proxyVip(request, slot, env) {
 
   try {
     const serv = Number(incoming.searchParams.get("serv") || 1);
+
+    // Always refresh Twitch from upstream (serv=3 first) — cached mamam991 was a yallakora promo trap.
+    let twitchChannel = await resolveTwitchChannelQuick(request, slot);
+
+    // Fast path: live Twitch + verified-live HLS and/or dlhd backup — never blind promo slates.
+    const [liveCached, dlQuick] = await Promise.all([
+      filterLiveCachedHls(slot, serv, request),
+      channelId && DLHD_CHANNEL_MIRROR_IDS[channelId]
+        ? Promise.all(
+            DLHD_CHANNEL_MIRROR_IDS[channelId].map((id) => resolveDlMirror(id, origin, secret, request))
+          )
+        : Promise.resolve([]),
+    ]);
+    const dlMirrorsQuick = (dlQuick || []).filter(Boolean);
+    const hlsCandidates = liveCached.map((item) => ({ ...item, score: 400 }));
+    const proxiedQuick = await buildProxiedPool(hlsCandidates, dlMirrorsQuick, [], origin, secret);
+
+    if (twitchChannel && proxiedQuick.length) {
+      return dualPlayerResponse(proxiedQuick, twitchChannel, origin, htmlHeaders, {
+        "X-KZ-Mirrors": String(proxiedQuick.length),
+        "X-KZ-Fast": "1",
+        "X-KZ-Serv": String(serv),
+        "X-KZ-Twitch-Channel": twitchChannel,
+      });
+    }
+    if (twitchChannel) {
+      return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
+    }
+
     const twitchCached = LAST_KNOWN_TWITCH_CHANNELS[slot] || null;
     const knownHls = cachedHlsForSlot(slot, serv);
-
-    // Instant path: cached Twitch + last-known HLS (Egypt / beIN MAX) — no upstream probes.
-    if (twitchCached && knownHls.length) {
-      const proxied = await buildProxiedPool(
-        knownHls.map((item) => ({ ...item, score: 400 })),
-        [],
-        [],
-        origin,
-        secret
-      );
-      if (proxied.length) {
-        return dualPlayerResponse(proxied, twitchCached, origin, htmlHeaders, {
-          "X-KZ-Mirrors": String(proxied.length),
-          "X-KZ-Fast": "1",
-          "X-KZ-Serv": String(serv),
-        });
-      }
-    }
 
     const resolveWork = Promise.all([
       resolveVipSlotStream(request, slot),
@@ -1302,7 +1345,6 @@ async function proxyVip(request, slot, env) {
     let firstHtml = null;
     let dlMirrors = [];
     let extras = [];
-    let twitchChannel = twitchCached;
 
     if (timed) {
       const vip = timed[0] || {};
