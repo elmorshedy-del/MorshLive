@@ -165,10 +165,11 @@ function stripBlockedScripts(html) {
   });
 }
 
-function hlsProxyUrl(target, origin, sig, basePath) {
+function hlsProxyUrl(target, origin, sig, basePath, ref) {
   const path = basePath || "/wk/stream.m3u8";
   const signature = sig ? `&sig=${encodeURIComponent(sig)}` : "";
-  return `${origin}${path}?u=${encodeURIComponent(target)}${signature}`;
+  const refParam = ref ? `&ref=${encodeURIComponent(ref)}` : "";
+  return `${origin}${path}?u=${encodeURIComponent(target)}${signature}${refParam}`;
 }
 
 function resolveStreamUrl(relative, base) {
@@ -209,7 +210,7 @@ function segmentContentType(target) {
 // Rewrite every stream URL a manifest references into a signed /wk proxy URL.
 // The manifest was fetched from a host we already trusted (signed or allowlisted),
 // so its child variants/segments inherit that trust regardless of their hostname.
-async function rewriteM3u8(body, manifestUrl, origin, secret, basePath) {
+async function rewriteM3u8(body, manifestUrl, origin, secret, basePath, ref) {
   const base = manifestUrl.replace(/[^/]+$/, "");
   const lines = body.split("\n");
   const rewritten = await Promise.all(
@@ -221,13 +222,13 @@ async function rewriteM3u8(body, manifestUrl, origin, secret, basePath) {
           const abs = resolveStreamUrl(m[1], manifestUrl);
           if (!shouldProxyStream(abs, origin)) return m[0];
           const sig = await signTarget(abs, secret);
-          return `URI="${hlsProxyUrl(abs, origin, sig, basePath)}"`;
+          return `URI="${hlsProxyUrl(abs, origin, sig, basePath, ref)}"`;
         });
       }
       const abs = resolveStreamUrl(trimmed, base || manifestUrl);
       if (!shouldProxyStream(abs, origin)) return trimmed;
       const sig = await signTarget(abs, secret);
-      return hlsProxyUrl(abs, origin, sig, basePath);
+      return hlsProxyUrl(abs, origin, sig, basePath, ref);
     })
   );
   return rewritten.join("\n");
@@ -835,6 +836,337 @@ async function proxyDlHls(request, env) {
   }
 }
 
+/* ----------------------------------------------- yallak0ra per-match AlbaPlayer
+ * Match pages on yallak0ra.com / koraalive.net expose the same AlbaPlayer stack
+ * as worldkoora (AlbaPlayerControl base64 m3u8 + nested /albaplayer/ iframes on
+ * yalla-sh.com). Resolve + liveness-check at request time; pool serv=1..N. */
+const YALLA_EMBED_RE = /^\/yk\/embed\/?$/i;
+const YALLA_HLS_RE = /^\/yk\/hls$/i;
+const YALLA_SERVER_COUNT = 7;
+const YALLA_ALLOWED_HOST = /(^|\.)((yallak0ra\.com|koraalive\.net)|yalla-sh\.com)$/i;
+const YALLA_INDEX_URLS = ["https://www.yallak0ra.com/", "https://www.yallak0ra.com/matches-today/"];
+const YALLA_ACTIVE_STATUS = /^(live|started|gools)/i;
+
+function parseYallaMatchBlocks(html) {
+  const blocks = [];
+  for (const block of String(html || "").split(/(?=<div class="AY_Match )/).slice(1)) {
+    const status = ((block.match(/AY_Match (\S+)/) || [])[1] || "").replace(/">$/, "").trim();
+    const names = [...block.matchAll(/class="TM_Name">\s*([^<]+)/g)].map((m) => m[1].trim());
+    const link =
+      (block.match(/<a href="([^"]+)"[^>]*title="تفاصيل/) || [])[1] ||
+      (block.match(/<a href="([^"]+)"[^>]*><div class='MT_Mask'/) || [])[1] ||
+      "";
+    if (names.length >= 2 && link) blocks.push({ status, names, link });
+  }
+  return blocks;
+}
+
+function teamSlug(name) {
+  return String(name || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
+function yallaLinkMatchesTeams(link, home, away) {
+  if (!home && !away) return false;
+  const slug = String(link || "").toLowerCase();
+  const hs = teamSlug(home);
+  const as = teamSlug(away);
+  return (hs && slug.includes(hs)) || (as && slug.includes(as));
+}
+
+async function discoverYallaPage(request, hints = {}) {
+  const { home, away, page } = hints;
+  if (page && isYallaAllowedUrl(page)) return page;
+
+  for (const url of YALLA_INDEX_URLS) {
+    const html = await fetchYallaHtml(url, request);
+    if (!html) continue;
+    const blocks = parseYallaMatchBlocks(html);
+
+    for (const card of blocks) {
+      if (YALLA_ACTIVE_STATUS.test(card.status) && isYallaAllowedUrl(card.link)) return card.link;
+    }
+
+    if (home || away) {
+      for (const card of blocks) {
+        if (yallaLinkMatchesTeams(card.link, home, away) && isYallaAllowedUrl(card.link)) return card.link;
+      }
+    }
+
+    // Extra time: yallak0ra may flip to finished while the stream is still up on koraalive.
+    for (const card of blocks) {
+      if (/^finished/i.test(card.status) && /koraalive\.net/i.test(card.link)) return card.link;
+    }
+  }
+  return null;
+}
+
+function isYallaAllowedUrl(target) {
+  try {
+    return YALLA_ALLOWED_HOST.test(new URL(target).hostname);
+  } catch {
+    return false;
+  }
+}
+
+function yallaRefererFor(url) {
+  try {
+    const u = new URL(url);
+    if (/\/albaplayer/i.test(u.pathname)) return u.toString();
+    return `${u.origin}/`;
+  } catch {
+    return "https://www.yallak0ra.com/";
+  }
+}
+
+async function fetchYallaHtml(url, request) {
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "text/html,application/xhtml+xml",
+        Referer: yallaRefererFor(url),
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    return res.text();
+  } catch {
+    return null;
+  }
+}
+
+function extractYallaPlayerUrls(html) {
+  const urls = [];
+  const text = String(html || "");
+  for (const m of text.matchAll(/<iframe\b[^>]*\bsrc=(["'])(https?:\/\/[^"']+)\1[^>]*>/gi)) {
+    if (/\/albaplayer\//i.test(m[2]) && isYallaAllowedUrl(m[2])) urls.push(m[2]);
+  }
+  for (const m of text.matchAll(/href=(["'])(https?:\/\/[^"']+\/albaplayer\/[^"']+)\1/gi)) {
+    if (isYallaAllowedUrl(m[2])) urls.push(m[2]);
+  }
+  return uniqueItems(urls);
+}
+
+function albaplayerBaseUrl(url) {
+  try {
+    const u = new URL(url);
+    u.search = "";
+    return u.toString();
+  } catch {
+    return url;
+  }
+}
+
+function yallaServerOrder(requestedServ) {
+  const order = [];
+  const req = Number(requestedServ);
+  if (Number.isFinite(req) && req >= 1 && req <= YALLA_SERVER_COUNT) order.push(req);
+  for (let s = 1; s <= YALLA_SERVER_COUNT; s++) if (!order.includes(s)) order.push(s);
+  return order;
+}
+
+async function resolveYallaFromHtml(html, request, refererUrl, depth = 0, seen = new Set()) {
+  for (const candidate of extractHlsCandidates(html)) return candidate;
+  if (depth >= 3) return null;
+  for (const iframeUrl of extractYallaPlayerUrls(html)) {
+    if (seen.has(iframeUrl)) continue;
+    seen.add(iframeUrl);
+    const nestedHtml = await fetchYallaHtml(iframeUrl, request);
+    if (!nestedHtml) continue;
+    const nested = await resolveYallaFromHtml(nestedHtml, request, iframeUrl, depth + 1, seen);
+    if (nested) return nested;
+  }
+  return null;
+}
+
+async function streamYallaLive(source, refererUrl, request) {
+  const headers = {
+    "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+    Accept: "*/*",
+    Referer: yallaRefererFor(refererUrl || source),
+  };
+  try {
+    const res = await fetch(source, { headers, redirect: "follow" });
+    if (!res.ok) return false;
+    const text = await res.text();
+    return text.trimStart().startsWith("#EXTM3U");
+  } catch {
+    return false;
+  }
+}
+
+async function streamYallaResolvable(source, refererUrl, request) {
+  if (await streamYallaLive(source, refererUrl, request)) return true;
+  return streamManifestLive(source, "wk", request);
+}
+
+async function resolveYallaMatchStreams(request, pageUrl, requestedServ) {
+  const html = await fetchYallaHtml(pageUrl, request);
+  if (!html) return { candidates: [], firstHtml: null };
+  const firstHtml = html;
+  const candidates = [];
+  const seenSources = new Set();
+
+  const direct = await resolveYallaFromHtml(html, request, pageUrl, 0, new Set());
+  if (direct && !seenSources.has(direct.source) && (await streamYallaResolvable(direct.source, pageUrl, request))) {
+    seenSources.add(direct.source);
+    candidates.push({ ...direct, serv: requestedServ || 1, refUrl: pageUrl });
+  }
+
+  const playerBases = uniqueItems(extractYallaPlayerUrls(html).map(albaplayerBaseUrl));
+  for (const base of playerBases) {
+    for (const serv of yallaServerOrder(requestedServ)) {
+      const playerUrl = `${base}?serv=${serv}`;
+      const playerHtml = await fetchYallaHtml(playerUrl, request);
+      if (!playerHtml) continue;
+      const resolved = await resolveYallaFromHtml(playerHtml, request, playerUrl, 0, new Set());
+      if (!resolved || seenSources.has(resolved.source)) continue;
+      if (!(await streamYallaResolvable(resolved.source, playerUrl, request))) continue;
+      seenSources.add(resolved.source);
+      candidates.push({ ...resolved, serv, refUrl: playerUrl });
+    }
+  }
+
+  return { candidates, firstHtml };
+}
+
+async function proxyYallaEmbed(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const autoLive = incoming.searchParams.get("auto") === "live";
+  let pageUrl = incoming.searchParams.get("page") || "";
+  const teamHome = incoming.searchParams.get("home") || "";
+  const teamAway = incoming.searchParams.get("away") || "";
+  const requestedServ = Number(incoming.searchParams.get("serv") || 1);
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store",
+    "X-KZ-Proxy": "yalla-embed",
+  };
+
+  if (autoLive) {
+    const discovered = await discoverYallaPage(request, {
+      home: teamHome,
+      away: teamAway,
+      page: pageUrl,
+    });
+    if (discovered) pageUrl = discovered;
+  }
+  if (!pageUrl || !isYallaAllowedUrl(pageUrl)) {
+    return new Response("No live yalla stream found", { status: 404, headers: htmlHeaders });
+  }
+  if (isHead) {
+    return new Response(null, {
+      status: 200,
+      headers: { ...htmlHeaders, "X-KZ-Yalla-Page": pageUrl },
+    });
+  }
+
+  try {
+    const peek = await fetchYallaHtml(pageUrl, request);
+    if (peek && /player\.twitch\.tv/i.test(peek)) {
+      return new Response(fixTwitchEmbedParents(await cleanWorldkooraHtml(peek, "yk", origin, secret, request), request), {
+        status: 200,
+        headers: htmlHeaders,
+      });
+    }
+
+    const { candidates, firstHtml } = await resolveYallaMatchStreams(request, pageUrl, requestedServ);
+    const ranked = (candidates || []).slice().sort((a, b) => {
+      if (a.serv === requestedServ && b.serv !== requestedServ) return -1;
+      if (b.serv === requestedServ && a.serv !== requestedServ) return 1;
+      return 0;
+    });
+    const proxied = [];
+    for (const c of ranked) {
+      const sig = await signTarget(c.source, secret);
+      proxied.push(hlsProxyUrl(c.source, origin, sig, "/yk/hls", c.refUrl || pageUrl));
+    }
+
+    if (proxied.length) {
+      return new Response(cleanHlsPlayerHtml(proxied, "يلا كورة"), {
+        status: 200,
+        headers: {
+          ...htmlHeaders,
+          "X-KZ-Yalla-Page": pageUrl,
+          "X-KZ-Serv": String((ranked[0] && ranked[0].serv) || ""),
+          "X-KZ-Mirrors": String(proxied.length),
+        },
+      });
+    }
+
+    if (firstHtml) {
+      return new Response(await cleanWorldkooraHtml(firstHtml, "yk", origin, secret, request), {
+        status: 200,
+        headers: { ...htmlHeaders, "X-KZ-Yalla-Page": pageUrl },
+      });
+    }
+    return new Response("Upstream unavailable", { status: 502 });
+  } catch {
+    return new Response("Upstream unavailable", { status: 502 });
+  }
+}
+
+async function proxyYallaHls(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const target = incoming.searchParams.get("u");
+  const sig = incoming.searchParams.get("sig");
+  const ref = incoming.searchParams.get("ref") || "";
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const trusted = target && ((await verifyTarget(target, sig, secret)) || isAllowedStreamUrl(target));
+  if (!trusted) {
+    return new Response("Forbidden stream host", { status: 403 });
+  }
+  const referer = yallaRefererFor(ref || target);
+  const isHead = request.method === "HEAD";
+  try {
+    const res = await fetch(target, {
+      method: request.method,
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "*/*",
+        Referer: referer,
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) {
+      return new Response(isHead ? null : `Upstream error ${res.status}`, { status: res.status });
+    }
+    const type = (res.headers.get("Content-Type") || "").toLowerCase();
+    const isManifest = type.includes("mpegurl") || type.includes("m3u8") || /\.m3u8(?:\?|$)/i.test(target);
+    if (isManifest) {
+      const manifestHeaders = {
+        "Content-Type": "application/vnd.apple.mpegurl",
+        "Cache-Control": "no-store",
+        "Access-Control-Allow-Origin": "*",
+        "X-KZ-Proxy": "yalla-manifest",
+      };
+      if (isHead) return new Response(null, { status: 200, headers: manifestHeaders });
+      const text = await res.text();
+      const rewritten = await rewriteM3u8(text, target, origin, secret, "/yk/hls", ref);
+      return new Response(rewritten, { status: 200, headers: manifestHeaders });
+    }
+    const headers = {
+      "Content-Type": segmentContentType(target) || res.headers.get("Content-Type") || "application/octet-stream",
+      "Cache-Control": "public, max-age=30",
+      "Access-Control-Allow-Origin": "*",
+      "X-KZ-Proxy": "yalla-segment",
+    };
+    return new Response(isHead ? null : res.body, { status: res.status, headers });
+  } catch {
+    return new Response(isHead ? null : "Upstream unavailable", { status: 502 });
+  }
+}
+
 /* ----------------------------------------------- sir / siiir tv (foozlive) 24/7
  * EXPERIMENTAL second source (تجريبي). Same isolated, signed-proxy pattern as the
  * dlhd flow above. The upstream player (912acsss8af382.shootny.com/playerv5.php)
@@ -1286,6 +1618,23 @@ export default {
         });
       }
       return proxySirHls(request, env);
+    }
+    if (YALLA_EMBED_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxyYallaEmbed(request, env);
+    }
+    if (YALLA_HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
+      if (method === "OPTIONS") {
+        return new Response(null, {
+          status: 204,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Max-Age": "86400",
+          },
+        });
+      }
+      return proxyYallaHls(request, env);
     }
     return env.ASSETS.fetch(request);
   },

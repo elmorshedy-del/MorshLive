@@ -21,12 +21,17 @@
 const EMBEDS = {
   vip1: { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 3, defaultServer: 0 },
   vip2: { url: "/wk/albaplayer/vip2/", param: "serv", servStart: 1, servers: 3, defaultServer: 0 },
+  yalla: { url: "/yk/embed/", param: "serv", servStart: 1, servers: 7, defaultServer: 0 },
 };
 
 function embedUrlFor(embed, serverIndex) {
   if (!embed || !embed.url) return "";
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(embed.url, base);
+  if (embed.auto) u.searchParams.set("auto", embed.auto);
+  if (embed.page) u.searchParams.set("page", embed.page);
+  if (embed.home) u.searchParams.set("home", embed.home);
+  if (embed.away) u.searchParams.set("away", embed.away);
   if (embed.param != null) {
     const start = embed.servStart != null ? embed.servStart : 0;
     u.searchParams.set(embed.param, start + serverIndex);
@@ -113,8 +118,26 @@ function resolveWatchSelection(matches, channels, searchParams) {
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
   const embedKey = (match && match.embedKey) || embedKeyFor(chId);
-  const channelWithEmbed = { ...channel, embed: { ...embedForKey(embedKey), channelId: chId } };
-  return { channel: channelWithEmbed, match, embedKey };
+  // Live fixtures: worker scrapes yallak0ra at request time (?auto=live) so Portugal
+  // vs Croatia (or whatever is live now) is found without waiting for today.json refresh.
+  const yallaEmbed =
+    match && match.status === "live"
+      ? {
+          ...EMBEDS.yalla,
+          auto: "live",
+          page: match.yallaPage || undefined,
+          home: match.home,
+          away: match.away,
+          channelId: chId,
+        }
+      : match && match.yallaPage
+        ? { ...EMBEDS.yalla, page: match.yallaPage, home: match.home, away: match.away, channelId: chId }
+        : null;
+  const channelWithEmbed = {
+    ...channel,
+    embed: yallaEmbed || { ...embedForKey(embedKey), channelId: chId },
+  };
+  return { channel: channelWithEmbed, match, embedKey: yallaEmbed ? "yalla" : embedKey };
 }
 
 // Expose for non-module scripts.

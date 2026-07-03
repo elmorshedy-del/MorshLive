@@ -24,6 +24,7 @@ const {
   pinEndedChannels,
 } = require("./commentators-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
+const { YALLA_INDEX_URLS, mergeYallaCards, attachYallaPages } = require("./yallak0ra-lib");
 
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
 
@@ -154,6 +155,16 @@ async function fetchEspnLeague(slug, dateRange) {
     if (row.channelId) m.channelId = row.channelId;
   }
 
+  let yallaAttached = 0;
+  try {
+    const pages = await Promise.all(
+      YALLA_INDEX_URLS.map((url) => getText(url).catch(() => ""))
+    );
+    yallaAttached = attachYallaPages(matches, mergeYallaCards(pages));
+  } catch (err) {
+    console.warn("yallak0ra fetch failed:", err.message);
+  }
+
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   writeBindingsJs();
   const snapshot = writeLiveSnapshot(matches);
@@ -174,7 +185,7 @@ async function fetchEspnLeague(slug, dateRange) {
     )
   );
   console.log(
-    `Wrote ${matches.length} matches (${commentaryMatched} with commentators) -> ${path.relative(process.cwd(), OUT)}`
+    `Wrote ${matches.length} matches (${commentaryMatched} with commentators, ${yallaAttached} with yalla streams) -> ${path.relative(process.cwd(), OUT)}`
   );
   console.log(
     `Live snapshot: ${snapshot.liveCount} live, ${snapshot.conflicts.length} conflict(s) -> assets/data/live-snapshot.json`
