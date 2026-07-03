@@ -843,6 +843,89 @@ function cleanHlsPlayerHtml(sources, title) {
 </body></html>`;
 }
 
+// HLS (dlhd / worldkoora) primary + Twitch side-by-side — both always on.
+function cleanDualPlayerHtml(hlsSources, twitchChannel, origin) {
+  const list = Array.isArray(hlsSources) ? hlsSources.filter(Boolean) : [hlsSources].filter(Boolean);
+  const parents = twitchParentDomains(origin);
+  const ch = String(twitchChannel || "").replace(/[^a-zA-Z0-9_]/g, "");
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KoraZero</title>
+<style>
+html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:system-ui,sans-serif}
+.kz-dual{display:flex;flex-direction:row;width:100vw;height:100vh}
+.kz-hls{flex:3;min-width:0;position:relative;background:#000}
+.kz-hls video{width:100%;height:100%;object-fit:contain;background:#000}
+.kz-twitch-side{flex:1;min-width:0;position:relative;background:#000;border-inline-start:1px solid rgba(255,255,255,.12)}
+#kz-twitch{width:100%;height:100%}
+.kz-label{position:absolute;top:8px;right:8px;z-index:10;font-size:11px;padding:4px 8px;border-radius:4px;background:rgba(0,0,0,.65);color:#fff;pointer-events:none}
+#kz-quality{position:absolute;left:8px;bottom:8px;z-index:20;display:flex;flex-wrap:wrap;gap:4px;max-width:calc(100% - 16px);padding:4px 6px;border-radius:6px;background:rgba(0,0,0,.72)}
+#kz-quality button{border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.08);color:#fff;font-size:10px;padding:5px 7px;border-radius:4px;cursor:pointer}
+#kz-quality button.active{border-color:#9147ff;background:rgba(145,71,255,.35)}
+#kz-quality:empty{display:none}
+@media(max-width:900px){.kz-dual{flex-direction:column}.kz-hls{flex:3}.kz-twitch-side{flex:2;border-inline-start:0;border-top:1px solid rgba(255,255,255,.12)}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+<script src="https://player.twitch.tv/js/embed/v1.js"></script>
+</head><body>
+<div class="kz-dual">
+  <div class="kz-hls"><span class="kz-label">بث مباشر</span><video id="v" controls autoplay muted playsinline></video></div>
+  <div class="kz-twitch-side"><span class="kz-label">Twitch</span><div id="kz-twitch"></div><div id="kz-quality" aria-label="جودة البث"></div></div>
+</div>
+<script>
+(function(){
+  var sources=${JSON.stringify(list)}, i=0, hls=null, tries=0, v=document.getElementById('v');
+  function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
+  function nextHls(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*3) setTimeout(loadHls,800); }
+  function loadHls(){
+    var src=sources[i]; if(!src) return;
+    destroy();
+    if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; v.addEventListener('error',nextHls,{once:true}); }
+    else if(window.Hls&&window.Hls.isSupported()){
+      hls=new Hls({maxBufferLength:30,liveSyncDurationCount:3,manifestLoadingMaxRetry:4,levelLoadingMaxRetry:4,fragLoadingMaxRetry:4});
+      hls.loadSource(src); hls.attachMedia(v);
+      hls.on(Hls.Events.ERROR,function(_e,d){ if(!d||!d.fatal) return; if(d.type==='mediaError'){ try{hls.recoverMediaError();return;}catch(e){} } nextHls(); });
+    } else { v.src=src; }
+    var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+  }
+  loadHls();
+  var channel=${JSON.stringify(ch)}, parents=${JSON.stringify(parents)}, bar=document.getElementById('kz-quality');
+  var player=new Twitch.Player('kz-twitch',{width:'100%',height:'100%',channel:channel,parent:parents,muted:false,autoplay:true});
+  var labels={chunked:'Source',high:'1080p',medium:'720p',low:'480p',mobile:'360p'};
+  function qId(q){ return typeof q==='string'?q:(q.group||q.name||''); }
+  function qLabel(q){ return typeof q==='string'?(labels[q]||q):(q.name||labels[q.group]||q.group||''); }
+  function render(){
+    var raw=player.getQualities()||[]; if(!raw.length) return;
+    var seen={},items=[]; raw.forEach(function(q){ var id=qId(q); if(!id||seen[id]) return; seen[id]=1; items.push({id:id,label:qLabel(q)}); });
+    if(items.length<2) return;
+    var cur=player.getQuality(); bar.innerHTML='';
+    items.forEach(function(it){ var btn=document.createElement('button'); btn.type='button'; btn.textContent=it.label;
+      if(it.id===cur) btn.className='active'; btn.addEventListener('click',function(){ try{player.setQuality(it.id);}catch(e){} render(); }); bar.appendChild(btn); });
+  }
+  var wasPlaying=false,lastPlayingAt=0,lastNudgeAt=0;
+  function nudgePlay(){ try{player.play();}catch(e){} }
+  player.addEventListener(Twitch.Player.PLAYING,function(){ wasPlaying=true; lastPlayingAt=Date.now(); render(); });
+  player.addEventListener(Twitch.Player.READY,function(){ setTimeout(render,1500); });
+  player.addEventListener(Twitch.Player.PLAYBACK_BLOCKED,function(){ setTimeout(nudgePlay,800); });
+  player.addEventListener(Twitch.Player.ONLINE,function(){ setTimeout(nudgePlay,500); });
+  document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') setTimeout(nudgePlay,300); });
+})();
+</script>
+</body></html>`;
+}
+
+function dualPlayerResponse(hlsSources, twitchChannel, origin, htmlHeaders, meta) {
+  return new Response(cleanDualPlayerHtml(hlsSources, twitchChannel, origin), {
+    status: 200,
+    headers: {
+      ...htmlHeaders,
+      "X-KZ-Player": "dual",
+      "X-KZ-Twitch-Channel": twitchChannel,
+      ...(meta || {}),
+    },
+  });
+}
+
 async function proxyHls(request, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
@@ -1041,34 +1124,33 @@ async function proxyVip(request, slot, env) {
   }
 
   try {
-    // Cached Twitch channel → always serve it. No HLS probe, no mirror flip-flop.
-    const cachedTwitch = LAST_KNOWN_TWITCH_CHANNELS[slot];
-    if (cachedTwitch) {
-      return twitchPlayerResponse(cachedTwitch, origin, htmlHeaders);
-    }
-
     const { candidates, firstHtml } = await resolveVipSlotStream(request, slot);
-    const twitchChannel = await resolveTwitchChannel(request, slot, [firstHtml]);
-    if (twitchChannel) {
-      return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
-    }
+    const twitchChannel =
+      LAST_KNOWN_TWITCH_CHANNELS[slot] || (await resolveTwitchChannel(request, slot, [firstHtml]));
 
-    // HLS only when Twitch channel is completely unknown (no cache, no upstream).
-    const hasWkHls = !!(candidates && candidates.length);
+    // Always probe HLS mirrors (worldkoora + dlhd 24/7) so the beIN feed stays
+    // constant next to Twitch — never one-or-the-other flip-flop.
     const pool = [];
     for (const c of candidates || []) {
       const sig = await signTarget(c.source, secret);
       pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: c.score });
     }
-    if (hasWkHls) {
-      for (const dlMirror of await resolveDlChannelMirrors(channelId, origin, secret, request)) pool.push(dlMirror);
-    }
+    for (const dlMirror of await resolveDlChannelMirrors(channelId, origin, secret, request)) pool.push(dlMirror);
     for (const extra of await resolveExtraChannelMirrors(channelId, origin, secret, request)) pool.push(extra);
 
     pool.sort((a, b) => a.score - b.score);
     const proxied = [];
     for (const m of pool) if (!proxied.includes(m.url)) proxied.push(m.url);
 
+    if (twitchChannel && proxied.length) {
+      return dualPlayerResponse(proxied, twitchChannel, origin, htmlHeaders, {
+        "X-KZ-Mirrors": String(proxied.length),
+        "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
+      });
+    }
+    if (twitchChannel) {
+      return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
+    }
     if (proxied.length) {
       return new Response(cleanHlsPlayerHtml(proxied, `${slot} بث`), {
         status: 200,

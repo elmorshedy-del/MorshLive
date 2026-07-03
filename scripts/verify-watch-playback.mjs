@@ -51,13 +51,14 @@ const WATCH_URL =
   for (let i = 0; i < 15; i++) {
     await page.waitForTimeout(2000);
     const state = await frame.evaluate(() => {
-      const video = document.querySelector("video");
+      const video = document.querySelector("video#v");
       if (video) {
         return {
           kind: "video",
           readyState: video.readyState,
           currentTime: video.currentTime,
           paused: video.paused,
+          dual: !!document.querySelector(".kz-dual"),
         };
       }
       const qualityBar = document.querySelector("#kz-quality");
@@ -75,6 +76,14 @@ const WATCH_URL =
       return null;
     });
     console.log(`probe ${i + 1}:`, state);
+    if (state?.kind === "video" && state.dual) {
+      const twitchSide = await frame.evaluate(() => !!document.querySelector("#kz-twitch"));
+      if (twitchSide) {
+        console.log("Dual player: HLS + Twitch");
+        playable = true;
+        break;
+      }
+    }
     if (state?.kind === "video" && state.readyState >= 2 && (state.currentTime > 0 || !state.paused)) {
       playable = true;
       break;
