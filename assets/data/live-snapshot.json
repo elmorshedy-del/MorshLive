@@ -1,12 +1,12 @@
 {
-  "updatedAt": "2026-06-26T23:40:49.856Z",
-  "bindingVersion": 6,
+  "updatedAt": "2026-07-03T01:32:48.424Z",
+  "bindingVersion": 9,
   "embedBinding": {
-    "bein-max-1": "vip2",
-    "bein-max-2": "vip1",
+    "bein-max-1": "vip1",
+    "bein-max-2": "vip2",
     "bein-max-3": "vip1",
     "bein-max-4": "vip2",
-    "bein-sports-1": "vip2",
+    "bein-sports-1": "vip1",
     "bein-sports-2": "vip1"
   },
   "liveCount": 0,

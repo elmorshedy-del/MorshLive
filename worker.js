@@ -445,6 +445,87 @@ async function manifestLooksLive(source, kind, request) {
   }
 }
 
+}
+
+async function hlsManifestIsLive(source, request) {
+  try {
+    const res = await fetch(source, {
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "application/vnd.apple.mpegurl,*/*",
+        Referer: WORLDKOORA + "/",
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return false;
+    const text = await res.text();
+    return text.trimStart().startsWith("#EXTM3U") && !manifestIsStale(text);
+  } catch {
+    return false;
+  }
+}
+
+function injectPlayerScript(html, source, player, origin, secret) {
+  return signTarget(source, secret).then((sig) => {
+    const proxied = hlsProxyUrl(source, origin, sig);
+    const script = `<script>AlbaPlayerControl('${btoa(proxied)}','${player || "clappr"}')</script>`;
+    const content = /(<div\b[^>]*class=["'][^"']*\baplr-player-content\b[^"']*["'][^>]*>)([\s\S]*?)(<\/div>)/i;
+    if (content.test(html)) {
+      return html.replace(content, (_m, open, _inner, close) => `${open}${script}${close}`);
+    }
+    return html.replace(/<\/body>/i, script + "</body>");
+  });
+}
+
+async function resolveLastKnownVipStream(html, slot, origin, secret, request) {
+  if (extractHlsCandidates(html).length) return html;
+  const serv = Number(new URL(request.url).searchParams.get("serv") || 1);
+  const candidates = (LAST_KNOWN_VIP_STREAMS[slot] && LAST_KNOWN_VIP_STREAMS[slot][serv]) || [];
+  for (const candidate of candidates) {
+    if (isHlsUrl(candidate.source) && await hlsManifestIsLive(candidate.source, request)) {
+      return injectPlayerScript(html, candidate.source, candidate.player, origin, secret);
+    }
+  }
+  return html;
+}
+
+function stripExistingPlayerControls(html) {
+  return String(html || "")
+    .replace(/AlbaPlayerControl\('[^']*','[^']*'\)/g, "")
+    .replace(/<script\b[^>]*>[\s\S]*?AlbaPlayerControl[\s\S]*?<\/script>/gi, "");
+}
+
+async function healDeadVipStream(html, slot, origin, secret, request) {
+  const candidates = extractHlsCandidates(html);
+  if (candidates.length && (await hlsManifestIsLive(candidates[0].source, request))) return html;
+
+  const currentServ = Number(new URL(request.url).searchParams.get("serv") || 1);
+  for (const serv of [3, 2, 1]) {
+    if (serv === currentServ) continue;
+    const fallbackSources = [];
+    const pageHtml = await fetchPlayerHtml(`${WORLDKOORA}/albaplayer/${slot}/?serv=${serv}`, request);
+    if (pageHtml) {
+      const resolved = await resolvePlayableSourceFromHtml(pageHtml, request);
+      if (resolved?.source) fallbackSources.push(resolved);
+    }
+    const known = (LAST_KNOWN_VIP_STREAMS[slot] && LAST_KNOWN_VIP_STREAMS[slot][serv]) || [];
+    fallbackSources.push(...known);
+
+    for (const item of fallbackSources) {
+      if (!item?.source || !isHlsUrl(item.source)) continue;
+      if (!(await hlsManifestIsLive(item.source, request))) continue;
+      return injectPlayerScript(
+        stripExistingPlayerControls(html),
+        item.source,
+        item.player || "clappr",
+        origin,
+        secret
+      );
+    }
+  }
+  return html;
+}
+
 async function rewriteStreamUrlsInHtml(html, origin, secret) {
   let out = await asyncReplaceAll(
     html,
@@ -521,6 +602,8 @@ function fixTwitchEmbedParents(html, origin) {
 async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
   let out = stripBlockedScripts(html);
   out = await resolveNestedIframesInHtml(out, origin, secret, request);
+  out = await healDeadVipStream(out, slot, origin, secret, request);
+  out = await resolveLastKnownVipStream(out, slot, origin, secret, request);
   out = await rewriteStreamUrlsInHtml(out, origin, secret);
   out = fixTwitchEmbedParents(out, origin);
   const headOpen = /<head[^>]*>/i;

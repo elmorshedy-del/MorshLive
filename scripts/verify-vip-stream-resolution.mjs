@@ -3,8 +3,8 @@
 // Exits non-zero if any requested server does not deliver a live #EXTM3U stream.
 import worker from "../worker.js";
 
-const requested = process.argv.slice(2).map(Number).filter((n) => Number.isFinite(n));
-const SERVERS = requested.length ? requested : [1, 2, 3];
+const servs = process.argv.slice(2).map(Number).filter((n) => Number.isFinite(n));
+const SERVERS = servs.length ? servs : [3];
 const SLOT = "vip1";
 const env = {
   STREAM_SIGNING_SECRET: "local-verify-secret",

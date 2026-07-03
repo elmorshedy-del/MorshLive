@@ -1,10 +1,52 @@
 {
-  "date": "2026-06-26",
-  "updatedAt": "2026-06-26T23:40:18.757Z",
-  "source": "thesportsdb",
-  "sourceLabel": "TheSportsDB + ESPN",
+  "date": "2026-07-03",
+  "updatedAt": "2026-07-03T01:32:48.424Z",
+  "source": "espn",
+  "sourceLabel": "ESPN",
   "commentarySource": "almaghrebsport",
   "commentaryIndex": [
+    {
+      "key": "australia~egypt",
+      "home": "Australia",
+      "away": "Egypt",
+      "commentators": [
+        {
+          "name": "علي محمد علي",
+          "channel": "beIN MAX 1"
+        }
+      ],
+      "channel": "beIN MAX 1",
+      "channelId": "bein-max-1",
+      "locked": false
+    },
+    {
+      "key": "argentina~capeverde",
+      "home": "Argentina",
+      "away": "Cape Verde",
+      "commentators": [
+        {
+          "name": "عامر الخوذيري",
+          "channel": "beIN MAX 2"
+        }
+      ],
+      "channel": "beIN MAX 2",
+      "channelId": "bein-max-2",
+      "locked": false
+    },
+    {
+      "key": "colombia~ghana",
+      "home": "Colombia",
+      "away": "Ghana",
+      "commentators": [
+        {
+          "name": "حفيظ دراجي",
+          "channel": "beIN MAX 1"
+        }
+      ],
+      "channel": "beIN MAX 1",
+      "channelId": "bein-max-1",
+      "locked": false
+    },
     {
       "key": "croatia~ghana",
       "home": "Croatia",
@@ -232,71 +274,44 @@
   ],
   "matches": [
     {
-      "id": "e2391772",
+      "id": "espn-fifa.world-760498",
       "status": "upcoming",
       "minute": "",
-      "home": "Cape Verde",
-      "away": "Saudi Arabia",
-      "homeAbbr": "CV",
-      "awayAbbr": "SA",
-      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/5jn0o71593280376.png",
-      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/24xwpq1594125742.png",
+      "home": "Switzerland",
+      "away": "Algeria",
+      "homeAbbr": "SUI",
+      "awayAbbr": "ALG",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/sui.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/alg.png",
       "score": "VS",
-      "time": "19:00",
-      "kickoffUtc": "2026-06-27T00:00:00",
+      "time": "03:00",
+      "kickoffUtc": "2026-07-03T03:00Z",
       "league": "FIFA World Cup",
-      "venue": "NRG Stadium · Houston, TX",
-      "channel": "beIN MAX 3",
-      "channelId": "bein-max-3",
-      "commentator": "علي الكعبي",
-      "source": "thesportsdb+espn",
-      "commentators": [
-        {
-          "name": "علي الكعبي",
-          "channel": "beIN MAX 3"
-        }
-      ]
-    },
-    {
-      "id": "espn-fifa.world-760479",
-      "status": "upcoming",
-      "minute": "",
-      "home": "Uruguay",
-      "away": "Spain",
-      "homeAbbr": "URU",
-      "awayAbbr": "ESP",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/uru.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/esp.png",
-      "score": "VS",
-      "time": "00:00",
-      "kickoffUtc": "2026-06-27T00:00Z",
-      "league": "FIFA World Cup",
-      "venue": "Estadio Akron · Guadalajara · Mexico",
+      "venue": "BC Place · Vancouver · Canada",
       "channel": null,
       "channelId": "bein-sports-1",
       "commentator": null,
       "source": "espn"
     },
     {
-      "id": "e2391773",
+      "id": "espn-fifa.world-760499",
       "status": "upcoming",
       "minute": "",
-      "home": "Egypt",
-      "away": "Iran",
-      "homeAbbr": "E",
-      "awayAbbr": "I",
-      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/uheyzo1742102234.png",
-      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/uttpvw1455465617.png",
+      "home": "Australia",
+      "away": "Egypt",
+      "homeAbbr": "AUS",
+      "awayAbbr": "EGY",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/aus.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/egy.png",
       "score": "VS",
-      "time": "20:00",
-      "kickoffUtc": "2026-06-27T03:00:00",
+      "time": "18:00",
+      "kickoffUtc": "2026-07-03T18:00Z",
       "league": "FIFA World Cup",
-      "venue": "Lumen Field · Seattle, WA",
+      "venue": "AT&T Stadium · Arlington, Texas · USA",
       "channel": "beIN MAX 1",
       "channelId": "bein-max-1",
-      "embedKey": "vip1",
       "commentator": "علي محمد علي",
-      "source": "thesportsdb+espn",
+      "source": "espn",
       "commentators": [
         {
           "name": "علي محمد علي",
@@ -305,47 +320,20 @@
       ]
     },
     {
-      "id": "e2391774",
+      "id": "espn-fifa.world-760500",
       "status": "upcoming",
       "minute": "",
-      "home": "New Zealand",
-      "away": "Belgium",
-      "homeAbbr": "NZ",
-      "awayAbbr": "B",
-      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/91xpk81742982935.png",
-      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/8xlvxv1592062265.png",
+      "home": "Argentina",
+      "away": "Cape Verde",
+      "homeAbbr": "ARG",
+      "awayAbbr": "CPV",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/arg.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/cpv.png",
       "score": "VS",
-      "time": "20:00",
-      "kickoffUtc": "2026-06-27T03:00:00",
+      "time": "22:00",
+      "kickoffUtc": "2026-07-03T22:00Z",
       "league": "FIFA World Cup",
-      "venue": "BC Place · Vancouver, BC",
-      "channel": "beIN MAX 2",
-      "channelId": "bein-max-2",
-      "embedKey": "vip2",
-      "commentator": "عبدالله الغامدي",
-      "source": "thesportsdb+espn",
-      "commentators": [
-        {
-          "name": "عبدالله الغامدي",
-          "channel": "beIN MAX 2"
-        }
-      ]
-    },
-    {
-      "id": "espn-fifa.world-760480",
-      "status": "upcoming",
-      "minute": "",
-      "home": "Croatia",
-      "away": "Ghana",
-      "homeAbbr": "CRO",
-      "awayAbbr": "GHA",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/cro.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/gha.png",
-      "score": "VS",
-      "time": "21:00",
-      "kickoffUtc": "2026-06-27T21:00Z",
-      "league": "FIFA World Cup",
-      "venue": "Lincoln Financial Field · Philadelphia, Pennsylvania · USA",
+      "venue": "Hard Rock Stadium · Miami Gardens, Florida · USA",
       "channel": "beIN MAX 2",
       "channelId": "bein-max-2",
       "commentator": "عامر الخوذيري",
@@ -358,186 +346,110 @@
       ]
     },
     {
-      "id": "espn-fifa.world-760485",
-      "status": "upcoming",
-      "minute": "",
-      "home": "Panama",
-      "away": "England",
-      "homeAbbr": "PAN",
-      "awayAbbr": "ENG",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/pan.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/eng.png",
-      "score": "VS",
-      "time": "21:00",
-      "kickoffUtc": "2026-06-27T21:00Z",
-      "league": "FIFA World Cup",
-      "venue": "MetLife Stadium · East Rutherford, New Jersey · USA",
-      "channel": "beIN MAX 1",
-      "channelId": "bein-max-1",
-      "commentator": "عصام الشوالي",
-      "source": "espn",
-      "commentators": [
-        {
-          "name": "عصام الشوالي",
-          "channel": "beIN MAX 1"
-        }
-      ]
-    },
-    {
-      "id": "espn-fifa.world-760481",
+      "id": "espn-fifa.world-760501",
       "status": "upcoming",
       "minute": "",
       "home": "Colombia",
-      "away": "Portugal",
+      "away": "Ghana",
       "homeAbbr": "COL",
-      "awayAbbr": "POR",
+      "awayAbbr": "GHA",
       "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/col.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/por.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/gha.png",
       "score": "VS",
-      "time": "23:30",
-      "kickoffUtc": "2026-06-27T23:30Z",
-      "league": "FIFA World Cup",
-      "venue": "Hard Rock Stadium · Miami Gardens, Florida · USA",
-      "channel": "beIN MAX 3",
-      "channelId": "bein-max-3",
-      "commentator": "علي الكعبي",
-      "source": "espn",
-      "commentators": [
-        {
-          "name": "علي الكعبي",
-          "channel": "beIN MAX 3"
-        }
-      ]
-    },
-    {
-      "id": "espn-fifa.world-760482",
-      "status": "upcoming",
-      "minute": "",
-      "home": "Congo DR",
-      "away": "Uzbekistan",
-      "homeAbbr": "COD",
-      "awayAbbr": "UZB",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/rdc.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/uzb.png",
-      "score": "VS",
-      "time": "23:30",
-      "kickoffUtc": "2026-06-27T23:30Z",
-      "league": "FIFA World Cup",
-      "venue": "Mercedes-Benz Stadium · Atlanta, Georgia · USA",
-      "channel": "beIN MAX 4",
-      "channelId": "bein-max-4",
-      "commentator": "محمد بركات",
-      "source": "espn",
-      "commentators": [
-        {
-          "name": "محمد بركات",
-          "channel": "beIN MAX 4"
-        }
-      ]
-    },
-    {
-      "id": "espn-fifa.world-760484",
-      "status": "upcoming",
-      "minute": "",
-      "home": "Algeria",
-      "away": "Austria",
-      "homeAbbr": "ALG",
-      "awayAbbr": "AUT",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/alg.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/aut.png",
-      "score": "VS",
-      "time": "02:00",
-      "kickoffUtc": "2026-06-28T02:00Z",
+      "time": "01:30",
+      "kickoffUtc": "2026-07-04T01:30Z",
       "league": "FIFA World Cup",
       "venue": "GEHA Field at Arrowhead Stadium · Kansas City, Missouri · USA",
-      "channel": "beIN MAX 2",
-      "channelId": "bein-max-2",
+      "channel": "beIN MAX 1",
+      "channelId": "bein-max-1",
       "commentator": "حفيظ دراجي",
       "source": "espn",
       "commentators": [
         {
           "name": "حفيظ دراجي",
-          "channel": "beIN MAX 2"
+          "channel": "beIN MAX 1"
         }
       ]
     },
     {
-      "id": "espn-fifa.world-760483",
+      "id": "espn-fifa.world-760502",
       "status": "upcoming",
       "minute": "",
-      "home": "Jordan",
-      "away": "Argentina",
-      "homeAbbr": "JOR",
-      "awayAbbr": "ARG",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/jor.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/arg.png",
+      "home": "Canada",
+      "away": "Morocco",
+      "homeAbbr": "CAN",
+      "awayAbbr": "MAR",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/can.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/mar.png",
       "score": "VS",
-      "time": "02:00",
-      "kickoffUtc": "2026-06-28T02:00Z",
+      "time": "17:00",
+      "kickoffUtc": "2026-07-04T17:00Z",
       "league": "FIFA World Cup",
-      "venue": "AT&T Stadium · Arlington, Texas · USA",
-      "channel": "beIN MAX 1",
-      "channelId": "bein-max-1",
-      "commentator": "حسن العيدروس",
-      "source": "espn",
-      "commentators": [
-        {
-          "name": "حسن العيدروس",
-          "channel": "beIN MAX 1"
-        }
-      ]
+      "venue": "NRG Stadium · Houston, Texas · USA",
+      "channel": null,
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn"
     },
     {
-      "id": "e2391775",
-      "status": "ended",
+      "id": "espn-fifa.world-760503",
+      "status": "upcoming",
       "minute": "",
-      "home": "Norway",
+      "home": "Paraguay",
       "away": "France",
-      "homeAbbr": "N",
-      "awayAbbr": "F",
-      "homeBadge": "https://r2.thesportsdb.com/images/media/team/badge/gyfn811591973155.png",
-      "awayBadge": "https://r2.thesportsdb.com/images/media/team/badge/p3n0z51726166851.png",
-      "score": "1 - 4",
-      "time": "15:00",
-      "kickoffUtc": "2026-06-26T19:00:00",
+      "homeAbbr": "PAR",
+      "awayAbbr": "FRA",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/par.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/fra.png",
+      "score": "VS",
+      "time": "21:00",
+      "kickoffUtc": "2026-07-04T21:00Z",
       "league": "FIFA World Cup",
-      "venue": "Gillette Stadium · Foxborough, MA",
-      "channel": "beIN MAX 2",
-      "channelId": "bein-max-2",
-      "commentator": "أحمد البلوشي",
-      "source": "thesportsdb+espn",
-      "commentators": [
-        {
-          "name": "أحمد البلوشي",
-          "channel": "beIN MAX 2"
-        }
-      ]
+      "venue": "Lincoln Financial Field · Philadelphia, Pennsylvania · USA",
+      "channel": null,
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn"
     },
     {
-      "id": "espn-fifa.world-760474",
+      "id": "espn-fifa.world-760496",
       "status": "ended",
       "minute": "",
-      "home": "Senegal",
-      "away": "Iraq",
-      "homeAbbr": "SEN",
-      "awayAbbr": "IRQ",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/sen.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/irq.png",
-      "score": "5 - 0",
-      "time": "19:00",
-      "kickoffUtc": "2026-06-26T19:00Z",
+      "home": "Portugal",
+      "away": "Croatia",
+      "homeAbbr": "POR",
+      "awayAbbr": "CRO",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/por.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/cro.png",
+      "score": "2 - 1",
+      "time": "23:00",
+      "kickoffUtc": "2026-07-02T23:00Z",
       "league": "FIFA World Cup",
       "venue": "BMO Field · Toronto · Canada",
-      "channel": "beIN MAX 1",
-      "channelId": "bein-max-1",
-      "commentator": "خليل البلوشي",
-      "source": "espn",
-      "commentators": [
-        {
-          "name": "خليل البلوشي",
-          "channel": "beIN MAX 1"
-        }
-      ]
+      "channel": null,
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn"
+    },
+    {
+      "id": "espn-fifa.world-760497",
+      "status": "ended",
+      "minute": "",
+      "home": "Spain",
+      "away": "Austria",
+      "homeAbbr": "ESP",
+      "awayAbbr": "AUT",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/esp.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/aut.png",
+      "score": "3 - 0",
+      "time": "19:00",
+      "kickoffUtc": "2026-07-02T19:00Z",
+      "league": "FIFA World Cup",
+      "venue": "SoFi Stadium · Inglewood, California · USA",
+      "channel": null,
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn"
     }
   ]
 }

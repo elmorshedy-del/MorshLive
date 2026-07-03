@@ -1,6 +1,6 @@
 {
-  "version": 8,
-  "updatedAt": "2026-06-27T03:15:00.000Z",
+  "version": 9,
+  "updatedAt": "2026-07-03T01:35:00.000Z",
   "embedBinding": {
     "bein-max-1": "vip1",
     "bein-max-2": "vip2",
@@ -10,6 +10,21 @@
     "bein-sports-2": "vip1"
   },
   "calibration": [
+    {
+      "date": "2026-07-03T01:35:00.000Z",
+      "issue": "Portugal vs Croatia (beIN Sports 1) showed Twitch or blackout on korazero.",
+      "rootCause": "vip2 slot returns 403 upstream; vip1 serv=1 is Twitch; serv=2 AWS HLS is disabled; live feed is vip1 serv=3 (1.554564.sbs).",
+      "fix": "Route bein-sports-1→vip1; default vip1 to serv=3; worker heals dead serv=2 manifests by probing sibling serv values.",
+      "liveAtTime": [
+        {
+          "match": "Portugal vs Croatia",
+          "channelId": "bein-sports-1",
+          "channel": "beIN Sports 1",
+          "embedKey": "vip1"
+        }
+      ],
+      "userReport": "Find the streaming worldkoora one now for Portugal"
+    },
     {
       "date": "2026-06-27T03:15:00.000Z",
       "issue": "Egypt vs Iran (MAX 1) showed wrong stream at 03:00 UTC; collides with NZ vs Belgium on MAX 2.",
