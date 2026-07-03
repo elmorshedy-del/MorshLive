@@ -708,11 +708,37 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
       bar.appendChild(btn);
     });
   }
-  player.addEventListener(Twitch.Player.PLAYING,function(){ render(); });
-  player.addEventListener(Twitch.Player.READY,function(){
-    setTimeout(render,1500);
-    setInterval(render,8000);
+  // Gentle recovery when Twitch stalls (same as manual pause/play). Conservative
+  // thresholds so we don't fight intentional pauses or touch buffering state.
+  var wasPlaying=false, lastPlayingAt=0, lastNudgeAt=0;
+  function nudgePlay(){
+    try{ player.play(); }catch(e){}
+  }
+  function gentleNudge(){
+    var now=Date.now();
+    if(now-lastNudgeAt<90000) return;
+    if(!wasPlaying||now-lastPlayingAt<45000) return;
+    if(document.visibilityState!=='visible') return;
+    try{
+      if(!player.isPaused()) return;
+      lastNudgeAt=now;
+      player.pause();
+      player.play();
+    }catch(e){}
+  }
+  player.addEventListener(Twitch.Player.PLAYING,function(){
+    wasPlaying=true;
+    lastPlayingAt=Date.now();
+    render();
   });
+  player.addEventListener(Twitch.Player.READY,function(){ setTimeout(render,1500); });
+  player.addEventListener(Twitch.Player.PLAYBACK_BLOCKED,function(){ setTimeout(nudgePlay,800); });
+  player.addEventListener(Twitch.Player.ONLINE,function(){ setTimeout(nudgePlay,500); });
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState!=='visible') return;
+    setTimeout(nudgePlay,300);
+  });
+  setInterval(gentleNudge,20000);
 })();
 </script>
 </body></html>`;
