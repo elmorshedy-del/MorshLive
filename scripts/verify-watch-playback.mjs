@@ -60,6 +60,14 @@ const WATCH_URL =
           paused: video.paused,
         };
       }
+      const qualityBar = document.querySelector("#kz-quality");
+      if (qualityBar) {
+        return {
+          kind: "twitch-api",
+          qualityButtons: qualityBar.querySelectorAll("button").length,
+          hasPlayer: !!document.querySelector("#kz-twitch"),
+        };
+      }
       const twitch = document.querySelector('iframe[src*="twitch"]');
       if (twitch) {
         return { kind: "twitch", src: twitch.src };
@@ -70,6 +78,15 @@ const WATCH_URL =
     if (state?.kind === "video" && state.readyState >= 2 && (state.currentTime > 0 || !state.paused)) {
       playable = true;
       break;
+    }
+    if (state?.kind === "twitch-api" && state.hasPlayer) {
+      if (state.qualityButtons >= 2) {
+        console.log("Twitch quality choices:", state.qualityButtons);
+        playable = true;
+        break;
+      }
+      // Qualities populate after Twitch.Player.PLAYING — keep polling.
+      continue;
     }
     if (state?.kind === "twitch" && /parent=korazero\.com/i.test(state.src || "")) {
       playable = true;
@@ -84,6 +101,6 @@ const WATCH_URL =
   await browser.close();
 
   if (reloadLoop) throw new Error("Iframe reload loop detected");
-  if (!playable) throw new Error("No playable video or Twitch embed detected");
+  if (!playable) throw new Error("No playable video or Twitch embed with quality choices detected");
   console.log("\n✓ Single-player watch page has live content");
 })();
