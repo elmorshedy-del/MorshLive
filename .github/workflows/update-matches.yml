@@ -23,7 +23,8 @@ jobs:
 
       - name: Fetch today's fixtures
         env:
-          SPORTSDB_KEY: ${{ secrets.SPORTSDB_KEY }}   # optional; falls back to free key
+          SPORTSDB_KEY: ${{ secrets.SPORTSDB_KEY }}     # optional; falls back to free key
+          SCOREBAT_TOKEN: ${{ secrets.SCOREBAT_TOKEN }} # optional; enables highlight clips
         run: node scripts/fetch-matches.js
 
       - name: Verify live channel routing

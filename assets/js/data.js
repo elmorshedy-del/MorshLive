@@ -262,6 +262,76 @@ function applyCommentary(matches, idx) {
   });
 }
 
+/* ملخص المباراة (Arabic match summary) + highlight clip — mirrors
+   scripts/highlights-lib.js so ended fixtures get a recap even when served
+   from the live API (which has no summaryAr/highlight field of its own). */
+function parseScoreParts(score) {
+  const m = /^(\d+)\s*-\s*(\d+)$/.exec((score || "").trim());
+  return m ? { home: parseInt(m[1], 10), away: parseInt(m[2], 10) } : null;
+}
+
+function buildArabicSummary(m) {
+  const teamLabel = (n) => (window.TeamNames ? window.TeamNames.arabicFor(n) || n : n);
+  const homeAr = teamLabel(m.home);
+  const awayAr = teamLabel(m.away);
+  const league = m.league || "المباراة";
+  const venue = m.venue ? ` على ملعب ${m.venue}` : "";
+  const parts = parseScoreParts(m.score);
+
+  let text;
+  if (!parts) {
+    text = `انتهت مباراة ${homeAr} و${awayAr} ضمن ${league}${venue}.`;
+  } else if (parts.home === parts.away) {
+    text = `انتهت المباراة بالتعادل بين ${homeAr} و${awayAr} بنتيجة ${parts.home}-${parts.away} ضمن ${league}${venue}.`;
+  } else {
+    const homeWon = parts.home > parts.away;
+    const winnerAr = homeWon ? homeAr : awayAr;
+    const loserAr = homeWon ? awayAr : homeAr;
+    const winnerScore = Math.max(parts.home, parts.away);
+    const loserScore = Math.min(parts.home, parts.away);
+    text = `انتهت المباراة بفوز ${winnerAr} على ${loserAr} بنتيجة ${winnerScore}-${loserScore} ضمن ${league}${venue}.`;
+  }
+  if (m.commentator) text += ` تعليق: ${m.commentator}.`;
+  return text;
+}
+
+let _highlightsIdx = null;
+let _highlightsAt = 0;
+async function loadHighlightsIndex() {
+  if (_highlightsIdx && Date.now() - _highlightsAt < 5 * 60 * 1000) return _highlightsIdx;
+  try {
+    const res = await fetch("assets/data/today.json", { cache: "no-store" });
+    const data = await res.json();
+    const idx = {};
+    (data.highlightsIndex || []).forEach((h) => { idx[h.key] = h; });
+    _highlightsIdx = idx;
+    _highlightsAt = Date.now();
+  } catch (e) {
+    _highlightsIdx = _highlightsIdx || {};
+  }
+  return _highlightsIdx;
+}
+
+function applyHighlights(matches, idx) {
+  return matches.map((m) => {
+    if (m.status !== "ended") return m;
+    const out = m.summaryAr ? m : { ...m, summaryAr: buildArabicSummary(m) };
+    if (out.highlight) return out;
+    const entry = idx && idx[commentaryKey(m.home, m.away)];
+    if (!entry) return out;
+    return {
+      ...out,
+      highlight: {
+        videoUrl: entry.videoUrl,
+        title: entry.title,
+        competition: entry.competition,
+        thumbnail: entry.thumbnail,
+        source: entry.source,
+      },
+    };
+  });
+}
+
 window.getMatches = async function getMatches({ force } = {}) {
   // 1) Live fetch from TheSportsDB in the browser (best — real statuses, auto-refresh)
   if (window.MatchesAPI) {
@@ -269,7 +339,8 @@ window.getMatches = async function getMatches({ force } = {}) {
       const live = await window.MatchesAPI.fetchLiveSoccer({ force });
       if (live.matches && live.matches.length) {
         const idx = await loadCommentaryIndex();
-        return { ...live, matches: applyCommentary(live.matches, idx) };
+        const hidx = await loadHighlightsIndex();
+        return { ...live, matches: applyHighlights(applyCommentary(live.matches, idx), hidx) };
       }
     } catch (e) {
       console.warn("Live API fetch failed, using cache:", e.message);

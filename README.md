@@ -9,6 +9,7 @@ A clean, **ad-free** sports streaming front-end — live match schedule, channel
 - **Home page** — today's matches (live / upcoming / ended filters) + channel grid
 - **Watch page** — HLS player (`hls.js`), server switcher, sidebar of other channels
 - **Live fixtures** — auto-refreshed from TheSportsDB with ESPN scoreboard fallback via `assets/data/today.json`
+- **ملخص المباريات (match summaries)** — every ended match gets an auto-generated Arabic recap (result, scorers when known, venue) plus a matched highlight clip when available — see [Match summaries](#match-summaries-ملخص-المباريات) below
 - **Responsive** — mobile, tablet, desktop with collapsible nav
 - **Zero build step** — plain HTML/CSS/JS
 
@@ -57,6 +58,34 @@ Matches reference a channel by `channelId`.
 node scripts/fetch-matches.js          # today (UTC)
 node scripts/fetch-matches.js 2026-06-20 # specific date
 ```
+
+## Match summaries (ملخص المباريات)
+
+`scripts/fetch-matches.js` (run on the same 30-minute cron as the fixtures)
+attaches, for every match that has ended:
+
+- **`summaryAr`** — a templated Arabic recap (winner/draw, final score, venue,
+  commentator) built entirely from data already in the fixture. Always present,
+  no extra setup or external call required.
+- **`highlight`** — a matched highlight clip, only when a free
+  [Scorebat](https://www.scorebat.com/video-api/) API token is configured via
+  the `SCOREBAT_TOKEN` secret/env var. Scorebat only distributes clips the
+  leagues/clubs have already licensed for redistribution; we never inject its
+  raw embed HTML — the iframe `src` is extracted and validated against
+  `scorebat.com` before we rebuild our own sandboxed `<iframe>`.
+
+Both fields ride along in `assets/data/today.json` per match plus a
+`highlightsIndex` (same join pattern as `commentaryIndex`), so the summary and
+clip also show up when the browser is using the live TheSportsDB/ESPN fetch
+instead of the cached file. They render as a collapsible "ملخص المباراة"
+panel on ended match cards on the home page, and a static panel on the watch
+page for that match.
+
+To enable highlight clips: sign up for a free token at
+[scorebat.com/video-api](https://www.scorebat.com/video-api/) and add it as
+the `SCOREBAT_TOKEN` repository secret (GitHub → Settings → Secrets). Without
+a token the site still ships the Arabic text summary for every match — only
+the video clip is skipped.
 
 ## Deploy (korazero + Cloudflare)
 

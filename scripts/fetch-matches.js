@@ -23,9 +23,11 @@ const {
   pairKey,
   pinEndedChannels,
 } = require("./commentators-lib");
+const { attachHighlights, mergeHighlightsIndex } = require("./highlights-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
+const SCOREBAT_FEED_URL = "https://www.scorebat.com/video-api/v3/feed/";
 
 const KEY = process.env.SPORTSDB_KEY || "3";
 const centerDate = process.argv[2] || new Date().toISOString().slice(0, 10);
@@ -154,6 +156,38 @@ async function fetchEspnLeague(slug, dateRange) {
     if (row.channelId) m.channelId = row.channelId;
   }
 
+  // ملخص المباريات: Arabic text summary for every ended match (always, no
+  // network needed) plus a matched highlight clip from Scorebat when a free
+  // SCOREBAT_TOKEN is configured (https://www.scorebat.com/video-api/).
+  let scorebatFeed = [];
+  if (process.env.SCOREBAT_TOKEN) {
+    try {
+      const feed = await get(`${SCOREBAT_FEED_URL}?token=${process.env.SCOREBAT_TOKEN}`);
+      scorebatFeed = Array.isArray(feed.response) ? feed.response : Array.isArray(feed) ? feed : [];
+    } catch (err) {
+      console.warn("scorebat feed fetch failed:", err.message);
+    }
+  }
+  const { matched: highlightsMatched, highlightsIndex: freshHighlightsIndex } =
+    attachHighlights(matches, scorebatFeed);
+  const highlightsIndex = mergeHighlightsIndex(
+    freshHighlightsIndex,
+    (previousPayload && previousPayload.highlightsIndex) || []
+  );
+  const highlightsByKey = new Map(highlightsIndex.map((h) => [h.key, h]));
+  for (const m of matches) {
+    if (m.status !== "ended" || m.highlight) continue;
+    const row = highlightsByKey.get(pairKey(m.home, m.away));
+    if (!row) continue;
+    m.highlight = {
+      videoUrl: row.videoUrl,
+      title: row.title,
+      competition: row.competition,
+      thumbnail: row.thumbnail,
+      source: row.source,
+    };
+  }
+
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   writeBindingsJs();
   const snapshot = writeLiveSnapshot(matches);
@@ -167,6 +201,7 @@ async function fetchEspnLeague(slug, dateRange) {
         sourceLabel,
         commentarySource: "almaghrebsport",
         commentaryIndex,
+        highlightsIndex,
         matches,
       },
       null,
@@ -174,7 +209,7 @@ async function fetchEspnLeague(slug, dateRange) {
     )
   );
   console.log(
-    `Wrote ${matches.length} matches (${commentaryMatched} with commentators) -> ${path.relative(process.cwd(), OUT)}`
+    `Wrote ${matches.length} matches (${commentaryMatched} with commentators, ${highlightsMatched} with highlight clips) -> ${path.relative(process.cwd(), OUT)}`
   );
   console.log(
     `Live snapshot: ${snapshot.liveCount} live, ${snapshot.conflicts.length} conflict(s) -> assets/data/live-snapshot.json`

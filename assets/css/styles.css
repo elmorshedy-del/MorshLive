@@ -364,6 +364,24 @@ img { max-width: 100%; display: block; }
   box-shadow: none; pointer-events: none;
 }
 
+/* ------------------------------------------------- ملخص المباراة (summary) */
+.match-summary { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+.match-summary-toggle {
+  display: flex; align-items: center; gap: 8px; cursor: pointer; list-style: none;
+  font-weight: 700; font-size: .88rem; color: var(--gold); user-select: none;
+}
+.match-summary-toggle::-webkit-details-marker { display: none; }
+.match-summary-body { margin-top: 10px; animation: fadeUp .3s ease both; }
+.match-summary-text { color: var(--text); font-size: .88rem; line-height: 1.7; }
+.match-summary-novideo { color: var(--muted); font-size: .82rem; margin-top: 8px; }
+.match-highlight-video {
+  position: relative; width: 100%; aspect-ratio: 16 / 9; margin-top: 10px;
+  border-radius: 10px; overflow: hidden; background: #000; border: 1px solid var(--border);
+}
+.match-highlight-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.match-summary--static { margin-top: 20px; }
+.match-summary-toggle--static { cursor: default; }
+
 /* --------------------------------------------------------- Filters */
 .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
 .filter-btn {

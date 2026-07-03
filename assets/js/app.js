@@ -141,6 +141,48 @@
     wrap.innerHTML = liveBlock + endedBlock;
   }
 
+  /* -------------------------------------------------- ملخص المباراة (summary) */
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+    ));
+  }
+
+  // Which summary panels are expanded, kept across the 90s auto-refresh re-render.
+  const openSummaries = new Set();
+
+  function matchSummaryHtml(m) {
+    if (m.status !== "ended" || (!m.summaryAr && !m.highlight)) return "";
+    const open = openSummaries.has(m.id) ? " open" : "";
+    const videoBlock = m.highlight && m.highlight.videoUrl
+      ? `<div class="match-highlight-video">
+           <iframe src="${m.highlight.videoUrl}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
+             allow="autoplay; fullscreen" allowfullscreen
+             sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
+         </div>`
+      : `<p class="match-summary-novideo">${t("card.noHighlightVideo")}</p>`;
+    return `
+      <details class="match-summary" data-summary-id="${m.id}"${open}>
+        <summary class="match-summary-toggle">${ICON.trophy} ${t("card.summary")}</summary>
+        <div class="match-summary-body">
+          ${m.summaryAr ? `<p class="match-summary-text">${escapeHtml(m.summaryAr)}</p>` : ""}
+          ${videoBlock}
+        </div>
+      </details>`;
+  }
+
+  // `toggle` on <details> doesn't bubble, so track it in the capture phase.
+  function initSummaryToggles() {
+    document.addEventListener("toggle", (e) => {
+      const el = e.target;
+      if (!el.classList || !el.classList.contains("match-summary")) return;
+      const id = el.dataset.summaryId;
+      if (!id) return;
+      if (el.open) openSummaries.add(id);
+      else openSummaries.delete(id);
+    }, true);
+  }
+
   /* -------------------------------------------------- Matches rendering */
   function matchCard(m) {
     const liveBtn = watchAction(m);
@@ -170,6 +212,7 @@
           <span class="match-meta">${footMeta(m)}</span>
           ${liveBtn}
         </div>
+        ${matchSummaryHtml(m)}
       </article>`;
   }
 
@@ -283,6 +326,7 @@
     initFilters();
     initNav();
     initFavorites();
+    initSummaryToggles();
     renderSaved();
     await loadMatches();
     setInterval(() => loadMatches({ force: true }), 90 * 1000);

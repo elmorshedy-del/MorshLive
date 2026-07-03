@@ -94,6 +94,38 @@
     return match && window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(match);
   }
 
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+    ));
+  }
+
+  /* ملخص المباراة (match summary) — Arabic recap + highlight clip when the
+     current match has ended, shown next to the commentary replay. */
+  function matchSummaryHtml(m) {
+    if (!m || m.status !== "ended" || (!m.summaryAr && !m.highlight)) return "";
+    const videoBlock = m.highlight && m.highlight.videoUrl
+      ? `<div class="match-highlight-video">
+           <iframe src="${m.highlight.videoUrl}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
+             allow="autoplay; fullscreen" allowfullscreen
+             sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
+         </div>`
+      : `<p class="match-summary-novideo">${t("card.noHighlightVideo")}</p>`;
+    return `
+      <div class="match-summary match-summary--static">
+        <div class="match-summary-toggle match-summary-toggle--static">${t("card.summary")}</div>
+        <div class="match-summary-body">
+          ${m.summaryAr ? `<p class="match-summary-text">${escapeHtml(m.summaryAr)}</p>` : ""}
+          ${videoBlock}
+        </div>
+      </div>`;
+  }
+
+  function renderMatchSummary() {
+    const slot = document.getElementById("match-summary-slot");
+    if (slot) slot.innerHTML = matchSummaryHtml(match);
+  }
+
   function fillInfo() {
     const live = !!(match && match.status === "live");
     const commentary = matchIsCommentary();
@@ -129,6 +161,7 @@
     document.getElementById("info-league").textContent = (match && match.league) || "—";
     const infoTimes = document.getElementById("info-times");
     if (infoTimes) infoTimes.innerHTML = timeZoneHtml(match);
+    renderMatchSummary();
     injectMatchSchema(match);
   }
 

@@ -1,6 +1,6 @@
 {
   "date": "2026-07-03",
-  "updatedAt": "2026-07-03T01:32:48.424Z",
+  "updatedAt": "2026-07-03T05:52:18.449Z",
   "source": "espn",
   "sourceLabel": "ESPN",
   "commentarySource": "almaghrebsport",
@@ -272,27 +272,8 @@
       "locked": false
     }
   ],
+  "highlightsIndex": [],
   "matches": [
-    {
-      "id": "espn-fifa.world-760498",
-      "status": "upcoming",
-      "minute": "",
-      "home": "Switzerland",
-      "away": "Algeria",
-      "homeAbbr": "SUI",
-      "awayAbbr": "ALG",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/sui.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/alg.png",
-      "score": "VS",
-      "time": "03:00",
-      "kickoffUtc": "2026-07-03T03:00Z",
-      "league": "FIFA World Cup",
-      "venue": "BC Place · Vancouver · Canada",
-      "channel": null,
-      "channelId": "bein-sports-1",
-      "commentator": null,
-      "source": "espn"
-    },
     {
       "id": "espn-fifa.world-760499",
       "status": "upcoming",
@@ -412,6 +393,27 @@
       "source": "espn"
     },
     {
+      "id": "espn-fifa.world-760498",
+      "status": "ended",
+      "minute": "",
+      "home": "Switzerland",
+      "away": "Algeria",
+      "homeAbbr": "SUI",
+      "awayAbbr": "ALG",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/sui.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/alg.png",
+      "score": "2 - 0",
+      "time": "03:00",
+      "kickoffUtc": "2026-07-03T03:00Z",
+      "league": "FIFA World Cup",
+      "venue": "BC Place · Vancouver · Canada",
+      "channel": null,
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn",
+      "summaryAr": "انتهت المباراة بفوز سويسرا على الجزائر بنتيجة 2-0 ضمن FIFA World Cup على ملعب BC Place · Vancouver · Canada."
+    },
+    {
       "id": "espn-fifa.world-760496",
       "status": "ended",
       "minute": "",
@@ -429,7 +431,8 @@
       "channel": null,
       "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn"
+      "source": "espn",
+      "summaryAr": "انتهت المباراة بفوز البرتغال على كرواتيا بنتيجة 2-1 ضمن FIFA World Cup على ملعب BMO Field · Toronto · Canada."
     },
     {
       "id": "espn-fifa.world-760497",
@@ -449,7 +452,8 @@
       "channel": null,
       "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn"
+      "source": "espn",
+      "summaryAr": "انتهت المباراة بفوز إسبانيا على النمسا بنتيجة 3-0 ضمن FIFA World Cup على ملعب SoFi Stadium · Inglewood, California · USA."
     }
   ]
 }
