@@ -23,7 +23,19 @@
     const fromKey = window.SITE_DATA && window.SITE_DATA.embedForKey
       ? window.SITE_DATA.embedForKey(key)
       : null;
-    return fromKey || channel.embed || { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
+    const base = fromKey || channel.embed || { url: "/wk/albaplayer/vip1/", param: "serv", servStart: 1, servers: 1 };
+    const extras = {};
+    if (channel && channel.embed) {
+      if (channel.embed.streamPatchKey) extras.streamPatchKey = channel.embed.streamPatchKey;
+      if (channel.embed.defaultServer != null) extras.defaultServer = channel.embed.defaultServer;
+    }
+    if (match && match.streamPatchKey) extras.streamPatchKey = match.streamPatchKey;
+    if (match && match.defaultServer != null) extras.defaultServer = match.defaultServer;
+    return {
+      ...base,
+      channelId: (channel && channel.id) || base.channelId,
+      ...extras,
+    };
   }
 
   const { CHANNELS } = window.SITE_DATA;
@@ -427,10 +439,16 @@
   /* ---------------------------------------------- Stream reload
    * The worldkoora source sometimes parks on a static frame while a match is
    * live. A fresh load of the active player recovers it, so we expose a manual
-   * "reload" control AND auto-reload 15 minutes before each kickoff so the
-   * stream is primed by the time the game starts. */
-  const RELOAD_LEAD_MS = 15 * 60 * 1000;
+   * "reload" control AND start prewarming 30 minutes before each kickoff: from
+   * then we poll until the channel actually has a live stream, then load the
+   * worker's smoothest-ranked mirror and auto-play it — so the game is already
+   * playing the smoothest feed by kick-off. */
+  const RELOAD_LEAD_MS = 30 * 60 * 1000;
+  const PREWARM_POLL_MS = 45 * 1000;
+  const PREWARM_TAIL_MS = 20 * 60 * 1000; // keep trying until 20 min after kickoff
   let reloadTimer = null;
+  let prewarmTimer = null;
+  let prewarmStarted = false;
 
   function parseKickoff(ts) {
     if (ts == null || ts === "") return NaN;
@@ -466,27 +484,74 @@
     }
   }
 
-  // (Re)arm a single timer for the soonest "kickoff − 15 min" still in the
-  // future — but only for matches on the channel currently being watched (or the
-  // selected match), so an unrelated channel's kickoff never interrupts playback.
-  function scheduleAutoReload() {
-    if (reloadTimer) { clearTimeout(reloadTimer); reloadTimer = null; }
-    const now = Date.now();
+  // Kickoff (ms) of the soonest match on the channel currently being watched (or
+  // the selected match). Used to time the 30-minute prewarm.
+  function nextRelevantKickoff() {
     const relevant = (MATCHES || []).filter((m) =>
       (channel && m.channelId && m.channelId === channel.id) ||
       (match && m.id === match.id)
     );
-    const next = relevant
+    return relevant
       .map((m) => parseKickoff(m.kickoffUtc))
       .filter((ms) => !isNaN(ms))
-      .map((ms) => ms - RELOAD_LEAD_MS)
-      .filter((ts) => ts > now + 1000)
-      .sort((a, b) => a - b)[0];
-    if (next == null) return;
-    reloadTimer = setTimeout(() => {
+      .sort((a, b) => a - b)
+      .find((ms) => ms > Date.now() - PREWARM_TAIL_MS);
+  }
+
+  // Does the channel currently being watched actually have a live stream ready?
+  // The worker only serves a playable page when a mirror verifies live, so this
+  // doubles as the "is the smoothest feed available yet" check.
+  async function activeChannelHasStream() {
+    try {
+      const embed = activePlayer === 1 ? channel.embed : vipEmbed();
+      const key = feedKeyOf(embed);
+      const ch = (channel && channel.id) || "";
+      const u = new URL(`/wk/albaplayer/${key}/`, location.origin);
+      u.searchParams.set("ch", ch);
+      if (embed.streamPatchKey) u.searchParams.set("mk", embed.streamPatchKey);
+      const res = await fetch(u.toString(), { cache: "no-store" });
+      if (!res.ok) return false;
+      return htmlHasPlayableEmbed(await res.text());
+    } catch (e) {
+      return false;
+    }
+  }
+
+  // From kickoff − 30 min, poll until the stream is live, then load + auto-play
+  // the worker's smoothest-ranked mirror. Stops once playing (or after the tail).
+  async function prewarmTick(kickoff) {
+    if (prewarmTimer) { clearTimeout(prewarmTimer); prewarmTimer = null; }
+    if (Date.now() > kickoff + PREWARM_TAIL_MS) return; // window passed
+    if (prewarmStarted) return;
+    const live = await activeChannelHasStream();
+    if (live) {
+      prewarmStarted = true;
       reloadActivePlayer();
+      play();
+      return;
+    }
+    prewarmTimer = setTimeout(() => prewarmTick(kickoff), PREWARM_POLL_MS);
+  }
+
+  // (Re)arm a single timer for the soonest "kickoff − 30 min" still in the future
+  // — scoped to the channel being watched so an unrelated kickoff never interrupts
+  // playback. At that point the prewarm poll takes over.
+  function scheduleAutoReload() {
+    if (reloadTimer) { clearTimeout(reloadTimer); reloadTimer = null; }
+    prewarmStarted = false;
+    const now = Date.now();
+    const kickoff = nextRelevantKickoff();
+    if (kickoff == null) return;
+    const prewarmAt = kickoff - RELOAD_LEAD_MS;
+    // Already inside the 30-min window (or just after kickoff): start prewarming now.
+    if (prewarmAt <= now) {
+      if (!prewarmTimer) prewarmTick(kickoff);
+      return;
+    }
+    reloadTimer = setTimeout(() => {
+      prewarmTick(kickoff);
       scheduleAutoReload();
-    }, Math.min(next - now, 0x7fffffff));
+    }, Math.min(prewarmAt - now, 0x7fffffff));
   }
 
   function initReloadButton() {
@@ -507,47 +572,22 @@
     host.appendChild(btn);
   }
 
-  /* ---------------------------------------------- Live-feed auto-recover
-   * There are only two real feeds (vip1/vip2). When a match link carries a wrong
-   * or stale channelId, Player 1 can land on the empty feed → a blackout even
-   * though the live game is on the other feed. The worker serves both players
-   * same-origin, so we can cheaply check which feed actually has a stream and
-   * switch Player 1 to the live one. */
-  function feedKeyOf(embed) {
-    return /vip2/.test((embed && embed.url) || "") ? "vip2" : "vip1";
-  }
-
+  /* ---------------------------------------------- Live-feed detection
+   * Each channel now has its OWN stable dlhd feed, so the old 2-slot "swap to the
+   * other vip" recovery is gone. We keep a cheap probe (used by the kickoff
+   * prewarm) that asks the worker whether the channel's /dl/<id> page currently
+   * resolves a playable stream. */
   function htmlHasPlayableEmbed(html) {
     return /AlbaPlayerControl\('([^']+)'/.test(html) ||
+      /\/(?:wk\/stream\.m3u8|wk\/hls|dl\/hls)\?u=/.test(html) ||
+      /\bdata-kz-src=/.test(html) ||
       /<iframe\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html) ||
       /<(?:source|video)\b[^>]*\bsrc=["']https?:\/\/[^"']+/i.test(html);
   }
 
-  async function feedHasStream(vipKey) {
-    try {
-      const res = await fetch(`/wk/albaplayer/${vipKey}/`, { cache: "no-store" });
-      if (!res.ok) return false;
-      return htmlHasPlayableEmbed(await res.text());
-    } catch (e) {
-      return false;
-    }
-  }
-
-  async function ensureLiveFeed() {
-    if (activePlayer !== 1 || !isEmbed || !channel.embed) return;
-    const curKey = feedKeyOf(channel.embed);
-    if (await feedHasStream(curKey)) return; // current feed is fine
-    const otherKey = curKey === "vip1" ? "vip2" : "vip1";
-    if (!(await feedHasStream(otherKey))) return; // neither is live — nothing to do
-    const otherEmbed = window.SITE_DATA && window.SITE_DATA.embedForKey
-      ? window.SITE_DATA.embedForKey(otherKey)
-      : null;
-    if (!otherEmbed) return;
-    channel = { ...channel, embed: otherEmbed };
-    isEmbed = true;
-    loadEmbed(currentEmbedServerIndex(channel.embed));
-    renderServers();
-  }
+  // The /dl/<id> player self-recovers via its internal hls.js retry loop, so
+  // there's nothing to swap here anymore. Kept as a no-op for its callers.
+  async function ensureLiveFeed() { return; }
 
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();

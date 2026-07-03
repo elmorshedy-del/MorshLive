@@ -31,6 +31,10 @@ function embedUrlFor(embed, serverIndex) {
     const start = embed.servStart != null ? embed.servStart : 0;
     u.searchParams.set(embed.param, start + serverIndex);
   }
+  // Pass the channel id so the worker can add that channel's stable dlhd mirror
+  // to the failover pool (same channel, 24/7 backup).
+  if (embed.channelId) u.searchParams.set("ch", embed.channelId);
+  if (embed.streamPatchKey) u.searchParams.set("mk", embed.streamPatchKey);
   return u.toString();
 }
 
@@ -82,7 +86,7 @@ const CHANNEL_DEFS = [
   { id: "bein-max-3", name: "beIN MAX 3", group: "beIN", quality: "1080p", badge: "HD" },
   { id: "bein-max-4", name: "beIN MAX 4", group: "beIN", quality: "1080p", badge: "HD" },
 ];
-const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: embedFor(c.id) }));
+const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: { ...embedFor(c.id), channelId: c.id } }));
 
 // Fallback only — shown if both the live API and cached today.json fail to load.
 const MATCHES = [];
@@ -110,7 +114,14 @@ function resolveWatchSelection(matches, channels, searchParams) {
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
   const embedKey = (match && match.embedKey) || embedKeyFor(chId);
-  const channelWithEmbed = { ...channel, embed: embedForKey(embedKey) };
+  const embedBase = embedForKey(embedKey);
+  const embedExtras = {};
+  if (match && match.defaultServer != null) embedExtras.defaultServer = match.defaultServer;
+  if (match && match.streamPatchKey) embedExtras.streamPatchKey = match.streamPatchKey;
+  const channelWithEmbed = {
+    ...channel,
+    embed: { ...embedBase, channelId: chId, ...embedExtras },
+  };
   return { channel: channelWithEmbed, match, embedKey };
 }
 
@@ -219,6 +230,26 @@ function commentaryKey(home, away) {
   return [norm(home), norm(away)].sort().join("~");
 }
 
+// Baked-in overrides for live fixtures — survives stale today.json on CDN.
+// REMOVE after the match.
+const LIVE_MATCH_OVERRIDES = {
+  "croatia~portugal": {
+    channel: "beIN MAX 2",
+    channelId: "bein-max-2",
+    embedKey: "vip1",
+    defaultServer: 0,
+    streamPatchKey: "croatia~portugal",
+  },
+};
+
+function applyLiveMatchOverrides(matches) {
+  return matches.map((m) => {
+    const patch = LIVE_MATCH_OVERRIDES[commentaryKey(m.home, m.away)];
+    if (!patch || m.status === "ended") return m;
+    return { ...m, ...patch };
+  });
+}
+
 let _commentaryIdx = null;
 let _commentaryAt = 0;
 async function loadCommentaryIndex() {
@@ -252,6 +283,9 @@ function applyCommentary(matches, idx) {
     if (!ended) {
       if (entry.channel) out.channel = entry.channel;
       if (entry.channelId) out.channelId = entry.channelId;
+      if (entry.embedKey) out.embedKey = entry.embedKey;
+      if (entry.defaultServer != null) out.defaultServer = entry.defaultServer;
+      if (entry.streamPatchKey) out.streamPatchKey = entry.streamPatchKey;
       return out;
     }
 
@@ -271,7 +305,7 @@ window.getMatches = async function getMatches({ force } = {}) {
       const live = await window.MatchesAPI.fetchLiveSoccer({ force });
       if (live.matches && live.matches.length) {
         const idx = await loadCommentaryIndex();
-        return { ...live, matches: applyCommentary(live.matches, idx) };
+        return { ...live, matches: applyLiveMatchOverrides(applyCommentary(live.matches, idx)) };
       }
     } catch (e) {
       console.warn("Live API fetch failed, using cache:", e.message);
@@ -284,8 +318,14 @@ window.getMatches = async function getMatches({ force } = {}) {
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
     const raw = Array.isArray(data.matches) ? data.matches : [];
+    const idx = await loadCommentaryIndex();
     const matches = sortDisplayMatches(
-      raw.map((m) => ({ ...m, status: refineStatus(m, data.date) })).filter(keepDisplayMatch)
+      applyLiveMatchOverrides(
+        applyCommentary(
+          raw.map((m) => ({ ...m, status: refineStatus(m, data.date) })).filter(keepDisplayMatch),
+          idx
+        )
+      )
     );
     return {
       matches,
