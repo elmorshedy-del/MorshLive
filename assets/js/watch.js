@@ -212,6 +212,6 @@
     loadPlayer();
     initReloadButton();
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
-    setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
+    setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 180 * 1000);
   });
 })();

@@ -228,6 +228,21 @@ function fetchWithTimeout(url, init, ms = FETCH_TIMEOUT_MS) {
   return fetch(url, merged).finally(() => clearTimeout(timer));
 }
 
+// Edge-cache GET responses to cut Worker invocations (Error 1027 = 100k/day free limit).
+async function withEdgeCache(request, ttlSeconds, producer) {
+  if (request.method !== "GET") return producer();
+  const cache = caches.default;
+  const hit = await cache.match(request);
+  if (hit) return hit;
+  const res = await producer();
+  if (!res || res.status !== 200) return res;
+  const headers = new Headers(res.headers);
+  headers.set("Cache-Control", `public, max-age=${ttlSeconds}`);
+  const cached = new Response(res.body, { status: 200, headers });
+  await cache.put(request, cached.clone());
+  return cached;
+}
+
 function resolveStreamUrl(relative, base) {
   try {
     const abs = new URL(relative, base);
@@ -814,7 +829,7 @@ async function resolveTwitchChannel(request, slot, htmlHints) {
 // Parallel upstream Twitch lookup (~2s) — always refresh before serving cached channel.
 async function resolveTwitchChannelQuick(request, slot) {
   const pages = await Promise.all(
-    [2, 3, 1, 4].map((serv) => fetchVipServerHtml(request, slot, serv))
+    [2, 3].map((serv) => fetchVipServerHtml(request, slot, serv))
   );
   for (const page of pages) {
     const ch = page.html && extractTwitchChannel(page.html);
@@ -1118,7 +1133,7 @@ async function proxyHls(request, env) {
         status: 200,
         headers: {
           "Content-Type": "application/vnd.apple.mpegurl",
-          "Cache-Control": "no-store",
+          "Cache-Control": "public, max-age=3",
           "Access-Control-Allow-Origin": "*",
           "X-KZ-Proxy": "hls-manifest",
         },
@@ -1130,7 +1145,7 @@ async function proxyHls(request, env) {
         status: 200,
         headers: {
           "Content-Type": "application/vnd.apple.mpegurl",
-          "Cache-Control": "no-store",
+          "Cache-Control": "public, max-age=3",
           "Access-Control-Allow-Origin": "*",
           "X-KZ-Proxy": "hls-manifest",
         },
@@ -1139,7 +1154,7 @@ async function proxyHls(request, env) {
 
     const headers = {
       "Content-Type": segmentContentType(target) || res.headers.get("Content-Type") || "application/octet-stream",
-      "Cache-Control": "public, max-age=30",
+      "Cache-Control": "public, max-age=60",
       "Access-Control-Allow-Origin": "*",
       "X-KZ-Proxy": "hls-segment",
     };
@@ -1365,22 +1380,21 @@ async function proxyVip(request, slot, env) {
   try {
     const serv = Number(incoming.searchParams.get("serv") || 1);
 
-    // Fast path: upstream match HLS (serv=2) + dlhd 24/7 backups + Twitch.
-    let twitchChannel = await resolveTwitchChannelQuick(request, slot);
-    const [liveCached, dlQuick, vipQuick] = await Promise.all([
-      filterLiveCachedHls(slot, serv, request),
-      channelId && DLHD_CHANNEL_MIRROR_IDS[channelId]
-        ? Promise.all(
+    // Fast path: upstream match HLS (serv=2) + optional dlhd backup + Twitch.
+    const [vipQuick, twitchQuick] = await Promise.all([
+      resolveVipSlotStreamQuick(request, slot),
+      resolveTwitchChannelQuick(request, slot),
+    ]);
+    let twitchChannel = twitchQuick;
+    const hasUpstream = (vipQuick.candidates || []).length > 0;
+    const dlQuick =
+      !hasUpstream && channelId && DLHD_CHANNEL_MIRROR_IDS[channelId]
+        ? await Promise.all(
             DLHD_CHANNEL_MIRROR_IDS[channelId].map((id) => resolveDlMirror(id, origin, secret, request))
           )
-        : Promise.resolve([]),
-      resolveVipSlotStreamQuick(request, slot),
-    ]);
+        : [];
     const dlMirrorsQuick = (dlQuick || []).filter(Boolean);
-    const hlsCandidates = [
-      ...(vipQuick.candidates || []),
-      ...liveCached.map((item) => ({ ...item, score: (item.score ?? 400) + 200 })),
-    ];
+    const hlsCandidates = [...(vipQuick.candidates || [])];
     const proxiedQuick = await buildProxiedPool(hlsCandidates, dlMirrorsQuick, [], origin, secret);
 
     if (twitchChannel && proxiedQuick.length) {
@@ -1530,7 +1544,7 @@ async function proxyDlHls(request, env) {
     if (isManifest) {
       const manifestHeaders = {
         "Content-Type": "application/vnd.apple.mpegurl",
-        "Cache-Control": "no-store",
+        "Cache-Control": "public, max-age=3",
         "Access-Control-Allow-Origin": "*",
         "X-KZ-Proxy": "dlhd-manifest",
       };
@@ -1541,7 +1555,7 @@ async function proxyDlHls(request, env) {
     }
     const headers = {
       "Content-Type": segmentContentType(target) || res.headers.get("Content-Type") || "application/octet-stream",
-      "Cache-Control": "public, max-age=2",
+      "Cache-Control": "public, max-age=60",
       "Access-Control-Allow-Origin": "*",
       "X-KZ-Proxy": "dlhd-segment",
     };
@@ -1951,7 +1965,8 @@ export default {
     const method = request.method;
     const vip = url.pathname.match(VIP_RE);
     if (vip && (method === "GET" || method === "HEAD")) {
-      return proxyVip(request, vip[1].toLowerCase(), env);
+      if (method === "HEAD") return proxyVip(request, vip[1].toLowerCase(), env);
+      return withEdgeCache(request, 45, () => proxyVip(request, vip[1].toLowerCase(), env));
     }
     if (HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
       if (method === "OPTIONS") {
@@ -1965,7 +1980,8 @@ export default {
           },
         });
       }
-      return proxyHls(request, env);
+      const ttl = (url.searchParams.get("u") || "").includes(".m3u8") ? 3 : 60;
+      return withEdgeCache(request, ttl, () => proxyHls(request, env));
     }
     const dl = url.pathname.match(DL_EMBED_RE);
     if (dl && (method === "GET" || method === "HEAD")) {
@@ -1983,7 +1999,9 @@ export default {
           },
         });
       }
-      return proxyDlHls(request, env);
+      return withEdgeCache(request, (url.searchParams.get("u") || "").includes(".m3u8") ? 3 : 60, () =>
+        proxyDlHls(request, env)
+      );
     }
     const sir = url.pathname.match(SIR_EMBED_RE);
     if (sir && (method === "GET" || method === "HEAD")) {
