@@ -28,7 +28,7 @@ function embedUrlFor(embed) {
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(embed.url, base);
   if (embed.channelId) u.searchParams.set("ch", embed.channelId);
-  u.searchParams.set("_kz", "8"); // bust stale iframe cache when player UI changes
+  u.searchParams.set("_kz", "9"); // bust stale iframe cache when player UI changes
   return u.toString();
 }
 

@@ -25,7 +25,7 @@ const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
 // Worldkoora exposes "البث 1..N" as redundant servers for the SAME channel in a
 // slot. We probe them in order so a dead/blank server this game falls over to a
 // live one WITHIN the same slot (never to a different channel/slot).
-const VIP_SERVER_COUNT = 3;
+const VIP_SERVER_COUNT = 4;
 // Hard caps so VIP pages never hang on a dead CDN during deep probes.
 const FETCH_TIMEOUT_MS = 4500;
 const PROBE_TIMEOUT_MS = 5000;
@@ -78,7 +78,7 @@ const EXTRA_CHANNEL_STREAMS = {};
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
 // needs to be edited every time worldkoora rotates its CDN host.
 const ALLOWED_STREAM_HOST =
-  /(^|\.)((heinzromanigi|teworld|smarop|golatooa|554564\.sbs|futeure\.space)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+|1\.554564\.sbs|mev\.futeure\.space)$/i;
+  /(^|\.)((heinzromanigi|teworld|smarop|golatooa|554564\.sbs|futeure\.space|syria-llive\.live|ttvnw\.net|playlist\.ttvnw\.net)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+|1\.554564\.sbs|mev\.futeure\.space|eun[0-9]+\.playlist\.ttvnw\.net)$/i;
 
 // Last-known-good streams per VIP slot/serv when upstream HTML is blank or stale.
 // Do NOT pin promo-loop slates here (e.g. egcity1 yallakora redirect loops).
@@ -306,7 +306,7 @@ async function rewriteM3u8(body, manifestUrl, origin, secret, basePath) {
 }
 
 function isHlsUrl(url) {
-  return /^https?:\/\/[^\s"'<>`]+\.m3u8(?:[?#][^\s"'<>`]*)?$/i.test(url || "");
+  return /^https?:\/\//i.test(String(url || "")) && /\.m3u8/i.test(String(url || ""));
 }
 
 function isBlockedStreamUrl(url) {
@@ -330,10 +330,13 @@ function extractHlsCandidates(html) {
   const text = String(html || "");
   for (const m of text.matchAll(/AlbaPlayerControl\('([A-Za-z0-9+/=]*)','([^']+)'\)/g)) {
     const source = decodeBase64(m[1]);
-    if (isHlsUrl(source)) out.push({ source, player: m[2] || "clappr" });
+    if (isHlsUrl(source) && !isBlockedStreamUrl(source)) out.push({ source, player: m[2] || "clappr" });
   }
-  for (const m of text.matchAll(/["'](https?:\/\/[^"']+\.m3u8(?:[?#][^"']*)?)["']/gi)) {
-    if (isHlsUrl(m[1])) out.push({ source: m[1], player: "clappr" });
+  for (const m of text.matchAll(/<(?:source|video)\b[^>]*\ssrc=(["'])(https?:\/\/[^"']+)["']/gi)) {
+    if (isHlsUrl(m[2]) && !isBlockedStreamUrl(m[2])) out.push({ source: m[2], player: "clappr" });
+  }
+  for (const m of text.matchAll(/["'](https?:\/\/[^"']+\.m3u8[^"']*)["']/gi)) {
+    if (isHlsUrl(m[1]) && !isBlockedStreamUrl(m[1])) out.push({ source: m[1], player: "clappr" });
   }
   const seen = new Set();
   return out.filter((item) => {
@@ -811,7 +814,7 @@ async function resolveTwitchChannel(request, slot, htmlHints) {
 // Parallel upstream Twitch lookup (~2s) — always refresh before serving cached channel.
 async function resolveTwitchChannelQuick(request, slot) {
   const pages = await Promise.all(
-    [3, 2, 1].map((serv) => fetchVipServerHtml(request, slot, serv))
+    [2, 3, 1, 4].map((serv) => fetchVipServerHtml(request, slot, serv))
   );
   for (const page of pages) {
     const ch = page.html && extractTwitchChannel(page.html);
@@ -864,6 +867,28 @@ async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
 // URL. If the playing mirror dies mid-match (worldkoora's CDN hosts rotate and
 // die constantly), the player advances to the next live mirror on its own, so a
 // single dead host no longer takes the stream off.
+// Shared hls.js boot logic for clean بث players (single + dual).
+const HLS_BOOT_FN = `function kzHlsOpts(){return{maxBufferLength:45,liveSyncDurationCount:4,manifestLoadingMaxRetry:8,levelLoadingMaxRetry:8,fragLoadingMaxRetry:8,liveDurationInfinity:true,enableWorker:true};}
+function kzAttachHls(v,src,onFatal){
+  var hls=new Hls(kzHlsOpts());
+  hls.loadSource(src); hls.attachMedia(v);
+  hls.on(Hls.Events.ERROR,function(_e,d){
+    if(!d||!d.fatal) return;
+    if(d.type==='mediaError'){ try{hls.recoverMediaError();return;}catch(e){} }
+    onFatal();
+  });
+  return hls;
+}
+function kzWatchStall(v,hls,onStall){
+  var lastCt=0, stalls=0;
+  setInterval(function(){
+    if(v.paused||v.readyState<2){ stalls=0; lastCt=v.currentTime; return; }
+    if(v.currentTime>0&&v.currentTime===lastCt){ stalls++; if(stalls>=2) onStall(); }
+    else stalls=0;
+    lastCt=v.currentTime;
+  }, 4000);
+}`;
+
 function cleanHlsPlayerHtml(sources, title) {
   const list = Array.isArray(sources) ? sources.filter(Boolean) : [sources].filter(Boolean);
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
@@ -874,24 +899,19 @@ function cleanHlsPlayerHtml(sources, title) {
 </head><body>
 <video id="v" controls autoplay muted playsinline data-kz-src=${JSON.stringify(list[0] || "")}></video>
 <script>
+${HLS_BOOT_FN}
 (function(){
   var v=document.getElementById('v'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0;
   function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
-  function next(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*3){ setTimeout(load, 800); } }
+  function next(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*6){ setTimeout(load, 600); } }
   function load(){
     var src=sources[i]; if(!src) return;
     destroy();
     if(v.canPlayType('application/vnd.apple.mpegurl')){
       v.src=src; v.addEventListener('error', next, {once:true});
     } else if(window.Hls&&window.Hls.isSupported()){
-      hls=new Hls({maxBufferLength:30,liveSyncDurationCount:3,manifestLoadingMaxRetry:4,levelLoadingMaxRetry:4,fragLoadingMaxRetry:4});
-      hls.loadSource(src); hls.attachMedia(v);
-      hls.on(Hls.Events.ERROR,function(_e,d){
-        if(!d||!d.fatal) return;
-        if(d.type==='mediaError'){ try{hls.recoverMediaError();return;}catch(e){} }
-        // network/other fatal: this mirror is down — advance to the next live one.
-        next();
-      });
+      hls=kzAttachHls(v, src, next);
+      kzWatchStall(v, hls, function(){ try{hls.startLoad();}catch(e){ next(); } });
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
   }
@@ -957,6 +977,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
   <button type="button" id="kz-unmute"><span class="ico">🔊</span><span>اضغط لتشغيل الصوت</span></button>
 </div>
 <script>
+${HLS_BOOT_FN}
 (function(){
   var sources=${JSON.stringify(list)}, i=0, hls=null, tries=0, v=document.getElementById('v');
   var shell=document.getElementById('kz-shell'), soundBtn=document.getElementById('kz-sound'), unmute=document.getElementById('kz-unmute');
@@ -993,15 +1014,14 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
     });
   });
   function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
-  function nextHls(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*3) setTimeout(loadHls,800); }
+  function nextHls(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*6) setTimeout(loadHls,600); }
   function loadHls(){
     var src=sources[i]; if(!src) return;
     destroy();
     if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; v.addEventListener('error',nextHls,{once:true}); }
     else if(window.Hls&&window.Hls.isSupported()){
-      hls=new Hls({maxBufferLength:30,liveSyncDurationCount:3,manifestLoadingMaxRetry:4,levelLoadingMaxRetry:4,fragLoadingMaxRetry:4});
-      hls.loadSource(src); hls.attachMedia(v);
-      hls.on(Hls.Events.ERROR,function(_e,d){ if(!d||!d.fatal) return; if(d.type==='mediaError'){ try{hls.recoverMediaError();return;}catch(e){} } nextHls(); });
+      hls=kzAttachHls(v, src, nextHls);
+      kzWatchStall(v, hls, function(){ try{hls.startLoad();}catch(e){ nextHls(); } });
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
     syncSoundUi();
@@ -1059,15 +1079,28 @@ async function proxyHls(request, env) {
 
   const referer = `${WORLDKOORA}/albaplayer/vip1/?serv=1`;
   const isHead = request.method === "HEAD";
+  const upstreamHeaders = (() => {
+    const ua = request.headers.get("User-Agent") || "Mozilla/5.0";
+    try {
+      const host = new URL(target).hostname;
+      if (/ttvnw\.net$/i.test(host)) {
+        return { "User-Agent": ua, Accept: "*/*", Referer: "https://player.twitch.tv/" };
+      }
+      if (/syria-llive\.live$/i.test(host)) {
+        return { "User-Agent": ua, Accept: "*/*", Referer: "https://mysportv.live/" };
+      }
+    } catch { /* noop */ }
+    return {
+      "User-Agent": ua,
+      Accept: "*/*",
+      Referer: referer,
+      Origin: WORLDKOORA,
+    };
+  })();
   try {
     const res = await fetch(target, {
       method: request.method,
-      headers: {
-        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
-        Accept: "*/*",
-        Referer: referer,
-        Origin: WORLDKOORA,
-      },
+      headers: upstreamHeaders,
       redirect: "follow",
     });
 
@@ -1146,8 +1179,43 @@ function vipServerOrder(requestedServ) {
   const order = [];
   const req = Number(requestedServ);
   if (Number.isFinite(req) && req >= 1 && req <= VIP_SERVER_COUNT) order.push(req);
+  if (!order.includes(2)) order.push(2); // upstream "البث 1" — usual live match HLS
   for (let s = 1; s <= VIP_SERVER_COUNT; s++) if (!order.includes(s)) order.push(s);
   return order;
+}
+
+// Fast upstream HLS discovery (~2–4s): fetch all VIP servers, extract HLS, soft liveness only.
+async function resolveVipSlotStreamQuick(request, slot) {
+  const requestedServ = new URL(request.url).searchParams.get("serv") || 1;
+  const seenSources = new Set();
+  const resolvedList = [];
+  let firstHtml = null;
+  const pages = await Promise.all(
+    vipServerOrder(requestedServ).map((serv) =>
+      fetchVipServerHtml(request, slot, serv).then((page) => ({ serv, page }))
+    )
+  );
+  for (const { serv, page } of pages) {
+    if (!page.html) continue;
+    if (firstHtml == null) firstHtml = page.html;
+    const resolved = await resolvePlayableSourceFromHtml(page.html, request, 0, new Set());
+    if (resolved && !seenSources.has(resolved.source) && !isBlockedStreamUrl(resolved.source)) {
+      seenSources.add(resolved.source);
+      const servBonus = serv === 2 ? -400 : serv === 4 ? -100 : 0;
+      resolvedList.push({ ...resolved, serv, servBonus });
+    }
+  }
+  const probed = await Promise.all(
+    resolvedList.map(async (r) => {
+      const live = await manifestLooksLive(r.source, "wk", request);
+      return { r, p: { ok: live, score: (r.servBonus || 0) + (live ? 100 : 9000) } };
+    })
+  );
+  const candidates = probed
+    .filter((x) => x.p.ok)
+    .sort((a, b) => a.p.score - b.p.score)
+    .map((x) => ({ ...x.r, score: x.p.score }));
+  return { candidates, firstHtml };
 }
 
 // Actively build a ranked pool of VERIFIED-live HLS mirrors for a slot at request
@@ -1203,7 +1271,7 @@ async function resolveDlMirror(id, origin, secret, request) {
   const probe = await streamProbe(m3u8, "dl", request);
   if (!probe.ok) return null;
   const sig = await signTarget(m3u8, secret);
-  return { url: hlsProxyUrl(m3u8, origin, sig, "/dl/hls"), score: probe.score, dlhdId: id };
+  return { url: hlsProxyUrl(m3u8, origin, sig, "/dl/hls"), score: probe.score + 900, dlhdId: id };
 }
 
 // Resolve all configured dlhd mirrors for a channel (ordered). Each verified-live
@@ -1297,27 +1365,29 @@ async function proxyVip(request, slot, env) {
   try {
     const serv = Number(incoming.searchParams.get("serv") || 1);
 
-    // Always refresh Twitch from upstream (serv=3 first) — cached mamam991 was a yallakora promo trap.
+    // Fast path: upstream match HLS (serv=2) + dlhd 24/7 backups + Twitch.
     let twitchChannel = await resolveTwitchChannelQuick(request, slot);
-
-    // Fast path: live Twitch + verified-live HLS and/or dlhd backup — never blind promo slates.
-    const [liveCached, dlQuick] = await Promise.all([
+    const [liveCached, dlQuick, vipQuick] = await Promise.all([
       filterLiveCachedHls(slot, serv, request),
       channelId && DLHD_CHANNEL_MIRROR_IDS[channelId]
         ? Promise.all(
             DLHD_CHANNEL_MIRROR_IDS[channelId].map((id) => resolveDlMirror(id, origin, secret, request))
           )
         : Promise.resolve([]),
+      resolveVipSlotStreamQuick(request, slot),
     ]);
     const dlMirrorsQuick = (dlQuick || []).filter(Boolean);
-    const hlsCandidates = liveCached.map((item) => ({ ...item, score: 400 }));
+    const hlsCandidates = [
+      ...(vipQuick.candidates || []),
+      ...liveCached.map((item) => ({ ...item, score: (item.score ?? 400) + 200 })),
+    ];
     const proxiedQuick = await buildProxiedPool(hlsCandidates, dlMirrorsQuick, [], origin, secret);
 
     if (twitchChannel && proxiedQuick.length) {
       return dualPlayerResponse(proxiedQuick, twitchChannel, origin, htmlHeaders, {
         "X-KZ-Mirrors": String(proxiedQuick.length),
         "X-KZ-Fast": "1",
-        "X-KZ-Serv": String(serv),
+        "X-KZ-Serv": String((vipQuick.candidates && vipQuick.candidates[0] && vipQuick.candidates[0].serv) || serv),
         "X-KZ-Twitch-Channel": twitchChannel,
       });
     }
