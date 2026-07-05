@@ -21,15 +21,28 @@
 const EMBEDS = {
   vip1: { url: "/wk/albaplayer/vip1/" },
   vip2: { url: "/wk/albaplayer/vip2/" },
+  weshan: {
+    url: "https://zenvixw.site/wordpress/albaplayer/weshan/",
+    external: true,
+    servStart: 0,
+    defaultServer: 0,
+    servers: 4,
+  },
 };
 
 function embedUrlFor(embed, serv) {
   if (!embed || !embed.url) return "";
+  if (embed.external) {
+    const u = new URL(embed.url);
+    const s = serv != null && serv !== "" ? serv : (embed.defaultServer != null ? embed.defaultServer : 0);
+    u.searchParams.set("serv", String(s));
+    return u.toString();
+  }
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(embed.url, base);
   if (embed.channelId) u.searchParams.set("ch", embed.channelId);
   if (serv != null && serv !== "") u.searchParams.set("serv", String(serv));
-  u.searchParams.set("_kz", "7");
+  u.searchParams.set("_kz", "8");
   return u.toString();
 }
 
@@ -633,9 +646,13 @@ window.getMatches = async function getMatches({ force } = {}) {
     const res = await fetch("assets/data/today.json", { cache: "no-store" });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const data = await res.json();
+    const didx = await loadMatchDetailIndex();
     const raw = Array.isArray(data.matches) ? data.matches : [];
     const matches = sortDisplayMatches(
-      raw.map((m) => ({ ...m, status: refineStatus(m, data.date) })).filter(keepDisplayMatch)
+      applyMatchDetail(
+        raw.map((m) => ({ ...m, status: refineStatus(m, data.date) })).filter(keepDisplayMatch),
+        didx
+      )
     );
     return {
       matches,

@@ -646,6 +646,8 @@ img { max-width: 100%; display: block; }
   box-shadow: 0 0 0 1px rgba(24,226,154,.55), 0 10px 26px rgba(24,226,154,.25);
 }
 .server-btn.srv-ok:not(.active) { background: rgba(24,226,154,.08); }
+.server-btn--alt { border-color: rgba(192,38,211,.35); }
+.server-btn--alt.srv-ok { border-color: rgba(192,38,211,.65); background: rgba(192,38,211,.1); }
 .server-btn.srv-down { opacity: .45; }
 .server-btn.srv-down .srv-state { color: var(--danger); }
 /* Stream is live but carries no audio track. */

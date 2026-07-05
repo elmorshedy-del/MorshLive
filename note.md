@@ -20,6 +20,7 @@ Operator notes for KoraZero live channel issues. One section per match incident.
 2. **Worker:** Expanded `DLHD_CHANNEL_MIRROR_IDS` fallbacks (91, 92, 94, 95) and `GLOBAL_DLHD_FALLBACK_IDS` so dead MAX mirrors still get live dlhd pools.
 3. **Routing:** Pinned `embedKey: "vip1"` on Brazil match in `today.json`; calibration entry in `channel-bindings.json` v10.
 4. **Verified live:** `GET /wk/albaplayer/vip1/?ch=bein-max-1&serv=3` → dual player with dlhd `premium91` HLS proxy working.
+5. **Weshan alt player:** Added `zenvixw.site/wordpress/albaplayer/weshan/?serv=0–3` as purple-styled server buttons (`?player=weshan&serv=0`).
 
 ### Working mirrors at fix time
 | Channel | dlhd pool | Notes |
@@ -29,8 +30,9 @@ Operator notes for KoraZero live channel issues. One section per match incident.
 | beIN Sports 2 | premium92 | |
 | beIN Sports 4 | premium94 | |
 
-### Test URL
-`https://korazero.com/watch.html?ch=bein-max-1&match=espn-fifa.world-760504&serv=3`
+### Test URLs
+- VIP: `https://korazero.com/watch.html?ch=bein-max-1&match=espn-fifa.world-760504&serv=3`
+- Weshan: `https://korazero.com/watch.html?ch=bein-max-1&match=espn-fifa.world-760504&player=weshan&serv=0`
 
 ---
 

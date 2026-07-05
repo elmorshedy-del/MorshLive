@@ -17,8 +17,14 @@
   let MATCHES = [];
   let channel = CHANNELS[0];
   let match = null;
-  let activeServ = Number(params.get("serv")) || 3;
-  let activeEmbedKey = null;
+  const STREAM_SOURCES = [
+    { key: "vip1", servs: [1, 2, 3, 4] },
+    { key: "vip2", servs: [1, 2, 3, 4] },
+    { key: "weshan", servs: [0, 1, 2, 3] },
+  ];
+
+  let activeServ = params.has("serv") ? Number(params.get("serv")) : 3;
+  let activeEmbedKey = params.get("player") || null;
   const shell = document.getElementById("player-shell");
   let loadedUrl = "";
 
@@ -223,19 +229,24 @@
     if (window.StreamCheck) window.StreamCheck.autoHighlight(row, { autoSelect: false }).catch(() => {});
   }
 
+  function sourceLabel(key) {
+    if (key === "weshan") return t("watch.weshan");
+    return key.toUpperCase();
+  }
+
   function renderServers() {
     const row = document.getElementById("servers");
     if (!row) return;
-    const embedKeys = ["vip1", "vip2"];
-    const servs = [1, 2, 3, 4];
+    const defaultKey = (match && match.embedKey) || window.SITE_DATA.embedKeyFor(channel.id);
     const buttons = [];
-    for (const key of embedKeys) {
-      for (const serv of servs) {
-        const url = channelEmbedUrl(channel.id, key, serv);
-        const isActive = (activeEmbedKey || window.SITE_DATA.embedKeyFor(channel.id)) === key && activeServ === serv;
-        buttons.push(`<button type="button" class="server-btn${isActive ? " active" : ""}" data-srv="${serv}" data-embed="${key}"
-          data-kind="reachable" data-url="${escapeHtml(url)}" data-label="${key} ${t("watch.server")} ${serv}">
-          <span class="srv-label">${key.toUpperCase()} · ${t("watch.server")} ${serv}</span>
+    for (const src of STREAM_SOURCES) {
+      for (const serv of src.servs) {
+        const url = channelEmbedUrl(channel.id, src.key, serv);
+        const isActive = (activeEmbedKey || defaultKey) === src.key && activeServ === serv;
+        buttons.push(`<button type="button" class="server-btn${isActive ? " active" : ""}${src.key === "weshan" ? " server-btn--alt" : ""}"
+          data-srv="${serv}" data-embed="${src.key}" data-kind="reachable" data-url="${escapeHtml(url)}"
+          data-label="${sourceLabel(src.key)} ${t("watch.server")} ${serv}">
+          <span class="srv-label">${sourceLabel(src.key)} · ${t("watch.server")} ${serv}</span>
         </button>`);
       }
     }
@@ -250,6 +261,7 @@
         const next = new URL(location.href);
         next.searchParams.set("ch", channel.id);
         next.searchParams.set("serv", String(activeServ));
+        next.searchParams.set("player", activeEmbedKey);
         if (match && match.id) next.searchParams.set("match", match.id);
         history.replaceState(null, "", next.toString());
         reloadPlayer();
@@ -261,7 +273,7 @@
         if (res && res.firstOk && res.firstOk.classList.contains("srv-down") === false) {
           const srv = Number(res.firstOk.dataset.srv);
           const emb = res.firstOk.dataset.embed;
-          if (srv && emb && (srv !== activeServ || emb !== activeEmbedKey)) {
+          if (emb && !Number.isNaN(srv) && (srv !== activeServ || emb !== activeEmbedKey)) {
             activeServ = srv;
             activeEmbedKey = emb;
             row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
@@ -329,8 +341,9 @@
       : { channel: CHANNELS[0], match: null, embedKey: null };
     channel = picked.channel;
     match = picked.match;
-    activeEmbedKey = picked.embedKey || (match && match.embedKey) || null;
-    if (params.get("serv")) activeServ = Number(params.get("serv")) || 3;
+    activeEmbedKey = params.get("player") || picked.embedKey || (match && match.embedKey) || null;
+    if (params.has("serv")) activeServ = Number(params.get("serv"));
+    if (Number.isNaN(activeServ)) activeServ = 3;
   }
 
   async function refreshMatches({ force } = {}) {
