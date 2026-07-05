@@ -174,7 +174,7 @@
       "watch.optAltVip": "VIP {slot} احتياطي",
       "watch.optAltVipHint": "الفتحة البديلة على worldkoora — جرّبها إذا كان البث لمباراة أخرى",
       "watch.optHls": "بث مباشر فقط",
-      "watch.optHlsHint": "HLS نظيف بدون Twitch — أسرع على الجوال",
+      "watch.optHlsHint": "HLS نظيف — تأخير أقل، بدون Twitch",
       "watch.optTwitch": "Twitch فقط",
       "watch.optTwitchHint": "بث Twitch العربي — جودة أعلى عند توفره",
       "watch.optMaxAr": "MAX عربي · dlhd",

@@ -492,7 +492,7 @@ async function streamProbe(source, kind, request) {
     const segCount = (mediaText.match(/#EXTINF/gi) || []).length;
     const targetDur = parseTargetDuration(mediaText) || 6;
     const bufferPenalty = segCount >= 3 ? 0 : 400;
-    const targetPenalty = targetDur > 8 ? (targetDur - 8) * 50 : 0;
+    const targetPenalty = targetDur > 6 ? (targetDur - 6) * 80 : 0;
     return { ok: true, ms, score: ms + bufferPenalty + targetPenalty };
   } catch {
     // fall through to soft manifest check
@@ -799,26 +799,63 @@ async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
 // URL. If the playing mirror dies mid-match (worldkoora's CDN hosts rotate and
 // die constantly), the player advances to the next live mirror on its own, so a
 // single dead host no longer takes the stream off.
-// Shared hls.js boot logic for clean بث players (single + dual).
-const HLS_BOOT_FN = `function kzHlsOpts(){return{maxBufferLength:45,liveSyncDurationCount:4,manifestLoadingMaxRetry:8,levelLoadingMaxRetry:8,fragLoadingMaxRetry:8,liveDurationInfinity:true,enableWorker:true};}
+// hls.js tuning for third-party live HLS (worldkoora/dlhd CDNs). Based on hls.js
+// docs + community guidance: smaller forward buffer, live-edge sync, playback-rate
+// catch-up, and no startLoad() on non-fatal stalls (causes freeze loops — #7433).
+const HLS_BOOT_FN = `function kzHlsOpts(){
+  return {
+    enableWorker: true,
+    lowLatencyMode: false,
+    startPosition: -1,
+    maxBufferLength: 14,
+    maxMaxBufferLength: 28,
+    backBufferLength: 30,
+    liveSyncDurationCount: 2,
+    liveMaxLatencyDurationCount: 6,
+    liveDurationInfinity: true,
+    maxLiveSyncPlaybackRate: 1.35,
+    highBufferWatchdogPeriod: 2,
+    maxBufferHole: 0.5,
+    nudgeOffset: 0.12,
+    nudgeMaxRetry: 4,
+    initialLiveManifestSize: 1,
+    startFragPrefetch: true,
+    manifestLoadingMaxRetry: 6,
+    manifestLoadingTimeOut: 10000,
+    levelLoadingMaxRetry: 4,
+    fragLoadingMaxRetry: 6,
+    fragLoadingTimeOut: 12000,
+    abrEwmaFastLive: 3,
+    abrEwmaSlowLive: 9,
+    capLevelToPlayerSize: true,
+  };
+}
 function kzAttachHls(v,src,onFatal){
   var hls=new Hls(kzHlsOpts());
   hls.loadSource(src); hls.attachMedia(v);
   hls.on(Hls.Events.ERROR,function(_e,d){
     if(!d||!d.fatal) return;
-    if(d.type==='mediaError'){ try{hls.recoverMediaError();return;}catch(e){} }
+    if(d.type==='networkError'){
+      setTimeout(function(){ try{ hls.startLoad(); }catch(e){ onFatal(); } }, 1000);
+      return;
+    }
+    if(d.type==='mediaError'){
+      try{ hls.recoverMediaError(); return; }catch(e){}
+    }
     onFatal();
   });
   return hls;
 }
 function kzWatchStall(v,hls,onStall){
-  var lastCt=0, stalls=0;
+  var lastCt=0, stallMs=0;
   setInterval(function(){
-    if(v.paused||v.readyState<2){ stalls=0; lastCt=v.currentTime; return; }
-    if(v.currentTime>0&&v.currentTime===lastCt){ stalls++; if(stalls>=2) onStall(); }
-    else stalls=0;
+    if(v.paused||v.readyState<2){ stallMs=0; lastCt=v.currentTime; return; }
+    if(v.currentTime>0&&v.currentTime===lastCt){
+      stallMs+=3000;
+      if(stallMs>=12000){ stallMs=0; onStall(); }
+    } else stallMs=0;
     lastCt=v.currentTime;
-  }, 4000);
+  }, 3000);
 }`;
 
 function cleanHlsPlayerHtml(sources, title) {
@@ -835,7 +872,7 @@ ${HLS_BOOT_FN}
 (function(){
   var v=document.getElementById('v'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0;
   function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
-  function next(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*6){ setTimeout(load, 600); } }
+  function next(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*6){ setTimeout(load, 400); } }
   function load(){
     var src=sources[i]; if(!src) return;
     destroy();
@@ -843,7 +880,7 @@ ${HLS_BOOT_FN}
       v.src=src; v.addEventListener('error', next, {once:true});
     } else if(window.Hls&&window.Hls.isSupported()){
       hls=kzAttachHls(v, src, next);
-      kzWatchStall(v, hls, function(){ try{hls.startLoad();}catch(e){ next(); } });
+      kzWatchStall(v, hls, next);
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
   }
@@ -913,14 +950,14 @@ ${HLS_BOOT_FN}
     });
   });
   function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
-  function nextHls(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*6) setTimeout(loadHls,600); }
+  function nextHls(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*6) setTimeout(loadHls,400); }
   function loadHls(){
     var src=sources[i]; if(!src) return;
     destroy();
     if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; v.addEventListener('error',nextHls,{once:true}); }
     else if(window.Hls&&window.Hls.isSupported()){
       hls=kzAttachHls(v, src, nextHls);
-      kzWatchStall(v, hls, function(){ try{hls.startLoad();}catch(e){ nextHls(); } });
+      kzWatchStall(v, hls, nextHls);
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
   }
@@ -996,7 +1033,7 @@ async function proxyHls(request, env) {
         status: 200,
         headers: {
           "Content-Type": "application/vnd.apple.mpegurl",
-          "Cache-Control": "public, max-age=3",
+          "Cache-Control": "public, max-age=2",
           "Access-Control-Allow-Origin": "*",
           "X-KZ-Proxy": "hls-manifest",
         },
@@ -1008,7 +1045,7 @@ async function proxyHls(request, env) {
         status: 200,
         headers: {
           "Content-Type": "application/vnd.apple.mpegurl",
-          "Cache-Control": "public, max-age=3",
+          "Cache-Control": "public, max-age=2",
           "Access-Control-Allow-Origin": "*",
           "X-KZ-Proxy": "hls-manifest",
         },
@@ -1761,7 +1798,7 @@ function sirPlayerHtml(src, slug) {
       v.src=src;
       attemptPlay();
     } else if(window.Hls&&window.Hls.isSupported()){
-      var h=new Hls({maxBufferLength:30,liveSyncDurationCount:3,manifestLoadingMaxRetry:6,fragLoadingMaxRetry:6});
+      var h=new Hls({enableWorker:true,maxBufferLength:14,maxMaxBufferLength:28,backBufferLength:30,liveSyncDurationCount:2,liveMaxLatencyDurationCount:6,maxLiveSyncPlaybackRate:1.35,manifestLoadingMaxRetry:6,fragLoadingMaxRetry:6,highBufferWatchdogPeriod:2,capLevelToPlayerSize:true});
       h.loadSource(src); h.attachMedia(v);
       h.on(Hls.Events.MANIFEST_PARSED, attemptPlay);
       h.on(Hls.Events.ERROR,function(_e,d){ if(d&&d.fatal){ if(d.type==='networkError'){ setTimeout(function(){try{h.startLoad();}catch(e){h.loadSource(src);}},2000);} else if(d.type==='mediaError'){ try{h.recoverMediaError();}catch(e){} } } });
