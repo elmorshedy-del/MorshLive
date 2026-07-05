@@ -153,15 +153,45 @@
     });
   }
 
+  function latestHighlightMatch() {
+    if (!archive?.matches?.length) return null;
+    return archive.matches
+      .filter((m) => m.highlight?.videoUrl && m.kickoffUtc)
+      .sort((a, b) => Date.parse(b.kickoffUtc) - Date.parse(a.kickoffUtc))[0] || null;
+  }
+
+  function featuredMatchCard(m) {
+    const card = matchCard(m);
+    return card
+      .replace('class="match-card tournament-match-card"', 'class="match-card tournament-match-card tournament-match-card--featured"')
+      .replace("<details", '<details open')
+      .replace('class="match-panel tournament-panel"', 'class="match-panel tournament-panel tournament-panel--featured"');
+  }
+
+  function renderFeatured() {
+    const wrap = document.getElementById("tournament-featured");
+    const card = document.getElementById("tournament-featured-card");
+    const latest = latestHighlightMatch();
+    if (!wrap || !card || !latest) {
+      if (wrap) wrap.hidden = true;
+      return;
+    }
+    wrap.hidden = false;
+    card.innerHTML = featuredMatchCard(latest);
+    if ((archive.memes[latest.key] || []).length) loadTwitterWidgets();
+  }
+
   function renderGrid() {
     const grid = document.getElementById("tournament-grid");
     const empty = document.getElementById("tournament-empty");
     const count = document.getElementById("tournament-count");
     if (!grid || !archive) return;
 
-    const list = activeStage === "all"
+    const latest = latestHighlightMatch();
+    const list = (activeStage === "all"
       ? archive.matches
-      : archive.matches.filter((m) => m.stage === activeStage);
+      : archive.matches.filter((m) => m.stage === activeStage))
+      .filter((m) => !latest || m.key !== latest.key);
 
     grid.innerHTML = list.length ? list.map(matchCard).join("") : "";
     if (empty) empty.hidden = !!list.length;
@@ -196,6 +226,7 @@
     if (!res.ok) throw new Error("archive load failed");
     archive = await res.json();
     await enrichMemesFromApi();
+    renderFeatured();
     renderTabs();
     renderGrid();
   }

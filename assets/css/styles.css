@@ -1327,6 +1327,14 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
 /* ------------------------------------------------- Tournament archive (أرشيف المونديال) */
 .tournament-page { min-height: 60vh; padding-bottom: 48px; }
 .tournament-lede { color: var(--muted); margin: -6px 0 18px; max-width: 720px; line-height: 1.65; }
+.tournament-featured {
+  margin: 0 0 28px; padding: 18px; border-radius: 16px;
+  border: 1px solid rgba(24,226,154,.28); background: rgba(24,226,154,.06);
+}
+.tournament-featured-title {
+  font-size: 1rem; font-weight: 800; margin: 0 0 14px; color: var(--gold);
+}
+.tournament-match-card--featured { border-color: rgba(24,226,154,.35); }
 .tournament-tabs { margin-bottom: 24px; }
 .tournament-tab-count {
   display: inline-block; margin-inline-start: 4px; font-size: .78rem; opacity: .85;

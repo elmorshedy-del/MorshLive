@@ -2190,7 +2190,7 @@ function memeInWindow(createdAt, window) {
 
 async function fetchAccountTweets(bearer, userId, startTime, endTime) {
   const params = new URLSearchParams({
-    max_results: "100",
+    max_results: "30",
     "tweet.fields": "created_at,public_metrics",
     start_time: startTime,
     end_time: endTime,
@@ -2359,17 +2359,7 @@ async function proxyMatchMemesApi(request, env) {
   let memes = idx[key] || pinned[key] || [];
   let source = memes.length ? (pinned[key]?.length && !idx[key]?.length ? "pinned" : "archive") : "none";
 
-  const bearer = env && env.TWITTER_BEARER_TOKEN;
-  if (bearer) {
-    try {
-      const live = await searchCuratedMemes(bearer, home, away, kickoff);
-      if (live.length) {
-        memes = live;
-        source = "twitter-curated";
-      }
-    } catch { /* static index */ }
-  }
-
+  // Free syndication before any paid X API calls
   if (!memes.length) {
     try {
       const synd = await searchCuratedMemesSyndication(home, away, kickoff);
@@ -2383,6 +2373,19 @@ async function proxyMatchMemesApi(request, env) {
   if (!memes.length && pinned[key]?.length) {
     memes = pinned[key];
     source = "pinned";
+  }
+
+  // X API only on explicit opt-in (?live=1) when static/syndication found nothing
+  const wantsLive = url.searchParams.get("live") === "1";
+  const bearer = env && env.TWITTER_BEARER_TOKEN;
+  if (!memes.length && wantsLive && bearer) {
+    try {
+      const live = await searchCuratedMemes(bearer, home, away, kickoff);
+      if (live.length) {
+        memes = live;
+        source = "twitter-curated";
+      }
+    } catch { /* static index */ }
   }
 
   return new Response(JSON.stringify({ key, memes }), {

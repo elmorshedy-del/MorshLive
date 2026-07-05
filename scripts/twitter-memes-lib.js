@@ -57,6 +57,18 @@ function normalizeBearer(token) {
   return token ? String(token).trim() : "";
 }
 
+function fetchText(url) {
+  return new Promise((resolve, reject) => {
+    https
+      .get(url, { headers: { "User-Agent": UA } }, (res) => {
+        let d = "";
+        res.on("data", (c) => (d += c));
+        res.on("end", () => resolve(d));
+      })
+      .on("error", reject);
+  });
+}
+
 function twitterGet(urlPath, token) {
   return new Promise((resolve, reject) => {
     https
@@ -214,10 +226,11 @@ async function fetchTimelineSyndication(screenName, limit = 40) {
     .filter(Boolean);
 }
 
-async function fetchUserTweetsInRange(token, userId, startTime, endTime, username) {
-  if (token && userId) {
+async function fetchUserTweetsInRange(token, userId, startTime, endTime, username, opts = {}) {
+  const syndicationOnly = !!opts.syndicationOnly;
+  if (token && userId && !syndicationOnly) {
     const params = new URLSearchParams({
-      max_results: "100",
+      max_results: "30",
       "tweet.fields": "created_at,public_metrics,author_id",
       start_time: startTime,
       end_time: endTime,
@@ -286,7 +299,7 @@ function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms));
 }
 
-/** Batch-fetch by kickoff UTC day to limit API calls. */
+/** Batch-fetch by kickoff UTC day — only used when TWITTER_FETCH_ALL=1 (expensive). */
 async function discoverAllMatchMemes(matches, opts = {}) {
   const token = normalizeBearer(opts.bearerToken || process.env.TWITTER_BEARER_TOKEN);
   const out = {};
@@ -356,12 +369,52 @@ async function discoverAllMatchMemes(matches, opts = {}) {
   return out;
 }
 
+/**
+ * Low-credit path: only the latest N ended matches that already have a ملخص
+ * and no pinned memes yet. At most 3 X API calls per match (one per account).
+ */
+async function discoverLatestHighlightMemes(matches, opts = {}) {
+  const token = normalizeBearer(opts.bearerToken || process.env.TWITTER_BEARER_TOKEN);
+  if (!token) return {};
+
+  const pinned = opts.pinnedMemes || {};
+  const maxMatches = opts.maxMatches ?? 1;
+  const candidates = matches
+    .filter((m) => m.status === "ended" && m.highlight?.videoUrl && m.kickoffUtc)
+    .filter((m) => !(pinned[m.key] || []).length)
+    .sort((a, b) => Date.parse(b.kickoffUtc) - Date.parse(a.kickoffUtc))
+    .slice(0, maxMatches);
+
+  if (!candidates.length) {
+    console.log("No highlight matches need meme discovery (all pinned or none with ملخص).");
+    return {};
+  }
+
+  const out = {};
+  for (const m of candidates) {
+    console.log(`Twitter API: discovering memes for ${m.home} vs ${m.away} only (≤9 calls)`);
+    try {
+      const hits = await discoverMatchMemes(m.home, m.away, {
+        match: m,
+        kickoffUtc: m.kickoffUtc,
+        bearerToken: token,
+      });
+      if (hits.length) out[m.key] = hits;
+      await sleep(600);
+    } catch (err) {
+      console.warn(`memes skipped for ${m.key}:`, err.message);
+    }
+  }
+  return out;
+}
+
 module.exports = {
   MEME_SOURCES,
   TOP_PER_ACCOUNT,
   resolveMemeUserIds,
   discoverMatchMemes,
   discoverAllMatchMemes,
+  discoverLatestHighlightMemes,
   postMatchWindow,
   captionMentionsMatch,
   engagementScore,

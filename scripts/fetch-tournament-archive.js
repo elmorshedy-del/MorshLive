@@ -14,7 +14,7 @@ const { attachSummaries } = require("./highlights-lib");
 const { scrapeBtolatHighlights } = require("./btolat-highlights-lib");
 const { findKnownVortexHighlight } = require("./vortex-highlights-lib");
 const { arabicTeam } = require("./highlights-lib");
-const { discoverAllMatchMemes } = require("./twitter-memes-lib");
+const { discoverLatestHighlightMemes, discoverAllMatchMemes } = require("./twitter-memes-lib");
 
 const OUT = path.join(__dirname, "..", "assets", "data", "tournament-archive.json");
 const MEMES_OUT = path.join(__dirname, "..", "assets", "data", "match-memes.json");
@@ -121,15 +121,33 @@ async function main() {
 
   let pinnedMemes = {};
   try { pinnedMemes = JSON.parse(fs.readFileSync(PINNED_MEMES, "utf8")); } catch { /* */ }
+  let existingMemes = {};
+  try { existingMemes = JSON.parse(fs.readFileSync(MEMES_OUT, "utf8")); } catch { /* */ }
 
-  console.log("Discovering viral X/Twitter memes…");
-  const discovered = await discoverAllMatchMemes(matches, { maxPerMatch: 3 });
-  const memes = { ...pinnedMemes };
-  for (const [key, list] of Object.entries(discovered)) {
+  const memes = { ...existingMemes };
+  for (const [key, list] of Object.entries(pinnedMemes)) {
     if (list.length) memes[key] = list;
   }
+
+  const token = process.env.TWITTER_BEARER_TOKEN;
+  if (token && process.env.TWITTER_FETCH_ALL === "1") {
+    console.warn("TWITTER_FETCH_ALL=1 — bulk meme scan (many API calls; not recommended)");
+    const discovered = await discoverAllMatchMemes(matches);
+    for (const [key, list] of Object.entries(discovered)) {
+      if (list.length) memes[key] = list;
+    }
+  } else if (token && process.env.TWITTER_FETCH_LATEST === "1") {
+    console.log("TWITTER_FETCH_LATEST=1 — fetching memes for latest ملخص match only (≤9 API calls)");
+    const discovered = await discoverLatestHighlightMemes(matches, { pinnedMemes, maxMatches: 1 });
+    for (const [key, list] of Object.entries(discovered)) {
+      if (list.length) memes[key] = list;
+    }
+  } else {
+    console.log("Skipping Twitter API (pinned + existing memes kept; set TWITTER_FETCH_LATEST=1 for one match only)");
+  }
+
   const memeCount = Object.keys(memes).filter((k) => memes[k].length).length;
-  console.log(`memes matched for ${memeCount} matches (${Object.keys(pinnedMemes).length} pinned)`);
+  console.log(`memes for ${memeCount} matches (${Object.keys(pinnedMemes).length} pinned)`);
 
   const stageCounts = {};
   for (const m of matches) stageCounts[m.stage] = (stageCounts[m.stage] || 0) + 1;
