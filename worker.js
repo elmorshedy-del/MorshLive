@@ -2130,6 +2130,127 @@ async function proxyHighlightApi(request, env) {
   return new Response(JSON.stringify({ error: "not found" }), { status: 404, headers });
 }
 
+/* ----------------------------------------------- viral X memes per match
+ * GET /api/match-memes?home=&away= — uses TWITTER_BEARER_TOKEN when set */
+const MEMES_API_RE = /^\/api\/match-memes\/?$/i;
+const TWITTER_SEARCH_URL = "https://api.twitter.com/2/tweets/search/recent";
+const MEME_TEAM_ALIASES = {
+  France: ["Mbappé", "Mbappe", "Les Bleus"],
+  Paraguay: ["Albirroja"],
+  Morocco: ["Atlas Lions"],
+  Brazil: ["Seleção", "Selecao"],
+  Germany: ["Die Mannschaft"],
+  Argentina: ["Messi", "Albiceleste"],
+  England: ["Three Lions"],
+  Portugal: ["Ronaldo"],
+  "United States": ["USA", "USMNT"],
+};
+
+function memeTeamTerms(name) {
+  const aliases = MEME_TEAM_ALIASES[name] || [];
+  return [name, ...aliases].filter(Boolean);
+}
+
+function memeSearchQuery(home, away) {
+  const terms = [...new Set([...memeTeamTerms(home), ...memeTeamTerms(away)])]
+    .slice(0, 4)
+    .map((t) => (String(t).includes(" ") ? `"${t}"` : t));
+  return `(${terms.join(" OR ")}) (world cup OR fifa OR meme OR viral OR goal) -is:retweet lang:en`;
+}
+
+function memeTweetMatches(text, home, away) {
+  const t = String(text || "").toLowerCase();
+  const homeHit = memeTeamTerms(home).some((n) => t.includes(n.toLowerCase()));
+  const awayHit = memeTeamTerms(away).some((n) => t.includes(n.toLowerCase()));
+  return homeHit && awayHit;
+}
+
+async function searchTwitterMemes(bearerToken, home, away) {
+  const params = new URLSearchParams({
+    query: memeSearchQuery(home, away),
+    max_results: "10",
+    "tweet.fields": "public_metrics,author_id",
+    expansions: "author_id",
+    "user.fields": "username",
+  });
+  const res = await fetch(`${TWITTER_SEARCH_URL}?${params}`, {
+    headers: { Authorization: `Bearer ${bearerToken}` },
+  });
+  if (!res.ok) return [];
+  const json = await res.json();
+  const users = new Map((json.includes?.users || []).map((u) => [u.id, u.username]));
+  return (json.data || [])
+    .filter((t) => memeTweetMatches(t.text, home, away))
+    .map((t) => {
+      const author = users.get(t.author_id) || "i";
+      const likes = t.public_metrics?.like_count || 0;
+      return {
+        type: "tweet",
+        url: `https://x.com/${author}/status/${t.id}`,
+        text: t.text || "",
+        author,
+        tweetId: String(t.id),
+        likes,
+      };
+    })
+    .sort((a, b) => (b.likes || 0) - (a.likes || 0))
+    .slice(0, 4);
+}
+
+let _memesIdxCache = null;
+
+async function loadMemesIndex(env, origin) {
+  if (_memesIdxCache) return _memesIdxCache;
+  try {
+    const res = await env.ASSETS.fetch(`${origin}/assets/data/match-memes.json`);
+    _memesIdxCache = res.ok ? await res.json() : {};
+  } catch {
+    _memesIdxCache = {};
+  }
+  return _memesIdxCache;
+}
+
+function highlightPairKeyMemes(home, away) {
+  const norm = (s) =>
+    String(s || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+  return [norm(home), norm(away)].sort().join("~");
+}
+
+async function proxyMatchMemesApi(request, env) {
+  const url = new URL(request.url);
+  const home = (url.searchParams.get("home") || "").trim();
+  const away = (url.searchParams.get("away") || "").trim();
+  const headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "public, max-age=1800",
+    "X-KZ-Proxy": "match-memes-api",
+  };
+  if (!home || !away) {
+    return new Response(JSON.stringify({ error: "home and away required" }), { status: 400, headers });
+  }
+  const key = highlightPairKeyMemes(home, away);
+  const idx = await loadMemesIndex(env, url.origin);
+  let memes = idx[key] || [];
+
+  const bearer = env && env.TWITTER_BEARER_TOKEN;
+  if (bearer && (url.searchParams.get("refresh") === "1" || !memes.length)) {
+    try {
+      const live = await searchTwitterMemes(bearer, home, away);
+      if (live.length) memes = live;
+    } catch { /* fall back to static index */ }
+  }
+
+  return new Response(JSON.stringify({ key, memes }), {
+    status: 200,
+    headers: { ...headers, "X-KZ-Meme-Source": memes.length ? (bearer ? "twitter-api" : "archive") : "none" },
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -2194,6 +2315,9 @@ export default {
     }
     if (HIGHLIGHT_API_RE.test(url.pathname) && method === "GET") {
       return withEdgeCache(request, 3600, () => proxyHighlightApi(request, env));
+    }
+    if (MEMES_API_RE.test(url.pathname) && method === "GET") {
+      return withEdgeCache(request, 1800, () => proxyMatchMemesApi(request, env));
     }
     return env.ASSETS.fetch(request);
   },

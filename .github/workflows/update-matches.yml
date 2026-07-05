@@ -28,6 +28,8 @@ jobs:
         run: node scripts/fetch-matches.js
 
       - name: Refresh World Cup tournament archive
+        env:
+          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
         run: node scripts/fetch-tournament-archive.js
 
       - name: Verify live channel routing

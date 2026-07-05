@@ -13,6 +13,7 @@ account_id = "f06dda0c02d25976dcda319e942e432c" # pragma: allowlist secret
 # worldkoora rotates its CDN host. Set it once per environment (not committed):
 #   npx wrangler secret put STREAM_SIGNING_SECRET
 #   npx wrangler secret put YOUTUBE_API_KEY   # Arabic replay clips (YouTube Data API v3)
+#   npx wrangler secret put TWITTER_BEARER_TOKEN  # viral match memes (X API v2)
 # Use any long random string, e.g.:  openssl rand -hex 32
 
 [assets]
