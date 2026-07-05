@@ -235,52 +235,76 @@
     return key.toUpperCase();
   }
 
-  function renderServers() {
+  function renderServers({ rebind } = {}) {
     const row = document.getElementById("servers");
     if (!row) return;
     const defaultKey = (match && match.embedKey) || window.SITE_DATA.embedKeyFor(channel.id);
-    const buttons = [];
-    for (const src of STREAM_SOURCES) {
-      for (const serv of src.servs) {
-        const url = channelEmbedUrl(channel.id, src.key, serv);
-        const isActive = (activeEmbedKey || defaultKey) === src.key && activeServ === serv;
-        buttons.push(`<button type="button" class="server-btn${isActive ? " active" : ""}${src.key === "weshan" ? " server-btn--alt" : ""}"
-          data-srv="${serv}" data-embed="${src.key}" data-kind="reachable" data-url="${escapeHtml(url)}"
-          data-label="${sourceLabel(src.key)} ${t("watch.server")} ${serv}">
-          <span class="srv-label">${sourceLabel(src.key)} · ${t("watch.server")} ${serv}</span>
-        </button>`);
-      }
-    }
-    row.innerHTML = buttons.join("");
+    const needsRebuild = rebind !== false && (
+      !row.querySelector(".server-btn") ||
+      row.dataset.ch !== channel.id ||
+      row.dataset.embed !== (activeEmbedKey || defaultKey || "") ||
+      row.dataset.serv !== String(activeServ)
+    );
 
-    row.querySelectorAll(".server-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        activeServ = Number(btn.dataset.srv) || 3;
-        activeEmbedKey = btn.dataset.embed || "vip1";
-        row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        const next = new URL(location.href);
-        next.searchParams.set("ch", channel.id);
-        next.searchParams.set("serv", String(activeServ));
-        next.searchParams.set("player", activeEmbedKey);
-        if (match && match.id) next.searchParams.set("match", match.id);
-        history.replaceState(null, "", next.toString());
-        reloadPlayer();
+    if (needsRebuild) {
+      const buttons = [];
+      for (const src of STREAM_SOURCES) {
+        for (const serv of src.servs) {
+          const url = channelEmbedUrl(channel.id, src.key, serv);
+          const isActive = (activeEmbedKey || defaultKey) === src.key && activeServ === serv;
+          buttons.push(`<button type="button" class="server-btn${isActive ? " active" : ""}${src.key === "weshan" ? " server-btn--alt" : ""}"
+            data-srv="${serv}" data-embed="${src.key}" data-kind="reachable" data-url="${escapeHtml(url)}"
+            data-label="${sourceLabel(src.key)} ${t("watch.server")} ${serv}">
+            <span class="srv-label">${sourceLabel(src.key)} · ${t("watch.server")} ${serv}</span>
+          </button>`);
+        }
+      }
+      row.innerHTML = buttons.join("");
+      row.dataset.ch = channel.id;
+      row.dataset.embed = activeEmbedKey || defaultKey || "";
+      row.dataset.serv = String(activeServ);
+
+      row.querySelectorAll(".server-btn").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          activeServ = Number(btn.dataset.srv) || 3;
+          activeEmbedKey = btn.dataset.embed || "vip1";
+          row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
+          btn.classList.add("active");
+          row.dataset.embed = activeEmbedKey;
+          row.dataset.serv = String(activeServ);
+          const next = new URL(location.href);
+          next.searchParams.set("ch", channel.id);
+          next.searchParams.set("serv", String(activeServ));
+          next.searchParams.set("player", activeEmbedKey);
+          if (match && match.id) next.searchParams.set("match", match.id);
+          history.replaceState(null, "", next.toString());
+          reloadPlayer();
+        });
       });
-    });
+    }
 
     if (window.StreamCheck) {
       window.StreamCheck.autoHighlight(row, { autoSelect: true }).then((res) => {
-        if (res && res.firstOk && res.firstOk.classList.contains("srv-down") === false) {
-          const srv = Number(res.firstOk.dataset.srv);
-          const emb = res.firstOk.dataset.embed;
-          if (emb && !Number.isNaN(srv) && (srv !== activeServ || emb !== activeEmbedKey)) {
-            activeServ = srv;
-            activeEmbedKey = emb;
-            row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
-            res.firstOk.classList.add("active");
-            reloadPlayer();
-          }
+        if (!res || !res.firstOk || res.firstOk.classList.contains("srv-down")) return;
+        const active = row.querySelector(".server-btn.active");
+        // Keep the user's working pick — only auto-switch when nothing is active or it died.
+        if (active && !active.classList.contains("srv-down")) return;
+        const srv = Number(res.firstOk.dataset.srv);
+        const emb = res.firstOk.dataset.embed;
+        if (emb && !Number.isNaN(srv) && (srv !== activeServ || emb !== activeEmbedKey)) {
+          activeServ = srv;
+          activeEmbedKey = emb;
+          row.dataset.embed = activeEmbedKey;
+          row.dataset.serv = String(activeServ);
+          row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
+          res.firstOk.classList.add("active");
+          const next = new URL(location.href);
+          next.searchParams.set("ch", channel.id);
+          next.searchParams.set("serv", String(activeServ));
+          next.searchParams.set("player", activeEmbedKey);
+          if (match && match.id) next.searchParams.set("match", match.id);
+          history.replaceState(null, "", next.toString());
+          reloadPlayer();
         }
       }).catch(() => {});
     }
@@ -354,13 +378,14 @@
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
-    renderChannels();
-    renderServers();
-    renderSidebar();
+    const channelChanged = channel.id !== previousChannelId;
     const matchChanged = (match && match.id) !== previousMatchId;
-    if (channel.id !== previousChannelId || matchChanged) {
+    if (channelChanged) renderChannels();
+    if (channelChanged || matchChanged) {
+      renderServers({ rebind: true });
       reloadPlayer();
     }
+    renderSidebar();
   }
 
   document.addEventListener("DOMContentLoaded", () => {
