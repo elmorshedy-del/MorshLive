@@ -32,7 +32,7 @@ function embedUrlFor(embed, extra) {
   if (opts.matchId) u.searchParams.set("match", opts.matchId);
   if (opts.mode && opts.mode !== "dual") u.searchParams.set("mode", opts.mode);
   if (opts.serv != null && opts.serv !== "") u.searchParams.set("serv", String(opts.serv));
-  u.searchParams.set("_kz", "10"); // bust stale iframe cache when player UI changes
+  u.searchParams.set("_kz", "11"); // bust stale iframe cache when player UI changes
   return u.toString();
 }
 
@@ -52,7 +52,7 @@ function streamOptionUrl(opt, channelId, matchId) {
     const u = new URL(opt.path, base);
     u.searchParams.set("ch", channelId);
     if (matchId) u.searchParams.set("match", matchId);
-    u.searchParams.set("_kz", "10");
+    u.searchParams.set("_kz", "11");
     return u.toString();
   }
   const embed = { ...embedForKey(opt.embedKey), channelId };
