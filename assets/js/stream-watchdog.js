@@ -1,10 +1,29 @@
-/* Captures stream/player incidents for debugging (kooracity overlays, redirects, etc.).
- * User can run StreamWatchdog.export() in console or share the copied JSON next time. */
+/* Auto-captures stream/player incidents — logs locally and POSTs to /api/stream-log. */
 (function (global) {
   "use strict";
 
   const LOG_KEY = "kz_stream_incidents";
-  const MAX = 80;
+  const VOTER_KEY = "kz_voter_id";
+  const MAX_LOCAL = 80;
+  const API = "/api/stream-log";
+  const pending = [];
+  let flushTimer = null;
+  let lastSentKey = "";
+
+  function voterId() {
+    try {
+      let id = localStorage.getItem(VOTER_KEY);
+      if (!id) {
+        id = global.crypto && global.crypto.randomUUID
+          ? global.crypto.randomUUID()
+          : "v-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        localStorage.setItem(VOTER_KEY, id);
+      }
+      return id;
+    } catch {
+      return "anon";
+    }
+  }
 
   function readLog() {
     try {
@@ -16,63 +35,123 @@
 
   function writeLog(arr) {
     try {
-      localStorage.setItem(LOG_KEY, JSON.stringify(arr.slice(-MAX)));
+      localStorage.setItem(LOG_KEY, JSON.stringify(arr.slice(-MAX_LOCAL)));
     } catch {
       /* noop */
     }
+  }
+
+  function entryKey(entry) {
+    return [
+      entry.event,
+      entry.iframeSrc,
+      entry.embedKey,
+      entry.serv,
+      entry.channel,
+      entry.match,
+    ].join("|");
+  }
+
+  function sendToServer(events) {
+    if (!events || !events.length) return;
+    const payload = JSON.stringify({ events });
+    if (navigator.sendBeacon) {
+      try {
+        const blob = new Blob([payload], { type: "application/json" });
+        if (navigator.sendBeacon(API, blob)) return;
+      } catch {
+        /* fall through */
+      }
+    }
+    fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: true,
+    }).catch(() => {});
+  }
+
+  function flushPending() {
+    flushTimer = null;
+    if (!pending.length) return;
+    const batch = pending.splice(0, pending.length);
+    sendToServer(batch);
+  }
+
+  function queueRemote(entry) {
+    const key = entryKey(entry);
+    if (key === lastSentKey) return;
+    lastSentKey = key;
+    pending.push(entry);
+    if (!flushTimer) flushTimer = setTimeout(flushPending, 400);
   }
 
   function log(event, detail) {
     const entry = {
       t: new Date().toISOString(),
       event,
+      voter: voterId(),
       url: global.location && global.location.href,
       ...(detail || {}),
     };
     const arr = readLog();
     arr.push(entry);
     writeLog(arr);
-    if (global.console) console.warn("[KZ Stream]", event, entry);
+    queueRemote(entry);
     return entry;
   }
 
   function exportLog() {
-    const text = JSON.stringify(readLog(), null, 2);
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(text).catch(() => {});
-    }
-    return text;
+    return JSON.stringify(readLog(), null, 2);
   }
 
   function clearLog() {
     writeLog([]);
   }
 
-  function watchPlayerShell(shell, meta) {
+  function watchPlayerShell(shell, metaOrGetter) {
     if (!shell || shell.__kzWatchdog) return;
     shell.__kzWatchdog = true;
 
+    function meta() {
+      return typeof metaOrGetter === "function" ? metaOrGetter() : metaOrGetter;
+    }
+
     function snapshot(why) {
+      const m = meta() || {};
       const iframe = shell.querySelector("iframe");
       log(why || "player_snapshot", {
         iframeSrc: iframe && iframe.src,
-        embedKey: meta && meta.embedKey,
-        serv: meta && meta.serv,
-        channel: meta && meta.channelId,
-        match: meta && meta.matchId,
+        embedKey: m.embedKey,
+        serv: m.serv,
+        channel: m.channelId,
+        match: m.matchId,
       });
     }
 
     snapshot("watchdog_start");
 
-    const mo = new MutationObserver(() => snapshot("iframe_mutated"));
+    let mutateTimer = null;
+    const mo = new MutationObserver(() => {
+      if (mutateTimer) return;
+      mutateTimer = setTimeout(() => {
+        mutateTimer = null;
+        snapshot("iframe_mutated");
+      }, 600);
+    });
     mo.observe(shell, { childList: true, subtree: true, attributes: true, attributeFilter: ["src"] });
 
     global.addEventListener("visibilitychange", () => {
       if (global.document.visibilityState === "visible") snapshot("tab_visible");
+      else flushPending();
     });
 
-    global.addEventListener("blur", () => log("window_blur", { embedKey: meta && meta.embedKey }));
+    global.addEventListener("blur", () => {
+      log("window_blur", meta());
+      flushPending();
+    });
+
+    global.addEventListener("pagehide", () => flushPending());
   }
 
   global.StreamWatchdog = { log, export: exportLog, clear: clearLog, watch: watchPlayerShell, read: readLog };

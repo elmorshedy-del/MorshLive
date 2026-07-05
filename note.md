@@ -8,7 +8,7 @@ Operator notes for KoraZero live channel issues. One section per match incident,
 
 | Commit | Summary | Files |
 |--------|---------|-------|
-| *(this branch)* | Hide burned-in kooracity/dlhd bottom ticker; stream incident logger | `worker.js`, `styles.css`, `stream-watchdog.js`, `watch.js`, `watch.html` |
+| *(this branch)* | Hide burned-in kooracity/dlhd bottom ticker; auto stream incident logger | `worker.js`, `styles.css`, `stream-watchdog.js`, `watch.js`, `watch.html` |
 
 ### Kooracity bottom ticker (not spam)
 
@@ -23,7 +23,7 @@ Operator notes for KoraZero live channel issues. One section per match incident,
 - Watch page `#player-shell::before`: same mask over the iframe shell
 - Prefer clean proxied HLS paths (VIP/Weshan worker routes) — avoid raw upstream iframe when possible
 
-**Reporting next time:** Open browser console on watch page → `StreamWatchdog.export()` — copies JSON log (iframe src, embed key, serv, channel, match, timestamps) to clipboard. Share that paste when reporting stream issues.
+**Reporting next time:** Happens automatically — every player load, server switch, and iframe change is sent to `/api/stream-log` on the worker (no console needed). Operators can read recent incidents with `GET /api/stream-log` (last 50 entries). Local backup still kept in `localStorage` under `kz_stream_incidents`.
 
 ---
 
@@ -201,7 +201,7 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 | Dead MAX mirror | `worker.js` `DLHD_CHANNEL_MIRROR_IDS` | Add fallback ids 91–95; bump `channel-bindings.json` |
 | New AlbaPlayer host | `worker.js` | Proxy at `/wk/albaplayer/{slug}/`, extract HLS, serve `cleanHlsPlayerHtml` — never raw iframe |
 | Spam «مباشر» menu | Upstream AlbaPlayer | Hide `.aplr-menu`; block `AplrPopUp`; sandbox without `allow-popups` |
-| Kooracity bottom ticker | dlhd/worldkoora HLS burn-in | Not spam — upstream «go to original site» branding; mask with `.kz-bottom-mask` + `#player-shell::before`; log via `StreamWatchdog.export()` |
+| Kooracity bottom ticker | dlhd/worldkoora HLS burn-in | Not spam — upstream «go to original site» branding; mask with `.kz-bottom-mask` + `#player-shell::before`; auto-log via `/api/stream-log` |
 | Video reloads alone | `watch.js` | Don't rebuild servers on stats refresh; only switch if active `srv-down` |
 | Lineups missing | `data.js` `getMatches()` | Ensure `applyMatchDetail()` runs on cached `today.json` path |
 | Pin live match routing | `today.json` + bindings | Set `embedKey`, `channelId`; calibrate in `channel-bindings.json` |

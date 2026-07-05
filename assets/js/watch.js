@@ -60,7 +60,7 @@
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
       `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
     if (window.StreamWatchdog) {
-      window.StreamWatchdog.watch(shell, playerMeta());
+      window.StreamWatchdog.watch(shell, playerMeta);
       window.StreamWatchdog.log("player_load", { iframeSrc: url, ...playerMeta() });
     }
   }

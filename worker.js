@@ -25,6 +25,9 @@ const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
 const POLL_RE = /^\/api\/poll\/([a-z0-9-]+)\/?$/i;
 const POLL_STORE = "https://kz-poll.internal/";
+const STREAM_LOG_RE = /^\/api\/stream-log\/?$/i;
+const STREAM_LOG_STORE = "https://kz-stream-log.internal/";
+const STREAM_LOG_MAX = 250;
 const POLL_TEAMS = {
   "brazil-norway-20260705": ["brazil", "norway"],
 };
@@ -1912,6 +1915,111 @@ async function handlePoll(request, pollId) {
   return new Response("Method not allowed", { status: 405, headers: pollJsonHeaders() });
 }
 
+function streamLogJsonHeaders(extra) {
+  return {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    ...(extra || {}),
+  };
+}
+
+function streamLogListKey() {
+  return new Request(`${STREAM_LOG_STORE}recent`);
+}
+
+async function readStreamLogList() {
+  const hit = await caches.default.match(streamLogListKey());
+  if (!hit) return [];
+  try {
+    const arr = await hit.json();
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeStreamLogList(arr) {
+  await caches.default.put(
+    streamLogListKey(),
+    new Response(JSON.stringify(arr.slice(-STREAM_LOG_MAX)), {
+      headers: { "Cache-Control": "no-store" },
+    })
+  );
+}
+
+function streamLogDedupKey(entry) {
+  return [
+    entry.voter || "",
+    entry.event || "",
+    entry.iframeSrc || "",
+    entry.embedKey || "",
+    entry.serv || "",
+    entry.channel || "",
+    entry.match || "",
+  ].join("|");
+}
+
+async function handleStreamLog(request) {
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: streamLogJsonHeaders() });
+  }
+
+  if (request.method === "GET") {
+    const list = await readStreamLogList();
+    return new Response(JSON.stringify({ ok: true, count: list.length, incidents: list.slice(-50) }), {
+      status: 200,
+      headers: streamLogJsonHeaders(),
+    });
+  }
+
+  if (request.method !== "POST") {
+    return new Response("Method not allowed", { status: 405, headers: streamLogJsonHeaders() });
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "bad_json" }), { status: 400, headers: streamLogJsonHeaders() });
+  }
+
+  const events = Array.isArray(body && body.events) ? body.events : [body];
+  const list = await readStreamLogList();
+  const seen = new Set(list.slice(-40).map(streamLogDedupKey));
+  let added = 0;
+
+  for (const raw of events) {
+    if (!raw || typeof raw !== "object") continue;
+    const entry = {
+      t: raw.t || new Date().toISOString(),
+      event: String(raw.event || "incident").slice(0, 64),
+      voter: String(raw.voter || "").slice(0, 64),
+      url: String(raw.url || "").slice(0, 512),
+      iframeSrc: String(raw.iframeSrc || "").slice(0, 512),
+      embedKey: String(raw.embedKey || "").slice(0, 32),
+      serv: raw.serv == null ? "" : String(raw.serv).slice(0, 8),
+      channel: String(raw.channel || "").slice(0, 64),
+      match: String(raw.match || "").slice(0, 64),
+      ua: (request.headers.get("User-Agent") || "").slice(0, 160),
+    };
+    const key = streamLogDedupKey(entry);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    list.push(entry);
+    added++;
+  }
+
+  if (added) await writeStreamLogList(list);
+
+  return new Response(JSON.stringify({ ok: true, added }), {
+    status: 200,
+    headers: streamLogJsonHeaders(),
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -1976,6 +2084,9 @@ export default {
     const poll = url.pathname.match(POLL_RE);
     if (poll) {
       return handlePoll(request, poll[1].toLowerCase());
+    }
+    if (STREAM_LOG_RE.test(url.pathname)) {
+      return handleStreamLog(request);
     }
     return env.ASSETS.fetch(request);
   },
