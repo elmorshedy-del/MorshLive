@@ -407,6 +407,7 @@
     match = picked.match;
     activeEmbedKey = params.get("player") || picked.embedKey || (match && match.embedKey) || null;
     if (params.has("serv")) activeServ = Number(params.get("serv"));
+    else if (match && match.streamServ != null) activeServ = Number(match.streamServ);
     if (Number.isNaN(activeServ)) activeServ = 3;
   }
 
