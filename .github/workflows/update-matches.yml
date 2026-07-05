@@ -27,6 +27,9 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }} # optional; enables Arabic highlight clips
         run: node scripts/fetch-matches.js
 
+      - name: Refresh World Cup tournament archive
+        run: node scripts/fetch-tournament-archive.js
+
       - name: Verify live channel routing
         run: node scripts/verify-channel-bindings.js
 
@@ -34,9 +37,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet -- assets/data/today.json assets/data/live-snapshot.json assets/js/channel-bindings.js; then
-            git add assets/data/today.json assets/data/live-snapshot.json assets/js/channel-bindings.js
-            git commit -m "chore: refresh today's matches and live channel snapshot"
+          if ! git diff --quiet -- assets/data/today.json assets/data/live-snapshot.json assets/js/channel-bindings.js assets/data/tournament-archive.json assets/data/match-memes.json; then
+            git add assets/data/today.json assets/data/live-snapshot.json assets/js/channel-bindings.js assets/data/tournament-archive.json assets/data/match-memes.json
+            git commit -m "chore: refresh today's matches, tournament archive, and live channel snapshot"
             git push
           else
             echo "No changes."
