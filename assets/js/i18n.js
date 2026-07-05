@@ -380,7 +380,7 @@
       "watch.optAltVip": "Alt VIP {slot}",
       "watch.optAltVipHint": "Other worldkoora slot — try if you see the wrong game",
       "watch.optHls": "HLS only",
-      "watch.optHlsHint": "Clean HLS without Twitch — faster on mobile",
+      "watch.optHlsHint": "Clean HLS — lower delay, no Twitch",
       "watch.optTwitch": "Twitch only",
       "watch.optTwitchHint": "Arabic Twitch relay — higher quality when live",
       "watch.optMaxAr": "MAX AR · dlhd",

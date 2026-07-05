@@ -1883,15 +1883,23 @@ async function proxySirHls(request, env) {
   }
 }
 
-/* ----------------------------------------------- YouTube highlight replays (ملخص)
- * Server-side YouTube Data API search — key stays in YOUTUBE_API_KEY secret,
- * never shipped to the browser. GET /api/highlight?home=&away=&kickoff= */
+/* ----------------------------------------------- ملخص replays (vortex + YouTube fallback)
+ * Primary: nvtboo.vortexvisionworks.com embeds (btolat/kawkabnews source).
+ * Fallback: YouTube Data API when YOUTUBE_API_KEY is set.
+ * GET /api/highlight?home=&away=&kickoff= */
 const HIGHLIGHT_API_RE = /^\/api\/highlight\/?$/i;
+const VORTEX_HOST = "nvtboo.vortexvisionworks.com";
+const VORTEX_EMBED_BASE = `https://${VORTEX_HOST}/embed`;
 const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
 const HIGHLIGHT_ARABIC_RE = /[؀-ۿ]/;
 const YOUTUBE_ID_RE = /^[\w-]{11}$/;
 
 let _teamArCache = null;
+let _knownVortexCache = null;
+
+const VORTEX_TEAM_AR_ALIASES = {
+  Paraguay: ["باراجواي"],
+};
 
 async function loadTeamAr(env, origin) {
   if (_teamArCache) return _teamArCache;
@@ -1904,8 +1912,128 @@ async function loadTeamAr(env, origin) {
   return _teamArCache;
 }
 
+async function loadKnownVortex(env, origin) {
+  if (_knownVortexCache) return _knownVortexCache;
+  try {
+    const res = await env.ASSETS.fetch(`${origin}/assets/data/vortex-highlights.json`);
+    _knownVortexCache = res.ok ? await res.json() : {};
+  } catch {
+    _knownVortexCache = {};
+  }
+  return _knownVortexCache;
+}
+
 function teamArabic(teamAr, name) {
   return (teamAr && teamAr[name]) || name || "";
+}
+
+function vortexTeamNames(teamAr, name) {
+  const primary = teamArabic(teamAr, name);
+  const aliases = VORTEX_TEAM_AR_ALIASES[name] || [];
+  return [primary, name, ...aliases].filter(Boolean);
+}
+
+function highlightPairKey(home, away) {
+  const norm = (s) =>
+    String(s || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, "");
+  return [norm(home), norm(away)].sort().join("~");
+}
+
+function vortexSearchQueries(home, away, teamAr) {
+  const queries = new Set();
+  const homeNames = vortexTeamNames(teamAr, home).slice(0, 2);
+  const awayNames = vortexTeamNames(teamAr, away).slice(0, 2);
+  for (const h of homeNames) {
+    for (const a of awayNames) {
+      queries.add(`site:${VORTEX_HOST} ملخص ${h} ${a}`);
+      queries.add(`site:${VORTEX_HOST} ملخص ${h} و ${a}`);
+      queries.add(`site:${VORTEX_HOST} ملخص ${h} و${a}`);
+      queries.add(`site:${VORTEX_HOST} اهداف ${h} ${a} كأس العالم`);
+      queries.add(`site:${VORTEX_HOST} ملخص ${h} ${a} كأس العالم 2026`);
+    }
+  }
+  return [...queries];
+}
+
+function extractVortexEmbedIds(html) {
+  const ids = new Set();
+  const patterns = [
+    /nvtboo\.vortexvisionworks\.com\/embed\/([A-Za-z0-9]+)/gi,
+    /vortexvisionworks\.com(?:%2F|\/)embed(?:%2F|\/)([A-Za-z0-9]+)/gi,
+  ];
+  for (const re of patterns) {
+    let m;
+    while ((m = re.exec(html || ""))) ids.add(m[1]);
+  }
+  return [...ids];
+}
+
+function parseOgMeta(html, prop) {
+  const m = (html || "").match(new RegExp(`<meta property="${prop}" content="([^"]+)"`, "i"));
+  return m ? m[1] : "";
+}
+
+function vortexTitleMatches(title, home, away, teamAr) {
+  if (!title || !/ملخص|اهداف/i.test(title)) return false;
+  const t = String(title).replace(/\s+/g, " ").trim();
+  const homeHit = vortexTeamNames(teamAr, home).some((n) => t.includes(n));
+  const awayHit = vortexTeamNames(teamAr, away).some((n) => t.includes(n));
+  return homeHit && awayHit;
+}
+
+async function searchDdgVortexIds(query) {
+  const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; MorshLive/1.0)", Accept: "text/html,*/*" },
+    redirect: "follow",
+  });
+  if (!res.ok) return [];
+  return extractVortexEmbedIds(await res.text());
+}
+
+async function fetchVortexEmbedMeta(id) {
+  const res = await fetch(`${VORTEX_EMBED_BASE}/${id}`, {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; MorshLive/1.0)", Accept: "text/html,*/*" },
+    redirect: "follow",
+  });
+  if (!res.ok) return null;
+  const html = await res.text();
+  const title = parseOgMeta(html, "og:title");
+  if (!title) return null;
+  return {
+    videoUrl: `${VORTEX_EMBED_BASE}/${id}`,
+    title,
+    thumbnail: parseOgMeta(html, "og:image") || "",
+    source: "vortex",
+    embedId: id,
+  };
+}
+
+async function searchKnownVortexHighlight(home, away, known) {
+  const id = known && known[highlightPairKey(home, away)];
+  if (!id) return null;
+  return fetchVortexEmbedMeta(id);
+}
+
+async function searchVortexHighlight(home, away, teamAr, known) {
+  const pinned = await searchKnownVortexHighlight(home, away, known);
+  if (pinned) return pinned;
+
+  const seen = new Set();
+  for (const q of vortexSearchQueries(home, away, teamAr)) {
+    const ids = await searchDdgVortexIds(q);
+    for (const id of ids.slice(0, 10)) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const meta = await fetchVortexEmbedMeta(id);
+      if (meta && vortexTitleMatches(meta.title, home, away, teamAr)) return meta;
+    }
+  }
+  return null;
 }
 
 function highlightQueries(home, away, teamAr) {
@@ -1977,16 +2105,29 @@ async function proxyHighlightApi(request, env) {
   if (!home || !away) {
     return new Response(JSON.stringify({ error: "home and away required" }), { status: 400, headers });
   }
-  const apiKey = env && env.YOUTUBE_API_KEY;
-  if (!apiKey) {
-    return new Response(JSON.stringify({ error: "highlights unavailable" }), { status: 503, headers });
-  }
   const teamAr = await loadTeamAr(env, url.origin);
-  const found = await searchYouTubeHighlight(apiKey, highlightQueries(home, away, teamAr), kickoff);
-  if (!found) {
-    return new Response(JSON.stringify({ error: "not found" }), { status: 404, headers });
+  const knownVortex = await loadKnownVortex(env, url.origin);
+
+  const vortex = await searchVortexHighlight(home, away, teamAr, knownVortex);
+  if (vortex) {
+    return new Response(JSON.stringify(vortex), {
+      status: 200,
+      headers: { ...headers, "X-KZ-Highlight-Source": "vortex" },
+    });
   }
-  return new Response(JSON.stringify(found), { status: 200, headers });
+
+  const apiKey = env && env.YOUTUBE_API_KEY;
+  if (apiKey) {
+    const yt = await searchYouTubeHighlight(apiKey, highlightQueries(home, away, teamAr), kickoff);
+    if (yt) {
+      return new Response(JSON.stringify(yt), {
+        status: 200,
+        headers: { ...headers, "X-KZ-Highlight-Source": "youtube" },
+      });
+    }
+  }
+
+  return new Response(JSON.stringify({ error: "not found" }), { status: 404, headers });
 }
 
 export default {
