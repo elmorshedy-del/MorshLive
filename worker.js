@@ -25,6 +25,9 @@ const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
 const POLL_RE = /^\/api\/poll\/([a-z0-9-]+)\/?$/i;
 const POLL_STORE = "https://kz-poll.internal/";
+const STREAM_LOG_RE = /^\/api\/stream-log\/?$/i;
+const STREAM_LOG_STORE = "https://kz-stream-log.internal/";
+const STREAM_LOG_MAX = 250;
 const POLL_TEAMS = {
   "brazil-norway-20260705": ["brazil", "norway"],
 };
@@ -107,6 +110,9 @@ const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
 .aplr-ad,.aplr-preroll,.video-ad,.vjs-ad,.ima-ad-container,
 .aplr-embed-holder,.aplr-embed-visible,.aplr-site-name{display:none!important;visibility:hidden!important;pointer-events:none!important}
 </style>`;
+
+// Burned-in dlhd/kooracity ticker at the bottom of HLS frames («اذهب للموقع الأصلي»).
+const KZ_BOTTOM_MASK_CSS = `.kz-wrap{position:relative;width:100%;height:100%}.kz-bottom-mask{position:absolute;left:0;right:0;bottom:0;height:14%;min-height:48px;max-height:96px;background:linear-gradient(to top,#000 42%,rgba(0,0,0,.94) 72%,transparent);pointer-events:none;z-index:6}`;
 
 const EMBED_SHIM = `<script id="kz-embed-shim">
 (function(){
@@ -822,10 +828,10 @@ function cleanHlsPlayerHtml(sources, title) {
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${title || "KoraZero"}</title>
-<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}${KZ_BOTTOM_MASK_CSS}#v{width:100%;height:100%;background:#000;object-fit:contain;display:block}</style>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
 </head><body>
-<video id="v" controls autoplay muted playsinline data-kz-src=${JSON.stringify(list[0] || "")}></video>
+<div class="kz-wrap" style="width:100vw;height:100vh"><video id="v" controls autoplay muted playsinline data-kz-src=${JSON.stringify(list[0] || "")}></video><div class="kz-bottom-mask" aria-hidden="true"></div></div>
 <script>
 (function(){
   var v=document.getElementById('v'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0;
@@ -872,6 +878,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
 .kz-sound{margin-inline-start:auto;border:1px solid rgba(255,255,255,.25);background:rgba(255,255,255,.1);color:#fff;font-size:12px;font-weight:700;padding:8px 12px;border-radius:8px;cursor:pointer}
 .kz-dual{display:flex;flex-direction:row;flex:1;min-height:0;background:#000}
 .kz-hls{flex:3;min-width:0;position:relative;background:#000}
+${KZ_BOTTOM_MASK_CSS}
 .kz-hls video{width:100%;height:100%;object-fit:contain;background:#000}
 .kz-twitch-side{flex:1;min-width:0;position:relative;background:#000;border-inline-start:2px solid rgba(24,226,154,.35)}
 #kz-twitch{width:100%;height:100%}
@@ -902,7 +909,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
     <button type="button" id="kz-sound" class="kz-sound">🔇 صوت</button>
   </div>
   <div class="kz-dual">
-    <div class="kz-hls"><span class="kz-label kz-label--hls">بث مباشر</span><video id="v" controls autoplay muted playsinline></video></div>
+    <div class="kz-hls"><span class="kz-label kz-label--hls">بث مباشر</span><div class="kz-wrap"><video id="v" controls autoplay muted playsinline></video><div class="kz-bottom-mask" aria-hidden="true"></div></div></div>
     <div class="kz-twitch-side"><span class="kz-label kz-label--tw">Twitch</span><div id="kz-twitch"></div><div id="kz-quality" aria-label="جودة البث"></div></div>
   </div>
   <button type="button" id="kz-unmute"><span class="ico">🔊</span><span>اضغط لتشغيل الصوت</span></button>
@@ -1908,6 +1915,111 @@ async function handlePoll(request, pollId) {
   return new Response("Method not allowed", { status: 405, headers: pollJsonHeaders() });
 }
 
+function streamLogJsonHeaders(extra) {
+  return {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    ...(extra || {}),
+  };
+}
+
+function streamLogListKey() {
+  return new Request(`${STREAM_LOG_STORE}recent`);
+}
+
+async function readStreamLogList() {
+  const hit = await caches.default.match(streamLogListKey());
+  if (!hit) return [];
+  try {
+    const arr = await hit.json();
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeStreamLogList(arr) {
+  await caches.default.put(
+    streamLogListKey(),
+    new Response(JSON.stringify(arr.slice(-STREAM_LOG_MAX)), {
+      headers: { "Cache-Control": "no-store" },
+    })
+  );
+}
+
+function streamLogDedupKey(entry) {
+  return [
+    entry.voter || "",
+    entry.event || "",
+    entry.iframeSrc || "",
+    entry.embedKey || "",
+    entry.serv || "",
+    entry.channel || "",
+    entry.match || "",
+  ].join("|");
+}
+
+async function handleStreamLog(request) {
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: streamLogJsonHeaders() });
+  }
+
+  if (request.method === "GET") {
+    const list = await readStreamLogList();
+    return new Response(JSON.stringify({ ok: true, count: list.length, incidents: list.slice(-50) }), {
+      status: 200,
+      headers: streamLogJsonHeaders(),
+    });
+  }
+
+  if (request.method !== "POST") {
+    return new Response("Method not allowed", { status: 405, headers: streamLogJsonHeaders() });
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "bad_json" }), { status: 400, headers: streamLogJsonHeaders() });
+  }
+
+  const events = Array.isArray(body && body.events) ? body.events : [body];
+  const list = await readStreamLogList();
+  const seen = new Set(list.slice(-40).map(streamLogDedupKey));
+  let added = 0;
+
+  for (const raw of events) {
+    if (!raw || typeof raw !== "object") continue;
+    const entry = {
+      t: raw.t || new Date().toISOString(),
+      event: String(raw.event || "incident").slice(0, 64),
+      voter: String(raw.voter || "").slice(0, 64),
+      url: String(raw.url || "").slice(0, 512),
+      iframeSrc: String(raw.iframeSrc || "").slice(0, 512),
+      embedKey: String(raw.embedKey || "").slice(0, 32),
+      serv: raw.serv == null ? "" : String(raw.serv).slice(0, 8),
+      channel: String(raw.channel || "").slice(0, 64),
+      match: String(raw.match || "").slice(0, 64),
+      ua: (request.headers.get("User-Agent") || "").slice(0, 160),
+    };
+    const key = streamLogDedupKey(entry);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    list.push(entry);
+    added++;
+  }
+
+  if (added) await writeStreamLogList(list);
+
+  return new Response(JSON.stringify({ ok: true, added }), {
+    status: 200,
+    headers: streamLogJsonHeaders(),
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -1972,6 +2084,9 @@ export default {
     const poll = url.pathname.match(POLL_RE);
     if (poll) {
       return handlePoll(request, poll[1].toLowerCase());
+    }
+    if (STREAM_LOG_RE.test(url.pathname)) {
+      return handleStreamLog(request);
     }
     return env.ASSETS.fetch(request);
   },

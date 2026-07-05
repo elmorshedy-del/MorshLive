@@ -562,8 +562,13 @@ img { max-width: 100%; display: block; }
   overflow: hidden; box-shadow: 0 22px 70px rgba(0,0,0,.5), 0 0 0 1px rgba(123,47,247,.12);
   position: relative; aspect-ratio: 16 / 9; animation: playerReveal .75s ease both;
 }
+.player-shell::before {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; pointer-events: none;
+  height: 12%; min-height: 40px; max-height: 72px;
+  background: linear-gradient(to top, #000 38%, rgba(0,0,0,.92) 68%, transparent);
+}
 .player-shell::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
+  content: ""; position: absolute; inset: 0; pointer-events: none; z-index: 1;
   background: linear-gradient(135deg, rgba(255,255,255,.12), transparent 24%, transparent 74%, rgba(123,47,247,.18));
   opacity: .48;
 }

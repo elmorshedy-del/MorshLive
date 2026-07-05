@@ -39,6 +39,16 @@
     return { ...(window.SITE_DATA.embedForKey(key)), channelId: channel.id };
   }
 
+  function playerMeta() {
+    const key = activeEmbedKey || (match && match.embedKey) || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id)) || "vip1";
+    return {
+      embedKey: key,
+      serv: activeServ,
+      channelId: channel.id,
+      matchId: match && match.id,
+    };
+  }
+
   function loadPlayer() {
     if (!shell) return;
     const url = embedUrlFor(currentEmbed(), activeServ);
@@ -49,6 +59,10 @@
       `sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
       `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
+    if (window.StreamWatchdog) {
+      window.StreamWatchdog.watch(shell, playerMeta);
+      window.StreamWatchdog.log("player_load", { iframeSrc: url, ...playerMeta() });
+    }
   }
 
   function reloadPlayer() {
