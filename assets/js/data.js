@@ -23,13 +23,123 @@ const EMBEDS = {
   vip2: { url: "/wk/albaplayer/vip2/" },
 };
 
-function embedUrlFor(embed) {
+function embedUrlFor(embed, extra) {
   if (!embed || !embed.url) return "";
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(embed.url, base);
   if (embed.channelId) u.searchParams.set("ch", embed.channelId);
-  u.searchParams.set("_kz", "9"); // bust stale iframe cache when player UI changes
+  const opts = extra && typeof extra === "object" ? extra : {};
+  if (opts.matchId) u.searchParams.set("match", opts.matchId);
+  if (opts.mode && opts.mode !== "dual") u.searchParams.set("mode", opts.mode);
+  if (opts.serv != null && opts.serv !== "") u.searchParams.set("serv", String(opts.serv));
+  u.searchParams.set("_kz", "10"); // bust stale iframe cache when player UI changes
   return u.toString();
+}
+
+// dlhd 24/7 ids for the watch-page source picker (mirrors worker.js DLHD_CHANNEL_MIRROR_IDS).
+const DLHD_STREAM_IDS = {
+  "bein-sports-1": { backup: 91, labelKey: "watch.optDlhdSports1" },
+  "bein-sports-2": { backup: 92, labelKey: "watch.optDlhdSports2" },
+  "bein-max-1": { maxAr: 597, sportsAr: 91 },
+  "bein-max-2": { maxAr: 597, sportsAr: 92 },
+  "bein-max-3": { maxAr: 597, sportsAr: 94 },
+  "bein-max-4": { maxAr: 597, sportsAr: 95 },
+};
+
+function streamOptionUrl(opt, channelId, matchId) {
+  const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
+  if (opt.path) {
+    const u = new URL(opt.path, base);
+    u.searchParams.set("ch", channelId);
+    if (matchId) u.searchParams.set("match", matchId);
+    u.searchParams.set("_kz", "10");
+    return u.toString();
+  }
+  const embed = { ...embedForKey(opt.embedKey), channelId };
+  return embedUrlFor(embed, { mode: opt.mode || "dual", matchId });
+}
+
+// Labeled stream sources for the watch page — honest about MAX vs Sports Arabic fallbacks.
+function streamOptionsFor(channelId, match, embedKey) {
+  const primaryKey = embedKey || embedKeyFor(channelId);
+  const altKey = primaryKey === "vip1" ? "vip2" : "vip1";
+  const isMax = /^bein-max-/.test(channelId || "");
+  const dlhd = DLHD_STREAM_IDS[channelId] || null;
+
+  const opts = [
+    {
+      id: "auto",
+      labelKey: "watch.optAuto",
+      hintKey: "watch.optAutoHint",
+      embedKey: primaryKey,
+      mode: "dual",
+      kind: "reachable",
+      recommended: true,
+    },
+    {
+      id: `vip-${altKey}`,
+      labelKey: "watch.optAltVip",
+      hintKey: "watch.optAltVipHint",
+      labelVars: { slot: altKey.toUpperCase() },
+      embedKey: altKey,
+      mode: "dual",
+      kind: "reachable",
+    },
+    {
+      id: "hls",
+      labelKey: "watch.optHls",
+      hintKey: "watch.optHlsHint",
+      embedKey: primaryKey,
+      mode: "hls",
+      kind: "reachable",
+    },
+    {
+      id: "twitch",
+      labelKey: "watch.optTwitch",
+      hintKey: "watch.optTwitchHint",
+      embedKey: primaryKey,
+      mode: "twitch",
+      kind: "reachable",
+    },
+  ];
+
+  if (isMax && dlhd) {
+    if (dlhd.maxAr) {
+      opts.push({
+        id: "dlhd-max",
+        labelKey: "watch.optMaxAr",
+        hintKey: "watch.optMaxArHint",
+        path: `/dl/${dlhd.maxAr}/`,
+        kind: "reachable",
+        fallback: true,
+      });
+    }
+    if (dlhd.sportsAr) {
+      opts.push({
+        id: "dlhd-sports",
+        labelKey: "watch.optSportsAr",
+        hintKey: "watch.optSportsArHint",
+        path: `/dl/${dlhd.sportsAr}/`,
+        kind: "reachable",
+        fallback: true,
+        sportsOnly: true,
+      });
+    }
+  } else if (dlhd && dlhd.backup) {
+    opts.push({
+      id: "dlhd-backup",
+      labelKey: dlhd.labelKey || "watch.optDlhdBackup",
+      hintKey: "watch.optDlhdBackupHint",
+      path: `/dl/${dlhd.backup}/`,
+      kind: "reachable",
+      fallback: true,
+    });
+  }
+
+  return opts.map((o) => ({
+    ...o,
+    url: streamOptionUrl(o, channelId, match && match.id),
+  }));
 }
 
 function servIndexFromParam(embed, raw) {
@@ -113,7 +223,10 @@ function resolveWatchSelection(matches, channels, searchParams) {
 }
 
 // Expose for non-module scripts.
-window.SITE_DATA = { CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor, servIndexFromParam, EMBED_BINDING };
+window.SITE_DATA = {
+  CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor,
+  servIndexFromParam, EMBED_BINDING, streamOptionsFor, streamOptionUrl,
+};
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;
 window.keepDisplayMatch = keepDisplayMatch;

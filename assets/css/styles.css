@@ -566,8 +566,21 @@ img { max-width: 100%; display: block; }
   display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
 }
 .player-toolbar {
-  display: flex; justify-content: flex-end; margin-bottom: 10px;
+  display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
+  gap: 10px; margin-bottom: 10px;
 }
+.stream-options-wrap { flex: 1; min-width: 0; }
+.stream-options-label {
+  font-size: .78rem; font-weight: 700; color: var(--muted); margin-bottom: 6px;
+}
+.stream-options { margin-top: 0; }
+.stream-opt-btn.stream-opt-recommended:not(.srv-ok) { border-color: rgba(24,226,154,.35); }
+.stream-opt-btn.stream-opt-fallback { font-size: .84rem; }
+.stream-opt-btn.stream-opt-sports {
+  border-style: dashed;
+  opacity: .92;
+}
+.stream-opt-btn.stream-opt-sports:not(.srv-ok) { border-color: rgba(245,179,1,.4); }
 .player-reload-btn {
   background: var(--surface); border: 1px solid var(--border); color: var(--muted);
   padding: 10px 16px; border-radius: 11px; cursor: pointer; font-weight: 700; font-size: .9rem;

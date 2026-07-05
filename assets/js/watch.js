@@ -1,13 +1,12 @@
 /* ============================================================================
- * watch.js — single-player watch page. Worker picks the live mirror; no fake
- * server buttons or duplicate player tabs.
+ * watch.js — single-player watch page with labeled stream source options.
  * ==========================================================================*/
 (function () {
   const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
   const EMBED_REFERRER = "strict-origin-when-cross-origin";
-  const embedUrlFor = (embed) =>
+  const embedUrlFor = (embed, extra) =>
     (window.SITE_DATA && window.SITE_DATA.embedUrlFor)
-      ? window.SITE_DATA.embedUrlFor(embed)
+      ? window.SITE_DATA.embedUrlFor(embed, extra)
       : "";
 
   const { CHANNELS } = window.SITE_DATA;
@@ -17,6 +16,9 @@
   let MATCHES = [];
   let channel = CHANNELS[0];
   let match = null;
+  let embedKey = "vip1";
+  let streamOptions = [];
+  let activeSourceId = params.get("src") || "auto";
   const shell = document.getElementById("player-shell");
   let loadedUrl = "";
 
@@ -24,9 +26,20 @@
     return channel.embed || { url: "/wk/albaplayer/vip1/", channelId: channel.id };
   }
 
+  function activeStreamOption() {
+    return streamOptions.find((o) => o.id === activeSourceId) || streamOptions[0] || null;
+  }
+
+  function playerUrl() {
+    const opt = activeStreamOption();
+    if (opt && opt.url) return opt.url;
+    const embed = currentEmbed();
+    return embedUrlFor(embed, { matchId: match && match.id, mode: "dual" });
+  }
+
   function loadPlayer() {
     if (!shell) return;
-    const url = embedUrlFor(currentEmbed());
+    const url = playerUrl();
     if (!url || loadedUrl === url) return;
     loadedUrl = url;
     shell.innerHTML =
@@ -168,11 +181,12 @@
     document.getElementById("info-group").textContent = channel.group;
     const infoRoute = document.getElementById("info-route");
     if (infoRoute) {
-      const key = window.SITE_DATA && window.SITE_DATA.embedKeyFor
-        ? window.SITE_DATA.embedKeyFor(channel.id)
-        : "";
-      infoRoute.textContent = key
-        ? `${key} ← ${match && match.channel ? match.channel : channel.name}`
+      const opt = activeStreamOption();
+      const routeKey = (opt && opt.embedKey) || embedKey;
+      const routeMode = (opt && opt.mode) || "dual";
+      const routeLabel = opt ? t(opt.labelKey, opt.labelVars) : routeKey;
+      infoRoute.textContent = routeKey
+        ? `${routeLabel} · ${routeMode} ← ${match && match.channel ? match.channel : channel.name}`
         : "—";
     }
     document.getElementById("info-commentator").innerHTML = commentatorHtml(match);
@@ -216,30 +230,87 @@
     if (toggle && links) toggle.addEventListener("click", () => links.classList.toggle("open"));
   }
 
-  function initReloadButton() {
-    const host = document.getElementById("player-toolbar");
-    if (!host || host.querySelector(".js-stream-reload")) return;
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "player-reload-btn js-stream-reload";
-    btn.setAttribute("aria-label", t("watch.reload"));
-    btn.innerHTML =
-      `<svg class="ico reload-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><polyline points="21 4 21 10 15 10"/></svg> ` +
-      `<span data-i18n="watch.reload">${t("watch.reload")}</span>`;
-    btn.addEventListener("click", () => {
-      reloadPlayer();
-      btn.classList.add("is-spinning");
-      setTimeout(() => btn.classList.remove("is-spinning"), 700);
+  function renderStreamOptions() {
+    const toolbar = document.getElementById("player-toolbar");
+    if (!toolbar || !window.SITE_DATA || !window.SITE_DATA.streamOptionsFor) return;
+
+    streamOptions = window.SITE_DATA.streamOptionsFor(channel.id, match, embedKey);
+    if (!streamOptions.some((o) => o.id === activeSourceId)) {
+      activeSourceId = "auto";
+    }
+
+    const rowId = "stream-options";
+    let row = document.getElementById(rowId);
+    if (!row) {
+      toolbar.innerHTML = `<div class="stream-options-wrap"><div class="stream-options-label" data-i18n="watch.sources">${t("watch.sources")}</div><div class="server-row stream-options" id="${rowId}"></div></div>`;
+      row = document.getElementById(rowId);
+    }
+    if (!row) return;
+
+    row.innerHTML = streamOptions.map((opt) => {
+      const label = t(opt.labelKey, opt.labelVars);
+      const hint = opt.hintKey ? t(opt.hintKey) : "";
+      const classes = [
+        "server-btn",
+        "stream-opt-btn",
+        opt.id === activeSourceId ? "active" : "",
+        opt.recommended ? "stream-opt-recommended" : "",
+        opt.fallback ? "stream-opt-fallback" : "",
+        opt.sportsOnly ? "stream-opt-sports" : "",
+      ].filter(Boolean).join(" ");
+      return `<button type="button" class="${classes}" data-src="${opt.id}" data-url="${opt.url}" data-kind="${opt.kind || "reachable"}" data-label="${label}" title="${hint || label}"><span class="srv-label">${label}</span></button>`;
+    }).join("");
+
+    row.querySelectorAll(".stream-opt-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeSourceId = btn.dataset.src;
+        row.querySelectorAll(".stream-opt-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const next = new URL(location.href);
+        next.searchParams.set("src", activeSourceId);
+        history.replaceState(null, "", next);
+        fillInfo();
+        reloadPlayer();
+      });
     });
-    host.appendChild(btn);
+
+    if (window.StreamCheck) {
+      window.StreamCheck.autoHighlight(row, { autoSelect: false }).catch(() => {});
+    }
+  }
+
+  function initReloadButton() {
+    const toolbar = document.getElementById("player-toolbar");
+    if (!toolbar) return;
+    let btn = toolbar.querySelector(".js-stream-reload");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "player-reload-btn js-stream-reload";
+      btn.setAttribute("aria-label", t("watch.reload"));
+      btn.innerHTML =
+        `<svg class="ico reload-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><polyline points="21 4 21 10 15 10"/></svg> ` +
+        `<span data-i18n="watch.reload">${t("watch.reload")}</span>`;
+      btn.addEventListener("click", () => {
+        reloadPlayer();
+        btn.classList.add("is-spinning");
+        setTimeout(() => btn.classList.remove("is-spinning"), 700);
+        const row = document.getElementById("stream-options");
+        if (row && window.StreamCheck) {
+          window.StreamCheck.autoHighlight(row, { autoSelect: false }).catch(() => {});
+        }
+      });
+      toolbar.appendChild(btn);
+    }
   }
 
   function resolveSelection() {
     const picked = window.resolveWatchSelection
       ? window.resolveWatchSelection(MATCHES, CHANNELS, params)
-      : { channel: CHANNELS[0], match: null };
+      : { channel: CHANNELS[0], match: null, embedKey: "vip1" };
     channel = picked.channel;
     match = picked.match;
+    embedKey = picked.embedKey || "vip1";
   }
 
   async function refreshMatches({ force } = {}) {
@@ -248,6 +319,7 @@
     const meta = await window.getMatches({ force: !!force });
     MATCHES = meta.matches;
     resolveSelection();
+    renderStreamOptions();
     fillInfo();
     renderSidebar();
     const matchChanged = (match && match.id) !== previousMatchId;
@@ -259,11 +331,18 @@
   document.addEventListener("DOMContentLoaded", () => {
     initNav();
     resolveSelection();
+    renderStreamOptions();
     fillInfo();
     renderSidebar();
     loadPlayer();
     initReloadButton();
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 180 * 1000);
+    setInterval(() => {
+      const row = document.getElementById("stream-options");
+      if (row && window.StreamCheck) {
+        window.StreamCheck.autoHighlight(row, { autoSelect: false }).catch(() => {});
+      }
+    }, 120 * 1000);
   });
 })();

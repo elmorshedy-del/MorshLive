@@ -1357,10 +1357,48 @@ async function buildProxiedPool(candidates, dlMirrors, extras, origin, secret) {
   return proxied;
 }
 
+function vipPlayerMode(request) {
+  const m = (new URL(request.url).searchParams.get("mode") || "dual").toLowerCase();
+  return m === "hls" || m === "twitch" ? m : "dual";
+}
+
+// mode=dual (default) | hls | twitch — chosen from the watch-page source picker.
+function respondVipPlayer(mode, proxied, twitchChannel, origin, htmlHeaders, meta) {
+  const extra = meta || {};
+  if (mode === "twitch") {
+    if (twitchChannel) return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
+    if (proxied.length) {
+      return new Response(cleanHlsPlayerHtml(proxied, "بث مباشر"), {
+        status: 200,
+        headers: { ...htmlHeaders, "X-KZ-Player": "hls", "X-KZ-Mode-Fallback": "twitch-unavailable", ...extra },
+      });
+    }
+    return null;
+  }
+  if (mode === "hls" && proxied.length) {
+    return new Response(cleanHlsPlayerHtml(proxied, "بث مباشر"), {
+      status: 200,
+      headers: { ...htmlHeaders, "X-KZ-Player": "hls", ...extra },
+    });
+  }
+  if (twitchChannel && proxied.length) {
+    return dualPlayerResponse(proxied, twitchChannel, origin, htmlHeaders, extra);
+  }
+  if (twitchChannel) return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
+  if (proxied.length) {
+    return new Response(cleanHlsPlayerHtml(proxied, "بث مباشر"), {
+      status: 200,
+      headers: { ...htmlHeaders, "X-KZ-Player": "hls", ...extra },
+    });
+  }
+  return null;
+}
+
 async function proxyVip(request, slot, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
   const channelId = incoming.searchParams.get("ch") || "";
+  const mode = vipPlayerMode(request);
   const secret = env && env.STREAM_SIGNING_SECRET;
   const isHead = request.method === "HEAD";
   const htmlHeaders = {
@@ -1397,17 +1435,15 @@ async function proxyVip(request, slot, env) {
     const hlsCandidates = [...(vipQuick.candidates || [])];
     const proxiedQuick = await buildProxiedPool(hlsCandidates, dlMirrorsQuick, [], origin, secret);
 
-    if (twitchChannel && proxiedQuick.length) {
-      return dualPlayerResponse(proxiedQuick, twitchChannel, origin, htmlHeaders, {
-        "X-KZ-Mirrors": String(proxiedQuick.length),
-        "X-KZ-Fast": "1",
-        "X-KZ-Serv": String((vipQuick.candidates && vipQuick.candidates[0] && vipQuick.candidates[0].serv) || serv),
-        "X-KZ-Twitch-Channel": twitchChannel,
-      });
-    }
-    if (twitchChannel) {
-      return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
-    }
+    const quickMeta = {
+      "X-KZ-Mirrors": String(proxiedQuick.length),
+      "X-KZ-Fast": "1",
+      "X-KZ-Serv": String((vipQuick.candidates && vipQuick.candidates[0] && vipQuick.candidates[0].serv) || serv),
+      "X-KZ-Twitch-Channel": twitchChannel || "",
+      "X-KZ-Mode": mode,
+    };
+    const quickResp = respondVipPlayer(mode, proxiedQuick, twitchChannel, origin, htmlHeaders, quickMeta);
+    if (quickResp) return quickResp;
 
     const twitchCached = LAST_KNOWN_TWITCH_CHANNELS[slot] || null;
     const knownHls = cachedHlsForSlot(slot, serv);
@@ -1445,25 +1481,13 @@ async function proxyVip(request, slot, env) {
 
     const proxied = await buildProxiedPool(candidates, dlMirrors, extras, origin, secret);
 
-    if (twitchChannel && proxied.length) {
-      return dualPlayerResponse(proxied, twitchChannel, origin, htmlHeaders, {
-        "X-KZ-Mirrors": String(proxied.length),
-        "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
-      });
-    }
-    if (twitchChannel) {
-      return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
-    }
-    if (proxied.length) {
-      return new Response(cleanHlsPlayerHtml(proxied, `${slot} بث`), {
-        status: 200,
-        headers: {
-          ...htmlHeaders,
-          "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
-          "X-KZ-Mirrors": String(proxied.length),
-        },
-      });
-    }
+    const slowMeta = {
+      "X-KZ-Mirrors": String(proxied.length),
+      "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
+      "X-KZ-Mode": mode,
+    };
+    const slowResp = respondVipPlayer(mode, proxied, twitchChannel, origin, htmlHeaders, slowMeta);
+    if (slowResp) return slowResp;
     if (firstHtml) {
       return new Response(await cleanWorldkooraHtml(firstHtml, slot, origin, secret, request), {
         status: 200,
