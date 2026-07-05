@@ -148,12 +148,22 @@
     ));
   }
 
-  // Which summary panels are expanded, kept across the 90s auto-refresh re-render.
-  const openSummaries = new Set();
+  // Which collapsible panels are expanded, kept across the 90s auto-refresh re-render.
+  const openPanels = new Set();
+
+  function panel(id, kind, iconHtml, label, bodyHtml) {
+    if (!bodyHtml) return "";
+    const panelId = `${id}:${kind}`;
+    const open = openPanels.has(panelId) ? " open" : "";
+    return `
+      <details class="match-panel" data-panel-id="${panelId}"${open}>
+        <summary class="match-panel-toggle">${iconHtml} ${label}</summary>
+        <div class="match-panel-body">${bodyHtml}</div>
+      </details>`;
+  }
 
   function matchSummaryHtml(m) {
     if (m.status !== "ended" || (!m.summaryAr && !m.highlight)) return "";
-    const open = openSummaries.has(m.id) ? " open" : "";
     const videoBlock = m.highlight && m.highlight.videoUrl
       ? `<div class="match-highlight-video">
            <iframe src="${m.highlight.videoUrl}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
@@ -161,25 +171,29 @@
              sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
          </div>`
       : `<p class="match-summary-novideo">${t("card.noHighlightVideo")}</p>`;
-    return `
-      <details class="match-summary" data-summary-id="${m.id}"${open}>
-        <summary class="match-summary-toggle">${ICON.trophy} ${t("card.summary")}</summary>
-        <div class="match-summary-body">
-          ${m.summaryAr ? `<p class="match-summary-text">${escapeHtml(m.summaryAr)}</p>` : ""}
-          ${videoBlock}
-        </div>
-      </details>`;
+    const body = `${m.summaryAr ? `<p class="match-summary-text">${escapeHtml(m.summaryAr)}</p>` : ""}${videoBlock}`;
+    return panel(m.id, "summary", ICON.trophy, t("card.summary"), body);
+  }
+
+  function matchLineupsHtml(m) {
+    if (!m.lineups) return "";
+    return panel(m.id, "lineups", ICON.trophy, t("card.lineups"), window.buildLineupsHtml(m));
+  }
+
+  function matchStatsHtml(m) {
+    if (!m.stats || (m.status !== "live" && m.status !== "ended")) return "";
+    return panel(m.id, "stats", ICON.trophy, t("card.stats"), window.buildStatsHtml(m));
   }
 
   // `toggle` on <details> doesn't bubble, so track it in the capture phase.
-  function initSummaryToggles() {
+  function initPanelToggles() {
     document.addEventListener("toggle", (e) => {
       const el = e.target;
-      if (!el.classList || !el.classList.contains("match-summary")) return;
-      const id = el.dataset.summaryId;
+      if (!el.classList || !el.classList.contains("match-panel")) return;
+      const id = el.dataset.panelId;
       if (!id) return;
-      if (el.open) openSummaries.add(id);
-      else openSummaries.delete(id);
+      if (el.open) openPanels.add(id);
+      else openPanels.delete(id);
     }, true);
   }
 
@@ -212,6 +226,8 @@
           <span class="match-meta">${footMeta(m)}</span>
           ${liveBtn}
         </div>
+        ${matchLineupsHtml(m)}
+        ${matchStatsHtml(m)}
         ${matchSummaryHtml(m)}
       </article>`;
   }
@@ -326,7 +342,7 @@
     initFilters();
     initNav();
     initFavorites();
-    initSummaryToggles();
+    initPanelToggles();
     renderSaved();
     await loadMatches();
     setInterval(() => loadMatches({ force: true }), 90 * 1000);

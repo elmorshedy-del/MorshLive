@@ -1,10 +1,38 @@
 {
-  "date": "2026-07-03",
-  "updatedAt": "2026-07-03T06:22:34.596Z",
+  "date": "2026-07-05",
+  "updatedAt": "2026-07-05T07:05:21.198Z",
   "source": "espn",
   "sourceLabel": "ESPN",
   "commentarySource": "almaghrebsport",
   "commentaryIndex": [
+    {
+      "key": "brazil~norway",
+      "home": "Brazil",
+      "away": "Norway",
+      "commentators": [
+        {
+          "name": "علي الكعبي",
+          "channel": "beIN MAX 1"
+        }
+      ],
+      "channel": "beIN MAX 1",
+      "channelId": "bein-max-1",
+      "locked": false
+    },
+    {
+      "key": "england~mexico",
+      "home": "Mexico",
+      "away": "England",
+      "commentators": [
+        {
+          "name": "حفيظ دراجي",
+          "channel": "beIN MAX 2"
+        }
+      ],
+      "channel": "beIN MAX 2",
+      "channelId": "bein-max-2",
+      "locked": false
+    },
     {
       "key": "australia~egypt",
       "home": "Australia",
@@ -273,100 +301,824 @@
     }
   ],
   "highlightsIndex": [],
+  "matchDetailIndex": [
+    {
+      "key": "france~paraguay",
+      "lineups": {
+        "home": {
+          "formation": "5-4-1",
+          "starters": [
+            {
+              "jersey": "12",
+              "name": "O. Gill",
+              "band": "gk",
+              "position": "Goalkeeper"
+            },
+            {
+              "jersey": "15",
+              "name": "G. Gómez",
+              "band": "def",
+              "position": "Center Defender"
+            },
+            {
+              "jersey": "3",
+              "name": "O. Alderete",
+              "band": "def",
+              "position": "Center Left Defender"
+            },
+            {
+              "jersey": "2",
+              "name": "G. Velázquez",
+              "band": "def",
+              "position": "Center Right Defender"
+            },
+            {
+              "jersey": "6",
+              "name": "J. Alonso",
+              "band": "def",
+              "position": "Left Back"
+            },
+            {
+              "jersey": "4",
+              "name": "J. Cáceres",
+              "band": "def",
+              "position": "Right Back"
+            },
+            {
+              "jersey": "14",
+              "name": "A. Cubas",
+              "band": "mid",
+              "position": "Center Left Midfielder"
+            },
+            {
+              "jersey": "8",
+              "name": "D. Gómez",
+              "band": "mid",
+              "position": "Center Right Midfielder"
+            },
+            {
+              "jersey": "23",
+              "name": "M. Galarza",
+              "band": "mid",
+              "position": "Left Midfielder"
+            },
+            {
+              "jersey": "10",
+              "name": "M. Almirón",
+              "band": "mid",
+              "position": "Right Midfielder"
+            },
+            {
+              "jersey": "19",
+              "name": "J. Enciso",
+              "band": "fwd",
+              "position": "Forward"
+            }
+          ],
+          "subs": [
+            {
+              "jersey": "17",
+              "name": "A. Romero Gamarra",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "5",
+              "name": "F. Balbuena",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "18",
+              "name": "A. Arce",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "11",
+              "name": "Maurício",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "24",
+              "name": "G. Caballero",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "16",
+              "name": "D. Bobadilla",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "9",
+              "name": "A. Sanabria",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "7",
+              "name": "R. Sosa",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "20",
+              "name": "B. Ojeda",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "22",
+              "name": "G. Olveira",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "1",
+              "name": "G. Fernández",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "13",
+              "name": "J. Canale",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "26",
+              "name": "A. Maidana",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "25",
+              "name": "I. Pitta",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "21",
+              "name": "G. Ávalos",
+              "band": "mid",
+              "position": "Substitute"
+            }
+          ]
+        },
+        "away": {
+          "formation": "4-2-3-1",
+          "starters": [
+            {
+              "jersey": "16",
+              "name": "M. Maignan",
+              "band": "gk",
+              "position": "Goalkeeper"
+            },
+            {
+              "jersey": "17",
+              "name": "W. Saliba",
+              "band": "def",
+              "position": "Center Left Defender"
+            },
+            {
+              "jersey": "4",
+              "name": "D. Upamecano",
+              "band": "def",
+              "position": "Center Right Defender"
+            },
+            {
+              "jersey": "3",
+              "name": "L. Digne",
+              "band": "def",
+              "position": "Left Back"
+            },
+            {
+              "jersey": "5",
+              "name": "J. Koundé",
+              "band": "def",
+              "position": "Right Back"
+            },
+            {
+              "jersey": "11",
+              "name": "M. Olise",
+              "band": "mid",
+              "position": "Attacking Midfielder"
+            },
+            {
+              "jersey": "14",
+              "name": "A. Rabiot",
+              "band": "mid",
+              "position": "Left Midfielder"
+            },
+            {
+              "jersey": "6",
+              "name": "M. Koné",
+              "band": "mid",
+              "position": "Right Midfielder"
+            },
+            {
+              "jersey": "10",
+              "name": "K. Mbappé",
+              "band": "fwd",
+              "position": "Forward"
+            },
+            {
+              "jersey": "12",
+              "name": "B. Barcola",
+              "band": "mid",
+              "position": "Attacking Midfielder Left"
+            },
+            {
+              "jersey": "7",
+              "name": "O. Dembélé",
+              "band": "mid",
+              "position": "Attacking Midfielder Right"
+            }
+          ],
+          "subs": [
+            {
+              "jersey": "8",
+              "name": "A. Tchouaméni",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "20",
+              "name": "D. Doué",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "22",
+              "name": "J. Mateta",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "19",
+              "name": "T. Hernández",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "13",
+              "name": "N. Kanté",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "21",
+              "name": "L. Hernández",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "25",
+              "name": "M. Akliouche",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "26",
+              "name": "M. Lacroix",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "15",
+              "name": "I. Konaté",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "23",
+              "name": "R. Risser",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "9",
+              "name": "M. Thuram",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "1",
+              "name": "B. Samba",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "24",
+              "name": "R. Cherki",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "18",
+              "name": "W. Zaïre-Emery",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "2",
+              "name": "M. Gusto",
+              "band": "mid",
+              "position": "Substitute"
+            }
+          ]
+        }
+      },
+      "stats": {
+        "home": {
+          "foulsCommitted": 13,
+          "yellowCards": 0,
+          "redCards": 0,
+          "offsides": 0,
+          "wonCorners": 2,
+          "saves": 4,
+          "possessionPct": 24.1,
+          "totalShots": 5,
+          "shotsOnTarget": 1,
+          "totalPasses": 183,
+          "passPct": 50,
+          "totalCrosses": 5,
+          "totalTackles": 29,
+          "interceptions": 14,
+          "totalClearance": 21
+        },
+        "away": {
+          "foulsCommitted": 11,
+          "yellowCards": 3,
+          "redCards": 0,
+          "offsides": 0,
+          "wonCorners": 12,
+          "saves": 1,
+          "possessionPct": 75.9,
+          "totalShots": 15,
+          "shotsOnTarget": 5,
+          "totalPasses": 569,
+          "passPct": 90,
+          "totalCrosses": 22,
+          "totalTackles": 13,
+          "interceptions": 10,
+          "totalClearance": 27
+        }
+      }
+    },
+    {
+      "key": "canada~morocco",
+      "lineups": {
+        "home": {
+          "formation": "4-4-2",
+          "starters": [
+            {
+              "jersey": "16",
+              "name": "M. Crépeau",
+              "band": "gk",
+              "position": "Goalkeeper"
+            },
+            {
+              "jersey": "4",
+              "name": "L. de Fougerolles",
+              "band": "def",
+              "position": "Center Left Defender"
+            },
+            {
+              "jersey": "15",
+              "name": "M. Bombito",
+              "band": "def",
+              "position": "Center Right Defender"
+            },
+            {
+              "jersey": "22",
+              "name": "R. Laryea",
+              "band": "def",
+              "position": "Left Back"
+            },
+            {
+              "jersey": "2",
+              "name": "A. Johnston",
+              "band": "def",
+              "position": "Right Back"
+            },
+            {
+              "jersey": "7",
+              "name": "S. Eustáquio",
+              "band": "mid",
+              "position": "Center Left Midfielder"
+            },
+            {
+              "jersey": "23",
+              "name": "N. Sigur",
+              "band": "mid",
+              "position": "Center Right Midfielder"
+            },
+            {
+              "jersey": "20",
+              "name": "A. Ahmed",
+              "band": "mid",
+              "position": "Left Midfielder"
+            },
+            {
+              "jersey": "17",
+              "name": "T. Buchanan",
+              "band": "mid",
+              "position": "Right Midfielder"
+            },
+            {
+              "jersey": "12",
+              "name": "T. Oluwaseyi",
+              "band": "mid",
+              "position": "Center Left Forward"
+            },
+            {
+              "jersey": "10",
+              "name": "J. David",
+              "band": "mid",
+              "position": "Center Right Forward"
+            }
+          ],
+          "subs": [
+            {
+              "jersey": "3",
+              "name": "A. Jones",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "1",
+              "name": "D. St. Clair",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "5",
+              "name": "J. Waterman",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "19",
+              "name": "A. Davies",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "24",
+              "name": "P. David",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "11",
+              "name": "L. Millar",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "13",
+              "name": "D. Cornelius",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "18",
+              "name": "O. Goodman",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "25",
+              "name": "N. Saliba",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "6",
+              "name": "M. Choinière",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "21",
+              "name": "J. Osorio",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "9",
+              "name": "C. Larin",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "14",
+              "name": "J. Shaffelburg",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "26",
+              "name": "J. Nelson",
+              "band": "mid",
+              "position": "Substitute"
+            }
+          ]
+        },
+        "away": {
+          "formation": "4-2-3-1",
+          "starters": [
+            {
+              "jersey": "1",
+              "name": "Y. Bounou",
+              "band": "gk",
+              "position": "Goalkeeper"
+            },
+            {
+              "jersey": "25",
+              "name": "R. Halhal",
+              "band": "def",
+              "position": "Center Left Defender"
+            },
+            {
+              "jersey": "14",
+              "name": "I. Diop",
+              "band": "def",
+              "position": "Center Right Defender"
+            },
+            {
+              "jersey": "3",
+              "name": "N. Mazraoui",
+              "band": "def",
+              "position": "Left Back"
+            },
+            {
+              "jersey": "2",
+              "name": "A. Hakimi",
+              "band": "def",
+              "position": "Right Back"
+            },
+            {
+              "jersey": "8",
+              "name": "A. Ounahi",
+              "band": "mid",
+              "position": "Attacking Midfielder"
+            },
+            {
+              "jersey": "24",
+              "name": "N. El Aynaoui",
+              "band": "mid",
+              "position": "Left Midfielder"
+            },
+            {
+              "jersey": "6",
+              "name": "A. Bouaddi",
+              "band": "mid",
+              "position": "Right Midfielder"
+            },
+            {
+              "jersey": "11",
+              "name": "I. Saibari",
+              "band": "fwd",
+              "position": "Forward"
+            },
+            {
+              "jersey": "23",
+              "name": "B. El Khannouss",
+              "band": "mid",
+              "position": "Attacking Midfielder Left"
+            },
+            {
+              "jersey": "10",
+              "name": "B. Díaz",
+              "band": "mid",
+              "position": "Attacking Midfielder Right"
+            }
+          ],
+          "subs": [
+            {
+              "jersey": "13",
+              "name": "Z. El Ouahdi",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "17",
+              "name": "A. Sbaï",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "9",
+              "name": "S. Rahimi",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "19",
+              "name": "Y. Belammari",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "26",
+              "name": "A. Salah-Eddine",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "21",
+              "name": "A. Amaimouni",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "16",
+              "name": "G. Yassine",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "18",
+              "name": "C. Riad",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "15",
+              "name": "S. El Mourabet",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "7",
+              "name": "C. Talbi",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "5",
+              "name": "M. Saadane",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "12",
+              "name": "M. El Kajoui",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "22",
+              "name": "A. Tagnaouti",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "4",
+              "name": "S. Amrabat",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "20",
+              "name": "A. El Kaabi",
+              "band": "mid",
+              "position": "Substitute"
+            }
+          ]
+        }
+      },
+      "stats": {
+        "home": {
+          "foulsCommitted": 24,
+          "yellowCards": 4,
+          "redCards": 0,
+          "offsides": 2,
+          "wonCorners": 11,
+          "saves": 1,
+          "possessionPct": 44.7,
+          "totalShots": 10,
+          "shotsOnTarget": 3,
+          "totalPasses": 359,
+          "passPct": 80,
+          "totalCrosses": 30,
+          "totalTackles": 18,
+          "interceptions": 5,
+          "totalClearance": 10
+        },
+        "away": {
+          "foulsCommitted": 14,
+          "yellowCards": 4,
+          "redCards": 0,
+          "offsides": 3,
+          "wonCorners": 1,
+          "saves": 3,
+          "possessionPct": 55.3,
+          "totalShots": 5,
+          "shotsOnTarget": 4,
+          "totalPasses": 473,
+          "passPct": 80,
+          "totalCrosses": 5,
+          "totalTackles": 13,
+          "interceptions": 9,
+          "totalClearance": 47
+        }
+      }
+    }
+  ],
   "matches": [
     {
-      "id": "espn-fifa.world-760499",
+      "id": "espn-fifa.world-760504",
       "status": "upcoming",
       "minute": "",
-      "home": "Australia",
-      "away": "Egypt",
-      "homeAbbr": "AUS",
-      "awayAbbr": "EGY",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/aus.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/egy.png",
+      "home": "Brazil",
+      "away": "Norway",
+      "homeAbbr": "BRA",
+      "awayAbbr": "NOR",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/bra.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/nor.png",
       "score": "VS",
-      "time": "18:00",
-      "kickoffUtc": "2026-07-03T18:00Z",
+      "time": "20:00",
+      "kickoffUtc": "2026-07-05T20:00Z",
       "league": "FIFA World Cup",
-      "venue": "AT&T Stadium · Arlington, Texas · USA",
+      "venue": "MetLife Stadium · East Rutherford, New Jersey · USA",
       "channel": "beIN MAX 1",
       "channelId": "bein-max-1",
-      "commentator": "علي محمد علي",
+      "commentator": "علي الكعبي",
       "source": "espn",
       "commentators": [
         {
-          "name": "علي محمد علي",
+          "name": "علي الكعبي",
           "channel": "beIN MAX 1"
         }
       ]
     },
     {
-      "id": "espn-fifa.world-760500",
+      "id": "espn-fifa.world-760505",
       "status": "upcoming",
       "minute": "",
-      "home": "Argentina",
-      "away": "Cape Verde",
-      "homeAbbr": "ARG",
-      "awayAbbr": "CPV",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/arg.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/cpv.png",
+      "home": "Mexico",
+      "away": "England",
+      "homeAbbr": "MEX",
+      "awayAbbr": "ENG",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/mex.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/eng.png",
       "score": "VS",
-      "time": "22:00",
-      "kickoffUtc": "2026-07-03T22:00Z",
+      "time": "00:00",
+      "kickoffUtc": "2026-07-06T00:00Z",
       "league": "FIFA World Cup",
-      "venue": "Hard Rock Stadium · Miami Gardens, Florida · USA",
+      "venue": "Estadio Banorte · Mexico City · Mexico",
       "channel": "beIN MAX 2",
       "channelId": "bein-max-2",
-      "commentator": "عامر الخوذيري",
-      "source": "espn",
-      "commentators": [
-        {
-          "name": "عامر الخوذيري",
-          "channel": "beIN MAX 2"
-        }
-      ]
-    },
-    {
-      "id": "espn-fifa.world-760501",
-      "status": "upcoming",
-      "minute": "",
-      "home": "Colombia",
-      "away": "Ghana",
-      "homeAbbr": "COL",
-      "awayAbbr": "GHA",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/col.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/gha.png",
-      "score": "VS",
-      "time": "01:30",
-      "kickoffUtc": "2026-07-04T01:30Z",
-      "league": "FIFA World Cup",
-      "venue": "GEHA Field at Arrowhead Stadium · Kansas City, Missouri · USA",
-      "channel": "beIN MAX 1",
-      "channelId": "bein-max-1",
       "commentator": "حفيظ دراجي",
       "source": "espn",
       "commentators": [
         {
           "name": "حفيظ دراجي",
-          "channel": "beIN MAX 1"
+          "channel": "beIN MAX 2"
         }
       ]
     },
     {
-      "id": "espn-fifa.world-760502",
+      "id": "espn-fifa.world-760506",
       "status": "upcoming",
       "minute": "",
-      "home": "Canada",
-      "away": "Morocco",
-      "homeAbbr": "CAN",
-      "awayAbbr": "MAR",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/can.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/mar.png",
+      "home": "Portugal",
+      "away": "Spain",
+      "homeAbbr": "POR",
+      "awayAbbr": "ESP",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/por.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/esp.png",
       "score": "VS",
-      "time": "17:00",
-      "kickoffUtc": "2026-07-04T17:00Z",
+      "time": "19:00",
+      "kickoffUtc": "2026-07-06T19:00Z",
       "league": "FIFA World Cup",
-      "venue": "NRG Stadium · Houston, Texas · USA",
+      "venue": "AT&T Stadium · Arlington, Texas · USA",
+      "channel": null,
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn"
+    },
+    {
+      "id": "espn-fifa.world-760507",
+      "status": "upcoming",
+      "minute": "",
+      "home": "United States",
+      "away": "Belgium",
+      "homeAbbr": "USA",
+      "awayAbbr": "BEL",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/bel.png",
+      "score": "VS",
+      "time": "00:00",
+      "kickoffUtc": "2026-07-07T00:00Z",
+      "league": "FIFA World Cup",
+      "venue": "Lumen Field · Seattle, Washington · USA",
       "channel": null,
       "channelId": "bein-sports-1",
       "commentator": null,
@@ -374,7 +1126,7 @@
     },
     {
       "id": "espn-fifa.world-760503",
-      "status": "upcoming",
+      "status": "ended",
       "minute": "",
       "home": "Paraguay",
       "away": "France",
@@ -382,7 +1134,7 @@
       "awayAbbr": "FRA",
       "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/par.png",
       "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/fra.png",
-      "score": "VS",
+      "score": "0 - 1",
       "time": "21:00",
       "kickoffUtc": "2026-07-04T21:00Z",
       "league": "FIFA World Cup",
@@ -390,70 +1142,751 @@
       "channel": null,
       "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn"
+      "source": "espn",
+      "summaryAr": "انتهت المباراة بفوز فرنسا على باراغواي بنتيجة 1-0 ضمن FIFA World Cup على ملعب Lincoln Financial Field · Philadelphia, Pennsylvania · USA.",
+      "lineups": {
+        "home": {
+          "formation": "5-4-1",
+          "starters": [
+            {
+              "jersey": "12",
+              "name": "O. Gill",
+              "band": "gk",
+              "position": "Goalkeeper"
+            },
+            {
+              "jersey": "15",
+              "name": "G. Gómez",
+              "band": "def",
+              "position": "Center Defender"
+            },
+            {
+              "jersey": "3",
+              "name": "O. Alderete",
+              "band": "def",
+              "position": "Center Left Defender"
+            },
+            {
+              "jersey": "2",
+              "name": "G. Velázquez",
+              "band": "def",
+              "position": "Center Right Defender"
+            },
+            {
+              "jersey": "6",
+              "name": "J. Alonso",
+              "band": "def",
+              "position": "Left Back"
+            },
+            {
+              "jersey": "4",
+              "name": "J. Cáceres",
+              "band": "def",
+              "position": "Right Back"
+            },
+            {
+              "jersey": "14",
+              "name": "A. Cubas",
+              "band": "mid",
+              "position": "Center Left Midfielder"
+            },
+            {
+              "jersey": "8",
+              "name": "D. Gómez",
+              "band": "mid",
+              "position": "Center Right Midfielder"
+            },
+            {
+              "jersey": "23",
+              "name": "M. Galarza",
+              "band": "mid",
+              "position": "Left Midfielder"
+            },
+            {
+              "jersey": "10",
+              "name": "M. Almirón",
+              "band": "mid",
+              "position": "Right Midfielder"
+            },
+            {
+              "jersey": "19",
+              "name": "J. Enciso",
+              "band": "fwd",
+              "position": "Forward"
+            }
+          ],
+          "subs": [
+            {
+              "jersey": "17",
+              "name": "A. Romero Gamarra",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "5",
+              "name": "F. Balbuena",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "18",
+              "name": "A. Arce",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "11",
+              "name": "Maurício",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "24",
+              "name": "G. Caballero",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "16",
+              "name": "D. Bobadilla",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "9",
+              "name": "A. Sanabria",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "7",
+              "name": "R. Sosa",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "20",
+              "name": "B. Ojeda",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "22",
+              "name": "G. Olveira",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "1",
+              "name": "G. Fernández",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "13",
+              "name": "J. Canale",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "26",
+              "name": "A. Maidana",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "25",
+              "name": "I. Pitta",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "21",
+              "name": "G. Ávalos",
+              "band": "mid",
+              "position": "Substitute"
+            }
+          ]
+        },
+        "away": {
+          "formation": "4-2-3-1",
+          "starters": [
+            {
+              "jersey": "16",
+              "name": "M. Maignan",
+              "band": "gk",
+              "position": "Goalkeeper"
+            },
+            {
+              "jersey": "17",
+              "name": "W. Saliba",
+              "band": "def",
+              "position": "Center Left Defender"
+            },
+            {
+              "jersey": "4",
+              "name": "D. Upamecano",
+              "band": "def",
+              "position": "Center Right Defender"
+            },
+            {
+              "jersey": "3",
+              "name": "L. Digne",
+              "band": "def",
+              "position": "Left Back"
+            },
+            {
+              "jersey": "5",
+              "name": "J. Koundé",
+              "band": "def",
+              "position": "Right Back"
+            },
+            {
+              "jersey": "11",
+              "name": "M. Olise",
+              "band": "mid",
+              "position": "Attacking Midfielder"
+            },
+            {
+              "jersey": "14",
+              "name": "A. Rabiot",
+              "band": "mid",
+              "position": "Left Midfielder"
+            },
+            {
+              "jersey": "6",
+              "name": "M. Koné",
+              "band": "mid",
+              "position": "Right Midfielder"
+            },
+            {
+              "jersey": "10",
+              "name": "K. Mbappé",
+              "band": "fwd",
+              "position": "Forward"
+            },
+            {
+              "jersey": "12",
+              "name": "B. Barcola",
+              "band": "mid",
+              "position": "Attacking Midfielder Left"
+            },
+            {
+              "jersey": "7",
+              "name": "O. Dembélé",
+              "band": "mid",
+              "position": "Attacking Midfielder Right"
+            }
+          ],
+          "subs": [
+            {
+              "jersey": "8",
+              "name": "A. Tchouaméni",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "20",
+              "name": "D. Doué",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "22",
+              "name": "J. Mateta",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "19",
+              "name": "T. Hernández",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "13",
+              "name": "N. Kanté",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "21",
+              "name": "L. Hernández",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "25",
+              "name": "M. Akliouche",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "26",
+              "name": "M. Lacroix",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "15",
+              "name": "I. Konaté",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "23",
+              "name": "R. Risser",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "9",
+              "name": "M. Thuram",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "1",
+              "name": "B. Samba",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "24",
+              "name": "R. Cherki",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "18",
+              "name": "W. Zaïre-Emery",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "2",
+              "name": "M. Gusto",
+              "band": "mid",
+              "position": "Substitute"
+            }
+          ]
+        }
+      },
+      "stats": {
+        "home": {
+          "foulsCommitted": 13,
+          "yellowCards": 0,
+          "redCards": 0,
+          "offsides": 0,
+          "wonCorners": 2,
+          "saves": 4,
+          "possessionPct": 24.1,
+          "totalShots": 5,
+          "shotsOnTarget": 1,
+          "totalPasses": 183,
+          "passPct": 50,
+          "totalCrosses": 5,
+          "totalTackles": 29,
+          "interceptions": 14,
+          "totalClearance": 21
+        },
+        "away": {
+          "foulsCommitted": 11,
+          "yellowCards": 3,
+          "redCards": 0,
+          "offsides": 0,
+          "wonCorners": 12,
+          "saves": 1,
+          "possessionPct": 75.9,
+          "totalShots": 15,
+          "shotsOnTarget": 5,
+          "totalPasses": 569,
+          "passPct": 90,
+          "totalCrosses": 22,
+          "totalTackles": 13,
+          "interceptions": 10,
+          "totalClearance": 27
+        }
+      }
     },
     {
-      "id": "espn-fifa.world-760498",
+      "id": "espn-fifa.world-760502",
       "status": "ended",
       "minute": "",
-      "home": "Switzerland",
-      "away": "Algeria",
-      "homeAbbr": "SUI",
-      "awayAbbr": "ALG",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/sui.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/alg.png",
-      "score": "2 - 0",
-      "time": "03:00",
-      "kickoffUtc": "2026-07-03T03:00Z",
+      "home": "Canada",
+      "away": "Morocco",
+      "homeAbbr": "CAN",
+      "awayAbbr": "MAR",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/can.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/mar.png",
+      "score": "0 - 3",
+      "time": "17:00",
+      "kickoffUtc": "2026-07-04T17:00Z",
       "league": "FIFA World Cup",
-      "venue": "BC Place · Vancouver · Canada",
+      "venue": "NRG Stadium · Houston, Texas · USA",
       "channel": null,
       "channelId": "bein-sports-1",
       "commentator": null,
       "source": "espn",
-      "summaryAr": "انتهت المباراة بفوز سويسرا على الجزائر بنتيجة 2-0 ضمن FIFA World Cup على ملعب BC Place · Vancouver · Canada."
-    },
-    {
-      "id": "espn-fifa.world-760496",
-      "status": "ended",
-      "minute": "",
-      "home": "Portugal",
-      "away": "Croatia",
-      "homeAbbr": "POR",
-      "awayAbbr": "CRO",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/por.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/cro.png",
-      "score": "2 - 1",
-      "time": "23:00",
-      "kickoffUtc": "2026-07-02T23:00Z",
-      "league": "FIFA World Cup",
-      "venue": "BMO Field · Toronto · Canada",
-      "channel": null,
-      "channelId": "bein-sports-1",
-      "commentator": null,
-      "source": "espn",
-      "summaryAr": "انتهت المباراة بفوز البرتغال على كرواتيا بنتيجة 2-1 ضمن FIFA World Cup على ملعب BMO Field · Toronto · Canada."
-    },
-    {
-      "id": "espn-fifa.world-760497",
-      "status": "ended",
-      "minute": "",
-      "home": "Spain",
-      "away": "Austria",
-      "homeAbbr": "ESP",
-      "awayAbbr": "AUT",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/esp.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/aut.png",
-      "score": "3 - 0",
-      "time": "19:00",
-      "kickoffUtc": "2026-07-02T19:00Z",
-      "league": "FIFA World Cup",
-      "venue": "SoFi Stadium · Inglewood, California · USA",
-      "channel": null,
-      "channelId": "bein-sports-1",
-      "commentator": null,
-      "source": "espn",
-      "summaryAr": "انتهت المباراة بفوز إسبانيا على النمسا بنتيجة 3-0 ضمن FIFA World Cup على ملعب SoFi Stadium · Inglewood, California · USA."
+      "summaryAr": "انتهت المباراة بفوز المغرب على كندا بنتيجة 3-0 ضمن FIFA World Cup على ملعب NRG Stadium · Houston, Texas · USA.",
+      "lineups": {
+        "home": {
+          "formation": "4-4-2",
+          "starters": [
+            {
+              "jersey": "16",
+              "name": "M. Crépeau",
+              "band": "gk",
+              "position": "Goalkeeper"
+            },
+            {
+              "jersey": "4",
+              "name": "L. de Fougerolles",
+              "band": "def",
+              "position": "Center Left Defender"
+            },
+            {
+              "jersey": "15",
+              "name": "M. Bombito",
+              "band": "def",
+              "position": "Center Right Defender"
+            },
+            {
+              "jersey": "22",
+              "name": "R. Laryea",
+              "band": "def",
+              "position": "Left Back"
+            },
+            {
+              "jersey": "2",
+              "name": "A. Johnston",
+              "band": "def",
+              "position": "Right Back"
+            },
+            {
+              "jersey": "7",
+              "name": "S. Eustáquio",
+              "band": "mid",
+              "position": "Center Left Midfielder"
+            },
+            {
+              "jersey": "23",
+              "name": "N. Sigur",
+              "band": "mid",
+              "position": "Center Right Midfielder"
+            },
+            {
+              "jersey": "20",
+              "name": "A. Ahmed",
+              "band": "mid",
+              "position": "Left Midfielder"
+            },
+            {
+              "jersey": "17",
+              "name": "T. Buchanan",
+              "band": "mid",
+              "position": "Right Midfielder"
+            },
+            {
+              "jersey": "12",
+              "name": "T. Oluwaseyi",
+              "band": "mid",
+              "position": "Center Left Forward"
+            },
+            {
+              "jersey": "10",
+              "name": "J. David",
+              "band": "mid",
+              "position": "Center Right Forward"
+            }
+          ],
+          "subs": [
+            {
+              "jersey": "3",
+              "name": "A. Jones",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "1",
+              "name": "D. St. Clair",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "5",
+              "name": "J. Waterman",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "19",
+              "name": "A. Davies",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "24",
+              "name": "P. David",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "11",
+              "name": "L. Millar",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "13",
+              "name": "D. Cornelius",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "18",
+              "name": "O. Goodman",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "25",
+              "name": "N. Saliba",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "6",
+              "name": "M. Choinière",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "21",
+              "name": "J. Osorio",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "9",
+              "name": "C. Larin",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "14",
+              "name": "J. Shaffelburg",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "26",
+              "name": "J. Nelson",
+              "band": "mid",
+              "position": "Substitute"
+            }
+          ]
+        },
+        "away": {
+          "formation": "4-2-3-1",
+          "starters": [
+            {
+              "jersey": "1",
+              "name": "Y. Bounou",
+              "band": "gk",
+              "position": "Goalkeeper"
+            },
+            {
+              "jersey": "25",
+              "name": "R. Halhal",
+              "band": "def",
+              "position": "Center Left Defender"
+            },
+            {
+              "jersey": "14",
+              "name": "I. Diop",
+              "band": "def",
+              "position": "Center Right Defender"
+            },
+            {
+              "jersey": "3",
+              "name": "N. Mazraoui",
+              "band": "def",
+              "position": "Left Back"
+            },
+            {
+              "jersey": "2",
+              "name": "A. Hakimi",
+              "band": "def",
+              "position": "Right Back"
+            },
+            {
+              "jersey": "8",
+              "name": "A. Ounahi",
+              "band": "mid",
+              "position": "Attacking Midfielder"
+            },
+            {
+              "jersey": "24",
+              "name": "N. El Aynaoui",
+              "band": "mid",
+              "position": "Left Midfielder"
+            },
+            {
+              "jersey": "6",
+              "name": "A. Bouaddi",
+              "band": "mid",
+              "position": "Right Midfielder"
+            },
+            {
+              "jersey": "11",
+              "name": "I. Saibari",
+              "band": "fwd",
+              "position": "Forward"
+            },
+            {
+              "jersey": "23",
+              "name": "B. El Khannouss",
+              "band": "mid",
+              "position": "Attacking Midfielder Left"
+            },
+            {
+              "jersey": "10",
+              "name": "B. Díaz",
+              "band": "mid",
+              "position": "Attacking Midfielder Right"
+            }
+          ],
+          "subs": [
+            {
+              "jersey": "13",
+              "name": "Z. El Ouahdi",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "17",
+              "name": "A. Sbaï",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "9",
+              "name": "S. Rahimi",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "19",
+              "name": "Y. Belammari",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "26",
+              "name": "A. Salah-Eddine",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "21",
+              "name": "A. Amaimouni",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "16",
+              "name": "G. Yassine",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "18",
+              "name": "C. Riad",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "15",
+              "name": "S. El Mourabet",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "7",
+              "name": "C. Talbi",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "5",
+              "name": "M. Saadane",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "12",
+              "name": "M. El Kajoui",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "22",
+              "name": "A. Tagnaouti",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "4",
+              "name": "S. Amrabat",
+              "band": "mid",
+              "position": "Substitute"
+            },
+            {
+              "jersey": "20",
+              "name": "A. El Kaabi",
+              "band": "mid",
+              "position": "Substitute"
+            }
+          ]
+        }
+      },
+      "stats": {
+        "home": {
+          "foulsCommitted": 24,
+          "yellowCards": 4,
+          "redCards": 0,
+          "offsides": 2,
+          "wonCorners": 11,
+          "saves": 1,
+          "possessionPct": 44.7,
+          "totalShots": 10,
+          "shotsOnTarget": 3,
+          "totalPasses": 359,
+          "passPct": 80,
+          "totalCrosses": 30,
+          "totalTackles": 18,
+          "interceptions": 5,
+          "totalClearance": 10
+        },
+        "away": {
+          "foulsCommitted": 14,
+          "yellowCards": 4,
+          "redCards": 0,
+          "offsides": 3,
+          "wonCorners": 1,
+          "saves": 3,
+          "possessionPct": 55.3,
+          "totalShots": 5,
+          "shotsOnTarget": 4,
+          "totalPasses": 473,
+          "passPct": 80,
+          "totalCrosses": 5,
+          "totalTackles": 13,
+          "interceptions": 9,
+          "totalClearance": 47
+        }
+      }
     }
   ]
 }

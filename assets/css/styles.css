@@ -15,6 +15,8 @@
   --accent:    #18e29a;   /* live green         */
   --danger:    #ff3b5c;
   --gold:      #ffc94d;
+  --stat-home: var(--brand);
+  --stat-away: #22d3ee;   /* cyan, far enough from purple to stay CVD-safe */
   --radius:    14px;
   --shadow:    0 10px 30px rgba(0,0,0,.45);
   --shadow-soft: 0 18px 50px rgba(0,0,0,.28);
@@ -364,14 +366,16 @@ img { max-width: 100%; display: block; }
   box-shadow: none; pointer-events: none;
 }
 
-/* ------------------------------------------------- ملخص المباراة (summary) */
-.match-summary { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
-.match-summary-toggle {
+/* ------------------------------------------------- Collapsible match panels
+   (ملخص المباراة / التشكيلة الرسمية / إحصائيات المباراة share this shell) */
+.match-panel + .match-panel { margin-top: 4px; }
+.match-panel { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 12px; }
+.match-panel-toggle {
   display: flex; align-items: center; gap: 8px; cursor: pointer; list-style: none;
   font-weight: 700; font-size: .88rem; color: var(--gold); user-select: none;
 }
-.match-summary-toggle::-webkit-details-marker { display: none; }
-.match-summary-body { margin-top: 10px; animation: fadeUp .3s ease both; }
+.match-panel-toggle::-webkit-details-marker { display: none; }
+.match-panel-body { margin-top: 10px; animation: fadeUp .3s ease both; }
 .match-summary-text { color: var(--text); font-size: .88rem; line-height: 1.7; }
 .match-summary-novideo { color: var(--muted); font-size: .82rem; margin-top: 8px; }
 .match-highlight-video {
@@ -379,8 +383,58 @@ img { max-width: 100%; display: block; }
   border-radius: 10px; overflow: hidden; background: #000; border: 1px solid var(--border);
 }
 .match-highlight-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.match-summary--static { margin-top: 20px; }
-.match-summary-toggle--static { cursor: default; }
+.match-panel--static { margin-top: 20px; }
+.match-panel-toggle--static { cursor: default; }
+
+/* ------------------------------------------------- إحصائيات المباراة (stats) */
+.stat-legend { display: flex; justify-content: space-between; margin-bottom: 14px; font-size: .8rem; font-weight: 800; }
+.stat-legend-item { display: flex; align-items: center; gap: 6px; color: var(--text); }
+.stat-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.stat-legend-home .stat-dot { background: var(--stat-home); }
+.stat-legend-away .stat-dot { background: var(--stat-away); }
+.stat-row { margin-bottom: 13px; }
+.stat-row:last-child { margin-bottom: 0; }
+.stat-values { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 6px; font-size: .82rem; }
+.stat-value { font-weight: 800; min-width: 32px; color: var(--text); font-variant-numeric: tabular-nums; }
+.stat-value-home { text-align: end; }
+.stat-value-away { text-align: start; }
+.stat-label { color: var(--muted); font-weight: 600; text-align: center; flex: 1; }
+.stat-bar {
+  display: flex; gap: 2px; height: 8px; border-radius: 999px; overflow: hidden;
+  background: var(--surface-2);
+}
+.stat-bar-home, .stat-bar-away { border-radius: 999px; transition: width .35s ease; }
+.stat-bar-home { background: var(--stat-home); }
+.stat-bar-away { background: var(--stat-away); }
+
+/* ------------------------------------------------- التشكيلة الرسمية (lineups) */
+.match-lineups { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.lineup-team h4 {
+  display: flex; align-items: center; gap: 8px; font-size: .92rem; margin-bottom: 10px;
+}
+.lineup-formation {
+  font-size: .72rem; font-weight: 700; color: var(--muted); background: var(--surface-2);
+  border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px;
+}
+.lineup-band { margin-bottom: 10px; }
+.lineup-band b { display: block; font-size: .72rem; color: var(--muted); font-weight: 800; margin-bottom: 4px; }
+.lineup-band ul, .lineup-subs ul { list-style: none; }
+.lineup-band li, .lineup-subs li {
+  display: flex; align-items: center; gap: 8px; font-size: .84rem; padding: 3px 0; color: var(--text);
+}
+.lineup-jersey {
+  display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
+  background: var(--surface-2); border: 1px solid var(--border); font-size: .68rem;
+  font-weight: 800; color: var(--gold); flex-shrink: 0;
+}
+.lineup-subs { margin-top: 8px; }
+.lineup-subs summary { cursor: pointer; font-size: .78rem; font-weight: 700; color: var(--muted); list-style: none; }
+.lineup-subs summary::-webkit-details-marker { display: none; }
+.lineup-subs[open] summary { color: var(--text); }
+@media (max-width: 560px) {
+  .match-lineups { grid-template-columns: 1fr; gap: 16px; }
+  .lineup-team + .lineup-team { border-top: 1px dashed var(--border); padding-top: 14px; }
+}
 
 /* --------------------------------------------------------- Filters */
 .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
