@@ -62,11 +62,20 @@ function attachSummaries(matches) {
   }
 }
 
+/** Arabic search queries for highlight discovery — primary + fallbacks. */
+function buildHighlightQueries(match, arabicFor) {
+  const homeAr = arabicFor(match.home);
+  const awayAr = arabicFor(match.away);
+  return [
+    `ملخص واهداف مباراة ${homeAr} و ${awayAr} تعليق عربي`,
+    `ملخص مباراة ${homeAr} و ${awayAr} كأس العالم 2026`,
+    `اهداف مباراة ${homeAr} ضد ${awayAr} تعليق عربي`,
+  ];
+}
+
 /** Arabic search query biased toward Arabic-commentary highlight uploads. */
 function buildHighlightQuery(match) {
-  const homeAr = arabicTeam(match.home);
-  const awayAr = arabicTeam(match.away);
-  return `ملخص واهداف مباراة ${homeAr} و ${awayAr} تعليق عربي`;
+  return buildHighlightQueries(match, arabicTeam)[0];
 }
 
 const ARABIC_RE = /[؀-ۿ]/;
@@ -95,5 +104,7 @@ module.exports = {
   buildArabicSummary,
   attachSummaries,
   buildHighlightQuery,
+  buildHighlightQueries,
   pickArabicVideo,
+  arabicTeam,
 };

@@ -23,7 +23,7 @@ const {
   pairKey,
   pinEndedChannels,
 } = require("./commentators-lib");
-const { attachSummaries, buildHighlightQuery, pickArabicVideo } = require("./highlights-lib");
+const { attachSummaries, buildHighlightQueries, pickArabicVideo, arabicTeam } = require("./highlights-lib");
 const { parseEspnMatchId, extractLineups, extractMatchStats } = require("./match-detail-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 
@@ -99,22 +99,27 @@ async function fetchEspnSummary(leagueSlug, eventId) {
 
 /** Search YouTube for an Arabic-commentary highlights video for one match. */
 async function fetchYouTubeHighlight(match) {
-  const params = new URLSearchParams({
-    part: "snippet",
-    type: "video",
-    maxResults: "5",
-    order: "relevance",
-    relevanceLanguage: "ar",
-    videoEmbeddable: "true",
-    safeSearch: "strict",
-    q: buildHighlightQuery(match),
-    key: process.env.YOUTUBE_API_KEY,
-  });
-  const kickoffMs = Date.parse(match.kickoffUtc || "");
-  if (!isNaN(kickoffMs)) params.set("publishedAfter", new Date(kickoffMs).toISOString());
-  const json = await get(`${YOUTUBE_SEARCH_URL}?${params.toString()}`);
-  if (json.error) throw new Error(json.error.message || "YouTube API error");
-  return pickArabicVideo(json.items);
+  const queries = buildHighlightQueries(match, arabicTeam);
+  for (const q of queries) {
+    const params = new URLSearchParams({
+      part: "snippet",
+      type: "video",
+      maxResults: "5",
+      order: "relevance",
+      relevanceLanguage: "ar",
+      videoEmbeddable: "true",
+      safeSearch: "strict",
+      q,
+      key: process.env.YOUTUBE_API_KEY,
+    });
+    const kickoffMs = Date.parse(match.kickoffUtc || "");
+    if (!isNaN(kickoffMs)) params.set("publishedAfter", new Date(kickoffMs).toISOString());
+    const json = await get(`${YOUTUBE_SEARCH_URL}?${params.toString()}`);
+    if (json.error) throw new Error(json.error.message || "YouTube API error");
+    const found = pickArabicVideo(json.items);
+    if (found) return found;
+  }
+  return null;
 }
 
 (async () => {

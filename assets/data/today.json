@@ -1,6 +1,6 @@
 {
   "date": "2026-07-05",
-  "updatedAt": "2026-07-05T07:05:21.198Z",
+  "updatedAt": "2026-07-05T10:39:03.478Z",
   "source": "espn",
   "sourceLabel": "ESPN",
   "commentarySource": "almaghrebsport",
@@ -300,7 +300,28 @@
       "locked": false
     }
   ],
-  "highlightsIndex": [],
+  "highlightsIndex": [
+    {
+      "key": "france~paraguay",
+      "home": "Paraguay",
+      "away": "France",
+      "videoUrl": "https://www.youtube.com/embed/MJlBaFzxmy4",
+      "title": "🔥 ملخص مباراة فرنسا وباراغواي 1-0 اليوم السبت  | دور الـ16 كأس العالم 2026 | فرنسا إلى دور الـ8! 🇫🇷.",
+      "channelTitle": "المبدع العربي",
+      "thumbnail": "https://i.ytimg.com/vi/MJlBaFzxmy4/mqdefault.jpg",
+      "source": "youtube"
+    },
+    {
+      "key": "canada~morocco",
+      "home": "Canada",
+      "away": "Morocco",
+      "videoUrl": "https://www.youtube.com/embed/ZwejT5RP-os",
+      "title": " ملخص مباراة المغرب وكندا 3-0 | المغرب يتأهل إلى ربع نهائي كأس العالم 2026 🇲🇦🔥 أهداف المغرب اليوم ",
+      "channelTitle": "المبدع العربي",
+      "thumbnail": "https://i.ytimg.com/vi/ZwejT5RP-os/mqdefault.jpg",
+      "source": "youtube"
+    }
+  ],
   "matchDetailIndex": [
     {
       "key": "france~paraguay",
@@ -1144,6 +1165,13 @@
       "commentator": null,
       "source": "espn",
       "summaryAr": "انتهت المباراة بفوز فرنسا على باراغواي بنتيجة 1-0 ضمن FIFA World Cup على ملعب Lincoln Financial Field · Philadelphia, Pennsylvania · USA.",
+      "highlight": {
+        "videoUrl": "https://www.youtube.com/embed/MJlBaFzxmy4",
+        "title": "🔥 ملخص مباراة فرنسا وباراغواي 1-0 اليوم السبت  | دور الـ16 كأس العالم 2026 | فرنسا إلى دور الـ8! 🇫🇷.",
+        "channelTitle": "المبدع العربي",
+        "thumbnail": "https://i.ytimg.com/vi/MJlBaFzxmy4/mqdefault.jpg",
+        "source": "youtube"
+      },
       "lineups": {
         "home": {
           "formation": "5-4-1",
@@ -1529,6 +1557,13 @@
       "commentator": null,
       "source": "espn",
       "summaryAr": "انتهت المباراة بفوز المغرب على كندا بنتيجة 3-0 ضمن FIFA World Cup على ملعب NRG Stadium · Houston, Texas · USA.",
+      "highlight": {
+        "videoUrl": "https://www.youtube.com/embed/ZwejT5RP-os",
+        "title": " ملخص مباراة المغرب وكندا 3-0 | المغرب يتأهل إلى ربع نهائي كأس العالم 2026 🇲🇦🔥 أهداف المغرب اليوم ",
+        "channelTitle": "المبدع العربي",
+        "thumbnail": "https://i.ytimg.com/vi/ZwejT5RP-os/mqdefault.jpg",
+        "source": "youtube"
+      },
       "lineups": {
         "home": {
           "formation": "4-4-2",

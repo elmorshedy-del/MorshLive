@@ -12,6 +12,7 @@ account_id = "f06dda0c02d25976dcda319e942e432c" # pragma: allowlist secret
 # proxy falls back to the static host allowlist and will black out the next time
 # worldkoora rotates its CDN host. Set it once per environment (not committed):
 #   npx wrangler secret put STREAM_SIGNING_SECRET
+#   npx wrangler secret put YOUTUBE_API_KEY   # Arabic replay clips (YouTube Data API v3)
 # Use any long random string, e.g.:  openssl rand -hex 32
 
 [assets]
@@ -19,7 +20,7 @@ directory = "."
 binding = "ASSETS"
 # Static HTML/JS/CSS is served without invoking the Worker (saves daily request quota).
 # Only stream proxy paths run worker.js. Error 1027 = free-tier 100k/day exceeded.
-run_worker_first = ["/wk/*", "/dl/*", "/sir/*"]
+run_worker_first = ["/wk/*", "/dl/*", "/sir/*", "/api/*"]
 not_found_handling = "404-page"
 
 # If visitors see Error 1027 (100k/day free limit), either upgrade Workers Paid ($5/mo)

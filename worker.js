@@ -1883,6 +1883,112 @@ async function proxySirHls(request, env) {
   }
 }
 
+/* ----------------------------------------------- YouTube highlight replays (ملخص)
+ * Server-side YouTube Data API search — key stays in YOUTUBE_API_KEY secret,
+ * never shipped to the browser. GET /api/highlight?home=&away=&kickoff= */
+const HIGHLIGHT_API_RE = /^\/api\/highlight\/?$/i;
+const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
+const HIGHLIGHT_ARABIC_RE = /[؀-ۿ]/;
+const YOUTUBE_ID_RE = /^[\w-]{11}$/;
+
+let _teamArCache = null;
+
+async function loadTeamAr(env, origin) {
+  if (_teamArCache) return _teamArCache;
+  try {
+    const res = await env.ASSETS.fetch(`${origin}/assets/data/team-names-ar.json`);
+    _teamArCache = res.ok ? await res.json() : {};
+  } catch {
+    _teamArCache = {};
+  }
+  return _teamArCache;
+}
+
+function teamArabic(teamAr, name) {
+  return (teamAr && teamAr[name]) || name || "";
+}
+
+function highlightQueries(home, away, teamAr) {
+  const homeAr = teamArabic(teamAr, home);
+  const awayAr = teamArabic(teamAr, away);
+  return [
+    `ملخص واهداف مباراة ${homeAr} و ${awayAr} تعليق عربي`,
+    `ملخص مباراة ${homeAr} و ${awayAr} كأس العالم 2026`,
+    `اهداف مباراة ${homeAr} ضد ${awayAr} تعليق عربي`,
+  ];
+}
+
+function pickArabicHighlight(items) {
+  for (const item of items || []) {
+    const videoId = item.id && item.id.videoId;
+    if (!videoId || !YOUTUBE_ID_RE.test(videoId)) continue;
+    const snippet = item.snippet || {};
+    const text = `${snippet.title || ""} ${snippet.description || ""}`;
+    if (!HIGHLIGHT_ARABIC_RE.test(text)) continue;
+    return {
+      videoUrl: `https://www.youtube.com/embed/${videoId}`,
+      title: snippet.title || "",
+      channelTitle: snippet.channelTitle || "",
+      thumbnail: (snippet.thumbnails && snippet.thumbnails.medium && snippet.thumbnails.medium.url) || "",
+      source: "youtube",
+    };
+  }
+  return null;
+}
+
+async function searchYouTubeHighlight(apiKey, queries, kickoffUtc) {
+  for (const q of queries) {
+    const params = new URLSearchParams({
+      part: "snippet",
+      type: "video",
+      maxResults: "5",
+      order: "relevance",
+      relevanceLanguage: "ar",
+      videoEmbeddable: "true",
+      safeSearch: "strict",
+      q,
+      key: apiKey,
+    });
+    const kickoffMs = Date.parse(kickoffUtc || "");
+    if (!isNaN(kickoffMs)) params.set("publishedAfter", new Date(kickoffMs).toISOString());
+    const res = await fetch(`${YOUTUBE_SEARCH_URL}?${params.toString()}`, {
+      headers: { "User-Agent": "morsh-live/1.0" },
+    });
+    if (!res.ok) continue;
+    const json = await res.json();
+    if (json.error) continue;
+    const found = pickArabicHighlight(json.items);
+    if (found) return found;
+  }
+  return null;
+}
+
+async function proxyHighlightApi(request, env) {
+  const url = new URL(request.url);
+  const home = (url.searchParams.get("home") || "").trim();
+  const away = (url.searchParams.get("away") || "").trim();
+  const kickoff = url.searchParams.get("kickoff") || "";
+  const headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "public, max-age=3600",
+    "X-KZ-Proxy": "highlight-api",
+  };
+  if (!home || !away) {
+    return new Response(JSON.stringify({ error: "home and away required" }), { status: 400, headers });
+  }
+  const apiKey = env && env.YOUTUBE_API_KEY;
+  if (!apiKey) {
+    return new Response(JSON.stringify({ error: "highlights unavailable" }), { status: 503, headers });
+  }
+  const teamAr = await loadTeamAr(env, url.origin);
+  const found = await searchYouTubeHighlight(apiKey, highlightQueries(home, away, teamAr), kickoff);
+  if (!found) {
+    return new Response(JSON.stringify({ error: "not found" }), { status: 404, headers });
+  }
+  return new Response(JSON.stringify(found), { status: 200, headers });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -1904,7 +2010,7 @@ export default {
           },
         });
       }
-      const ttl = (url.searchParams.get("u") || "").includes(".m3u8") ? 3 : 60;
+      const ttl = (url.searchParams.get("u") || "").includes(".m3u8") ? 2 : 60;
       return withEdgeCache(request, ttl, () => proxyHls(request, env));
     }
     const dl = url.pathname.match(DL_EMBED_RE);
@@ -1923,7 +2029,7 @@ export default {
           },
         });
       }
-      return withEdgeCache(request, (url.searchParams.get("u") || "").includes(".m3u8") ? 3 : 60, () =>
+      return withEdgeCache(request, (url.searchParams.get("u") || "").includes(".m3u8") ? 2 : 60, () =>
         proxyDlHls(request, env)
       );
     }
@@ -1944,6 +2050,9 @@ export default {
         });
       }
       return proxySirHls(request, env);
+    }
+    if (HIGHLIGHT_API_RE.test(url.pathname) && method === "GET") {
+      return withEdgeCache(request, 3600, () => proxyHighlightApi(request, env));
     }
     return env.ASSETS.fetch(request);
   },

@@ -437,10 +437,54 @@ function applyHighlights(matches, idx) {
       highlight: {
         videoUrl: entry.videoUrl,
         title: entry.title,
-        competition: entry.competition,
+        channelTitle: entry.channelTitle,
         thumbnail: entry.thumbnail,
         source: entry.source,
       },
+    };
+  });
+}
+
+const _highlightFetchCache = new Map();
+
+async function fetchHighlightFromApi(m) {
+  const key = commentaryKey(m.home, m.away);
+  if (_highlightFetchCache.has(key)) return _highlightFetchCache.get(key);
+  const promise = (async () => {
+    try {
+      const params = new URLSearchParams({ home: m.home, away: m.away });
+      if (m.kickoffUtc) params.set("kickoff", m.kickoffUtc);
+      const res = await fetch(`/api/highlight?${params.toString()}`);
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data && data.videoUrl ? data : null;
+    } catch {
+      return null;
+    }
+  })();
+  _highlightFetchCache.set(key, promise);
+  return promise;
+}
+
+/** Fill missing replay clips for ended matches via /api/highlight (YouTube, server-side). */
+async function ensureHighlightsFromApi(matches) {
+  const pending = matches.filter((m) => m.status === "ended" && !m.highlight);
+  if (!pending.length) return matches;
+  const results = await Promise.all(
+    pending.map(async (m) => {
+      const h = await fetchHighlightFromApi(m);
+      return h ? { key: commentaryKey(m.home, m.away), highlight: h } : null;
+    })
+  );
+  const byKey = new Map(results.filter(Boolean).map((r) => [r.key, r.highlight]));
+  if (!byKey.size) return matches;
+  return matches.map((m) => {
+    const h = byKey.get(commentaryKey(m.home, m.away));
+    if (!h) return m;
+    return {
+      ...m,
+      summaryAr: m.summaryAr || buildArabicSummary(m),
+      highlight: h,
     };
   });
 }
@@ -603,7 +647,8 @@ window.getMatches = async function getMatches({ force } = {}) {
         const didx = await loadMatchDetailIndex();
         const withCommentary = applyCommentary(live.matches, idx);
         const withHighlights = applyHighlights(withCommentary, hidx);
-        return { ...live, matches: applyMatchDetail(withHighlights, didx) };
+        const withReplays = await ensureHighlightsFromApi(withHighlights);
+        return { ...live, matches: applyMatchDetail(withReplays, didx) };
       }
     } catch (e) {
       console.warn("Live API fetch failed, using cache:", e.message);
@@ -619,8 +664,9 @@ window.getMatches = async function getMatches({ force } = {}) {
     const matches = sortDisplayMatches(
       raw.map((m) => ({ ...m, status: refineStatus(m, data.date) })).filter(keepDisplayMatch)
     );
+    const withReplays = await ensureHighlightsFromApi(matches);
     return {
-      matches,
+      matches: withReplays,
       updatedAt: data.updatedAt,
       date: data.date,
       live: true,
