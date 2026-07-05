@@ -199,6 +199,23 @@
     renderMatchDetail();
     renderMatchSummary();
     injectMatchSchema(match);
+    renderMatchNotice();
+  }
+
+  function renderMatchNotice() {
+    const slot = document.getElementById("match-notice-slot");
+    if (!slot || !window.MatchNotice) return;
+    if (!match) {
+      slot.innerHTML = "";
+      slot.hidden = true;
+      return;
+    }
+    window.MatchNotice.showForMatch(slot, match).then((shown) => {
+      slot.hidden = !shown;
+    }).catch(() => {
+      slot.innerHTML = "";
+      slot.hidden = true;
+    });
   }
 
   function renderChannels() {

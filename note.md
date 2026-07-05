@@ -14,8 +14,20 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 | `dd456df` | Weshan alt player (serv 0–3), `?player=weshan`, lineups cache fix | `data.js`, `watch.js`, `i18n.js`, `styles.css` |
 | `aad27fe` | Weshan spam/popup block — proxy via worker, iframe sandbox | `worker.js`, `data.js`, `watch.js` |
 | `8b71830` | Stop 90s auto-refresh from reloading the video | `watch.js`, `stream-check.js` |
+| `f40cbe5` | Expanded `note.md` changelog for Brazil session | `note.md` |
+| *(pending)* | Brazil H1 apology notice — compact red glow banner | `match-notice.json`, `match-notice.js`, `watch.html`, `index.html` |
 
-### `8bea833` — Brazil channels dead / no picker (PR #76)
+### Match notice banner (Brazil H1 apology)
+
+**Config:** `assets/data/match-notice.json` — set `"enabled": false` or change `"id"` to show again after dismiss.
+
+**Placement:** Watch page above player (below تحديث البث); home page under featured-live card.
+
+**Behavior:** Dismiss persists in `localStorage` until config `id` changes. No auto-hide. Compact red glow — full text wraps, no truncation.
+
+**To reuse later:** Set `enabled: true`, new `id`, and `matchIds` for the target match.
+
+---
 
 **Bug**
 - User reported **none of the channels work** when Brazil kicked off.

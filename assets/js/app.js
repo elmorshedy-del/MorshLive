@@ -139,6 +139,12 @@
       </div>`
       : "";
     wrap.innerHTML = liveBlock + endedBlock;
+    const noticeSlot = document.getElementById("match-notice-home");
+    if (noticeSlot && window.MatchNotice) {
+      window.MatchNotice.showForHome(noticeSlot, MATCHES).catch(() => {
+        noticeSlot.innerHTML = "";
+      });
+    }
   }
 
   /* -------------------------------------------------- Live match center
