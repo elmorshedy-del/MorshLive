@@ -8,8 +8,9 @@ const SYNDICATION = "https://syndication.twitter.com/srv/timeline-profile/screen
 const TWITTER_SEARCH = "https://api.twitter.com/2/tweets/search/recent";
 const UA = "Mozilla/5.0 (compatible; MorshLive/1.0)";
 
-/** Football accounts that post match memes / viral moments during World Cup. */
+/** Football + site-owner accounts scanned for match memes / viral moments. */
 const MEME_ACCOUNTS = [
+  "Ahmed06209123",
   "brfootball",
   "TFRHQ5",
   "433",
@@ -50,9 +51,9 @@ function fetchText(url, headers = {}) {
   });
 }
 
-function decodeBearer(token) {
+function normalizeBearer(token) {
   if (!token) return "";
-  try { return decodeURIComponent(token); } catch { return token; }
+  return String(token).trim();
 }
 
 function namesForTeam(team) {
@@ -103,7 +104,7 @@ function toMemeEntry(tw) {
 
 /** X API v2 recent search — needs TWITTER_BEARER_TOKEN. */
 async function searchTwitterApi(bearerToken, home, away, { max = 5 } = {}) {
-  const token = decodeBearer(bearerToken);
+  const token = normalizeBearer(bearerToken);
   if (!token) return [];
   const params = new URLSearchParams({
     query: buildTwitterSearchQuery(home, away),
