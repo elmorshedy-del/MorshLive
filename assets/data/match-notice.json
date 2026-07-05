@@ -1,7 +1,17 @@
 {
-  "id": "brazil-norway-h1-apology-20260705",
-  "enabled": true,
-  "matchIds": ["espn-fifa.world-760504"],
-  "textAr": "نعتذر عن مشاكل البث في الشوط الأول، وقد تم حلّها بالكامل. استمتعوا بالشوط الثاني، ونعدكم بتجربة أفضل في كل المباريات القادمة.",
-  "textEn": "We're sorry the first half didn't stream the way it should have. The issues have been fixed — enjoy the second half, and we promise a smoother experience in every match ahead."
+  "streamApology": {
+    "id": "brazil-norway-h1-apology-20260705",
+    "enabled": true,
+    "matchIds": ["espn-fifa.world-760504"],
+    "variant": "alert",
+    "textAr": "نعتذر عن مشاكل البث في الشوط الأول، وقد تم حلّها بالكامل. استمتعوا بالشوط الثاني، ونعدكم بتجربة أفضل في كل المباريات القادمة.",
+    "textEn": "We're sorry the first half didn't stream the way it should have. The issues have been fixed — enjoy the second half, and we promise a smoother experience in every match ahead."
+  },
+  "statsBeta": {
+    "id": "stats-beta-20260705",
+    "enabled": true,
+    "variant": "beta",
+    "textAr": "مركز الإحصائيات ميزة جديدة ما زالت قيد التطوير — قد ترون أرقاماً غير دقيقة أحياناً. نعمل على ضبطها مباراة بعد مباراة حتى تصل إلى الكمال.",
+    "textEn": "Match stats are a new feature still in development — some figures may be off at times. We're refining them with every match until they're spot-on."
+  }
 }

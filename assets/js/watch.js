@@ -154,11 +154,19 @@
     const lineupsHtml = match && match.lineups && window.buildLineupsHtml
       ? staticPanel(t("card.lineups"), window.buildLineupsHtml(match))
       : "";
-    const statsHtml = match && match.stats && (match.status === "live" || match.status === "ended") && window.buildStatsHtml
-      ? staticPanel(t("card.stats"), window.buildStatsHtml(match))
+    const hasStats = match && match.stats && (match.status === "live" || match.status === "ended") && window.buildStatsHtml;
+    const statsNoticeSlot = hasStats ? '<div id="stats-notice-slot" class="match-notice-slot"></div>' : "";
+    const statsHtml = hasStats
+      ? statsNoticeSlot + staticPanel(t("card.stats"), window.buildStatsHtml(match))
       : "";
     slot.innerHTML = lineupsHtml + statsHtml;
     if (window.activateStatBars) window.activateStatBars(slot);
+    if (hasStats && window.MatchNotice) {
+      const noticeSlot = document.getElementById("stats-notice-slot");
+      window.MatchNotice.showStatsBeta(noticeSlot).catch(() => {
+        if (noticeSlot) noticeSlot.innerHTML = "";
+      });
+    }
   }
 
   function fillInfo() {

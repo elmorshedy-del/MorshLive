@@ -1,4 +1,4 @@
-/* Match-scoped apology / ops notice — enable per incident in match-notice.json.
+/* Match-scoped ops notices — config in match-notice.json.
  * Dismiss persists in localStorage until config id changes or enabled is set false. */
 (function (global) {
   "use strict";
@@ -48,6 +48,17 @@
     return _config;
   }
 
+  function streamCfg(config) {
+    if (!config) return null;
+    if (config.streamApology) return config.streamApology;
+    if (config.id && config.textAr) return config;
+    return null;
+  }
+
+  function statsCfg(config) {
+    return config && config.statsBeta ? config.statsBeta : null;
+  }
+
   function noticeText(cfg) {
     return lang() === "en" ? (cfg.textEn || cfg.textAr) : (cfg.textAr || cfg.textEn);
   }
@@ -55,12 +66,13 @@
   function matchApplies(cfg, match) {
     if (!cfg || !cfg.enabled || !match || !match.id) return false;
     const ids = cfg.matchIds || [];
-    return ids.includes(match.id);
+    return !ids.length || ids.includes(match.id);
   }
 
   function buildNotice(cfg) {
+    const variant = cfg.variant === "beta" ? "beta" : "alert";
     const el = document.createElement("aside");
-    el.className = "kz-match-notice";
+    el.className = `kz-match-notice kz-match-notice--${variant}`;
     el.setAttribute("dir", "rtl");
     el.setAttribute("role", "status");
     el.setAttribute("aria-live", "polite");
@@ -78,7 +90,7 @@
     const icon = document.createElement("span");
     icon.className = "kz-match-notice__icon";
     icon.setAttribute("aria-hidden", "true");
-    icon.textContent = "⚠️";
+    icon.textContent = variant === "beta" ? "◆" : "⚠️";
 
     const text = document.createElement("p");
     text.className = "kz-match-notice__text";
@@ -108,8 +120,8 @@
     return true;
   }
 
-  async function showForMatch(slot, match) {
-    const cfg = await loadConfig();
+  async function showStreamApology(slot, match) {
+    const cfg = streamCfg(await loadConfig());
     if (!matchApplies(cfg, match)) {
       if (slot) slot.innerHTML = "";
       return false;
@@ -117,8 +129,13 @@
     return renderInto(slot, cfg);
   }
 
+  async function showStatsBeta(slot) {
+    const cfg = statsCfg(await loadConfig());
+    return renderInto(slot, cfg);
+  }
+
   async function showForHome(slot, matches) {
-    const cfg = await loadConfig();
+    const cfg = streamCfg(await loadConfig());
     if (!cfg || !cfg.enabled || isDismissed(cfg.id)) {
       if (slot) slot.innerHTML = "";
       return false;
@@ -132,5 +149,10 @@
     return renderInto(slot, cfg);
   }
 
-  global.MatchNotice = { showForMatch, showForHome, loadConfig };
+  global.MatchNotice = {
+    showForMatch: showStreamApology,
+    showForHome,
+    showStatsBeta,
+    loadConfig,
+  };
 })(window);

@@ -173,6 +173,7 @@
         </div>` : "",
       m.stats ? `
         <div class="live-detail-section">
+          <div id="live-stats-notice-slot" class="match-notice-slot"></div>
           <h3>${ICON.trophy} ${t("card.stats")}</h3>
           ${window.buildStatsHtml(m)}
         </div>` : "",
@@ -200,6 +201,12 @@
         ${sections}
       </div>`;
     if (window.activateStatBars) window.activateStatBars(wrap);
+    if (m.stats && window.MatchNotice) {
+      const statsSlot = document.getElementById("live-stats-notice-slot");
+      window.MatchNotice.showStatsBeta(statsSlot).catch(() => {
+        if (statsSlot) statsSlot.innerHTML = "";
+      });
+    }
   }
 
   /* -------------------------------------------------- ملخص المباراة (summary) */

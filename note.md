@@ -23,9 +23,15 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 
 **Placement:** Watch page above player (below تحديث البث); home page under featured-live card.
 
-**Behavior:** Dismiss persists in `localStorage` until config `id` changes. No auto-hide. Compact red glow — full text wraps, no truncation.
+**Behavior:** Dismiss persists in `localStorage` until config `id` changes. No auto-hide. Compact — full text wraps, no truncation.
 
-**To reuse later:** Set `enabled: true`, new `id`, and `matchIds` for the target match.
+**Stats beta notice (`statsBeta`):** Above stats on watch page + home live-detail. Gold glow, separate dismiss key. Set `statsBeta.enabled: false` to hide.
+
+**Copy (stats):**
+- AR: مركز الإحصائيات ميزة جديدة ما زالت قيد التطوير — قد ترون أرقاماً غير دقيقة أحياناً. نعمل على ضبطها مباراة بعد مباراة حتى تصل إلى الكمال.
+- EN: Match stats are a new feature still in development — some figures may be off at times. We're refining them with every match until they're spot-on.
+
+**To reuse later:** Set `enabled: true`, new `id`, and `matchIds` for stream apology; new `statsBeta.id` to reset stats dismiss.
 
 ---
 
