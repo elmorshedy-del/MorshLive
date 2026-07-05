@@ -23,12 +23,13 @@ const EMBEDS = {
   vip2: { url: "/wk/albaplayer/vip2/" },
 };
 
-function embedUrlFor(embed) {
+function embedUrlFor(embed, serv) {
   if (!embed || !embed.url) return "";
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(embed.url, base);
   if (embed.channelId) u.searchParams.set("ch", embed.channelId);
-  u.searchParams.set("_kz", "6"); // bust stale iframe cache when player UI changes
+  if (serv != null && serv !== "") u.searchParams.set("serv", String(serv));
+  u.searchParams.set("_kz", "7");
   return u.toString();
 }
 

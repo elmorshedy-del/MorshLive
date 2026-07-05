@@ -41,15 +41,19 @@ const DL_HLS_RE = /^\/dl\/hls$/i;            // signed HLS proxy for dlhd stream
 // matching beIN Sports Arabic 24/7 feed (91–95) so the channel still has stable
 // Arabic sports backup. worldkoora vip1/vip2 remain primary for live MAX matches.
 const DLHD_CHANNEL_MIRROR_IDS = {
-  "bein-sports-1": [91],  // beIN Sports 1 Arabic
-  "bein-sports-2": [92],
-  "bein-sports-3": [93],  // often 500 on CDN — skipped when dead
-  "bein-sports-4": [94],
-  "bein-max-1": [597, 91], // MAX AR → Sports 1 Arabic fallback
-  "bein-max-2": [597, 92],
-  "bein-max-3": [597, 94], // skip dead 93; Sports 4 Arabic fallback
-  "bein-max-4": [597, 95], // Sports 5 Arabic fallback
+  "bein-sports-1": [91, 92, 94, 95],
+  "bein-sports-2": [92, 91, 94, 95],
+  "bein-sports-3": [93, 92, 94],
+  "bein-sports-4": [94, 92, 95, 91],
+  "bein-max-1": [597, 91, 92, 94, 95],
+  "bein-max-2": [597, 92, 91, 94, 95],
+  "bein-max-3": [597, 94, 92, 95, 91],
+  "bein-max-4": [597, 95, 94, 92, 91],
 };
+
+// When a channel's own mirrors are dead, these 24/7 dlhd feeds are probed as
+// extra same-pool fallbacks (Brazil MAX 1 night: 91/92/94 often carry live WC).
+const GLOBAL_DLHD_FALLBACK_IDS = [92, 94, 95, 91];
 
 // Primary dlhd id per channel (first mirror). Used for HEAD /dl/{id} shortcuts.
 const DLHD_CHANNEL_IDS = Object.fromEntries(
@@ -1126,7 +1130,11 @@ async function resolveDlChannelMirrors(channelId, origin, secret, request) {
   if (!ids || !ids.length) return [];
   const out = [];
   const seen = new Set();
-  for (const id of ids) {
+  const allIds = [...ids];
+  for (const id of GLOBAL_DLHD_FALLBACK_IDS) {
+    if (!allIds.includes(id)) allIds.push(id);
+  }
+  for (const id of allIds) {
     const m3u8 = await resolveDlStream(id);
     if (!m3u8 || !isHlsUrl(m3u8) || seen.has(m3u8)) continue;
     const probe = await streamProbe(m3u8, "dl", request);

@@ -17,16 +17,25 @@
   let MATCHES = [];
   let channel = CHANNELS[0];
   let match = null;
+  let activeServ = Number(params.get("serv")) || 3;
+  let activeEmbedKey = null;
   const shell = document.getElementById("player-shell");
   let loadedUrl = "";
 
+  function channelEmbedUrl(chId, embedKey, serv) {
+    const key = embedKey || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(chId)) || "vip1";
+    const embed = { ...(window.SITE_DATA.embedForKey(key)), channelId: chId };
+    return embedUrlFor(embed, serv);
+  }
+
   function currentEmbed() {
-    return channel.embed || { url: "/wk/albaplayer/vip1/", channelId: channel.id };
+    const key = activeEmbedKey || (match && match.embedKey) || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id)) || "vip1";
+    return { ...(window.SITE_DATA.embedForKey(key)), channelId: channel.id };
   }
 
   function loadPlayer() {
     if (!shell) return;
-    const url = embedUrlFor(currentEmbed());
+    const url = embedUrlFor(currentEmbed(), activeServ);
     if (!url || loadedUrl === url) return;
     loadedUrl = url;
     shell.innerHTML =
@@ -185,6 +194,85 @@
     injectMatchSchema(match);
   }
 
+  function renderChannels() {
+    const row = document.getElementById("channel-row");
+    if (!row) return;
+    const matchCh = match && match.channelId;
+    row.innerHTML = CHANNELS.map((ch) => {
+      const isActive = ch.id === channel.id;
+      const isMatch = ch.id === matchCh;
+      return `<button type="button" class="channel-btn${isActive ? " active" : ""}${isMatch ? " channel-btn--match" : ""}"
+        data-ch="${escapeHtml(ch.id)}" data-url="${escapeHtml(channelEmbedUrl(ch.id, null, activeServ))}"
+        data-label="${escapeHtml(ch.name)}" data-kind="reachable">
+        <span class="channel-btn-name">${escapeHtml(ch.name)}</span>
+        ${isMatch ? `<span class="channel-btn-tag">${t("watch.matchChannel")}</span>` : ""}
+      </button>`;
+    }).join("");
+
+    row.querySelectorAll(".channel-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const chId = btn.dataset.ch;
+        const next = new URL(location.href);
+        next.searchParams.set("ch", chId);
+        if (match && match.id) next.searchParams.set("match", match.id);
+        next.searchParams.set("serv", String(activeServ));
+        location.href = next.toString();
+      });
+    });
+
+    if (window.StreamCheck) window.StreamCheck.autoHighlight(row, { autoSelect: false }).catch(() => {});
+  }
+
+  function renderServers() {
+    const row = document.getElementById("servers");
+    if (!row) return;
+    const embedKeys = ["vip1", "vip2"];
+    const servs = [1, 2, 3, 4];
+    const buttons = [];
+    for (const key of embedKeys) {
+      for (const serv of servs) {
+        const url = channelEmbedUrl(channel.id, key, serv);
+        const isActive = (activeEmbedKey || window.SITE_DATA.embedKeyFor(channel.id)) === key && activeServ === serv;
+        buttons.push(`<button type="button" class="server-btn${isActive ? " active" : ""}" data-srv="${serv}" data-embed="${key}"
+          data-kind="reachable" data-url="${escapeHtml(url)}" data-label="${key} ${t("watch.server")} ${serv}">
+          <span class="srv-label">${key.toUpperCase()} · ${t("watch.server")} ${serv}</span>
+        </button>`);
+      }
+    }
+    row.innerHTML = buttons.join("");
+
+    row.querySelectorAll(".server-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeServ = Number(btn.dataset.srv) || 3;
+        activeEmbedKey = btn.dataset.embed || "vip1";
+        row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        const next = new URL(location.href);
+        next.searchParams.set("ch", channel.id);
+        next.searchParams.set("serv", String(activeServ));
+        if (match && match.id) next.searchParams.set("match", match.id);
+        history.replaceState(null, "", next.toString());
+        reloadPlayer();
+      });
+    });
+
+    if (window.StreamCheck) {
+      window.StreamCheck.autoHighlight(row, { autoSelect: true }).then((res) => {
+        if (res && res.firstOk && res.firstOk.classList.contains("srv-down") === false) {
+          const srv = Number(res.firstOk.dataset.srv);
+          const emb = res.firstOk.dataset.embed;
+          if (srv && emb && (srv !== activeServ || emb !== activeEmbedKey)) {
+            activeServ = srv;
+            activeEmbedKey = emb;
+            row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
+            res.firstOk.classList.add("active");
+            reloadPlayer();
+          }
+        }
+      }).catch(() => {});
+    }
+  }
+
   function renderSidebar() {
     const panel = document.getElementById("side-channels");
     if (!panel) return;
@@ -238,9 +326,11 @@
   function resolveSelection() {
     const picked = window.resolveWatchSelection
       ? window.resolveWatchSelection(MATCHES, CHANNELS, params)
-      : { channel: CHANNELS[0], match: null };
+      : { channel: CHANNELS[0], match: null, embedKey: null };
     channel = picked.channel;
     match = picked.match;
+    activeEmbedKey = picked.embedKey || (match && match.embedKey) || null;
+    if (params.get("serv")) activeServ = Number(params.get("serv")) || 3;
   }
 
   async function refreshMatches({ force } = {}) {
@@ -250,6 +340,8 @@
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
+    renderChannels();
+    renderServers();
     renderSidebar();
     const matchChanged = (match && match.id) !== previousMatchId;
     if (channel.id !== previousChannelId || matchChanged) {
@@ -261,10 +353,20 @@
     initNav();
     resolveSelection();
     fillInfo();
+    renderChannels();
+    renderServers();
     renderSidebar();
     loadPlayer();
     initReloadButton();
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
+    setInterval(() => {
+      const chRow = document.getElementById("channel-row");
+      const srvRow = document.getElementById("servers");
+      if (window.StreamCheck) {
+        if (chRow) window.StreamCheck.autoHighlight(chRow, { autoSelect: false }).catch(() => {});
+        if (srvRow) window.StreamCheck.autoHighlight(srvRow, { autoSelect: false }).catch(() => {});
+      }
+    }, 120 * 1000);
   });
 })();

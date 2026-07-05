@@ -1,6 +1,6 @@
 {
-  "version": 9,
-  "updatedAt": "2026-07-03T01:35:00.000Z",
+  "version": 10,
+  "updatedAt": "2026-07-05T20:15:00.000Z",
   "embedBinding": {
     "bein-max-1": "vip1",
     "bein-max-2": "vip2",
@@ -10,6 +10,21 @@
     "bein-sports-2": "vip1"
   },
   "calibration": [
+    {
+      "date": "2026-07-05T20:15:00.000Z",
+      "issue": "Brazil vs Norway (beIN MAX 1) — all channels appeared dead; no channel picker on watch page.",
+      "rootCause": "worldkoora HLS blank (451 on last-known CDN); only dlhd premium91 live. watch.js had single iframe with no channel/server UI.",
+      "fix": "Added channel row + 8 server buttons (vip1/vip2 × serv 1–4) with green live highlight. Expanded dlhd fallbacks (91,92,94,95) + global pool. Pinned Brazil embedKey vip1.",
+      "liveAtTime": [
+        {
+          "match": "Brazil vs Norway",
+          "channelId": "bein-max-1",
+          "channel": "beIN MAX 1",
+          "embedKey": "vip1"
+        }
+      ],
+      "userReport": "brazil game started, none of the channels work"
+    },
     {
       "date": "2026-07-03T01:35:00.000Z",
       "issue": "Portugal vs Croatia (beIN Sports 1) showed Twitch or blackout on korazero.",

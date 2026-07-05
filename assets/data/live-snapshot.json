@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-07-05T18:24:50.146Z",
-  "bindingVersion": 9,
+  "updatedAt": "2026-07-05T20:13:19.353Z",
+  "bindingVersion": 10,
   "embedBinding": {
     "bein-max-1": "vip1",
     "bein-max-2": "vip2",
@@ -9,8 +9,22 @@
     "bein-sports-1": "vip1",
     "bein-sports-2": "vip1"
   },
-  "liveCount": 0,
-  "routes": [],
+  "liveCount": 1,
+  "routes": [
+    {
+      "id": "espn-fifa.world-760504",
+      "home": "Brazil",
+      "away": "Norway",
+      "score": "0 - 0",
+      "minute": "13'",
+      "channelId": "bein-max-1",
+      "channel": "beIN MAX 1",
+      "commentator": "علي الكعبي",
+      "embedKey": "vip1",
+      "embedUrl": "https://vip.worldkoora.com/albaplayer/vip1/",
+      "kickoffUtc": "2026-07-05T20:00Z"
+    }
+  ],
   "conflicts": [],
   "ok": true,
   "warning": null
