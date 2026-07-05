@@ -142,6 +142,7 @@
       ? staticPanel(t("card.stats"), window.buildStatsHtml(match))
       : "";
     slot.innerHTML = lineupsHtml + statsHtml;
+    if (window.activateStatBars) window.activateStatBars(slot);
   }
 
   function fillInfo() {
