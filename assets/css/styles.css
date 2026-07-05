@@ -704,7 +704,7 @@ img { max-width: 100%; display: block; }
   .nav-links { position: fixed; inset: 64px 0 auto 0; flex-direction: column; background: var(--bg-2);
     border-bottom: 1px solid var(--border); padding: 14px; margin: 0; display: none; }
   .nav-links.open { display: flex; }
-  .nav-links a { width: 100%; }
+  .nav-links a { width: 100%; text-align: start; line-height: 1.45; white-space: normal; }
   .nav-toggle { display: block; margin-inline-start: auto; }
 }
 
@@ -958,6 +958,11 @@ img { max-width: 100%; display: block; }
   font-weight: 600;
   letter-spacing: .04em;
 }
+.wc-archive-link {
+  display: inline-block; margin-top: 10px; color: var(--gold); font-size: .82rem;
+  font-weight: 700; text-decoration: none; opacity: .95;
+}
+.wc-archive-link:hover { text-decoration: underline; opacity: 1; }
 
 /* Spinning ball column */
 .wc-ball-col {
