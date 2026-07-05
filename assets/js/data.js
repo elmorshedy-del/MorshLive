@@ -22,8 +22,7 @@ const EMBEDS = {
   vip1: { url: "/wk/albaplayer/vip1/" },
   vip2: { url: "/wk/albaplayer/vip2/" },
   weshan: {
-    url: "https://zenvixw.site/wordpress/albaplayer/weshan/",
-    external: true,
+    url: "/wk/albaplayer/weshan/",
     servStart: 0,
     defaultServer: 0,
     servers: 4,

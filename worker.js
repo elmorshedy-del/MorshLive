@@ -20,7 +20,9 @@
  *   npx wrangler secret put STREAM_SIGNING_SECRET
  */
 const WORLDKOORA = "https://vip.worldkoora.com";
+const WESHAN = "https://zenvixw.site/wordpress/albaplayer/weshan/";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
+const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
 const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
 // Worldkoora exposes "البث 1..N" as redundant servers for the SAME channel in a
 // slot. We probe them in order so a dead/blank server this game falls over to a
@@ -95,7 +97,7 @@ const LAST_KNOWN_TWITCH_CHANNELS = {
 };
 
 const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
-.aplr-fxd-bnr,#aplr-fixedban,
+.aplr-fxd-bnr,#aplr-fixedban,.aplr-menu,ul.aplr-menu,.aplr-action,.aplr-exbtns,
 [class^="agl-"],[class*=" agl-"],[id^="agl-"],
 .aplr-ad,.aplr-preroll,.video-ad,.vjs-ad,.ima-ad-container,
 .aplr-embed-holder,.aplr-embed-visible,.aplr-site-name{display:none!important;visibility:hidden!important;pointer-events:none!important}
@@ -205,8 +207,8 @@ async function asyncReplaceAll(input, regex, asyncFn) {
 
 function stripBlockedScripts(html) {
   return String(html || "").replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, (block) => {
-    if (/agl006\.host|aplr-fxd-bnr|cvt-s\d*\.agl/i.test(block)) return "";
-    if (/AplrDevprotocol|ConsoleBan\.init|ConsoleBan\.prototype/i.test(block)) return "";
+    if (/agl006\.host|aplr-fxd-bnr|cvt-s\d*\.agl|jnbhi\.com|nuvolda\.store/i.test(block)) return "";
+    if (/AplrDevprotocol|ConsoleBan\.init|ConsoleBan\.prototype|AplrPopUp/i.test(block)) return "";
     return block;
   });
 }
@@ -1161,6 +1163,80 @@ async function resolveExtraChannelMirrors(channelId, origin, secret, request) {
   return out;
 }
 
+async function fetchWeshanHtml(request, serv) {
+  const upstream = new URL(WESHAN);
+  upstream.searchParams.set("serv", String(serv));
+  const res = await fetch(upstream.toString(), {
+    headers: {
+      "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+      Accept: "text/html,application/xhtml+xml",
+      Referer: WESHAN,
+    },
+    redirect: "follow",
+  });
+  if (!res.ok) return null;
+  return res.text();
+}
+
+function weshanServerOrder(requestedServ) {
+  const order = [];
+  const raw = requestedServ != null && requestedServ !== "" ? Number(requestedServ) : 0;
+  if (Number.isFinite(raw) && raw >= 0 && raw <= 3) order.push(raw);
+  for (let s = 0; s <= 3; s++) if (!order.includes(s)) order.push(s);
+  return order;
+}
+
+async function proxyWeshan(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "weshan",
+  };
+  const requestedServ = incoming.searchParams.get("serv");
+
+  if (isHead) {
+    return new Response(null, { status: 200, headers: htmlHeaders });
+  }
+
+  try {
+    const seenSources = new Set();
+    const pool = [];
+    for (const serv of weshanServerOrder(requestedServ)) {
+      const html = await fetchWeshanHtml(request, serv);
+      if (!html) continue;
+      const resolved = await resolvePlayableSourceFromHtml(html, request, 0, new Set());
+      if (!resolved || !isHlsUrl(resolved.source) || seenSources.has(resolved.source)) continue;
+      const probe = await streamProbe(resolved.source, "plain", request);
+      if (!probe.ok) continue;
+      seenSources.add(resolved.source);
+      const sig = await signTarget(resolved.source, secret);
+      pool.push({ url: hlsProxyUrl(resolved.source, origin, sig), score: probe.score, serv });
+    }
+    pool.sort((a, b) => a.score - b.score);
+    const proxied = [];
+    for (const m of pool) if (!proxied.includes(m.url)) proxied.push(m.url);
+
+    if (proxied.length) {
+      return new Response(cleanHlsPlayerHtml(proxied, "Weshan بث"), {
+        status: 200,
+        headers: {
+          ...htmlHeaders,
+          "X-KZ-Serv": String((pool[0] && pool[0].serv) ?? ""),
+          "X-KZ-Mirrors": String(proxied.length),
+        },
+      });
+    }
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  } catch {
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  }
+}
+
 async function proxyVip(request, slot, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
@@ -1721,6 +1797,9 @@ export default {
     const vip = url.pathname.match(VIP_RE);
     if (vip && (method === "GET" || method === "HEAD")) {
       return proxyVip(request, vip[1].toLowerCase(), env);
+    }
+    if (WESHAN_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxyWeshan(request, env);
     }
     if (HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
       if (method === "OPTIONS") {

@@ -46,6 +46,7 @@
     loadedUrl = url;
     shell.innerHTML =
       `<iframe class="embed-frame" src="${url}" ` +
+      `sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
       `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
   }
