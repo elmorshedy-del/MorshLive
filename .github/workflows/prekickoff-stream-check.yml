@@ -1,0 +1,71 @@
+name: Pre-kickoff stream check
+
+# Browser-verify korazero streams ~30 minutes before kickoff.
+# If the default route is dead, auto-patch channel-bindings.json + today.json.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+    inputs:
+      force_match:
+        description: "Optional match id to force-check (e.g. espn-fifa.world-760504)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  prekickoff:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Refresh today's fixtures
+        env:
+          SPORTSDB_KEY: ${{ secrets.SPORTSDB_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: node scripts/fetch-matches.js
+
+      - name: T-30 browser stream check + auto-fix
+        env:
+          SITE_URL: https://korazero.com
+          PREKICKOFF_MINUTES: "30"
+          PREKICKOFF_WINDOW: "5"
+        run: |
+          ARGS=""
+          if [ -n "${{ github.event.inputs.force_match }}" ]; then
+            ARGS="--force-match=${{ github.event.inputs.force_match }}"
+          fi
+          node scripts/prekickoff-stream-check.mjs $ARGS || code=$?
+          if [ "${code:-0}" = "2" ]; then
+            echo "Some streams dead at T-30 — continuing to commit any auto-fixes"
+          elif [ "${code:-0}" != "0" ]; then
+            exit "${code}"
+          fi
+
+      - name: Verify live channel routing
+        run: node scripts/verify-channel-bindings.js
+
+      - name: Commit auto-fixes if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          files="assets/data/today.json assets/data/channel-bindings.json assets/js/channel-bindings.js assets/data/live-snapshot.json assets/data/prekickoff-state.json"
+          if ! git diff --quiet -- $files; then
+            git add $files
+            git commit -m "chore: pre-kickoff stream auto-fix (T-30 browser check)"
+            git push
+          else
+            echo "No routing changes."
+          fi

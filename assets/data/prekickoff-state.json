@@ -1,0 +1,15 @@
+{
+  "checks": {
+    "espn-fifa.world-760505": {
+      "kickoffUtc": "2026-07-06T00:00Z",
+      "checkedAt": "2026-07-05T23:16:28.116Z",
+      "ok": true,
+      "route": {
+        "embedKey": "vip2",
+        "serv": 3
+      },
+      "watchUrl": "https://korazero.com/watch.html?ch=bein-max-2&match=espn-fifa.world-760505&player=vip2&serv=3",
+      "reason": null
+    }
+  }
+}
