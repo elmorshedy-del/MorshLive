@@ -33,6 +33,14 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 
 **To reuse later:** Set `enabled: true`, new `id`, and `matchIds` for stream apology; new `statsBeta.id` to reset stats dismiss.
 
+### Match poll — Brazil vs Norway (`match-poll.json`)
+
+**Placement:** Under stream on watch page. Title: **تتوقع من؟**
+
+**Behavior:** One vote per browser (`localStorage` voter id + server dedup). After vote → percentage bars + total votes. Survives refresh; 90s match refresh only updates totals if already voted.
+
+**Disable:** `match-poll.json` → `"enabled": false`
+
 ---
 
 **Bug**

@@ -23,6 +23,11 @@ const WORLDKOORA = "https://vip.worldkoora.com";
 const WESHAN = "https://zenvixw.site/wordpress/albaplayer/weshan/";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
+const POLL_RE = /^\/api\/poll\/([a-z0-9-]+)\/?$/i;
+const POLL_STORE = "https://kz-poll.internal/";
+const POLL_TEAMS = {
+  "brazil-norway-20260705": ["brazil", "norway"],
+};
 const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
 // Worldkoora exposes "البث 1..N" as redundant servers for the SAME channel in a
 // slot. We probe them in order so a dead/blank server this game falls over to a
@@ -1790,6 +1795,119 @@ async function proxySirHls(request, env) {
   }
 }
 
+function pollJsonHeaders(extra) {
+  return {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+    "Access-Control-Allow-Origin": "*",
+    ...(extra || {}),
+  };
+}
+
+function pollCountsKey(id) {
+  return new Request(`${POLL_STORE}counts/${id}`);
+}
+
+function pollVoterKey(id, voter) {
+  return new Request(`${POLL_STORE}voter/${id}/${voter}`);
+}
+
+function pollPayload(counts, teams) {
+  const total = teams.reduce((sum, key) => sum + (counts[key] || 0), 0);
+  const percentages = {};
+  teams.forEach((key) => {
+    percentages[key] = total ? Math.round(((counts[key] || 0) / total) * 100) : 0;
+  });
+  return { ...counts, total, percentages };
+}
+
+async function readPollCounts(pollId, teams) {
+  const hit = await caches.default.match(pollCountsKey(pollId));
+  const raw = hit ? await hit.json() : {};
+  const counts = {};
+  teams.forEach((key) => { counts[key] = raw[key] || 0; });
+  return counts;
+}
+
+async function writePollCounts(pollId, counts) {
+  await caches.default.put(
+    pollCountsKey(pollId),
+    new Response(JSON.stringify(counts), {
+      headers: { "Content-Type": "application/json", "Cache-Control": "max-age=31536000" },
+    })
+  );
+}
+
+async function pollHasVoted(pollId, voterId) {
+  if (!voterId) return false;
+  return !!(await caches.default.match(pollVoterKey(pollId, voterId)));
+}
+
+async function markPollVoted(pollId, voterId) {
+  await caches.default.put(
+    pollVoterKey(pollId, voterId),
+    new Response("1", { headers: { "Cache-Control": "max-age=31536000" } })
+  );
+}
+
+async function handlePoll(request, pollId) {
+  const teams = POLL_TEAMS[pollId];
+  if (!teams) {
+    return new Response(JSON.stringify({ error: "unknown_poll" }), { status: 404, headers: pollJsonHeaders() });
+  }
+
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: pollJsonHeaders({
+        "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type",
+      }),
+    });
+  }
+
+  if (request.method === "GET") {
+    const counts = await readPollCounts(pollId, teams);
+    return new Response(JSON.stringify(pollPayload(counts, teams)), { status: 200, headers: pollJsonHeaders() });
+  }
+
+  if (request.method === "POST") {
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return new Response(JSON.stringify({ error: "bad_json" }), { status: 400, headers: pollJsonHeaders() });
+    }
+    const team = String(body.team || "");
+    const voterId = String(body.voterId || "").slice(0, 80);
+    if (!teams.includes(team)) {
+      return new Response(JSON.stringify({ error: "bad_team" }), { status: 400, headers: pollJsonHeaders() });
+    }
+    if (!voterId) {
+      return new Response(JSON.stringify({ error: "bad_voter" }), { status: 400, headers: pollJsonHeaders() });
+    }
+
+    if (await pollHasVoted(pollId, voterId)) {
+      const counts = await readPollCounts(pollId, teams);
+      return new Response(
+        JSON.stringify({ ...pollPayload(counts, teams), already: true, voted: team }),
+        { status: 200, headers: pollJsonHeaders() }
+      );
+    }
+
+    await markPollVoted(pollId, voterId);
+    const counts = await readPollCounts(pollId, teams);
+    counts[team] = (counts[team] || 0) + 1;
+    await writePollCounts(pollId, counts);
+    return new Response(
+      JSON.stringify({ ...pollPayload(counts, teams), voted: team }),
+      { status: 200, headers: pollJsonHeaders() }
+    );
+  }
+
+  return new Response("Method not allowed", { status: 405, headers: pollJsonHeaders() });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -1850,6 +1968,10 @@ export default {
         });
       }
       return proxySirHls(request, env);
+    }
+    const poll = url.pathname.match(POLL_RE);
+    if (poll) {
+      return handlePoll(request, poll[1].toLowerCase());
     }
     return env.ASSETS.fetch(request);
   },

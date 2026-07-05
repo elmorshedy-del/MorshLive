@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "pollId": "brazil-norway-20260705",
+  "matchIds": ["espn-fifa.world-760504"],
+  "titleAr": "تتوقع من؟",
+  "titleEn": "Who do you think wins?",
+  "homeKey": "brazil",
+  "awayKey": "norway",
+  "teams": {
+    "brazil": { "nameAr": "البرازيل", "nameEn": "Brazil" },
+    "norway": { "nameAr": "النرويج", "nameEn": "Norway" }
+  }
+}

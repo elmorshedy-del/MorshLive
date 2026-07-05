@@ -208,6 +208,20 @@
     renderMatchSummary();
     injectMatchSchema(match);
     renderMatchNotice();
+    renderMatchPoll();
+  }
+
+  function renderMatchPoll() {
+    const slot = document.getElementById("match-poll-slot");
+    if (!slot || !window.MatchPoll) return;
+    if (!match) {
+      slot.innerHTML = "";
+      delete slot.dataset.pollReady;
+      return;
+    }
+    window.MatchPoll.show(slot, match).catch(() => {
+      slot.innerHTML = "";
+    });
   }
 
   function renderMatchNotice() {
@@ -409,6 +423,10 @@
     if (channelChanged || matchChanged) {
       renderServers({ rebind: true });
       reloadPlayer();
+      if (matchChanged) {
+        const pollSlot = document.getElementById("match-poll-slot");
+        if (pollSlot) delete pollSlot.dataset.pollReady;
+      }
     }
     renderSidebar();
   }
