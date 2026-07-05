@@ -170,10 +170,32 @@
     if (list.some((m) => (archive.memes[m.key] || []).length)) loadTwitterWidgets();
   }
 
+  async function enrichMemesFromApi() {
+    if (!archive) return;
+    const needs = archive.matches.filter(
+      (m) => m.highlight?.videoUrl && !(archive.memes[m.key] || []).length
+    );
+    if (!needs.length) return;
+    await Promise.all(needs.map(async (m) => {
+      const q = new URLSearchParams({
+        home: m.home,
+        away: m.away,
+        kickoff: m.kickoffUtc || "",
+      });
+      try {
+        const res = await fetch(`/api/match-memes?${q}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.memes?.length) archive.memes[m.key] = data.memes;
+      } catch { /* static archive */ }
+    }));
+  }
+
   async function loadArchive() {
     const res = await fetch("assets/data/tournament-archive.json", { cache: "no-store" });
     if (!res.ok) throw new Error("archive load failed");
     archive = await res.json();
+    await enrichMemesFromApi();
     renderTabs();
     renderGrid();
   }

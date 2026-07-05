@@ -18,6 +18,7 @@ const { discoverAllMatchMemes } = require("./twitter-memes-lib");
 
 const OUT = path.join(__dirname, "..", "assets", "data", "tournament-archive.json");
 const MEMES_OUT = path.join(__dirname, "..", "assets", "data", "match-memes.json");
+const PINNED_MEMES = path.join(__dirname, "..", "assets", "data", "pinned-match-memes.json");
 const KNOWN_VORTEX = path.join(__dirname, "..", "assets", "data", "vortex-highlights.json");
 const TODAY = path.join(__dirname, "..", "assets", "data", "today.json");
 const TEAM_AR = path.join(__dirname, "..", "assets", "data", "team-names-ar.json");
@@ -118,10 +119,17 @@ async function main() {
     }
   }
 
+  let pinnedMemes = {};
+  try { pinnedMemes = JSON.parse(fs.readFileSync(PINNED_MEMES, "utf8")); } catch { /* */ }
+
   console.log("Discovering viral X/Twitter memes…");
-  const memes = await discoverAllMatchMemes(matches, { maxPerMatch: 3 });
-  const memeCount = Object.keys(memes).length;
-  console.log(`memes matched for ${memeCount} matches`);
+  const discovered = await discoverAllMatchMemes(matches, { maxPerMatch: 3 });
+  const memes = { ...pinnedMemes };
+  for (const [key, list] of Object.entries(discovered)) {
+    if (list.length) memes[key] = list;
+  }
+  const memeCount = Object.keys(memes).filter((k) => memes[k].length).length;
+  console.log(`memes matched for ${memeCount} matches (${Object.keys(pinnedMemes).length} pinned)`);
 
   const stageCounts = {};
   for (const m of matches) stageCounts[m.stage] = (stageCounts[m.stage] || 0) + 1;

@@ -2130,18 +2130,29 @@ async function proxyHighlightApi(request, env) {
   return new Response(JSON.stringify({ error: "not found" }), { status: 404, headers });
 }
 
-/* ----------------------------------------------- viral X memes per match
- * GET /api/match-memes?home=&away= — uses TWITTER_BEARER_TOKEN when set */
+/* ----------------------------------------------- viral X memes — 3 curated accounts
+ * @TrollFootball @Contxtfootball @memesvsfootball
+ * GET /api/match-memes?home=&away=&kickoff= */
 const MEMES_API_RE = /^\/api\/match-memes\/?$/i;
-const TWITTER_SEARCH_URL = "https://api.twitter.com/2/tweets/search/recent";
+const TWITTER_API_BASE = "https://api.twitter.com/2";
+const MEME_SOURCE_ACCOUNTS = [
+  { key: "TrollFootball", username: "TrollFootball", id: "571964518" },
+  { key: "Contxtfootball", username: "Contxtfootball", id: "1944187286301614082" },
+  { key: "memesvsfootball", username: "memesvsfootball", id: "1597531205657772033" },
+];
+const MEME_TOP_PER_ACCOUNT = 3;
+const MEME_MATCH_MS = 105 * 60 * 1000;
+const MEME_WINDOW_START_MS = 15 * 60 * 1000;
+const MEME_WINDOW_END_MS = 120 * 60 * 1000;
 const MEME_TEAM_ALIASES = {
-  France: ["Mbappé", "Mbappe", "Les Bleus"],
-  Paraguay: ["Albirroja"],
-  Morocco: ["Atlas Lions"],
-  Brazil: ["Seleção", "Selecao"],
-  Germany: ["Die Mannschaft"],
+  France: ["Mbappé", "Mbappe", "Les Bleus", "Deschamps"],
+  Paraguay: ["Albirroja", "Alfaro"],
+  Morocco: ["Atlas Lions", "Hakimi", "Ziyech"],
+  Canada: ["CanMNT", "David"],
+  Brazil: ["Seleção", "Selecao", "Vinicius"],
+  Germany: ["Die Mannschaft", "Musiala"],
   Argentina: ["Messi", "Albiceleste"],
-  England: ["Three Lions"],
+  England: ["Three Lions", "Kane", "Bellingham"],
   Portugal: ["Ronaldo"],
   "United States": ["USA", "USMNT"],
 };
@@ -2151,53 +2162,148 @@ function memeTeamTerms(name) {
   return [name, ...aliases].filter(Boolean);
 }
 
-function memeSearchQuery(home, away) {
-  const terms = [...new Set([...memeTeamTerms(home), ...memeTeamTerms(away)])]
-    .slice(0, 4)
-    .map((t) => (String(t).includes(" ") ? `"${t}"` : t));
-  return `(${terms.join(" OR ")}) (world cup OR fifa OR meme OR viral OR goal) -is:retweet lang:en`;
-}
-
-function memeTweetMatches(text, home, away) {
+function memeCaptionHits(text, home, away) {
   const t = String(text || "").toLowerCase();
-  const homeHit = memeTeamTerms(home).some((n) => t.includes(n.toLowerCase()));
-  const awayHit = memeTeamTerms(away).some((n) => t.includes(n.toLowerCase()));
-  return homeHit && awayHit;
+  return [...memeTeamTerms(home), ...memeTeamTerms(away)]
+    .some((n) => t.includes(n.toLowerCase()));
 }
 
-async function searchTwitterMemes(bearerToken, home, away) {
+function memeEngagement(m) {
+  const x = m || {};
+  return (x.like_count || 0) + (x.retweet_count || 0) * 2 + (x.quote_count || 0) * 2;
+}
+
+function memePostWindow(kickoffUtc) {
+  const kickoff = Date.parse(kickoffUtc || "");
+  if (isNaN(kickoff)) return null;
+  const end = kickoff + MEME_MATCH_MS;
+  return {
+    start: new Date(end + MEME_WINDOW_START_MS).toISOString(),
+    end: new Date(end + MEME_WINDOW_END_MS).toISOString(),
+  };
+}
+
+function memeInWindow(createdAt, window) {
+  const t = Date.parse(createdAt || "");
+  return t >= Date.parse(window.start) && t <= Date.parse(window.end);
+}
+
+async function fetchAccountTweets(bearer, userId, startTime, endTime) {
   const params = new URLSearchParams({
-    query: memeSearchQuery(home, away),
-    max_results: "10",
-    "tweet.fields": "public_metrics,author_id",
-    expansions: "author_id",
-    "user.fields": "username",
+    max_results: "100",
+    "tweet.fields": "created_at,public_metrics",
+    start_time: startTime,
+    end_time: endTime,
+    exclude: "retweets,replies",
   });
-  const res = await fetch(`${TWITTER_SEARCH_URL}?${params}`, {
-    headers: { Authorization: `Bearer ${bearerToken}` },
+  const res = await fetch(`${TWITTER_API_BASE}/users/${userId}/tweets?${params}`, {
+    headers: { Authorization: `Bearer ${bearer}` },
   });
   if (!res.ok) return [];
   const json = await res.json();
-  const users = new Map((json.includes?.users || []).map((u) => [u.id, u.username]));
-  return (json.data || [])
-    .filter((t) => memeTweetMatches(t.text, home, away))
-    .map((t) => {
-      const author = users.get(t.author_id) || "i";
-      const likes = t.public_metrics?.like_count || 0;
+  return json.data || [];
+}
+
+const SYNDICATION_BASE = "https://syndication.twitter.com/srv/timeline-profile/screen-name";
+
+async function fetchSyndicationTimeline(screenName, limit = 80) {
+  const url = `${SYNDICATION_BASE}/${encodeURIComponent(screenName)}?dnt=false&lang=en&limit=${limit}`;
+  const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; KoraZero/1.0)" } });
+  if (!res.ok) return [];
+  const html = await res.text();
+  const m = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+  if (!m) return [];
+  let data;
+  try { data = JSON.parse(m[1]); } catch { return []; }
+  const entries = data?.props?.pageProps?.timeline?.entries || [];
+  return entries
+    .filter((e) => e.type === "tweet")
+    .map((e) => {
+      const c = e.content || {};
+      const tweet = c.tweet || c;
+      const id = (e.entry_id || "").replace(/^tweet-/, "") || tweet.id_str || tweet.id;
+      const text = tweet.text || tweet.full_text || "";
+      if (!id) return null;
+      const metrics = tweet.public_metrics || {};
       return {
-        type: "tweet",
-        url: `https://x.com/${author}/status/${t.id}`,
-        text: t.text || "",
-        author,
-        tweetId: String(t.id),
-        likes,
+        id: String(id),
+        text,
+        created_at: tweet.created_at || tweet.date || null,
+        public_metrics: {
+          like_count: metrics.like_count || tweet.favorite_count || 0,
+          retweet_count: metrics.retweet_count || 0,
+          quote_count: metrics.quote_count || 0,
+        },
       };
     })
-    .sort((a, b) => (b.likes || 0) - (a.likes || 0))
-    .slice(0, 4);
+    .filter(Boolean);
+}
+
+function memeToEntry(tweet, author) {
+  const engagement = memeEngagement(tweet.public_metrics);
+  return {
+    type: "tweet",
+    url: `https://x.com/${author}/status/${tweet.id}`,
+    text: tweet.text || "",
+    author,
+    tweetId: String(tweet.id),
+    likes: tweet.public_metrics?.like_count || 0,
+    retweets: tweet.public_metrics?.retweet_count || 0,
+    engagement: Math.round(engagement),
+    postedAt: tweet.created_at || null,
+  };
+}
+
+async function searchCuratedMemesSyndication(home, away, kickoffUtc) {
+  const window = memePostWindow(kickoffUtc);
+  if (!window) return [];
+  const out = [];
+  for (const acct of MEME_SOURCE_ACCOUNTS) {
+    let tweets;
+    try {
+      tweets = await fetchSyndicationTimeline(acct.username, 100);
+    } catch {
+      continue;
+    }
+    const hits = tweets
+      .filter((t) => memeInWindow(t.created_at, window) && memeCaptionHits(t.text, home, away))
+      .map((t) => ({ tweet: t, engagement: memeEngagement(t.public_metrics) }))
+      .sort((a, b) => b.engagement - a.engagement)
+      .slice(0, MEME_TOP_PER_ACCOUNT)
+      .map(({ tweet }) => memeToEntry(tweet, acct.username));
+    out.push(...hits);
+  }
+  return out;
+}
+
+async function searchCuratedMemes(bearer, home, away, kickoffUtc) {
+  const window = memePostWindow(kickoffUtc);
+  if (!window) return [];
+  const out = [];
+  for (const acct of MEME_SOURCE_ACCOUNTS) {
+    let tweets;
+    try {
+      tweets = await fetchAccountTweets(bearer, acct.id, window.start, window.end);
+    } catch {
+      continue;
+    }
+    const hits = tweets
+      .filter((t) => memeInWindow(t.created_at, window) && memeCaptionHits(t.text, home, away))
+      .map((t) => ({
+        tweet: t,
+        engagement: memeEngagement(t.public_metrics),
+        author: acct.username,
+      }))
+      .sort((a, b) => b.engagement - a.engagement)
+      .slice(0, MEME_TOP_PER_ACCOUNT)
+      .map(({ tweet, engagement, author }) => memeToEntry(tweet, author));
+    out.push(...hits);
+  }
+  return out;
 }
 
 let _memesIdxCache = null;
+let _pinnedMemesCache = null;
 
 async function loadMemesIndex(env, origin) {
   if (_memesIdxCache) return _memesIdxCache;
@@ -2208,6 +2314,17 @@ async function loadMemesIndex(env, origin) {
     _memesIdxCache = {};
   }
   return _memesIdxCache;
+}
+
+async function loadPinnedMemes(env, origin) {
+  if (_pinnedMemesCache) return _pinnedMemesCache;
+  try {
+    const res = await env.ASSETS.fetch(`${origin}/assets/data/pinned-match-memes.json`);
+    _pinnedMemesCache = res.ok ? await res.json() : {};
+  } catch {
+    _pinnedMemesCache = {};
+  }
+  return _pinnedMemesCache;
 }
 
 function highlightPairKeyMemes(home, away) {
@@ -2224,6 +2341,7 @@ async function proxyMatchMemesApi(request, env) {
   const url = new URL(request.url);
   const home = (url.searchParams.get("home") || "").trim();
   const away = (url.searchParams.get("away") || "").trim();
+  const kickoff = url.searchParams.get("kickoff") || "";
   const headers = {
     "Content-Type": "application/json; charset=utf-8",
     "Access-Control-Allow-Origin": "*",
@@ -2234,20 +2352,42 @@ async function proxyMatchMemesApi(request, env) {
     return new Response(JSON.stringify({ error: "home and away required" }), { status: 400, headers });
   }
   const key = highlightPairKeyMemes(home, away);
-  const idx = await loadMemesIndex(env, url.origin);
-  let memes = idx[key] || [];
+  const [idx, pinned] = await Promise.all([
+    loadMemesIndex(env, url.origin),
+    loadPinnedMemes(env, url.origin),
+  ]);
+  let memes = idx[key] || pinned[key] || [];
+  let source = memes.length ? (pinned[key]?.length && !idx[key]?.length ? "pinned" : "archive") : "none";
 
   const bearer = env && env.TWITTER_BEARER_TOKEN;
-  if (bearer && (url.searchParams.get("refresh") === "1" || !memes.length)) {
+  if (bearer) {
     try {
-      const live = await searchTwitterMemes(bearer, home, away);
-      if (live.length) memes = live;
-    } catch { /* fall back to static index */ }
+      const live = await searchCuratedMemes(bearer, home, away, kickoff);
+      if (live.length) {
+        memes = live;
+        source = "twitter-curated";
+      }
+    } catch { /* static index */ }
+  }
+
+  if (!memes.length) {
+    try {
+      const synd = await searchCuratedMemesSyndication(home, away, kickoff);
+      if (synd.length) {
+        memes = synd;
+        source = "twitter-syndication";
+      }
+    } catch { /* pinned/archive */ }
+  }
+
+  if (!memes.length && pinned[key]?.length) {
+    memes = pinned[key];
+    source = "pinned";
   }
 
   return new Response(JSON.stringify({ key, memes }), {
     status: 200,
-    headers: { ...headers, "X-KZ-Meme-Source": memes.length ? (bearer ? "twitter-api" : "archive") : "none" },
+    headers: { ...headers, "X-KZ-Meme-Source": source },
   });
 }
 
