@@ -1355,6 +1355,152 @@ async function proxyDlEmbed(request, id, env) {
   return new Response(dlPlayerHtml(src, id), { status: 200, headers: htmlHeaders });
 }
 
+/* ----------------------------------------------- Live fixtures (today.json)
+ * Surgical "no GitHub" path: serve /assets/data/today.json from a live ESPN
+ * fetch, cached 60s in the edge Cache API and shared across users. Falls
+ * through to the bundled static file (ASSETS.fetch) on any error, so the
+ * last-known snapshot is always served as a graceful degradation. No cron,
+ * no KV, no scheduled handler — the response is built on demand. The site
+ * keeps requesting the same URL it always has.
+ */
+const ESPN_SOCCER = "https://site.api.espn.com/apis/site/v2/sports/soccer";
+const LIVE_TODAY_TTL_S = 60;
+const LIVE_TODAY_PATH_RE = /^\/assets\/data\/today\.json$/i;
+const LIVE_TODAY_CACHE_URL = "https://kz-live.internal/today.json";
+const MATCH_WINDOW_MS = 135 * 60 * 1000;
+const RECENT_ENDED_MS = 18 * 60 * 60 * 1000;
+
+function liveDayKey(date) {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(date.getUTCDate()).padStart(2, "0");
+  return `${y}${m}${d}`;
+}
+
+function liveAbbr(name) {
+  return (name || "")
+    .replace(/[^A-Za-z0-9 ]/g, "")
+    .split(/\s+/)
+    .map((w) => w[0] || "")
+    .join("")
+    .slice(0, 3)
+    .toUpperCase();
+}
+
+function liveStatus(competition, kickoffUtc) {
+  const type = (competition.status && competition.status.type) || {};
+  const state = (type.state || "").toLowerCase();
+  const kickoff = Date.parse(kickoffUtc || "");
+  const elapsed = isNaN(kickoff) ? -1 : Date.now() - kickoff;
+  if (type.completed || state === "post") return "ended";
+  if (state === "in") return elapsed > MATCH_WINDOW_MS ? "ended" : "live";
+  if (!isNaN(kickoff) && elapsed >= 0 && elapsed < MATCH_WINDOW_MS) return "live";
+  return "upcoming";
+}
+
+function normalizeLiveEvent(e, leagueSlug, leagueName) {
+  const competition = (e.competitions && e.competitions[0]) || {};
+  const competitors = Array.isArray(competition.competitors) ? competition.competitors : [];
+  const home = competitors.find((c) => c.homeAway === "home") || competitors[0] || {};
+  const away = competitors.find((c) => c.homeAway === "away") || competitors[1] || {};
+  const homeTeam = home.team || {};
+  const awayTeam = away.team || {};
+  const kickoffUtc = competition.date || e.date || null;
+  const status = liveStatus(competition, kickoffUtc);
+  const statusType = (competition.status && competition.status.type) || {};
+  const hasScore = home.score != null && home.score !== "" && away.score != null && away.score !== "";
+  const venue = competition.venue || {};
+  const address = venue.address || {};
+  return {
+    id: `espn-${leagueSlug || "soccer"}-${e.id}`,
+    status,
+    minute:
+      status === "live"
+        ? (competition.status && (competition.status.displayClock || statusType.shortDetail || statusType.detail)) || "مباشر"
+        : "",
+    home: homeTeam.displayName || homeTeam.name || e.name,
+    away: awayTeam.displayName || awayTeam.name || "",
+    homeAbbr: homeTeam.abbreviation || liveAbbr(homeTeam.displayName || homeTeam.name),
+    awayAbbr: awayTeam.abbreviation || liveAbbr(awayTeam.displayName || awayTeam.name),
+    homeBadge: homeTeam.logo || "",
+    awayBadge: awayTeam.logo || "",
+    score: status === "upcoming" ? "VS" : hasScore ? `${home.score} - ${away.score}` : "—",
+    time: kickoffUtc ? new Date(Date.parse(kickoffUtc)).toISOString().slice(11, 16) : "—",
+    kickoffUtc,
+    league: leagueName || "FIFA World Cup",
+    venue: [venue.fullName, address.city, address.country].filter(Boolean).join(" · "),
+    channel: null,
+    channelId: "bein-sports-1",
+    commentator: null,
+    source: "espn",
+  };
+}
+
+async function fetchLiveFixtures() {
+  const now = new Date();
+  const yesterday = new Date(now.getTime() - 24 * 3600 * 1000);
+  const tomorrow = new Date(now.getTime() + 24 * 3600 * 1000);
+  const dates = `${liveDayKey(yesterday)}-${liveDayKey(tomorrow)}`;
+  const url = `${ESPN_SOCCER}/fifa.world/scoreboard?dates=${dates}&limit=100`;
+  const res = await fetch(url, {
+    headers: { "User-Agent": "morsh-live/1.0", Accept: "application/json" },
+    cf: { cacheTtl: LIVE_TODAY_TTL_S, cacheEverything: true },
+  });
+  if (!res.ok) throw new Error(`ESPN ${res.status}`);
+  const data = await res.json();
+  const league = (data.leagues && data.leagues[0]) || { slug: "fifa.world", name: "FIFA World Cup" };
+  const events = Array.isArray(data.events) ? data.events : [];
+  const cutoff = Date.now() - (MATCH_WINDOW_MS + RECENT_ENDED_MS);
+  const order = { live: 0, upcoming: 1, ended: 2 };
+  return events
+    .map((e) => normalizeLiveEvent(e, league.slug, league.name))
+    .filter((m) => {
+      if (m.status !== "ended") return true;
+      const k = Date.parse(m.kickoffUtc || "");
+      return isNaN(k) || k >= cutoff;
+    })
+    .sort((a, b) => {
+      const s = order[a.status] - order[b.status];
+      if (s) return s;
+      const at = Date.parse(a.kickoffUtc || "");
+      const bt = Date.parse(b.kickoffUtc || "");
+      if (!isNaN(at) && !isNaN(bt)) return a.status === "ended" ? bt - at : at - bt;
+      return (a.time || "").localeCompare(b.time || "");
+    });
+}
+
+async function serveLiveTodayJson(ctx) {
+  try {
+    const cache = caches.default;
+    const cacheKey = new Request(LIVE_TODAY_CACHE_URL, { method: "GET" });
+    const hit = await cache.match(cacheKey);
+    if (hit) return hit;
+    const matches = await fetchLiveFixtures();
+    const payload = {
+      date: new Date().toISOString().slice(0, 10),
+      updatedAt: new Date().toISOString(),
+      source: "espn-live",
+      sourceLabel: "ESPN (live)",
+      commentarySource: null,
+      commentaryIndex: [],
+      matches,
+    };
+    const res = new Response(JSON.stringify(payload), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": `public, s-maxage=${LIVE_TODAY_TTL_S}, max-age=30`,
+        "X-KZ-Live": "espn",
+      },
+    });
+    const put = cache.put(cacheKey, res.clone());
+    if (ctx && ctx.waitUntil) ctx.waitUntil(put);
+    return res;
+  } catch {
+    return null;
+  }
+}
+
 async function proxyDlHls(request, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
@@ -1909,9 +2055,14 @@ async function handlePoll(request, pollId) {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     const method = request.method;
+    if (LIVE_TODAY_PATH_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      const live = await serveLiveTodayJson(ctx);
+      if (live) return method === "HEAD" ? new Response(null, { status: 200, headers: live.headers }) : live;
+      // ESPN unreachable — fall through to the bundled static snapshot.
+    }
     const vip = url.pathname.match(VIP_RE);
     if (vip && (method === "GET" || method === "HEAD")) {
       return proxyVip(request, vip[1].toLowerCase(), env);
