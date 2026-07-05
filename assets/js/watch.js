@@ -169,6 +169,28 @@
     }
   }
 
+  function matchDetailChanged(before, after) {
+    if (!before || !after) return true;
+    return JSON.stringify(before.lineups) !== JSON.stringify(after.lineups)
+      || JSON.stringify(before.stats) !== JSON.stringify(after.stats);
+  }
+
+  async function refreshMatchDetail() {
+    if (!match || !window.MatchDetailAPI) return;
+    if (match.status !== "live" && match.status !== "upcoming") return;
+    const before = { lineups: match.lineups, stats: match.stats };
+    try {
+      const enriched = await window.MatchDetailAPI.enrichMatch(match, { force: true });
+      if (!matchDetailChanged(before, enriched)) return;
+      match = enriched;
+      const idx = MATCHES.findIndex((m) => m.id === match.id);
+      if (idx >= 0) MATCHES[idx] = enriched;
+      renderMatchDetail();
+    } catch (e) {
+      console.warn("Match detail refresh failed:", e.message);
+    }
+  }
+
   function fillInfo() {
     const live = !!(match && match.status === "live");
     const commentary = matchIsCommentary();
@@ -443,6 +465,7 @@
     initReloadButton();
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
+    setInterval(() => refreshMatchDetail().catch((e) => console.warn("Detail refresh failed:", e.message)), 60 * 1000);
     setInterval(() => {
       const chRow = document.getElementById("channel-row");
       const srvRow = document.getElementById("servers");

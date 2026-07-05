@@ -205,6 +205,7 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 | Spam «مباشر» menu | Upstream AlbaPlayer | Hide `.aplr-menu`; block `AplrPopUp`; sandbox without `allow-popups` |
 | Video reloads alone | `watch.js` | Don't rebuild servers on stats refresh; only switch if active `srv-down` |
 | Lineups missing | `data.js` `getMatches()` | Ensure `applyMatchDetail()` runs on cached `today.json` path |
+| Lineups/stats stale | `match-detail-api.js` + `data.js` | Browser fetches ESPN summary live (60s cache when live); watch + home refresh every 60s |
 | Pin live match routing | `today.json` + bindings | Set `embedKey`, `channelId`; calibrate in `channel-bindings.json` |
 
 ---

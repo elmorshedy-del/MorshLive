@@ -591,7 +591,7 @@ function buildLineupsHtml(m) {
 let _matchDetailIdx = null;
 let _matchDetailAt = 0;
 async function loadMatchDetailIndex() {
-  if (_matchDetailIdx && Date.now() - _matchDetailAt < 5 * 60 * 1000) return _matchDetailIdx;
+  if (_matchDetailIdx && Date.now() - _matchDetailAt < 60 * 1000) return _matchDetailIdx;
   try {
     const res = await fetch("assets/data/today.json", { cache: "no-store" });
     const data = await res.json();
@@ -608,14 +608,23 @@ async function loadMatchDetailIndex() {
 function applyMatchDetail(matches, idx) {
   if (!idx) return matches;
   return matches.map((m) => {
-    if (m.lineups && m.stats) return m;
     const entry = idx[commentaryKey(m.home, m.away)];
     if (!entry) return m;
     const out = { ...m };
-    if (!out.lineups && entry.lineups) out.lineups = entry.lineups;
-    if (!out.stats && entry.stats) out.stats = entry.stats;
+    if (entry.lineups) out.lineups = entry.lineups;
+    if (entry.stats) out.stats = entry.stats;
     return out;
   });
+}
+
+async function enrichLiveMatchDetails(matches, { force } = {}) {
+  if (!window.MatchDetailAPI || !window.MatchDetailAPI.enrichMatches) return matches;
+  try {
+    return await window.MatchDetailAPI.enrichMatches(matches, { force });
+  } catch (e) {
+    console.warn("Live match detail fetch failed:", e.message);
+    return matches;
+  }
 }
 
 window.buildStatsHtml = buildStatsHtml;
@@ -633,7 +642,9 @@ window.getMatches = async function getMatches({ force } = {}) {
         const didx = await loadMatchDetailIndex();
         const withCommentary = applyCommentary(live.matches, idx);
         const withHighlights = applyHighlights(withCommentary, hidx);
-        return { ...live, matches: applyMatchDetail(withHighlights, didx) };
+        const withStaticDetail = applyMatchDetail(withHighlights, didx);
+        const withLiveDetail = await enrichLiveMatchDetails(withStaticDetail, { force });
+        return { ...live, matches: withLiveDetail };
       }
     } catch (e) {
       console.warn("Live API fetch failed, using cache:", e.message);
@@ -653,8 +664,9 @@ window.getMatches = async function getMatches({ force } = {}) {
         didx
       )
     );
+    const withLiveDetail = await enrichLiveMatchDetails(matches, { force });
     return {
-      matches,
+      matches: withLiveDetail,
       updatedAt: data.updatedAt,
       date: data.date,
       live: true,

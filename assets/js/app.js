@@ -405,6 +405,24 @@
     }
   }
 
+  async function refreshLiveMatchPanels() {
+    const headline = MATCHES.find((m) => m.status === "live") || MATCHES.find((m) => m.status === "upcoming");
+    if (!headline || !window.MatchDetailAPI) return;
+    const before = { lineups: headline.lineups, stats: headline.stats };
+    try {
+      const enriched = await window.MatchDetailAPI.enrichMatch(headline, { force: true });
+      const changed = JSON.stringify(before.lineups) !== JSON.stringify(enriched.lineups)
+        || JSON.stringify(before.stats) !== JSON.stringify(enriched.stats);
+      if (!changed) return;
+      const idx = MATCHES.findIndex((m) => m.id === headline.id);
+      if (idx >= 0) MATCHES[idx] = enriched;
+      renderFeaturedLive();
+      renderLiveDetail();
+    } catch (e) {
+      console.warn("Live detail refresh failed:", e.message);
+    }
+  }
+
   async function loadMatches({ force } = {}) {
     const meta = await window.getMatches({ force });
     MATCHES = meta.matches;
@@ -424,5 +442,6 @@
     renderSaved();
     await loadMatches();
     setInterval(() => loadMatches({ force: true }), 90 * 1000);
+    setInterval(() => refreshLiveMatchPanels().catch(() => {}), 60 * 1000);
   });
 })();
