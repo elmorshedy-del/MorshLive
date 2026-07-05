@@ -141,6 +141,60 @@
     wrap.innerHTML = liveBlock + endedBlock;
   }
 
+  /* -------------------------------------------------- Live match center
+     Full pitch + stats for the headline match, shown open (not tucked behind
+     a toggle) right below "بث مباشر الآن" and above "مباريات اليوم". */
+  function renderLiveDetail() {
+    const wrap = document.getElementById("live-detail");
+    if (!wrap) return;
+    const section = wrap.closest("section");
+    const m = MATCHES.find((x) => x.status === "live") || MATCHES.find(isCommentaryAvailable);
+    const hasContent = m && (m.lineups || m.stats);
+    if (!hasContent) {
+      wrap.innerHTML = "";
+      if (section) section.hidden = true;
+      return;
+    }
+    if (section) section.hidden = false;
+
+    const live = m.status === "live";
+    const statusHtml = `<span class="status-pill status-${m.status}">${live ? '<span class="live-dot-i"></span> ' : ""}${statusLabel(m.status)}${m.minute ? ` · ${m.minute}` : ""}</span>`;
+    const sections = [
+      m.lineups ? `
+        <div class="live-detail-section">
+          <h3>${ICON.trophy} ${t("card.lineups")}</h3>
+          ${window.buildLineupsHtml(m)}
+        </div>` : "",
+      m.stats ? `
+        <div class="live-detail-section">
+          <h3>${ICON.trophy} ${t("card.stats")}</h3>
+          ${window.buildStatsHtml(m)}
+        </div>` : "",
+    ].join("");
+
+    wrap.innerHTML = `
+      <div class="live-detail-card ${live ? "is-live" : "is-ended"}">
+        <div class="live-detail-top">
+          ${statusHtml}
+          <span class="live-detail-league">${ICON.trophy} ${m.league || ""}</span>
+        </div>
+        <div class="live-detail-teams">
+          <div class="team">
+            ${crest(m.homeBadge, m.homeAbbr)}
+            <div class="tname">${teamLabel(m.home)}</div>
+          </div>
+          <div class="live-detail-score">${m.score}</div>
+          <div class="team">
+            ${crest(m.awayBadge, m.awayAbbr)}
+            <div class="tname">${teamLabel(m.away)}</div>
+          </div>
+        </div>
+        <div class="live-detail-meta">${footMeta(m)}</div>
+        <a class="watch-link live-detail-watch" href="${watchHref(m)}">${ICON.play} ${live ? t("card.watchNow") : t("card.watchCommentary")}</a>
+        ${sections}
+      </div>`;
+  }
+
   /* -------------------------------------------------- ملخص المباراة (summary) */
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => (
@@ -333,6 +387,7 @@
     MATCHES = meta.matches;
     showUpdated(meta);
     renderFeaturedLive();
+    renderLiveDetail();
     renderMatches(activeFilter);
     renderSaved();
     return meta;
