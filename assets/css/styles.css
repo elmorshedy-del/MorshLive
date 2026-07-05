@@ -408,7 +408,8 @@ img { max-width: 100%; display: block; }
 .stat-bar-away { background: var(--stat-away); }
 
 /* ------------------------------------------------- التشكيلة الرسمية (lineups) */
-.match-lineups { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.match-lineups { display: flex; flex-direction: column; gap: 20px; }
+.lineup-team + .lineup-team { border-top: 1px dashed var(--border); padding-top: 16px; }
 .lineup-team h4 {
   display: flex; align-items: center; gap: 8px; font-size: .92rem; margin-bottom: 10px;
 }
@@ -416,10 +417,8 @@ img { max-width: 100%; display: block; }
   font-size: .72rem; font-weight: 700; color: var(--muted); background: var(--surface-2);
   border: 1px solid var(--border); border-radius: 999px; padding: 2px 8px;
 }
-.lineup-band { margin-bottom: 10px; }
-.lineup-band b { display: block; font-size: .72rem; color: var(--muted); font-weight: 800; margin-bottom: 4px; }
-.lineup-band ul, .lineup-subs ul { list-style: none; }
-.lineup-band li, .lineup-subs li {
+.lineup-subs ul { list-style: none; }
+.lineup-subs li {
   display: flex; align-items: center; gap: 8px; font-size: .84rem; padding: 3px 0; color: var(--text);
 }
 .lineup-jersey {
@@ -427,13 +426,57 @@ img { max-width: 100%; display: block; }
   background: var(--surface-2); border: 1px solid var(--border); font-size: .68rem;
   font-weight: 800; color: var(--gold); flex-shrink: 0;
 }
-.lineup-subs { margin-top: 8px; }
+.lineup-subs { margin-top: 10px; }
 .lineup-subs summary { cursor: pointer; font-size: .78rem; font-weight: 700; color: var(--muted); list-style: none; }
 .lineup-subs summary::-webkit-details-marker { display: none; }
 .lineup-subs[open] summary { color: var(--text); }
-@media (max-width: 560px) {
-  .match-lineups { grid-template-columns: 1fr; gap: 16px; }
-  .lineup-team + .lineup-team { border-top: 1px dashed var(--border); padding-top: 14px; }
+
+/* Green pitch — bands run left (attack) to right (goalkeeper), independent of
+   page direction, so dot math stays plain left/top percentages. */
+.match-pitch {
+  direction: ltr; position: relative; width: 100%; aspect-ratio: 15 / 11; min-height: 230px;
+  border-radius: 12px; overflow: hidden;
+  background:
+    repeating-linear-gradient(90deg, rgba(255,255,255,.05) 0 1px, transparent 1px 12.5%),
+    linear-gradient(160deg, #1f8a45, #156530);
+  border: 1px solid rgba(255,255,255,.18);
+}
+.pitch-box {
+  position: absolute; top: 22%; bottom: 22%; border: 2px solid rgba(255,255,255,.32); border-radius: 2px;
+}
+.pitch-box--gk { right: 0; width: 7%; border-inline-end: none; }
+.pitch-box--goal { right: 0; width: 16%; border-inline-end: none; }
+.match-pitch::before {
+  content: ""; position: absolute; top: 50%; right: 40%; width: 44px; height: 44px;
+  border: 2px solid rgba(255,255,255,.32); border-radius: 50%; transform: translate(50%, -50%);
+}
+.pitch-dot {
+  position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column;
+  align-items: center; gap: 2px; width: 54px; z-index: 1;
+}
+.pitch-jersey {
+  position: relative; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
+  font-size: .68rem; font-weight: 800; color: #fff; background: var(--stat-home);
+  border: 2px solid rgba(255,255,255,.75); box-shadow: 0 2px 6px rgba(0,0,0,.35);
+}
+.pitch-dot--away .pitch-jersey { background: var(--stat-away); color: #04222b; }
+.pitch-name {
+  font-size: .6rem; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.85);
+  text-align: center; line-height: 1.1; max-width: 60px;
+}
+.pitch-card {
+  position: absolute; top: -3px; inset-inline-start: -4px; width: 8px; height: 11px; border-radius: 2px;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.4);
+}
+.pitch-card--yellow { background: #ffd400; }
+.pitch-card--red { background: #e2312d; }
+.pitch-sub-badge {
+  position: absolute; bottom: -4px; inset-inline-end: -4px; width: 13px; height: 13px; border-radius: 50%;
+  background: var(--accent); color: #06301f; font-size: .55rem; font-weight: 800; display: grid;
+  place-items: center; border: 1px solid rgba(255,255,255,.8);
+}
+@media (max-width: 420px) {
+  .pitch-name { display: none; }
 }
 
 /* --------------------------------------------------------- Filters */
