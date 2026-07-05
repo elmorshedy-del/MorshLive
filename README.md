@@ -9,6 +9,8 @@ A clean, **ad-free** sports streaming front-end — live match schedule, channel
 - **Home page** — today's matches (live / upcoming / ended filters) + channel grid
 - **Watch page** — HLS player (`hls.js`), server switcher, sidebar of other channels
 - **Live fixtures** — auto-refreshed from TheSportsDB with ESPN scoreboard fallback via `assets/data/today.json`
+- **ملخص المباريات (match summaries)** — every ended match gets an auto-generated Arabic recap (result, scorers when known, venue) plus a matched highlight clip when available — see [Match summaries](#match-summaries-ملخص-المباريات) below
+- **التشكيلة الرسمية + إحصائيات المباراة (lineups + advanced stats)** — official lineups/formations pre-kickoff and 15 live/final stat categories (possession, shots, passing, tackles, etc.), sourced from ESPN — see [Lineups & stats](#lineups--advanced-stats-التشكيلة--الإحصائيات) below
 - **Responsive** — mobile, tablet, desktop with collapsible nav
 - **Zero build step** — plain HTML/CSS/JS
 
@@ -57,6 +59,66 @@ Matches reference a channel by `channelId`.
 node scripts/fetch-matches.js          # today (UTC)
 node scripts/fetch-matches.js 2026-06-20 # specific date
 ```
+
+## Match summaries (ملخص المباريات)
+
+`scripts/fetch-matches.js` (run on the same 30-minute cron as the fixtures)
+attaches, for every match that has ended:
+
+- **`summaryAr`** — a templated Arabic recap (winner/draw, final score, venue,
+  commentator) built entirely from data already in the fixture. Always present,
+  no extra setup or external call required.
+- **`highlight`** — an **Arabic-commentary** highlights video, found via a
+  targeted YouTube search (`ملخص وأهداف مباراة <الفريق> و<الفريق> تعليق عربي`)
+  when a free `YOUTUBE_API_KEY` is configured. A result is only kept if its
+  title/description is actually in Arabic script — a highlight clip with
+  English or no commentary is treated the same as no clip at all, since
+  Arabic commentary is the whole point. The embed URL is built from a
+  validated YouTube video id, never from a raw URL in the API response.
+
+Both fields ride along in `assets/data/today.json` per match plus a
+`highlightsIndex` (same join pattern as `commentaryIndex`), so the summary and
+clip also show up when the browser is using the live TheSportsDB/ESPN fetch
+instead of the cached file. They render as a collapsible "ملخص المباراة"
+panel on ended match cards on the home page, and a static panel on the watch
+page for that match. Once a match has a matched clip it's pinned in
+`highlightsIndex` and never re-queried, so a full day of World Cup fixtures
+stays well inside YouTube Data API's free quota (100 units/search, 10,000/day).
+
+To enable highlight clips: create a free API key with the **YouTube Data
+API v3** enabled in the [Google Cloud Console](https://console.cloud.google.com/apis/library/youtube.googleapis.com)
+and add it as the `YOUTUBE_API_KEY` repository secret (GitHub → Settings →
+Secrets). Without a key the site still ships the Arabic text summary for
+every match — only the video clip is skipped.
+
+## Lineups & advanced stats (التشكيلة + الإحصائيات)
+
+Also attached by `scripts/fetch-matches.js`, from ESPN's free site API — the
+same source already used for scores/fixtures, so there's no second, less
+trusted data source involved:
+
+- **`lineups`** — official starting XI + substitutes for both teams, grouped
+  into goalkeeper / defense / midfield / attack bands (derived from ESPN's own
+  position data, not a numeric-slot guess), plus the formation string (e.g.
+  `4-2-3-1`). Appears once ESPN publishes it, typically shortly before kickoff,
+  and stays available after full time as a record of who played.
+- **`stats`** — 15 curated stat categories per team (possession, shots, shots
+  on target, corners, fouls, cards, passes + accuracy, tackles, interceptions,
+  clearances, crosses, saves), shown as a mirrored comparison bar per stat.
+  Populates once the match is live and updates with each 30-minute refresh.
+
+**Coverage note:** this only works for matches whose id encodes an ESPN event
+(`espn-<league>-<id>`, from `normalizeEspnEvent`). Fixtures that only came
+from TheSportsDB have no ESPN event to query, so they simply show no lineups/
+stats panel — never a guess or a fallback to a less reliable source. No API
+key is needed; ESPN's site API is free and unauthenticated.
+
+Both fields ride along per match in `assets/data/today.json` plus a
+`matchDetailIndex` (same join pattern as `commentaryIndex`/`highlightsIndex`)
+so they also show up when the browser is using the live fetch path. They
+render as collapsible panels ("التشكيلة الرسمية" / "إحصائيات المباراة") on
+home page match cards, and as static panels directly below the video player
+on the watch page.
 
 ## Deploy (korazero + Cloudflare)
 

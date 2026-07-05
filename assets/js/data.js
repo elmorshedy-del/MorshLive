@@ -262,6 +262,223 @@ function applyCommentary(matches, idx) {
   });
 }
 
+/* ملخص المباراة (Arabic match summary) + highlight clip — mirrors
+   scripts/highlights-lib.js so ended fixtures get a recap even when served
+   from the live API (which has no summaryAr/highlight field of its own). */
+function parseScoreParts(score) {
+  const m = /^(\d+)\s*-\s*(\d+)$/.exec((score || "").trim());
+  return m ? { home: parseInt(m[1], 10), away: parseInt(m[2], 10) } : null;
+}
+
+function buildArabicSummary(m) {
+  const teamLabel = (n) => (window.TeamNames ? window.TeamNames.arabicFor(n) || n : n);
+  const homeAr = teamLabel(m.home);
+  const awayAr = teamLabel(m.away);
+  const league = m.league || "المباراة";
+  const venue = m.venue ? ` على ملعب ${m.venue}` : "";
+  const parts = parseScoreParts(m.score);
+
+  let text;
+  if (!parts) {
+    text = `انتهت مباراة ${homeAr} و${awayAr} ضمن ${league}${venue}.`;
+  } else if (parts.home === parts.away) {
+    text = `انتهت المباراة بالتعادل بين ${homeAr} و${awayAr} بنتيجة ${parts.home}-${parts.away} ضمن ${league}${venue}.`;
+  } else {
+    const homeWon = parts.home > parts.away;
+    const winnerAr = homeWon ? homeAr : awayAr;
+    const loserAr = homeWon ? awayAr : homeAr;
+    const winnerScore = Math.max(parts.home, parts.away);
+    const loserScore = Math.min(parts.home, parts.away);
+    text = `انتهت المباراة بفوز ${winnerAr} على ${loserAr} بنتيجة ${winnerScore}-${loserScore} ضمن ${league}${venue}.`;
+  }
+  if (m.commentator) text += ` تعليق: ${m.commentator}.`;
+  return text;
+}
+
+let _highlightsIdx = null;
+let _highlightsAt = 0;
+async function loadHighlightsIndex() {
+  if (_highlightsIdx && Date.now() - _highlightsAt < 5 * 60 * 1000) return _highlightsIdx;
+  try {
+    const res = await fetch("assets/data/today.json", { cache: "no-store" });
+    const data = await res.json();
+    const idx = {};
+    (data.highlightsIndex || []).forEach((h) => { idx[h.key] = h; });
+    _highlightsIdx = idx;
+    _highlightsAt = Date.now();
+  } catch (e) {
+    _highlightsIdx = _highlightsIdx || {};
+  }
+  return _highlightsIdx;
+}
+
+function applyHighlights(matches, idx) {
+  return matches.map((m) => {
+    if (m.status !== "ended") return m;
+    const out = m.summaryAr ? m : { ...m, summaryAr: buildArabicSummary(m) };
+    if (out.highlight) return out;
+    const entry = idx && idx[commentaryKey(m.home, m.away)];
+    if (!entry) return out;
+    return {
+      ...out,
+      highlight: {
+        videoUrl: entry.videoUrl,
+        title: entry.title,
+        competition: entry.competition,
+        thumbnail: entry.thumbnail,
+        source: entry.source,
+      },
+    };
+  });
+}
+
+/* التشكيلة + الإحصائيات المتقدمة (lineups + advanced stats) — mirrors
+   scripts/match-detail-lib.js. Sourced from ESPN's free site API, so only
+   matches with an "espn-..." id carry this; everything else renders "". */
+function dataEscapeHtml(s) {
+  return String(s || "").replace(/[&<>"']/g, (c) => (
+    { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+  ));
+}
+
+const STAT_DEFS = [
+  { key: "possessionPct", labelAr: "الاستحواذ", percent: true },
+  { key: "totalShots", labelAr: "التسديدات" },
+  { key: "shotsOnTarget", labelAr: "تسديدات على المرمى" },
+  { key: "wonCorners", labelAr: "الركلات الركنية" },
+  { key: "foulsCommitted", labelAr: "الأخطاء" },
+  { key: "offsides", labelAr: "التسلل" },
+  { key: "yellowCards", labelAr: "البطاقات الصفراء" },
+  { key: "redCards", labelAr: "البطاقات الحمراء" },
+  { key: "totalPasses", labelAr: "التمريرات" },
+  { key: "passPct", labelAr: "دقة التمرير", percent: true },
+  { key: "totalTackles", labelAr: "التدخلات" },
+  { key: "interceptions", labelAr: "الاعتراضات" },
+  { key: "totalClearance", labelAr: "الإبعادات" },
+  { key: "totalCrosses", labelAr: "العرضيات" },
+  { key: "saves", labelAr: "التصديات" },
+];
+
+const BAND_ORDER = ["gk", "def", "mid", "fwd"];
+function bandLabel(b) {
+  return window.I18N ? window.I18N.t("band." + b) : b;
+}
+
+function statRowHtml(def, home, away) {
+  const h = home[def.key];
+  const a = away[def.key];
+  if (h == null && a == null) return "";
+  const hv = h || 0;
+  const av = a || 0;
+  // Always render as each side's share of the combined total, never the raw
+  // value as a width — a "percent" stat like pass accuracy is independent per
+  // team (can be 80% + 80%), so using the raw number as a bar width would
+  // overflow the row. The exact value still shows via the number label.
+  const total = hv + av;
+  const hPct = total ? (hv / total) * 100 : 0;
+  const aPct = total ? (av / total) * 100 : 0;
+  const fmt = (v) => (def.percent ? `${Math.round(v)}%` : Math.round(v));
+  return `
+    <div class="stat-row">
+      <div class="stat-values">
+        <span class="stat-value stat-value-home">${fmt(hv)}</span>
+        <span class="stat-label">${def.labelAr}</span>
+        <span class="stat-value stat-value-away">${fmt(av)}</span>
+      </div>
+      <div class="stat-bar">
+        <div class="stat-bar-home" style="width:${hPct}%"></div>
+        <div class="stat-bar-away" style="width:${aPct}%"></div>
+      </div>
+    </div>`;
+}
+
+function buildStatsHtml(m) {
+  if (!m || !m.stats) return "";
+  const homeAr = window.TeamNames ? window.TeamNames.arabicFor(m.home) || m.home : m.home;
+  const awayAr = window.TeamNames ? window.TeamNames.arabicFor(m.away) || m.away : m.away;
+  const rows = STAT_DEFS.map((def) => statRowHtml(def, m.stats.home, m.stats.away)).join("");
+  if (!rows) return "";
+  return `
+    <div class="match-stats">
+      <div class="stat-legend">
+        <span class="stat-legend-item stat-legend-home"><i class="stat-dot"></i>${dataEscapeHtml(homeAr)}</span>
+        <span class="stat-legend-item stat-legend-away"><i class="stat-dot"></i>${dataEscapeHtml(awayAr)}</span>
+      </div>
+      ${rows}
+    </div>`;
+}
+
+function lineupPlayerHtml(p) {
+  return `<li><span class="lineup-jersey">${dataEscapeHtml(p.jersey)}</span><span class="lineup-name">${dataEscapeHtml(p.name)}</span></li>`;
+}
+
+function lineupTeamHtml(team, teamNameAr) {
+  const byBand = { gk: [], def: [], mid: [], fwd: [] };
+  team.starters.forEach((p) => { (byBand[p.band] || byBand.mid).push(p); });
+  const bands = BAND_ORDER.filter((b) => byBand[b].length).map((b) => `
+    <div class="lineup-band">
+      <b>${bandLabel(b)}</b>
+      <ul>${byBand[b].map(lineupPlayerHtml).join("")}</ul>
+    </div>`).join("");
+  const subsLabel = window.I18N ? window.I18N.t("card.subs") : "الاحتياط";
+  const subs = team.subs && team.subs.length
+    ? `<details class="lineup-subs">
+         <summary>${subsLabel} (${team.subs.length})</summary>
+         <ul>${team.subs.map(lineupPlayerHtml).join("")}</ul>
+       </details>`
+    : "";
+  return `
+    <div class="lineup-team">
+      <h4>${dataEscapeHtml(teamNameAr)}${team.formation ? ` <span class="lineup-formation">${dataEscapeHtml(team.formation)}</span>` : ""}</h4>
+      ${bands}
+      ${subs}
+    </div>`;
+}
+
+function buildLineupsHtml(m) {
+  if (!m || !m.lineups) return "";
+  const homeAr = window.TeamNames ? window.TeamNames.arabicFor(m.home) || m.home : m.home;
+  const awayAr = window.TeamNames ? window.TeamNames.arabicFor(m.away) || m.away : m.away;
+  return `
+    <div class="match-lineups">
+      ${lineupTeamHtml(m.lineups.home, homeAr)}
+      ${lineupTeamHtml(m.lineups.away, awayAr)}
+    </div>`;
+}
+
+let _matchDetailIdx = null;
+let _matchDetailAt = 0;
+async function loadMatchDetailIndex() {
+  if (_matchDetailIdx && Date.now() - _matchDetailAt < 5 * 60 * 1000) return _matchDetailIdx;
+  try {
+    const res = await fetch("assets/data/today.json", { cache: "no-store" });
+    const data = await res.json();
+    const idx = {};
+    (data.matchDetailIndex || []).forEach((d) => { idx[d.key] = d; });
+    _matchDetailIdx = idx;
+    _matchDetailAt = Date.now();
+  } catch (e) {
+    _matchDetailIdx = _matchDetailIdx || {};
+  }
+  return _matchDetailIdx;
+}
+
+function applyMatchDetail(matches, idx) {
+  if (!idx) return matches;
+  return matches.map((m) => {
+    if (m.lineups && m.stats) return m;
+    const entry = idx[commentaryKey(m.home, m.away)];
+    if (!entry) return m;
+    const out = { ...m };
+    if (!out.lineups && entry.lineups) out.lineups = entry.lineups;
+    if (!out.stats && entry.stats) out.stats = entry.stats;
+    return out;
+  });
+}
+
+window.buildStatsHtml = buildStatsHtml;
+window.buildLineupsHtml = buildLineupsHtml;
+
 window.getMatches = async function getMatches({ force } = {}) {
   // 1) Live fetch from TheSportsDB in the browser (best — real statuses, auto-refresh)
   if (window.MatchesAPI) {
@@ -269,7 +486,11 @@ window.getMatches = async function getMatches({ force } = {}) {
       const live = await window.MatchesAPI.fetchLiveSoccer({ force });
       if (live.matches && live.matches.length) {
         const idx = await loadCommentaryIndex();
-        return { ...live, matches: applyCommentary(live.matches, idx) };
+        const hidx = await loadHighlightsIndex();
+        const didx = await loadMatchDetailIndex();
+        const withCommentary = applyCommentary(live.matches, idx);
+        const withHighlights = applyHighlights(withCommentary, hidx);
+        return { ...live, matches: applyMatchDetail(withHighlights, didx) };
       }
     } catch (e) {
       console.warn("Live API fetch failed, using cache:", e.message);

@@ -23,9 +23,12 @@ const {
   pairKey,
   pinEndedChannels,
 } = require("./commentators-lib");
+const { attachSummaries, buildHighlightQuery, pickArabicVideo } = require("./highlights-lib");
+const { parseEspnMatchId, extractLineups, extractMatchStats } = require("./match-detail-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
+const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
 
 const KEY = process.env.SPORTSDB_KEY || "3";
 const centerDate = process.argv[2] || new Date().toISOString().slice(0, 10);
@@ -87,6 +90,31 @@ async function fetchEspnLeague(slug, dateRange) {
   const league = json.leagues && json.leagues[0] ? json.leagues[0] : { slug };
   const events = Array.isArray(json.events) ? json.events : [];
   return events.map((event) => normalizeEspnEvent(event, league));
+}
+
+async function fetchEspnSummary(leagueSlug, eventId) {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueSlug}/summary?event=${eventId}`;
+  return get(url);
+}
+
+/** Search YouTube for an Arabic-commentary highlights video for one match. */
+async function fetchYouTubeHighlight(match) {
+  const params = new URLSearchParams({
+    part: "snippet",
+    type: "video",
+    maxResults: "5",
+    order: "relevance",
+    relevanceLanguage: "ar",
+    videoEmbeddable: "true",
+    safeSearch: "strict",
+    q: buildHighlightQuery(match),
+    key: process.env.YOUTUBE_API_KEY,
+  });
+  const kickoffMs = Date.parse(match.kickoffUtc || "");
+  if (!isNaN(kickoffMs)) params.set("publishedAfter", new Date(kickoffMs).toISOString());
+  const json = await get(`${YOUTUBE_SEARCH_URL}?${params.toString()}`);
+  if (json.error) throw new Error(json.error.message || "YouTube API error");
+  return pickArabicVideo(json.items);
 }
 
 (async () => {
@@ -154,6 +182,77 @@ async function fetchEspnLeague(slug, dateRange) {
     if (row.channelId) m.channelId = row.channelId;
   }
 
+  // ملخص المباريات: Arabic text summary for every ended match (always, no
+  // network needed) plus an Arabic-commentary highlight video from YouTube
+  // (https://developers.google.com/youtube/v3) when a free YOUTUBE_API_KEY is
+  // configured. Once a match has a pinned clip we never re-query for it, so a
+  // day of World Cup fixtures stays well inside YouTube's free search quota.
+  attachSummaries(matches);
+  const highlightsByKey = new Map(
+    ((previousPayload && previousPayload.highlightsIndex) || []).map((h) => [h.key, h])
+  );
+  let highlightsMatched = 0;
+  for (const m of matches) {
+    if (m.status !== "ended") continue;
+    const key = pairKey(m.home, m.away);
+    const pinned = highlightsByKey.get(key);
+    if (pinned) {
+      m.highlight = {
+        videoUrl: pinned.videoUrl,
+        title: pinned.title,
+        channelTitle: pinned.channelTitle,
+        thumbnail: pinned.thumbnail,
+        source: pinned.source,
+      };
+      highlightsMatched++;
+      continue;
+    }
+    if (!process.env.YOUTUBE_API_KEY) continue;
+    try {
+      const found = await fetchYouTubeHighlight(m);
+      if (found) {
+        m.highlight = found;
+        highlightsByKey.set(key, { key, home: m.home, away: m.away, ...found });
+        highlightsMatched++;
+      }
+    } catch (err) {
+      console.warn(`youtube highlight search failed for ${m.home} vs ${m.away}:`, err.message);
+    }
+  }
+  const highlightsIndex = Array.from(highlightsByKey.values());
+
+  // Pre-match lineups + advanced live stats — same ESPN source already used
+  // for scores, so coverage is limited to matches ESPN itself carries (an
+  // "espn-..." id). TheSportsDB-only fixtures get no lineups/stats rather
+  // than a guess from somewhere less trustworthy.
+  const detailResults = await Promise.allSettled(
+    matches.map(async (m) => {
+      const parsed = parseEspnMatchId(m.id);
+      if (!parsed) return null;
+      try {
+        const summary = await fetchEspnSummary(parsed.leagueSlug, parsed.eventId);
+        return { m, summary };
+      } catch (err) {
+        console.warn(`match detail fetch failed for ${m.home} vs ${m.away}:`, err.message);
+        return null;
+      }
+    })
+  );
+  const matchDetailIndex = [];
+  let lineupsMatched = 0;
+  let statsMatched = 0;
+  for (const result of detailResults) {
+    if (result.status !== "fulfilled" || !result.value) continue;
+    const { m, summary } = result.value;
+    const lineups = extractLineups(summary);
+    const stats = extractMatchStats(summary);
+    if (lineups) { m.lineups = lineups; lineupsMatched++; }
+    if (stats) { m.stats = stats; statsMatched++; }
+    if (lineups || stats) {
+      matchDetailIndex.push({ key: pairKey(m.home, m.away), lineups: lineups || null, stats: stats || null });
+    }
+  }
+
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   writeBindingsJs();
   const snapshot = writeLiveSnapshot(matches);
@@ -167,6 +266,8 @@ async function fetchEspnLeague(slug, dateRange) {
         sourceLabel,
         commentarySource: "almaghrebsport",
         commentaryIndex,
+        highlightsIndex,
+        matchDetailIndex,
         matches,
       },
       null,
@@ -174,7 +275,8 @@ async function fetchEspnLeague(slug, dateRange) {
     )
   );
   console.log(
-    `Wrote ${matches.length} matches (${commentaryMatched} with commentators) -> ${path.relative(process.cwd(), OUT)}`
+    `Wrote ${matches.length} matches (${commentaryMatched} with commentators, ${highlightsMatched} with highlight clips, ` +
+    `${lineupsMatched} with lineups, ${statsMatched} with stats) -> ${path.relative(process.cwd(), OUT)}`
   );
   console.log(
     `Live snapshot: ${snapshot.liveCount} live, ${snapshot.conflicts.length} conflict(s) -> assets/data/live-snapshot.json`
