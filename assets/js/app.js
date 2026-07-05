@@ -193,6 +193,7 @@
         <a class="watch-link live-detail-watch" href="${watchHref(m)}">${ICON.play} ${live ? t("card.watchNow") : t("card.watchCommentary")}</a>
         ${sections}
       </div>`;
+    if (window.activateStatBars) window.activateStatBars(wrap);
   }
 
   /* -------------------------------------------------- ملخص المباراة (summary) */
@@ -246,8 +247,12 @@
       if (!el.classList || !el.classList.contains("match-panel")) return;
       const id = el.dataset.panelId;
       if (!id) return;
-      if (el.open) openPanels.add(id);
-      else openPanels.delete(id);
+      if (el.open) {
+        openPanels.add(id);
+        if (window.activateStatBars) window.activateStatBars(el);
+      } else {
+        openPanels.delete(id);
+      }
     }, true);
   }
 
@@ -295,6 +300,11 @@
     grid.innerHTML = list.length
       ? list.map(matchCard).join("")
       : `<p style="color:var(--muted)">${t("matches.none")}</p>`;
+    // Panels re-opened from `openPanels` state don't fire a native `toggle`
+    // event (that only fires on user interaction), so activate their bars here.
+    if (window.activateStatBars) {
+      grid.querySelectorAll(".match-panel[open]").forEach((el) => window.activateStatBars(el));
+    }
     const count = document.getElementById("matches-count");
     if (count) count.textContent = t("matches.count", { n: list.length });
   }

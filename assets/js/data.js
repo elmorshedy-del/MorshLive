@@ -341,30 +341,71 @@ function dataEscapeHtml(s) {
   ));
 }
 
-const STAT_DEFS = [
-  { key: "possessionPct", labelAr: "الاستحواذ", percent: true },
-  { key: "totalShots", labelAr: "التسديدات" },
-  { key: "shotsOnTarget", labelAr: "تسديدات على المرمى" },
-  { key: "wonCorners", labelAr: "الركلات الركنية" },
-  { key: "foulsCommitted", labelAr: "الأخطاء" },
-  { key: "offsides", labelAr: "التسلل" },
-  { key: "yellowCards", labelAr: "البطاقات الصفراء" },
-  { key: "redCards", labelAr: "البطاقات الحمراء" },
-  { key: "totalPasses", labelAr: "التمريرات" },
-  { key: "passPct", labelAr: "دقة التمرير", percent: true },
-  { key: "totalTackles", labelAr: "التدخلات" },
-  { key: "interceptions", labelAr: "الاعتراضات" },
-  { key: "totalClearance", labelAr: "الإبعادات" },
-  { key: "totalCrosses", labelAr: "العرضيات" },
-  { key: "saves", labelAr: "التصديات" },
+/* possessionPct is rendered separately as the hero stat; the rest are grouped
+   into categories so the panel reads as designed sections, not a flat list.
+   "لا يوجد أفضلية معلنة" note: discipline stats (fouls/cards/offsides) never
+   get a winner highlight — "leading" in cards isn't a thing to celebrate. */
+const STAT_GROUPS = [
+  {
+    key: "attack", labelAr: "الهجوم", icon: "target",
+    stats: [
+      { key: "totalShots", labelAr: "التسديدات" },
+      { key: "shotsOnTarget", labelAr: "تسديدات على المرمى" },
+      { key: "wonCorners", labelAr: "الركلات الركنية" },
+      { key: "totalCrosses", labelAr: "العرضيات" },
+    ],
+  },
+  {
+    key: "passing", labelAr: "التمرير", icon: "pass",
+    stats: [
+      { key: "totalPasses", labelAr: "التمريرات" },
+      { key: "passPct", labelAr: "دقة التمرير", percent: true },
+    ],
+  },
+  {
+    key: "defense", labelAr: "الدفاع", icon: "shield",
+    stats: [
+      { key: "totalTackles", labelAr: "التدخلات" },
+      { key: "interceptions", labelAr: "الاعتراضات" },
+      { key: "totalClearance", labelAr: "الإبعادات" },
+      { key: "saves", labelAr: "التصديات" },
+    ],
+  },
+  {
+    key: "discipline", labelAr: "الانضباط", icon: "card", noLead: true,
+    stats: [
+      { key: "foulsCommitted", labelAr: "الأخطاء" },
+      { key: "offsides", labelAr: "التسلل" },
+      { key: "yellowCards", labelAr: "البطاقات الصفراء" },
+      { key: "redCards", labelAr: "البطاقات الحمراء" },
+    ],
+  },
 ];
+
+const GROUP_ICON = {
+  target: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r=".5" fill="currentColor"/></svg>',
+  pass: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 17h11m0 0-4-4m4 4-4 4"/><path d="M20 7H9m0 0 4-4M9 7l4 4"/></svg>',
+  shield: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5 3.4 8.7 8 11 4.6-2.3 8-6 8-11V5Z"/></svg>',
+  card: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="3" width="10" height="15" rx="1.5" transform="rotate(10 10 10.5)"/></svg>',
+};
 
 const BAND_ORDER = ["gk", "def", "mid", "fwd"];
 function bandLabel(b) {
   return window.I18N ? window.I18N.t("band." + b) : b;
 }
 
-function statRowHtml(def, home, away) {
+/* Bars start at width:0 with the real value stashed in data-w, then
+   window.activateStatBars() flips them to their target width on the next
+   frame so the fill animates in instead of appearing pre-filled. */
+function statBarHtml(hPct, aPct) {
+  return `
+    <div class="stat-bar">
+      <div class="stat-bar-home" data-w="${hPct}" style="width:0%"></div>
+      <div class="stat-bar-away" data-w="${aPct}" style="width:0%"></div>
+    </div>`;
+}
+
+function statRowHtml(def, home, away, noLead) {
   const h = home[def.key];
   const a = away[def.key];
   if (h == null && a == null) return "";
@@ -378,34 +419,83 @@ function statRowHtml(def, home, away) {
   const hPct = total ? (hv / total) * 100 : 0;
   const aPct = total ? (av / total) * 100 : 0;
   const fmt = (v) => (def.percent ? `${Math.round(v)}%` : Math.round(v));
+  const homeLead = !noLead && hv > av;
+  const awayLead = !noLead && av > hv;
   return `
     <div class="stat-row">
       <div class="stat-values">
-        <span class="stat-value stat-value-home">${fmt(hv)}</span>
+        <span class="stat-value stat-value-home${homeLead ? " stat-value--lead" : ""}">${fmt(hv)}</span>
         <span class="stat-label">${def.labelAr}</span>
-        <span class="stat-value stat-value-away">${fmt(av)}</span>
+        <span class="stat-value stat-value-away${awayLead ? " stat-value--lead" : ""}">${fmt(av)}</span>
       </div>
-      <div class="stat-bar">
-        <div class="stat-bar-home" style="width:${hPct}%"></div>
-        <div class="stat-bar-away" style="width:${aPct}%"></div>
-      </div>
+      ${statBarHtml(hPct, aPct)}
     </div>`;
+}
+
+function statGroupHtml(group, home, away) {
+  const rows = group.stats.map((def) => statRowHtml(def, home, away, group.noLead)).join("");
+  if (!rows.trim()) return "";
+  return `
+    <div class="stat-group">
+      <div class="stat-group-head">${GROUP_ICON[group.icon] || ""}<span>${group.labelAr}</span></div>
+      ${rows}
+    </div>`;
+}
+
+function statHeroHtml(m) {
+  const h = m.stats.home.possessionPct;
+  const a = m.stats.away.possessionPct;
+  if (h == null && a == null) return "";
+  const hv = h || 0;
+  const av = a || 0;
+  const total = hv + av;
+  const hPct = total ? (hv / total) * 100 : 50;
+  const aPct = total ? (av / total) * 100 : 50;
+  return `
+    <div class="stat-hero">
+      <div class="stat-hero-label">الاستحواذ</div>
+      <div class="stat-hero-values">
+        <span class="stat-hero-value stat-hero-value--home">${Math.round(hv)}%</span>
+        <span class="stat-hero-value stat-hero-value--away">${Math.round(av)}%</span>
+      </div>
+      ${statBarHtml(hPct, aPct)}
+    </div>`;
+}
+
+/* Runs after buildStatsHtml() is inserted into the DOM — flips each bar
+   segment from width:0 to its real share so the fill animates on reveal. */
+function activateStatBars(root) {
+  if (!root || !root.querySelectorAll) return;
+  const bars = root.querySelectorAll(".stat-bar-home[data-w], .stat-bar-away[data-w]");
+  if (!bars.length) return;
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      bars.forEach((el) => { el.style.width = `${el.dataset.w}%`; });
+    });
+  });
 }
 
 function buildStatsHtml(m) {
   if (!m || !m.stats) return "";
   const homeAr = window.TeamNames ? window.TeamNames.arabicFor(m.home) || m.home : m.home;
   const awayAr = window.TeamNames ? window.TeamNames.arabicFor(m.away) || m.away : m.away;
-  const rows = STAT_DEFS.map((def) => statRowHtml(def, m.stats.home, m.stats.away)).join("");
-  if (!rows) return "";
+  const hero = statHeroHtml(m);
+  const groups = STAT_GROUPS.map((g) => statGroupHtml(g, m.stats.home, m.stats.away)).join("");
+  if (!hero && !groups.trim()) return "";
   return `
     <div class="match-stats">
       <div class="stat-legend">
-        <span class="stat-legend-item stat-legend-home"><i class="stat-dot"></i>${dataEscapeHtml(homeAr)}</span>
-        <span class="stat-legend-item stat-legend-away"><i class="stat-dot"></i>${dataEscapeHtml(awayAr)}</span>
+        <span class="stat-legend-item stat-legend-home">${crestOrDot(m.homeBadge, m.homeAbbr, "home")}${dataEscapeHtml(homeAr)}</span>
+        <span class="stat-legend-item stat-legend-away">${dataEscapeHtml(awayAr)}${crestOrDot(m.awayBadge, m.awayAbbr, "away")}</span>
       </div>
-      ${rows}
+      ${hero}
+      ${groups}
     </div>`;
+}
+
+function crestOrDot(badge, abbr, side) {
+  if (badge) return `<img class="stat-legend-crest" src="${badge}" alt="" loading="lazy">`;
+  return `<i class="stat-dot stat-dot--${side}"></i>`;
 }
 
 function lineupPlayerHtml(p) {
@@ -517,6 +607,7 @@ function applyMatchDetail(matches, idx) {
 
 window.buildStatsHtml = buildStatsHtml;
 window.buildLineupsHtml = buildLineupsHtml;
+window.activateStatBars = activateStatBars;
 
 window.getMatches = async function getMatches({ force } = {}) {
   // 1) Live fetch from TheSportsDB in the browser (best — real statuses, auto-refresh)
