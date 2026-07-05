@@ -479,6 +479,45 @@ img { max-width: 100%; display: block; }
   .pitch-name { display: none; }
 }
 
+/* ------------------------------------------------- Live match center (home) */
+.live-detail-card {
+  position: relative; border-radius: 20px; padding: 26px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04), transparent),
+    linear-gradient(135deg, rgba(255,59,92,.14), rgba(123,47,247,.1)), var(--glass);
+  border: 1px solid rgba(255,59,92,.4);
+  box-shadow: var(--shadow-soft); backdrop-filter: blur(14px);
+  animation: fadeUp .6s ease both;
+}
+.live-detail-card.is-ended {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.04), transparent),
+    linear-gradient(135deg, rgba(201,162,39,.14), rgba(123,47,247,.1)), var(--glass);
+  border-color: rgba(201,162,39,.42);
+}
+.live-detail-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.live-detail-league { display: flex; align-items: center; gap: 6px; color: var(--muted); font-weight: 700; font-size: .85rem; }
+.live-detail-teams {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 16px; margin-bottom: 14px;
+}
+.live-detail-teams .team { gap: 10px; }
+.live-detail-teams .crest { width: 72px; height: 72px; }
+.live-detail-teams .tname { font-size: 1.05rem; font-weight: 800; }
+.live-detail-score { font-size: 2.1rem; font-weight: 900; color: var(--gold); text-align: center; min-width: 90px; }
+.live-detail-meta { color: var(--muted); font-size: .9rem; text-align: center; margin-bottom: 16px; }
+.live-detail-meta b { color: var(--text); }
+.live-detail-watch { display: flex; justify-content: center; margin: 0 auto 6px; width: fit-content; padding: 10px 26px; font-size: .95rem; }
+.live-detail-section { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--border); }
+.live-detail-section h3 {
+  display: flex; align-items: center; gap: 8px; font-size: 1rem; font-weight: 800; color: var(--gold); margin-bottom: 14px;
+}
+@media (max-width: 560px) {
+  .live-detail-card { padding: 20px 16px; border-radius: 16px; }
+  .live-detail-teams .crest { width: 56px; height: 56px; }
+  .live-detail-teams .tname { font-size: .9rem; }
+  .live-detail-score { font-size: 1.6rem; min-width: 60px; }
+}
+
 /* --------------------------------------------------------- Filters */
 .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
 .filter-btn {
