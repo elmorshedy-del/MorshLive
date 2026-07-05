@@ -7,7 +7,11 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prekickoff": "node scripts/prekickoff-stream-check.mjs",
+    "prekickoff:dry": "node scripts/prekickoff-stream-check.mjs --dry-run",
+    "probe:streams": "node scripts/probe-stream-sources.mjs",
+    "verify:watch": "node scripts/verify-watch-playback.mjs"
   },
   "repository": {
     "type": "git",

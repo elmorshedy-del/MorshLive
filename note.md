@@ -4,6 +4,30 @@ Operator notes for KoraZero live channel issues. One section per match incident,
 
 ---
 
+## Pre-kickoff auto stream check (T-30)
+
+**Workflow:** `.github/workflows/prekickoff-stream-check.yml` — runs every **5 minutes**.
+
+**What it does:**
+1. Refreshes `today.json` via `fetch-matches.js`
+2. Finds matches whose kickoff is **30±5 minutes** away
+3. Opens **korazero.com** in headless Chromium and verifies the watch page plays (HLS video or Twitch)
+4. If the default route is dead, scans vip1/vip2/weshan × serv combos and **auto-commits** fixes:
+   - `today.json` → `embedKey`, `streamServ` on the match
+   - `channel-bindings.json` → `embedBinding` + `calibration[]` entry
+   - Regenerates `channel-bindings.js` + `live-snapshot.json`
+
+**Manual run:**
+```bash
+npm run prekickoff:dry
+npm run prekickoff
+node scripts/prekickoff-stream-check.mjs --force-match=espn-fifa.world-760504
+```
+
+**State file:** `assets/data/prekickoff-state.json` — avoids re-checking matches already verified OK for the same kickoff.
+
+---
+
 ## Changelog — 2026-07-05 (Brazil night session)
 
 Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
@@ -175,11 +199,13 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 
 | Pattern | Where | What to do |
 |---------|-------|------------|
+| Pre-kickoff dead stream | `.github/workflows/prekickoff-stream-check.yml` | Cron every 5 min; T-30±5m browser probe; auto-patches `embedKey`/`streamServ` in `today.json` + `channel-bindings.json` |
 | Dead MAX mirror | `worker.js` `DLHD_CHANNEL_MIRROR_IDS` | Add fallback ids 91–95; bump `channel-bindings.json` |
 | New AlbaPlayer host | `worker.js` | Proxy at `/wk/albaplayer/{slug}/`, extract HLS, serve `cleanHlsPlayerHtml` — never raw iframe |
 | Spam «مباشر» menu | Upstream AlbaPlayer | Hide `.aplr-menu`; block `AplrPopUp`; sandbox without `allow-popups` |
 | Video reloads alone | `watch.js` | Don't rebuild servers on stats refresh; only switch if active `srv-down` |
 | Lineups missing | `data.js` `getMatches()` | Ensure `applyMatchDetail()` runs on cached `today.json` path |
+| Lineups/stats stale | `match-detail-api.js` + `data.js` | Browser fetches ESPN summary live (60s cache when live); watch + home refresh every 60s |
 | Pin live match routing | `today.json` + bindings | Set `embedKey`, `channelId`; calibrate in `channel-bindings.json` |
 
 ---
