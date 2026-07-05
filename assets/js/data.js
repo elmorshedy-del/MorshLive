@@ -412,14 +412,53 @@ function lineupPlayerHtml(p) {
   return `<li><span class="lineup-jersey">${dataEscapeHtml(p.jersey)}</span><span class="lineup-name">${dataEscapeHtml(p.name)}</span></li>`;
 }
 
-function lineupTeamHtml(team, teamNameAr) {
+/* Green pitch: bands laid out left (attack) to right (goalkeeper), each
+   player's row position spread evenly within its band. A player currently
+   on loses no minutes here — a substitute swapped in keeps the tactical
+   band of whoever they replaced (see match-detail-lib.js), so the pitch
+   always reflects who is actually out there right now, cards and all. */
+const PITCH_BAND_X = { fwd: 13, mid: 40, def: 66, gk: 90 };
+
+function pitchRowY(count, i) {
+  if (count <= 1) return 50;
+  const pad = 14;
+  return pad + i * ((100 - pad * 2) / (count - 1));
+}
+
+function pitchDotHtml(p, x, y, isAway) {
+  const cardBadge = p.redCards > 0
+    ? '<span class="pitch-card pitch-card--red" title="بطاقة حمراء"></span>'
+    : p.yellowCards > 0
+      ? '<span class="pitch-card pitch-card--yellow" title="بطاقة صفراء"></span>'
+      : "";
+  const subTitle = p.subFor
+    ? `بديل عن ${p.subFor}${p.subMinute ? ` (${p.subMinute})` : ""}`
+    : "";
+  const subBadge = p.subFor ? `<span class="pitch-sub-badge" title="${dataEscapeHtml(subTitle)}">⇄</span>` : "";
+  return `
+    <div class="pitch-dot${isAway ? " pitch-dot--away" : ""}" style="left:${x}%;top:${y}%">
+      <span class="pitch-jersey">${dataEscapeHtml(p.jersey)}${cardBadge}${subBadge}</span>
+      <span class="pitch-name">${dataEscapeHtml(p.name)}</span>
+    </div>`;
+}
+
+function pitchHtml(team, isAway) {
   const byBand = { gk: [], def: [], mid: [], fwd: [] };
   team.starters.forEach((p) => { (byBand[p.band] || byBand.mid).push(p); });
-  const bands = BAND_ORDER.filter((b) => byBand[b].length).map((b) => `
-    <div class="lineup-band">
-      <b>${bandLabel(b)}</b>
-      <ul>${byBand[b].map(lineupPlayerHtml).join("")}</ul>
-    </div>`).join("");
+  const dots = BAND_ORDER.map((b) => {
+    const list = byBand[b];
+    const x = PITCH_BAND_X[b];
+    return list.map((p, i) => pitchDotHtml(p, x, pitchRowY(list.length, i), isAway)).join("");
+  }).join("");
+  return `
+    <div class="match-pitch">
+      <div class="pitch-box pitch-box--gk"></div>
+      <div class="pitch-box pitch-box--goal"></div>
+      ${dots}
+    </div>`;
+}
+
+function lineupTeamHtml(team, teamNameAr, isAway) {
   const subsLabel = window.I18N ? window.I18N.t("card.subs") : "الاحتياط";
   const subs = team.subs && team.subs.length
     ? `<details class="lineup-subs">
@@ -430,7 +469,7 @@ function lineupTeamHtml(team, teamNameAr) {
   return `
     <div class="lineup-team">
       <h4>${dataEscapeHtml(teamNameAr)}${team.formation ? ` <span class="lineup-formation">${dataEscapeHtml(team.formation)}</span>` : ""}</h4>
-      ${bands}
+      ${pitchHtml(team, isAway)}
       ${subs}
     </div>`;
 }
@@ -441,8 +480,8 @@ function buildLineupsHtml(m) {
   const awayAr = window.TeamNames ? window.TeamNames.arabicFor(m.away) || m.away : m.away;
   return `
     <div class="match-lineups">
-      ${lineupTeamHtml(m.lineups.home, homeAr)}
-      ${lineupTeamHtml(m.lineups.away, awayAr)}
+      ${lineupTeamHtml(m.lineups.home, homeAr, false)}
+      ${lineupTeamHtml(m.lineups.away, awayAr, true)}
     </div>`;
 }
 

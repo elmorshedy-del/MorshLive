@@ -97,15 +97,23 @@ Also attached by `scripts/fetch-matches.js`, from ESPN's free site API — the
 same source already used for scores/fixtures, so there's no second, less
 trusted data source involved:
 
-- **`lineups`** — official starting XI + substitutes for both teams, grouped
-  into goalkeeper / defense / midfield / attack bands (derived from ESPN's own
-  position data, not a numeric-slot guess), plus the formation string (e.g.
-  `4-2-3-1`). Appears once ESPN publishes it, typically shortly before kickoff,
-  and stays available after full time as a record of who played.
+- **`lineups`** — rendered as a green pitch per team, players positioned by
+  tactical band (goalkeeper / defense / midfield / attack, derived from ESPN's
+  own position data, not a numeric-slot guess). Reflects who is *currently* on
+  the pitch: a starter replaced in a substitution event (from ESPN's
+  play-by-play `keyEvents`) is swapped for whoever came on, tagged with who
+  they replaced and the minute; a player with a yellow/red card shows a card
+  badge. Substitutes not yet used stay in a collapsible bench list. Appears
+  once ESPN publishes the lineup, typically shortly before kickoff.
 - **`stats`** — 15 curated stat categories per team (possession, shots, shots
   on target, corners, fouls, cards, passes + accuracy, tackles, interceptions,
   clearances, crosses, saves), shown as a mirrored comparison bar per stat.
   Populates once the match is live and updates with each 30-minute refresh.
+
+**Update cadence:** both fields (cards and substitutions included) refresh on
+the same 30-minute `fetch-matches.js` cron as everything else — not
+second-by-second. A card or sub can take up to ~30 minutes to appear on the
+pitch, the same latency the stats panel already has.
 
 **Coverage note:** this only works for matches whose id encodes an ESPN event
 (`espn-<league>-<id>`, from `normalizeEspnEvent`). Fixtures that only came

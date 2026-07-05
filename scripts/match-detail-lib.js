@@ -67,25 +67,82 @@ function bandForPosition(abbr) {
   return "mid";
 }
 
-function playerEntry(p) {
+/** Cards + substitutions from ESPN's play-by-play (keyEvents), keyed by athlete
+ * id — this is what lets the pitch reflect who's actually on the field and
+ * carded, not just the pre-match XI. Substitution participants are always
+ * [incoming, outgoing]; card participants are the carded player. */
+function extractMatchEvents(summary) {
+  const events = (summary && summary.keyEvents) || [];
+  const cardsByAthleteId = {};
+  const subsByOutAthleteId = {};
+  for (const e of events) {
+    const type = (e.type && e.type.type) || "";
+    const participants = e.participants || [];
+    if (/yellow-card|red-card/.test(type)) {
+      const athleteId = participants[0] && participants[0].athlete && participants[0].athlete.id;
+      if (!athleteId) continue;
+      const entry = cardsByAthleteId[athleteId] || { yellow: 0, red: 0 };
+      if (/red-card/.test(type)) entry.red++;
+      else entry.yellow++;
+      cardsByAthleteId[athleteId] = entry;
+    } else if (type === "substitution") {
+      const inP = participants[0];
+      const outP = participants[1];
+      if (!inP || !outP || !outP.athlete || !inP.athlete) continue;
+      subsByOutAthleteId[outP.athlete.id] = {
+        inAthleteId: inP.athlete.id,
+        minute: (e.clock && e.clock.displayValue) || "",
+      };
+    }
+  }
+  return { cardsByAthleteId, subsByOutAthleteId };
+}
+
+function playerEntry(p, cardsByAthleteId) {
+  const athleteId = p.athlete && p.athlete.id;
+  const cards = (athleteId && cardsByAthleteId && cardsByAthleteId[athleteId]) || { yellow: 0, red: 0 };
   return {
+    id: athleteId || "",
     jersey: p.jersey || "",
     name: (p.athlete && (p.athlete.shortName || p.athlete.displayName)) || "",
     band: bandForPosition(p.position && p.position.abbreviation),
     position: (p.position && p.position.displayName) || "",
+    yellowCards: cards.yellow,
+    redCards: cards.red,
   };
 }
 
-/** { home: {formation, starters, subs}, away: {...} } | null when no rosters yet. */
+/** { home: {formation, starters, subs}, away: {...} } | null when no rosters yet.
+ * `starters` reflects who is CURRENTLY on the pitch: a starter replaced by a
+ * substitution event is swapped for the player who came on (keeping the
+ * original's tactical band, since incoming subs carry no formation slot of
+ * their own), tagged with who they replaced and when. */
 function extractLineups(summary) {
   const rosters = (summary && summary.rosters) || [];
+  const { cardsByAthleteId, subsByOutAthleteId } = extractMatchEvents(summary);
   const out = {};
   for (const r of rosters) {
     if (r.homeAway !== "home" && r.homeAway !== "away") continue;
     const roster = Array.isArray(r.roster) ? r.roster : [];
-    const starters = roster.filter((p) => p.starter).map(playerEntry);
-    const subs = roster.filter((p) => !p.starter).map(playerEntry);
-    if (!starters.length) continue;
+    const byAthleteId = {};
+    roster.forEach((p) => { if (p.athlete && p.athlete.id) byAthleteId[p.athlete.id] = p; });
+
+    const startersRaw = roster.filter((p) => p.starter);
+    if (!startersRaw.length) continue;
+
+    const starters = startersRaw.map((p) => {
+      const outId = p.athlete && p.athlete.id;
+      const sub = outId && subsByOutAthleteId[outId];
+      const incomingRaw = sub && byAthleteId[sub.inAthleteId];
+      if (!incomingRaw) return playerEntry(p, cardsByAthleteId);
+      return {
+        ...playerEntry(incomingRaw, cardsByAthleteId),
+        band: bandForPosition(p.position && p.position.abbreviation),
+        subFor: playerEntry(p, cardsByAthleteId).name,
+        subMinute: sub.minute,
+      };
+    });
+    const subs = roster.filter((p) => !p.starter).map((p) => playerEntry(p, cardsByAthleteId));
     out[r.homeAway] = { formation: r.formation || "", starters, subs };
   }
   if (!out.home || !out.away) return null;
