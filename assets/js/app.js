@@ -141,6 +141,62 @@
     wrap.innerHTML = liveBlock + endedBlock;
   }
 
+  /* -------------------------------------------------- ملخص المباراة (summary) */
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+    ));
+  }
+
+  // Which collapsible panels are expanded, kept across the 90s auto-refresh re-render.
+  const openPanels = new Set();
+
+  function panel(id, kind, iconHtml, label, bodyHtml) {
+    if (!bodyHtml) return "";
+    const panelId = `${id}:${kind}`;
+    const open = openPanels.has(panelId) ? " open" : "";
+    return `
+      <details class="match-panel" data-panel-id="${panelId}"${open}>
+        <summary class="match-panel-toggle">${iconHtml} ${label}</summary>
+        <div class="match-panel-body">${bodyHtml}</div>
+      </details>`;
+  }
+
+  function matchSummaryHtml(m) {
+    if (m.status !== "ended" || (!m.summaryAr && !m.highlight)) return "";
+    const videoBlock = m.highlight && m.highlight.videoUrl
+      ? `<div class="match-highlight-video">
+           <iframe src="${m.highlight.videoUrl}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
+             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
+             sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
+         </div>`
+      : `<p class="match-summary-novideo">${t("card.noHighlightVideo")}</p>`;
+    const body = `${m.summaryAr ? `<p class="match-summary-text">${escapeHtml(m.summaryAr)}</p>` : ""}${videoBlock}`;
+    return panel(m.id, "summary", ICON.trophy, t("card.summary"), body);
+  }
+
+  function matchLineupsHtml(m) {
+    if (!m.lineups) return "";
+    return panel(m.id, "lineups", ICON.trophy, t("card.lineups"), window.buildLineupsHtml(m));
+  }
+
+  function matchStatsHtml(m) {
+    if (!m.stats || (m.status !== "live" && m.status !== "ended")) return "";
+    return panel(m.id, "stats", ICON.trophy, t("card.stats"), window.buildStatsHtml(m));
+  }
+
+  // `toggle` on <details> doesn't bubble, so track it in the capture phase.
+  function initPanelToggles() {
+    document.addEventListener("toggle", (e) => {
+      const el = e.target;
+      if (!el.classList || !el.classList.contains("match-panel")) return;
+      const id = el.dataset.panelId;
+      if (!id) return;
+      if (el.open) openPanels.add(id);
+      else openPanels.delete(id);
+    }, true);
+  }
+
   /* -------------------------------------------------- Matches rendering */
   function matchCard(m) {
     const liveBtn = watchAction(m);
@@ -170,6 +226,9 @@
           <span class="match-meta">${footMeta(m)}</span>
           ${liveBtn}
         </div>
+        ${matchLineupsHtml(m)}
+        ${matchStatsHtml(m)}
+        ${matchSummaryHtml(m)}
       </article>`;
   }
 
@@ -283,6 +342,7 @@
     initFilters();
     initNav();
     initFavorites();
+    initPanelToggles();
     renderSaved();
     await loadMatches();
     setInterval(() => loadMatches({ force: true }), 90 * 1000);

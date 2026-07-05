@@ -94,6 +94,56 @@
     return match && window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(match);
   }
 
+  function escapeHtml(s) {
+    return String(s || "").replace(/[&<>"']/g, (c) => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
+    ));
+  }
+
+  function staticPanel(label, bodyHtml) {
+    if (!bodyHtml) return "";
+    return `
+      <div class="match-panel match-panel--static">
+        <div class="match-panel-toggle match-panel-toggle--static">${label}</div>
+        <div class="match-panel-body">${bodyHtml}</div>
+      </div>`;
+  }
+
+  /* ملخص المباراة (match summary) — Arabic recap + highlight clip when the
+     current match has ended, shown next to the commentary replay. */
+  function matchSummaryHtml(m) {
+    if (!m || m.status !== "ended" || (!m.summaryAr && !m.highlight)) return "";
+    const videoBlock = m.highlight && m.highlight.videoUrl
+      ? `<div class="match-highlight-video">
+           <iframe src="${m.highlight.videoUrl}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
+             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
+             sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
+         </div>`
+      : `<p class="match-summary-novideo">${t("card.noHighlightVideo")}</p>`;
+    const body = `${m.summaryAr ? `<p class="match-summary-text">${escapeHtml(m.summaryAr)}</p>` : ""}${videoBlock}`;
+    return staticPanel(t("card.summary"), body);
+  }
+
+  function renderMatchSummary() {
+    const slot = document.getElementById("match-summary-slot");
+    if (slot) slot.innerHTML = matchSummaryHtml(match);
+  }
+
+  /* التشكيلة الرسمية + إحصائيات المباراة — below the stream, as requested:
+     lineups as soon as ESPN confirms them (pre-match through full time),
+     advanced stats once the match is live. */
+  function renderMatchDetail() {
+    const slot = document.getElementById("match-detail-slot");
+    if (!slot) return;
+    const lineupsHtml = match && match.lineups && window.buildLineupsHtml
+      ? staticPanel(t("card.lineups"), window.buildLineupsHtml(match))
+      : "";
+    const statsHtml = match && match.stats && (match.status === "live" || match.status === "ended") && window.buildStatsHtml
+      ? staticPanel(t("card.stats"), window.buildStatsHtml(match))
+      : "";
+    slot.innerHTML = lineupsHtml + statsHtml;
+  }
+
   function fillInfo() {
     const live = !!(match && match.status === "live");
     const commentary = matchIsCommentary();
@@ -129,6 +179,8 @@
     document.getElementById("info-league").textContent = (match && match.league) || "—";
     const infoTimes = document.getElementById("info-times");
     if (infoTimes) infoTimes.innerHTML = timeZoneHtml(match);
+    renderMatchDetail();
+    renderMatchSummary();
     injectMatchSchema(match);
   }
 
