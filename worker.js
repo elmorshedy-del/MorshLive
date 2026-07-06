@@ -1289,7 +1289,7 @@ function kzAttachHls(v,src,onFatal){
   hls.on(Hls.Events.ERROR,function(_e,d){
     if(!d||!d.fatal) return;
     if(d.type==='networkError'){
-      setTimeout(function(){ try{ hls.startLoad(); }catch(e){ onFatal(); } }, 1000);
+      setTimeout(function(){ try{ hls.startLoad(-1); }catch(e){ onFatal(); } }, 1000);
       return;
     }
     if(d.type==='mediaError'){
@@ -1299,16 +1299,27 @@ function kzAttachHls(v,src,onFatal){
   });
   return hls;
 }
+function kzSoftRecover(v,hls){
+  if(!hls) return;
+  try{ hls.startLoad(-1); }catch(e){}
+  var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+}
 function kzWatchStall(v,hls,onStall){
-  var lastCt=0, stallMs=0;
-  setInterval(function(){
-    if(v.paused||v.readyState<2){ stallMs=0; lastCt=v.currentTime; return; }
-    if(v.currentTime>0&&v.currentTime===lastCt){
+  var lastCt=0, stallMs=0, softTried=false;
+  var iv=setInterval(function(){
+    if(v.paused||v.readyState<2){ stallMs=0; softTried=false; lastCt=v.currentTime; return; }
+    if(v.currentTime>0&&Math.abs(v.currentTime-lastCt)<0.05){
       stallMs+=3000;
-      if(stallMs>=12000){ stallMs=0; onStall(); }
-    } else stallMs=0;
+      if(!softTried&&stallMs>=6000){
+        softTried=true;
+        kzSoftRecover(v,hls);
+      } else if(stallMs>=12000){
+        stallMs=0; softTried=false; onStall();
+      }
+    } else { stallMs=0; softTried=false; }
     lastCt=v.currentTime;
   }, 3000);
+  return function(){ clearInterval(iv); };
 }`;
 
 function cleanHlsPlayerHtml(sources, title) {
@@ -1323,9 +1334,22 @@ function cleanHlsPlayerHtml(sources, title) {
 <script>
 ${HLS_BOOT_FN}
 (function(){
-  var v=document.getElementById('v'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0;
-  function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
-  function next(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*6){ setTimeout(load, 400); } }
+  var v=document.getElementById('v'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0, stopStall=null;
+  function pingParent(reason){
+    try{
+      if(window.parent&&window.parent!==window){
+        window.parent.postMessage({type:'kz-alt-reload', reason:reason||'stall'}, '*');
+      }
+    }catch(e){}
+  }
+  function destroy(){ if(stopStall){ stopStall(); stopStall=null; } if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
+  function next(){
+    i=(i+1)%sources.length; tries++;
+    if(tries<=sources.length*6){ setTimeout(load, 400); return; }
+    pingParent('exhausted');
+    tries=0;
+    setTimeout(function(){ location.reload(); }, 600);
+  }
   function load(){
     var src=sources[i]; if(!src) return;
     destroy();
@@ -1333,9 +1357,13 @@ ${HLS_BOOT_FN}
       v.src=src; v.addEventListener('error', next, {once:true});
     } else if(window.Hls&&window.Hls.isSupported()){
       hls=kzAttachHls(v, src, next);
-      kzWatchStall(v, hls, next);
+      stopStall=kzWatchStall(v, hls, next);
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+  }
+  if(!v.dataset.kzWait){
+    v.dataset.kzWait='1';
+    v.addEventListener('waiting', function(){ kzSoftRecover(v, hls); });
   }
   load();
 })();

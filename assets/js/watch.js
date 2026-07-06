@@ -66,10 +66,13 @@
     reloadAltStreams();
   }
 
-  function altStreamIframe(url) {
+  function altStreamIframe(url, kind) {
+    const sandbox = kind === "ntv"
+      ? ""
+      : 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ';
     return (
       `<iframe class="embed-frame alt-stream-frame" src="${escapeHtml(url)}" ` +
-      `sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ` +
+      `${sandbox}` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
       `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="lazy"></iframe>`
     );
@@ -133,6 +136,26 @@
         <p class="alt-streams-note">${escapeHtml(t("watch.altStreamsNote"))}</p>
       </div>
       <div class="alt-streams-grid">${panes.join("")}</div>`;
+  }
+
+  function reloadAltStreamIframes(reason) {
+    document.querySelectorAll(".alt-stream-frame").forEach((frame) => {
+      try {
+        const u = new URL(frame.src);
+        u.searchParams.set("_heal", String(Date.now()));
+        frame.src = u.toString();
+      } catch {
+        /* ignore bad src */
+      }
+    });
+    if (reason) console.info("Alt stream heal:", reason);
+  }
+
+  function initAltStreamHeal() {
+    window.addEventListener("message", (ev) => {
+      if (!ev.data || ev.data.type !== "kz-alt-reload") return;
+      reloadAltStreamIframes(ev.data.reason || "stall");
+    });
   }
 
   function reloadAltStreams() {
@@ -552,6 +575,7 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();
+    initAltStreamHeal();
     initReloadButton();
     try {
       await refreshMatches({ force: false });
