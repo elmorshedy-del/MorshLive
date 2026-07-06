@@ -2734,6 +2734,7 @@ const SIIR_FETCH_UA = "Mozilla/5.0 (compatible; KoraZero/1.0)";
 const RECENT_MEMES_MS = 24 * 60 * 60 * 1000;
 const RECENT_MATCH_MEME_CONTEXT_MS = 72 * 60 * 60 * 1000;
 const RECENT_MEMES_LIMIT = 48;
+const RECENT_MEMES_SCAN_CACHE_MS = 10 * 60 * 1000;
 const TWITTER_API_BASE = "https://api.twitter.com/2";
 const MEME_MATCH_MS = 105 * 60 * 1000;
 const MEME_LOOKBACK_BEFORE_KICKOFF_MS = 15 * 60 * 1000;
@@ -3040,7 +3041,7 @@ async function enrichMemesMedia(memes, bearer) {
   });
 }
 
-async function searchCuratedMemesSyndication(home, away, kickoffUtc, match, memeConfig, timelineCache) {
+async function searchCuratedMemesSyndication(home, away, kickoffUtc, match, memeConfig, timelineCache, seenIds) {
   const window = memePostWindow(kickoffUtc);
   if (!window) return [];
   const out = [];
@@ -3058,6 +3059,7 @@ async function searchCuratedMemesSyndication(home, away, kickoffUtc, match, meme
       continue;
     }
     const hits = tweets
+      .filter((t) => !seenIds || !seenIds.has(String(t.id)))
       .filter((t) => memeInWindow(t.created_at, window) && memeCaptionHits(t.text, home, away, match))
       .map((t) => memeToEntry(t, acct.username, {}));
     out.push(...pickTopMediaMemes(hits, config.topPerAccount || 3));
@@ -3065,7 +3067,7 @@ async function searchCuratedMemesSyndication(home, away, kickoffUtc, match, meme
   return out;
 }
 
-async function searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache, sinceMs) {
+async function searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache, sinceMs, seenIds) {
   const out = [];
   const config = memeConfig || { accounts: [], topPerAccount: 3, universalTerms: [] };
   for (const acct of config.accounts || []) {
@@ -3081,6 +3083,7 @@ async function searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache
       continue;
     }
     const hits = tweets
+      .filter((t) => !seenIds || !seenIds.has(String(t.id)))
       .filter((t) => tweetPostedRecently(t.created_at, sinceMs))
       .filter((t) => memeUniversalHits(t.text, config))
       .map((t) => memeToEntry(t, acct.username, {}));
@@ -3116,6 +3119,11 @@ async function searchCuratedMemes(bearer, home, away, kickoffUtc, match, memeCon
 let _memesIdxCache = null;
 let _pinnedMemesCache = null;
 let _memeSourcesCache = null;
+let _recentMemesRuntimeCache = {
+  at: 0,
+  memes: [],
+  seenIds: new Set(),
+};
 
 async function loadMemeSources(env, origin) {
   if (_memeSourcesCache) return _memeSourcesCache;
@@ -3131,6 +3139,33 @@ async function loadMemeSources(env, origin) {
     _memeSourcesCache = { accounts: [], topPerAccount: 3, universalTerms: [] };
   }
   return _memeSourcesCache;
+}
+
+function pruneRecentMemesRuntimeCache(sinceMs) {
+  const kept = (_recentMemesRuntimeCache.memes || [])
+    .filter((m) => tweetPostedRecently(m.postedAt, sinceMs));
+  _recentMemesRuntimeCache.memes = kept;
+  _recentMemesRuntimeCache.seenIds = new Set(
+    kept.map((m) => String(m.tweetId || m.url || "")).filter(Boolean)
+  );
+}
+
+function recentMemesRuntimeFresh(sinceMs) {
+  pruneRecentMemesRuntimeCache(sinceMs);
+  return _recentMemesRuntimeCache.memes.length &&
+    Date.now() - _recentMemesRuntimeCache.at < RECENT_MEMES_SCAN_CACHE_MS;
+}
+
+function updateRecentMemesRuntimeCache(memes, sinceMs) {
+  const merged = mergeMemeLists(_recentMemesRuntimeCache.memes, memes)
+    .filter((m) => tweetPostedRecently(m.postedAt, sinceMs))
+    .slice(0, RECENT_MEMES_LIMIT);
+  _recentMemesRuntimeCache = {
+    at: Date.now(),
+    memes: merged,
+    seenIds: new Set(merged.map((m) => String(m.tweetId || m.url || "")).filter(Boolean)),
+  };
+  return merged;
 }
 
 async function loadMemesIndex(env, origin) {
@@ -3279,8 +3314,24 @@ async function proxyRecentMemesApi(request, env) {
     if (matchKickoffRecently(m.kickoffUtc, matchSinceMs)) recentMatchKeys.add(key);
   }
 
+  if (recentMemesRuntimeFresh(sinceMs)) {
+    const cachedMemes = filterMemesWithMedia(_recentMemesRuntimeCache.memes)
+      .slice(0, RECENT_MEMES_LIMIT);
+    return new Response(JSON.stringify({
+      memes: cachedMemes,
+      count: cachedMemes.length,
+      windowHours: 24,
+      matchCount: recentMatchKeys.size,
+      cached: true,
+    }), {
+      status: 200,
+      headers: { ...headers, "X-KZ-Meme-Source": "runtime-cache" },
+    });
+  }
+
   const byTweetId = new Map();
   const hasMemeForKey = (matchKey) => [...byTweetId.values()].some((m) => m.matchKey === matchKey);
+  const scannerSeenIds = new Set(_recentMemesRuntimeCache.seenIds || []);
   const ingest = (matchKey, meme) => {
     if (!meme || meme.type !== "tweet") return;
     const meta = matchByKey.get(matchKey);
@@ -3289,6 +3340,7 @@ async function proxyRecentMemesApi(request, env) {
     if (!postedOk && !matchOk) return;
     const id = String(meme.tweetId || meme.url || "");
     if (!id) return;
+    scannerSeenIds.add(id);
     const row = {
       ...meme,
       matchKey,
@@ -3301,6 +3353,9 @@ async function proxyRecentMemesApi(request, env) {
     if (!prev || (row.engagement || 0) > (prev.engagement || 0)) byTweetId.set(id, row);
   };
 
+  for (const meme of _recentMemesRuntimeCache.memes || []) {
+    ingest(meme.matchKey || "worldcup", meme);
+  }
   for (const [key, list] of Object.entries(idx)) {
     for (const meme of list || []) ingest(key, meme);
   }
@@ -3310,7 +3365,7 @@ async function proxyRecentMemesApi(request, env) {
 
   const timelineCache = new Map();
   try {
-    const universal = await searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache, sinceMs);
+    const universal = await searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache, sinceMs, scannerSeenIds);
     for (const meme of universal) {
       const matchKey = bestMemeMatchKey(meme.text, [...matchByKey.values()]);
       ingest(matchKey || "worldcup", {
@@ -3326,7 +3381,7 @@ async function proxyRecentMemesApi(request, env) {
     .sort((a, b) => Date.parse(b.m.kickoffUtc) - Date.parse(a.m.kickoffUtc));
   for (const { key, m } of syndicateCandidates) {
     try {
-      const hits = await searchCuratedMemesSyndication(m.home, m.away, m.kickoffUtc, m, memeConfig, timelineCache);
+      const hits = await searchCuratedMemesSyndication(m.home, m.away, m.kickoffUtc, m, memeConfig, timelineCache, scannerSeenIds);
       for (const meme of hits) ingest(key, meme);
     } catch { /* syndication optional */ }
   }
@@ -3352,6 +3407,7 @@ async function proxyRecentMemesApi(request, env) {
     } catch { /* static */ }
     memes = filterMemesWithMedia(memes);
   }
+  memes = updateRecentMemesRuntimeCache(memes, sinceMs);
 
   return new Response(JSON.stringify({
     memes,
