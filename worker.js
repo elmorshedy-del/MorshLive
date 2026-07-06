@@ -2755,10 +2755,31 @@ function memePlayerTerms(match) {
 }
 
 function memeCaptionHits(text, home, away, match) {
+  return memeCaptionScore(text, home, away, match) > 0;
+}
+
+function memeCaptionScore(text, home, away, match) {
   const t = String(text || "").toLowerCase();
   return [home, away, ...memePlayerTerms(match)]
     .filter(Boolean)
-    .some((n) => t.includes(n.toLowerCase()));
+    .reduce((score, n) => score + (t.includes(n.toLowerCase()) ? 1 : 0), 0);
+}
+
+function memeUniversalHits(text, memeConfig) {
+  const t = String(text || "").toLowerCase();
+  const terms = Array.isArray(memeConfig?.universalTerms) ? memeConfig.universalTerms : [];
+  return terms.some((term) => t.includes(String(term).toLowerCase()));
+}
+
+function bestMemeMatchKey(text, matches) {
+  let best = null;
+  for (const m of matches || []) {
+    const score = memeCaptionScore(text, m.home, m.away, m);
+    if (score > 0 && (!best || score > best.score)) {
+      best = { key: highlightPairKeyMemes(m.home, m.away), score };
+    }
+  }
+  return best?.key || null;
 }
 
 function memeEngagement(m) {
@@ -3044,6 +3065,30 @@ async function searchCuratedMemesSyndication(home, away, kickoffUtc, match, meme
   return out;
 }
 
+async function searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache, sinceMs) {
+  const out = [];
+  const config = memeConfig || { accounts: [], topPerAccount: 3, universalTerms: [] };
+  for (const acct of config.accounts || []) {
+    let tweets;
+    try {
+      if (timelineCache && timelineCache.has(acct.username)) {
+        tweets = timelineCache.get(acct.username);
+      } else {
+        tweets = await fetchSyndicationTimeline(acct.username, 100);
+        if (timelineCache) timelineCache.set(acct.username, tweets);
+      }
+    } catch {
+      continue;
+    }
+    const hits = tweets
+      .filter((t) => tweetPostedRecently(t.created_at, sinceMs))
+      .filter((t) => memeUniversalHits(t.text, config))
+      .map((t) => memeToEntry(t, acct.username, {}));
+    out.push(...pickTopMediaMemes(hits, config.topPerAccount || 3));
+  }
+  return out;
+}
+
 async function searchCuratedMemes(bearer, home, away, kickoffUtc, match, memeConfig) {
   const window = memePostWindow(kickoffUtc);
   if (!window) return [];
@@ -3080,9 +3125,10 @@ async function loadMemeSources(env, origin) {
     _memeSourcesCache = {
       accounts: Array.isArray(json.accounts) ? json.accounts.filter((a) => a?.key && a?.username) : [],
       topPerAccount: Number(json.topPerAccount) || 3,
+      universalTerms: Array.isArray(json.universalTerms) ? json.universalTerms.filter(Boolean) : [],
     };
   } catch {
-    _memeSourcesCache = { accounts: [], topPerAccount: 3 };
+    _memeSourcesCache = { accounts: [], topPerAccount: 3, universalTerms: [] };
   }
   return _memeSourcesCache;
 }
@@ -3262,11 +3308,22 @@ async function proxyRecentMemesApi(request, env) {
     for (const meme of list || []) ingest(key, meme);
   }
 
+  const timelineCache = new Map();
+  try {
+    const universal = await searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache, sinceMs);
+    for (const meme of universal) {
+      const matchKey = bestMemeMatchKey(meme.text, [...matchByKey.values()]);
+      ingest(matchKey || "worldcup", {
+        ...meme,
+        scope: matchKey ? "match" : "worldcup",
+      });
+    }
+  } catch { /* universal timeline optional */ }
+
   const syndicateCandidates = [...recentMatchKeys]
     .map((key) => ({ key, m: matchByKey.get(key) }))
     .filter((x) => x.m)
     .sort((a, b) => Date.parse(b.m.kickoffUtc) - Date.parse(a.m.kickoffUtc));
-  const timelineCache = new Map();
   for (const { key, m } of syndicateCandidates) {
     try {
       const hits = await searchCuratedMemesSyndication(m.home, m.away, m.kickoffUtc, m, memeConfig, timelineCache);
