@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-06T01:39:57.976Z",
+  "updatedAt": "2026-07-06T01:45:32.720Z",
   "bindingVersion": 10,
   "embedBinding": {
     "bein-max-1": "vip1",
@@ -15,8 +15,8 @@
       "id": "espn-fifa.world-760505",
       "home": "Mexico",
       "away": "England",
-      "score": "0 - 2",
-      "minute": "40'",
+      "score": "1 - 2",
+      "minute": "45'",
       "channelId": "bein-max-2",
       "channel": "beIN MAX 2",
       "commentator": "حفيظ دراجي",

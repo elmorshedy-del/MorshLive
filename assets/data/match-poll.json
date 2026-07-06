@@ -1,13 +1,97 @@
 {
   "enabled": true,
-  "pollId": "brazil-norway-20260705",
-  "matchIds": ["espn-fifa.world-760504"],
   "titleAr": "تتوقع من؟",
   "titleEn": "Who do you think wins?",
-  "homeKey": "brazil",
-  "awayKey": "norway",
-  "teams": {
-    "brazil": { "nameAr": "البرازيل", "nameEn": "Brazil" },
-    "norway": { "nameAr": "النرويج", "nameEn": "Norway" }
-  }
+  "polls": [
+    {
+      "pollId": "espn-fifa.world-760505",
+      "matchIds": [
+        "espn-fifa.world-760505"
+      ],
+      "homeKey": "mexico",
+      "awayKey": "england",
+      "teams": {
+        "mexico": {
+          "nameAr": "المكسيك",
+          "nameEn": "Mexico"
+        },
+        "england": {
+          "nameAr": "إنجلترا",
+          "nameEn": "England"
+        }
+      }
+    },
+    {
+      "pollId": "espn-fifa.world-760506",
+      "matchIds": [
+        "espn-fifa.world-760506"
+      ],
+      "homeKey": "portugal",
+      "awayKey": "spain",
+      "teams": {
+        "portugal": {
+          "nameAr": "البرتغال",
+          "nameEn": "Portugal"
+        },
+        "spain": {
+          "nameAr": "إسبانيا",
+          "nameEn": "Spain"
+        }
+      }
+    },
+    {
+      "pollId": "espn-fifa.world-760507",
+      "matchIds": [
+        "espn-fifa.world-760507"
+      ],
+      "homeKey": "unitedstates",
+      "awayKey": "belgium",
+      "teams": {
+        "unitedstates": {
+          "nameAr": "الولايات المتحدة",
+          "nameEn": "United States"
+        },
+        "belgium": {
+          "nameAr": "بلجيكا",
+          "nameEn": "Belgium"
+        }
+      }
+    },
+    {
+      "pollId": "espn-fifa.world-760509",
+      "matchIds": [
+        "espn-fifa.world-760509"
+      ],
+      "homeKey": "argentina",
+      "awayKey": "egypt",
+      "teams": {
+        "argentina": {
+          "nameAr": "الأرجنتين",
+          "nameEn": "Argentina"
+        },
+        "egypt": {
+          "nameAr": "مصر",
+          "nameEn": "Egypt"
+        }
+      }
+    },
+    {
+      "pollId": "espn-fifa.world-760508",
+      "matchIds": [
+        "espn-fifa.world-760508"
+      ],
+      "homeKey": "switzerland",
+      "awayKey": "colombia",
+      "teams": {
+        "switzerland": {
+          "nameAr": "سويسرا",
+          "nameEn": "Switzerland"
+        },
+        "colombia": {
+          "nameAr": "كولومبيا",
+          "nameEn": "Colombia"
+        }
+      }
+    }
+  ]
 }

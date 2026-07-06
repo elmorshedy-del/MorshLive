@@ -59,9 +59,24 @@
     return _config;
   }
 
-  function applies(cfg, match) {
-    if (!cfg || !cfg.enabled || !match || !match.id) return false;
-    return (cfg.matchIds || []).includes(match.id);
+  function pollList(cfg) {
+    if (!cfg) return [];
+    if (Array.isArray(cfg.polls)) return cfg.polls;
+    if (cfg.pollId && cfg.matchIds) return [cfg];
+    return [];
+  }
+
+  function findPoll(cfg, match) {
+    if (!cfg || !cfg.enabled || !match || !match.id) return null;
+    return pollList(cfg).find((p) => (p.matchIds || []).includes(match.id)) || null;
+  }
+
+  function mergePoll(cfg, poll) {
+    return {
+      titleAr: cfg.titleAr || "تتوقع من؟",
+      titleEn: cfg.titleEn || "Who do you think wins?",
+      ...poll,
+    };
   }
 
   function teamLabel(cfg, key) {
@@ -173,14 +188,17 @@
   }
 
   async function show(slot, match) {
-    const cfg = await loadConfig();
-    if (!slot || !applies(cfg, match)) {
+    const rootCfg = await loadConfig();
+    const poll = findPoll(rootCfg, match);
+    if (!slot || !poll) {
       if (slot) {
         slot.innerHTML = "";
         delete slot.dataset.pollReady;
       }
       return false;
     }
+
+    const cfg = mergePoll(rootCfg, poll);
 
     if (slot.dataset.pollReady === cfg.pollId) {
       if (savedVote(cfg.pollId)) {
@@ -204,5 +222,5 @@
     }
   }
 
-  global.MatchPoll = { show, loadConfig };
+  global.MatchPoll = { show, loadConfig, findPoll };
 })(window);

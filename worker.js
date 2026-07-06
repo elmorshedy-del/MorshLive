@@ -23,11 +23,35 @@ const WORLDKOORA = "https://vip.worldkoora.com";
 const WESHAN = "https://zenvixw.site/wordpress/albaplayer/weshan/";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
-const POLL_RE = /^\/api\/poll\/([a-z0-9-]+)\/?$/i;
+const POLL_RE = /^\/api\/poll\/([a-z0-9.-]+)\/?$/i;
 const POLL_STORE = "https://kz-poll.internal/";
 const POLL_TEAMS = {
   "brazil-norway-20260705": ["brazil", "norway"],
 };
+
+let _pollConfigCache = null;
+let _pollConfigAt = 0;
+
+async function loadPollConfig(env, origin) {
+  if (_pollConfigCache && Date.now() - _pollConfigAt < 60 * 1000) return _pollConfigCache;
+  try {
+    const res = await env.ASSETS.fetch(`${origin}/assets/data/match-poll.json`);
+    _pollConfigCache = res.ok ? await res.json() : { polls: [] };
+  } catch {
+    _pollConfigCache = { polls: [] };
+  }
+  _pollConfigAt = Date.now();
+  return _pollConfigCache;
+}
+
+async function pollTeamsFor(pollId, env, origin) {
+  if (POLL_TEAMS[pollId]) return POLL_TEAMS[pollId];
+  const cfg = await loadPollConfig(env, origin);
+  const polls = Array.isArray(cfg.polls) ? cfg.polls : (cfg.pollId ? [cfg] : []);
+  const hit = polls.find((p) => p.pollId === pollId);
+  if (hit && hit.homeKey && hit.awayKey) return [hit.homeKey, hit.awayKey];
+  return null;
+}
 const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
 // Worldkoora exposes "البث 1..N" as redundant servers for the SAME channel in a
 // slot. We probe them in order so a dead/blank server this game falls over to a
@@ -2000,8 +2024,9 @@ async function markPollVoted(pollId, voterId) {
   );
 }
 
-async function handlePoll(request, pollId) {
-  const teams = POLL_TEAMS[pollId];
+async function handlePoll(request, pollId, env) {
+  const origin = new URL(request.url).origin;
+  const teams = await pollTeamsFor(pollId, env, origin);
   if (!teams) {
     return new Response(JSON.stringify({ error: "unknown_poll" }), { status: 404, headers: pollJsonHeaders() });
   }
@@ -2639,7 +2664,7 @@ export default {
     }
     const poll = url.pathname.match(POLL_RE);
     if (poll) {
-      return handlePoll(request, poll[1].toLowerCase());
+      return handlePoll(request, poll[1].toLowerCase(), env);
     }
     if (HIGHLIGHT_API_RE.test(url.pathname) && method === "GET") {
       return withEdgeCache(request, 3600, () => proxyHighlightApi(request, env));

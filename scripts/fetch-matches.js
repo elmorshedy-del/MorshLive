@@ -27,6 +27,7 @@ const { attachSummaries, buildHighlightQueries, pickArabicVideo, arabicTeam } = 
 const { findVortexHighlight } = require("./vortex-highlights-lib");
 const { parseEspnMatchId, extractLineups, extractMatchStats } = require("./match-detail-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
+const { writePollConfig } = require("./match-poll-lib");
 
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
 const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
@@ -284,6 +285,7 @@ async function fetchYouTubeHighlight(match) {
   fs.mkdirSync(path.dirname(OUT), { recursive: true });
   writeBindingsJs();
   const snapshot = writeLiveSnapshot(matches);
+  const pollDoc = writePollConfig(matches);
   fs.writeFileSync(
     OUT,
     JSON.stringify(
@@ -308,6 +310,9 @@ async function fetchYouTubeHighlight(match) {
   );
   console.log(
     `Live snapshot: ${snapshot.liveCount} live, ${snapshot.conflicts.length} conflict(s) -> assets/data/live-snapshot.json`
+  );
+  console.log(
+    `Match polls: ${pollDoc.polls.length} active -> assets/data/match-poll.json`
   );
 })().catch((err) => {
   console.error("fetch-matches failed:", err.message);
