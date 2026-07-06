@@ -171,6 +171,21 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 
 ---
 
+## Kooracity 30s pause — investigation (no auto-switch)
+
+**What users see:** Full stream **pauses** ~30s with kooracity «go to original site» message; may loop before match resumes. **Not** a CSS watermark — do not mask or auto-switch mirrors until root cause is known.
+
+**Observe-only logging (deployed):**
+- HLS player logs `playback_stall`, `buffering`, `time_rewind` with **UTC timestamp**, **mirror index**, **hlsSrc**, **videoTime**
+- Watch page auto-POSTs to `/api/stream-log` (no console needed)
+- Operator: `curl -s https://korazero.com/api/stream-log | jq .`
+
+**When you have a screen recording:** Tell us the **wall-clock time** (or match minute) the pause started. We match it to log `t` field + `embedKey`/`serv`/`mirrorIndex`/`hlsSrc` to find which upstream mirror injects the pause.
+
+**Reverted:** PR #80 auto-switch / live-edge jump — user asked to find root cause first.
+
+---
+
 ## Platform patterns (reuse on next incident)
 
 | Pattern | Where | What to do |
@@ -178,6 +193,7 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 | Dead MAX mirror | `worker.js` `DLHD_CHANNEL_MIRROR_IDS` | Add fallback ids 91–95; bump `channel-bindings.json` |
 | New AlbaPlayer host | `worker.js` | Proxy at `/wk/albaplayer/{slug}/`, extract HLS, serve `cleanHlsPlayerHtml` — never raw iframe |
 | Spam «مباشر» menu | Upstream AlbaPlayer | Hide `.aplr-menu`; block `AplrPopUp`; sandbox without `allow-popups` |
+| Kooracity 30s pause | dlhd/worldkoora HLS | Log via `/api/stream-log` + recording timestamp — **no auto-switch** until root cause found |
 | Video reloads alone | `watch.js` | Don't rebuild servers on stats refresh; only switch if active `srv-down` |
 | Lineups missing | `data.js` `getMatches()` | Ensure `applyMatchDetail()` runs on cached `today.json` path |
 | Pin live match routing | `today.json` + bindings | Set `embedKey`, `channelId`; calibrate in `channel-bindings.json` |
