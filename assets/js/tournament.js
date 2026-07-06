@@ -123,15 +123,28 @@
       </div>`;
   }
 
-  function videoBlock(highlight, mode, eager) {
-    if (!highlight || !highlight.videoUrl) {
-      return `<p class="tournament-novideo">${t("tournament.noHighlight")}</p>`;
+  function matchClips(m) {
+    const h = m.highlights || {};
+    const goals = h.goals?.videoUrl ? h.goals : null;
+    let full = h.full?.videoUrl ? h.full : null;
+    if (!full && m.highlight?.videoUrl) {
+      const sameAsGoals = goals && m.highlight.videoUrl === goals.videoUrl;
+      if (!sameAsGoals) full = m.highlight;
     }
+    return { goals, full };
+  }
+
+  function videoBlock(highlight, mode, eager, clipKind) {
+    if (!highlight || !highlight.videoUrl) return "";
+    const sectionTitle = clipKind === "goals"
+      ? t("tournament.goalsTitle")
+      : t("tournament.highlightTitle");
+    const hint = clipKind === "goals" ? t("tournament.goalsHint") : t("tournament.fullHint");
     const poster = highlight.thumbnail || "";
     const title = highlight.title ? escapeHtml(highlight.title) : "";
     const embed = escapeHtml(highlight.videoUrl);
     const launch = `
-      <button type="button" class="tournament-video-launch" data-embed="${embed}" aria-label="${escapeHtml(t("tournament.highlightTitle"))}">
+      <button type="button" class="tournament-video-launch" data-embed="${embed}" aria-label="${escapeHtml(sectionTitle)}">
         ${poster
           ? `<img class="tournament-video-launch__poster" src="${assetUrl(poster)}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling&&(this.nextElementSibling.hidden=false)" /><span class="tournament-video-launch__fallback" hidden></span>`
           : `<span class="tournament-video-launch__fallback"></span>`}
@@ -146,14 +159,26 @@
           sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
       </div>`;
     return `
-      <div class="tournament-video-block tournament-video-block--${mode}">
-        ${sectionHead("▶", "video", t("tournament.highlightTitle"))}
+      <div class="tournament-video-block tournament-video-block--${mode} tournament-video-block--${clipKind || "full"}">
+        ${sectionHead("▶", clipKind === "goals" ? "goals" : "video", sectionTitle)}
+        <p class="tournament-video-hint">${escapeHtml(hint)}</p>
         <div class="tournament-video-shell">
           <div class="tournament-video-stage" data-embed="${embed}">
             ${eager ? inline : launch}
           </div>
         </div>
       </div>`;
+  }
+
+  function highlightsBlock(m, mode) {
+    const { goals, full } = matchClips(m);
+    if (!goals && !full) {
+      return `<p class="tournament-novideo">${t("tournament.noHighlight")}</p>`;
+    }
+    const blocks = [];
+    if (goals) blocks.push(videoBlock(goals, mode, false, "goals"));
+    if (full) blocks.push(videoBlock(full, mode, false, "full"));
+    return `<div class="tournament-highlights-duo">${blocks.join("")}</div>`;
   }
 
   function memesBlock(memes, mode) {
@@ -196,7 +221,7 @@
       <article class="tournament-hero">
         ${scoreboardHtml(m)}
         ${m.summaryAr ? `<div class="tournament-recap"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
-        ${videoBlock(m.highlight, "hero", false)}
+        ${highlightsBlock(m, "hero")}
         ${memesBlock(memes, "hero")}
       </article>`;
   }
@@ -222,10 +247,15 @@
     return local;
   }
 
+  function hasAnyHighlight(m) {
+    const { goals, full } = matchClips(m);
+    return !!(goals || full);
+  }
+
   function latestHighlightMatch() {
     if (!archive?.matches?.length) return null;
     return archive.matches
-      .filter((m) => m.highlight?.videoUrl && m.kickoffUtc)
+      .filter((m) => hasAnyHighlight(m) && m.kickoffUtc)
       .sort((a, b) => Date.parse(b.kickoffUtc) - Date.parse(a.kickoffUtc))[0] || null;
   }
 
@@ -252,7 +282,7 @@
     return `
       <div class="tournament-detail">
         ${m.summaryAr ? `<div class="tournament-recap tournament-recap--compact"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
-        ${videoBlock(m.highlight, "card", false)}
+        ${highlightsBlock(m, "card")}
         ${memesBlock(memes, "card")}
       </div>`;
   }
@@ -260,7 +290,8 @@
   function matchCard(m) {
     const memes = (archive.memes && archive.memes[m.key]) || [];
     const hasMemes = memes.length > 0;
-    const hasHighlight = !!(m.highlight && m.highlight.videoUrl);
+    const hasHighlight = hasAnyHighlight(m);
+    const clipCount = (matchClips(m).goals ? 1 : 0) + (matchClips(m).full ? 1 : 0);
     return `
       <article class="match-card tournament-match-card" data-stage="${escapeHtml(m.stage)}" data-match-key="${escapeHtml(m.key)}">
         <div class="match-top">
@@ -279,7 +310,7 @@
           </div>
         </div>
         <div class="tournament-badges">
-          ${hasHighlight ? `<span class="tournament-badge tournament-badge--hl">${t("tournament.badgeHighlight")}</span>` : ""}
+          ${hasHighlight ? `<span class="tournament-badge tournament-badge--hl">${clipCount > 1 ? t("tournament.badgeHighlights", { n: clipCount }) : t("tournament.badgeHighlight")}</span>` : ""}
           ${hasMemes ? `<span class="tournament-badge tournament-badge--meme">${t("tournament.badgeMemes", { n: memes.length })}</span>` : ""}
         </div>
         <details class="match-panel tournament-panel">

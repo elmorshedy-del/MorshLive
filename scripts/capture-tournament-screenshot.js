@@ -33,7 +33,7 @@ async function shot(page, name) {
   await page.goto(URL, { waitUntil: "networkidle", timeout: 90000 });
 
   await page.waitForSelector("#tournament-featured:not([hidden])", { timeout: 60000 });
-  await page.waitForSelector(".kz-tweet__media img", { timeout: 60000 });
+  await page.waitForSelector(".tournament-highlights-duo, .tournament-video-launch", { timeout: 60000 });
   await page.waitForTimeout(1500);
 
   const featured = page.locator("#tournament-featured");

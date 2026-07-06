@@ -25,7 +25,7 @@ const {
 } = require("./commentators-lib");
 const { attachSummaries, buildHighlightQueries, pickArabicVideo, arabicTeam } = require("./highlights-lib");
 const { findVortexHighlight } = require("./vortex-highlights-lib");
-const { scrapeBtolatHighlights } = require("./btolat-highlights-lib");
+const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-highlights-lib");
 const { fetchVortexEmbedMeta } = require("./vortex-highlights-lib");
 const { parseEspnMatchId, extractLineups, extractMatchStats } = require("./match-detail-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
@@ -218,8 +218,12 @@ async function fetchYouTubeHighlight(match) {
   const arToEn = buildArToEn();
   let btolatMap = new Map();
   try {
-    btolatMap = await scrapeBtolatHighlights((a, b) => pairKey(arToEn(a), arToEn(b)));
-    console.log(`btolat highlights: ${btolatMap.size}`);
+    btolatMap = await scrapeBtolatHighlights(
+      (a, b) => pairKey(arToEn(a), arToEn(b)),
+      (id) => fetchVortexEmbedMeta(id)
+    );
+    const dualCount = [...btolatMap.values()].filter((b) => b.goals && b.full).length;
+    console.log(`btolat highlights: ${btolatMap.size} matches (${dualCount} with goals+full)`);
   } catch (err) {
     console.warn("btolat highlights scrape failed:", err.message);
   }
@@ -240,22 +244,15 @@ async function fetchYouTubeHighlight(match) {
       continue;
     }
     const bt = btolatMap.get(key);
-    if (bt) {
-      let thumbnail = bt.thumbnail || "";
-      if (!thumbnail && bt.embedId) {
-        try {
-          const meta = await fetchVortexEmbedMeta(bt.embedId);
-          thumbnail = meta?.thumbnail || "";
-        } catch { /* optional poster */ }
+    if (bt && applyBtolatHighlights(m, bt)) {
+      const primary = m.highlight;
+      highlightsByKey.set(key, { key, home: m.home, away: m.away, ...primary });
+      if (m.highlights?.goals) {
+        highlightsByKey.set(`${key}~goals`, { key, home: m.home, away: m.away, ...m.highlights.goals, clip: "goals" });
       }
-      m.highlight = {
-        videoUrl: bt.videoUrl,
-        title: bt.title,
-        source: bt.source,
-        embedId: bt.embedId,
-        thumbnail,
-      };
-      highlightsByKey.set(key, { key, home: m.home, away: m.away, ...m.highlight });
+      if (m.highlights?.full) {
+        highlightsByKey.set(`${key}~full`, { key, home: m.home, away: m.away, ...m.highlights.full, clip: "full" });
+      }
       highlightsMatched++;
       continue;
     }

@@ -1,9 +1,19 @@
 /* ============================================================================
- * btolat-highlights-lib.js — ملخص clips from btolat.com → vortex embed IDs
+ * btolat-highlights-lib.js — Arabic ملخص + أهداف from btolat.com → vortex embeds
+ *
+ * Online source: https://www.btolat.com publishes separate clips per match:
+ *   • "اهداف مباراة …" — goals-only (~3–4 min, approximate)
+ *   • "ملخص مباراة …" — full highlights (~10 min, approximate)
+ * Same vortex host as kawkabnews (nvtboo.vortexvisionworks.com).
  * ==========================================================================*/
-const BTOLAT_WC_LEAGUE = "https://www.btolat.com/league/1056/world-cup";
 const VORTEX_EMBED_BASE = "https://nvtboo.vortexvisionworks.com/embed";
 const UA = "Mozilla/5.0 (compatible; MorshLive/1.0)";
+
+/** League page + main videos feed (goals clips often only on /videos). */
+const BTOLAT_VIDEO_FEEDS = [
+  "https://www.btolat.com/league/1056/world-cup",
+  "https://www.btolat.com/videos",
+];
 
 async function fetchText(url) {
   const res = await fetch(url, {
@@ -15,15 +25,23 @@ async function fetchText(url) {
 }
 
 function parseBtolatVideos(html) {
-  return [...(html || "").matchAll(/href='\/video\/(\d+)'[\s\S]{0,500}?<h3>([^<]+)<\/h3>/g)].map((m) => ({
+  return [...(html || "").matchAll(/href=['"]\/video\/(\d+)['"][\s\S]{0,500}?<h3>([^<]+)<\/h3>/g)].map((m) => ({
     btolatId: m[1],
     title: m[2].trim(),
   }));
 }
 
+/** goals = أهداف only clip; full = ملخص highlights clip */
+function classifyBtolatTitle(title) {
+  const t = String(title || "").replace(/\s+/g, " ").trim();
+  if (/^(?:اهداف|أهداف)\s+مباراة/i.test(t)) return "goals";
+  if (/^ملخص\s+مباراة/i.test(t)) return "full";
+  return null;
+}
+
 function titleTeams(title) {
   const t = String(title || "").replace(/\s+/g, " ").trim();
-  const m = /ملخص مباراة\s+(.+?)\s*\(/.exec(t) || /ملخص مباراة\s+(.+?)\s+كأس/.exec(t);
+  const m = /(?:اهداف|أهداف|ملخص)\s+مباراة\s+(.+?)(?:\s*\(|\s+كأس)/i.exec(t);
   if (!m) return null;
   const chunk = m[1].replace(/[()]/g, " ").trim();
   const parts = chunk.split(/\s+و\s*/);
@@ -37,30 +55,81 @@ async function fetchBtolatEmbedId(btolatId) {
   return m ? m[1] : null;
 }
 
-/** Scrape btolat World Cup video list → map of pairKey → highlight meta. */
-async function scrapeBtolatHighlights(pairKeyFn) {
-  const html = await fetchText(BTOLAT_WC_LEAGUE);
-  const videos = parseBtolatVideos(html).filter((v) => /^ملخص مباراة/.test(v.title));
+function clipFromEmbed(embedId, meta) {
+  return {
+    videoUrl: `${VORTEX_EMBED_BASE}/${embedId}`,
+    title: meta.title,
+    source: "vortex",
+    embedId,
+    btolatId: meta.btolatId,
+    thumbnail: meta.thumbnail || "",
+    kind: meta.kind,
+  };
+}
+
+/**
+ * Scrape btolat World Cup feeds → map of pairKey → { goals?, full? }.
+ * Approximate durations are editorial on btolat; we classify by title only.
+ */
+async function scrapeBtolatHighlights(pairKeyFn, fetchMeta) {
+  const seenIds = new Set();
+  const candidates = [];
+  for (const feed of BTOLAT_VIDEO_FEEDS) {
+    const html = await fetchText(feed);
+    for (const v of parseBtolatVideos(html)) {
+      if (seenIds.has(v.btolatId)) continue;
+      const kind = classifyBtolatTitle(v.title);
+      if (!kind) continue;
+      seenIds.add(v.btolatId);
+      candidates.push({ ...v, kind });
+    }
+  }
+
   const out = new Map();
-  for (const v of videos) {
+  for (const v of candidates) {
     const teams = titleTeams(v.title);
     if (!teams) continue;
+    const key = pairKeyFn(teams.a, teams.b);
     const embedId = await fetchBtolatEmbedId(v.btolatId);
     if (!embedId) continue;
-    const key = pairKeyFn(teams.a, teams.b);
-    out.set(key, {
-      videoUrl: `${VORTEX_EMBED_BASE}/${embedId}`,
+
+    let thumbnail = "";
+    if (fetchMeta) {
+      try {
+        const meta = await fetchMeta(embedId);
+        thumbnail = meta?.thumbnail || "";
+      } catch { /* optional poster */ }
+    }
+
+    const clip = clipFromEmbed(embedId, {
       title: v.title,
-      source: "vortex",
-      embedId,
       btolatId: v.btolatId,
+      thumbnail,
+      kind: v.kind,
     });
+
+    if (!out.has(key)) out.set(key, {});
+    const bucket = out.get(key);
+    if (!bucket[v.kind]) bucket[v.kind] = clip;
   }
   return out;
 }
 
+/** Attach highlights.goals + highlights.full; keep highlight as full (or goals fallback). */
+function applyBtolatHighlights(match, bucket) {
+  if (!bucket || (!bucket.goals && !bucket.full)) return false;
+  match.highlights = {};
+  if (bucket.goals) match.highlights.goals = { ...bucket.goals };
+  if (bucket.full) match.highlights.full = { ...bucket.full };
+  match.highlight = match.highlights.full || match.highlights.goals;
+  return true;
+}
+
 module.exports = {
+  BTOLAT_VIDEO_FEEDS,
   scrapeBtolatHighlights,
+  applyBtolatHighlights,
   parseBtolatVideos,
+  classifyBtolatTitle,
   titleTeams,
 };

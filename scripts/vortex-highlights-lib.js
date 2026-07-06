@@ -29,6 +29,28 @@ function loadKnownEmbeds() {
   return _knownEmbeds;
 }
 
+function knownEmbedIds(match) {
+  const known = loadKnownEmbeds();
+  const hit = known[pairKey(match.home, match.away)];
+  if (!hit) return {};
+  if (typeof hit === "string") return { full: hit };
+  return { goals: hit.goals || null, full: hit.full || null };
+}
+
+async function findKnownVortexHighlights(match) {
+  const ids = knownEmbedIds(match);
+  const out = {};
+  if (ids.goals) {
+    const meta = await fetchVortexEmbedMeta(ids.goals);
+    if (meta) out.goals = meta;
+  }
+  if (ids.full) {
+    const meta = await fetchVortexEmbedMeta(ids.full);
+    if (meta) out.full = meta;
+  }
+  return out;
+}
+
 async function fetchText(url) {
   const res = await fetch(url, {
     headers: { "User-Agent": UA, Accept: "text/html,*/*" },
@@ -108,10 +130,8 @@ async function fetchVortexEmbedMeta(id) {
 }
 
 async function findKnownVortexHighlight(match) {
-  const known = loadKnownEmbeds();
-  const id = known[pairKey(match.home, match.away)];
-  if (!id) return null;
-  return fetchVortexEmbedMeta(id);
+  const known = await findKnownVortexHighlights(match);
+  return known.full || known.goals || null;
 }
 
 /** Find a vortexvisionworks ملخص embed for home vs away. */
@@ -142,6 +162,7 @@ module.exports = {
   TEAM_AR_ALIASES,
   findVortexHighlight,
   findKnownVortexHighlight,
+  findKnownVortexHighlights,
   titleMatchesMatch,
   fetchVortexEmbedMeta,
   extractEmbedIds,

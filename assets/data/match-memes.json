@@ -2364,15 +2364,7 @@
       "likes": 12616,
       "retweets": 1316,
       "engagement": 15248,
-      "postedAt": "2026-07-04T23:59:04.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2073552105047306240/img/rUvGSdpdhLKMe6Jd.jpg",
-          "url": "https://video.twimg.com/amplify_video/2073552105047306240/vid/avc1/600x400/aLPOD9WlBKd5FviP.mp4"
-        }
-      ]
+      "postedAt": "2026-07-04T23:59:04.000Z"
     }
   ],
   "brazil~norway": [
@@ -2385,15 +2377,7 @@
       "likes": 9146,
       "retweets": 711,
       "engagement": 10610,
-      "postedAt": "2026-07-05T22:40:18.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2073893938638073856/img/4NbfjKPmk1in_0CM.jpg",
-          "url": "https://video.twimg.com/amplify_video/2073893938638073856/vid/avc1/1080x720/JORgh5HXyZYTA_at.mp4"
-        }
-      ]
+      "postedAt": "2026-07-05T22:40:18.000Z"
     },
     {
       "type": "tweet",
@@ -2404,9 +2388,7 @@
       "likes": 1,
       "retweets": 0,
       "engagement": 1,
-      "postedAt": "2026-07-05T22:12:43.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/1944187419017859073/3KjUtvDF_normal.jpg",
-      "media": []
+      "postedAt": "2026-07-05T22:12:43.000Z"
     },
     {
       "type": "tweet",
@@ -2417,9 +2399,7 @@
       "likes": 0,
       "retweets": 0,
       "engagement": 0,
-      "postedAt": "2026-07-05T22:10:00.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/1944187419017859073/3KjUtvDF_normal.jpg",
-      "media": []
+      "postedAt": "2026-07-05T22:10:00.000Z"
     },
     {
       "type": "tweet",
@@ -2430,15 +2410,7 @@
       "likes": 240,
       "retweets": 27,
       "engagement": 294,
-      "postedAt": "2026-07-05T22:50:00.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
-      "media": [
-        {
-          "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2073901787510353920/img/R5Dz2H7xxsV3Mfq-.jpg",
-          "url": "https://video.twimg.com/amplify_video/2073901787510353920/vid/avc1/720x720/At-kW9y7qtHVEbQI.mp4"
-        }
-      ]
+      "postedAt": "2026-07-05T22:50:00.000Z"
     }
   ]
 }

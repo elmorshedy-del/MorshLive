@@ -11,8 +11,8 @@ const https = require("https");
 const { normalizeEspnEvent, parseKickoffMs } = require("./matches-lib");
 const { pairKey } = require("./commentators-lib");
 const { attachSummaries } = require("./highlights-lib");
-const { scrapeBtolatHighlights } = require("./btolat-highlights-lib");
-const { findKnownVortexHighlight, fetchVortexEmbedMeta } = require("./vortex-highlights-lib");
+const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-highlights-lib");
+const { findKnownVortexHighlight, findKnownVortexHighlights, fetchVortexEmbedMeta } = require("./vortex-highlights-lib");
 const { arabicTeam } = require("./highlights-lib");
 const { discoverLatestHighlightMemes, discoverAllMatchMemes } = require("./twitter-memes-lib");
 
@@ -86,12 +86,16 @@ async function main() {
   attachSummaries(matches);
 
   const arToEn = buildArToEn();
-  const btolatMap = await scrapeBtolatHighlights((a, b) => {
-    const home = arToEn(a) || a;
-    const away = arToEn(b) || b;
-    return pairKey(home, away);
-  });
-  console.log(`btolat highlights: ${btolatMap.size}`);
+  const btolatMap = await scrapeBtolatHighlights(
+    (a, b) => {
+      const home = arToEn(a) || a;
+      const away = arToEn(b) || b;
+      return pairKey(home, away);
+    },
+    (id) => fetchVortexEmbedMeta(id)
+  );
+  const dualCount = [...btolatMap.values()].filter((b) => b.goals && b.full).length;
+  console.log(`btolat highlights: ${btolatMap.size} matches (${dualCount} with goals+full)`);
 
   let knownVortex = {};
   try { knownVortex = JSON.parse(fs.readFileSync(KNOWN_VORTEX, "utf8")); } catch { /* */ }
@@ -104,16 +108,10 @@ async function main() {
   for (const m of matches) {
     const bt = btolatMap.get(m.key);
     const pinned = todayHighlights.get(m.key);
-    if (bt) {
-      let thumbnail = bt.thumbnail || "";
-      if (!thumbnail && bt.embedId) {
-        try {
-          const meta = await fetchVortexEmbedMeta(bt.embedId);
-          thumbnail = meta?.thumbnail || "";
-        } catch { /* optional */ }
-      }
-      m.highlight = { videoUrl: bt.videoUrl, title: bt.title, source: bt.source, embedId: bt.embedId, thumbnail };
-    } else if (pinned?.videoUrl) {
+    if (bt && applyBtolatHighlights(m, bt)) {
+      continue;
+    }
+    if (pinned?.videoUrl) {
       m.highlight = {
         videoUrl: pinned.videoUrl,
         title: pinned.title,
@@ -122,8 +120,13 @@ async function main() {
         thumbnail: pinned.thumbnail || "",
       };
     } else if (knownVortex[m.key]) {
-      const known = await findKnownVortexHighlight(m);
-      if (known) m.highlight = known;
+      const known = await findKnownVortexHighlights(m);
+      if (known.goals || known.full) {
+        m.highlights = {};
+        if (known.goals) m.highlights.goals = known.goals;
+        if (known.full) m.highlights.full = known.full;
+        m.highlight = m.highlights.full || m.highlights.goals;
+      }
     }
   }
 

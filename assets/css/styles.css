@@ -1708,6 +1708,9 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
   width: 26px; height: 26px; border-radius: 8px;
   display: grid; place-items: center; font-size: .72rem; font-weight: 800;
 }
+.tournament-section-icon--goals {
+  color: #ffb347; background: rgba(255,179,71,.12); border: 1px solid rgba(255,179,71,.28);
+}
 .tournament-section-icon--video {
   color: var(--accent); background: rgba(24,226,154,.12); border: 1px solid rgba(24,226,154,.25);
 }
@@ -1717,6 +1720,17 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
 .tournament-section-count {
   margin-inline-start: auto; font-size: .72rem; font-weight: 700; color: var(--muted);
   padding: 2px 8px; border-radius: 999px; background: var(--surface-2);
+}
+
+.tournament-highlights-duo {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.tournament-video-hint {
+  margin: -4px 0 10px; font-size: .72rem; color: var(--muted); font-weight: 600;
+}
+.tournament-video-block--goals .tournament-video-launch__play {
+  width: 56px; height: 56px; font-size: 1.1rem;
+  background: rgba(255,179,71,.92); box-shadow: 0 8px 28px rgba(0,0,0,.45);
 }
 
 /* Video — poster first, player only on tap (no cramped inline controls) */
