@@ -1652,11 +1652,17 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
   background: linear-gradient(165deg, rgba(255,255,255,.04), transparent), var(--surface);
   border: 1px solid rgba(255,255,255,.09);
   border-radius: 20px;
-  padding: 20px;
+  padding: 20px 18px;
   box-shadow: 0 24px 60px rgba(0,0,0,.35);
-  display: flex; flex-direction: column; gap: 20px;
+  display: flex; flex-direction: column; gap: 0;
   overflow: hidden;
 }
+.tournament-hero > * + * {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.tournament-hero > .tournament-scoreboard { margin-top: 0; padding-top: 0; border-top: 0; }
 
 .tournament-scoreboard__meta {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
@@ -1737,9 +1743,14 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
 .tournament-video-launch__fallback {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover;
 }
+.tournament-video-launch__poster[hidden] { display: none !important; }
 .tournament-video-launch__fallback {
-  background: linear-gradient(145deg, #101828, #05080f);
+  display: block;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 40%, rgba(24,226,154,.12), transparent 70%),
+    linear-gradient(145deg, #101828, #05080f);
 }
+.tournament-video-launch__fallback[hidden] { display: none !important; }
 .tournament-video-launch__shade {
   position: absolute; inset: 0;
   background: linear-gradient(180deg, rgba(0,0,0,.15), rgba(0,0,0,.55));
@@ -1765,44 +1776,99 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
 }
 .tournament-video-block--card .tournament-video-shell { padding: 10px; }
 
-/* Tweets — instant native cards */
-.tournament-memes-block--hero { margin-top: 4px; }
-.kz-tweet-rail {
-  display: flex; gap: 12px; overflow-x: auto; padding: 4px 2px 8px;
-  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+/* Fullscreen ملخص player — avoids cramped inline vortex controls on mobile */
+.tournament-video-modal {
+  position: fixed; inset: 0; z-index: 1200;
+  display: grid; place-items: center; padding: 16px;
 }
-.kz-tweet-stack { display: flex; flex-direction: column; gap: 10px; }
+.tournament-video-modal[hidden] { display: none !important; }
+.tournament-video-modal__backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,.82); backdrop-filter: blur(6px);
+}
+.tournament-video-modal__dialog {
+  position: relative; width: min(960px, 100%);
+  border-radius: 18px; overflow: hidden;
+  background: #0a0e17; border: 1px solid rgba(255,255,255,.12);
+  box-shadow: 0 28px 80px rgba(0,0,0,.55);
+}
+.tournament-video-modal__bar {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px; background: rgba(255,255,255,.04);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+.tournament-video-modal__title {
+  font-size: .82rem; font-weight: 700; color: var(--gold);
+  letter-spacing: .02em;
+}
+.tournament-video-modal__close {
+  flex-shrink: 0;
+  width: 36px; height: 36px; border: 0; border-radius: 10px;
+  font-size: 1.35rem; line-height: 1; color: #fff; cursor: pointer;
+  background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.14);
+}
+.tournament-video-modal__close:hover { background: rgba(255,255,255,.14); }
+.tournament-video-modal__frame {
+  position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000;
+}
+.tournament-video-modal__frame iframe {
+  position: absolute; inset: 0; width: 100%; height: 100%; border: 0;
+}
+body.tournament-video-modal-open { overflow: hidden; }
+
+/* Tweets — instant native cards */
+.tournament-memes-block--hero { margin-top: 0; }
+.kz-tweet-rail {
+  display: flex; gap: 12px; overflow-x: auto; padding: 2px 2px 10px;
+  scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.kz-tweet-rail::-webkit-scrollbar { display: none; }
+.kz-tweet-rail--hero {
+  flex-direction: column; overflow-x: visible; overflow-y: visible;
+  scroll-snap-type: none; padding: 0;
+}
+.kz-tweet-stack { display: flex; flex-direction: column; gap: 12px; }
 
 .kz-tweet {
-  flex: 0 0 min(300px, 84vw); scroll-snap-align: start;
+  flex: 0 0 min(320px, 88vw); scroll-snap-align: start;
   display: flex; flex-direction: column; gap: 10px;
-  padding: 14px; border-radius: 14px; text-decoration: none; color: inherit;
-  background: var(--surface-2); border: 1px solid rgba(255,255,255,.07);
-  transition: border-color .2s ease, background .2s ease;
+  padding: 14px 14px 12px; border-radius: 16px; text-decoration: none; color: inherit;
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+  transition: border-color .2s ease, background .2s ease, transform .2s ease;
 }
+.kz-tweet-rail--hero .kz-tweet,
 .kz-tweet-stack .kz-tweet { flex: none; width: 100%; }
 .kz-tweet:hover {
   border-color: rgba(29,161,242,.4); background: rgba(29,161,242,.06);
 }
-.kz-tweet__head { display: flex; align-items: center; gap: 10px; }
+.kz-tweet__head { display: flex; align-items: center; gap: 10px; min-height: 34px; }
 .kz-tweet__avatar {
-  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
   display: grid; place-items: center; font-weight: 800; font-size: .85rem;
   color: #fff; background: linear-gradient(135deg, #1da1f2, #0d8bd9);
 }
 .kz-tweet__avatar--img { object-fit: cover; display: block; background: var(--surface); }
 .kz-tweet__who { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.kz-tweet__who b { font-size: .82rem; color: var(--text); }
+.kz-tweet__who b {
+  font-size: .84rem; color: var(--text);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 .kz-tweet__who time { font-size: .7rem; color: var(--muted); }
-.kz-tweet__x { font-size: .9rem; color: var(--muted); opacity: .7; }
+.kz-tweet__x {
+  flex-shrink: 0; width: 28px; height: 28px; border-radius: 8px;
+  display: grid; place-items: center; font-size: .78rem; color: var(--muted);
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06);
+}
 .kz-tweet__text {
-  margin: 0; font-size: .84rem; line-height: 1.55; color: var(--text);
-  display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+  margin: 0; font-size: .86rem; line-height: 1.6; color: var(--text);
+  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
+  unicode-bidi: plaintext;
 }
 .kz-tweet__media {
   position: relative; border-radius: 12px; overflow: hidden;
-  border: 1px solid rgba(255,255,255,.08); background: #000;
-  aspect-ratio: 16 / 10;
+  border: 1px solid rgba(255,255,255,.08); background: #05080f;
+  aspect-ratio: 16 / 9;
 }
 .kz-tweet__media img {
   width: 100%; height: 100%; object-fit: cover; display: block;
@@ -1826,6 +1892,13 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
 }
 .kz-tweet__open {
   margin-inline-start: auto; font-size: .72rem; font-weight: 700; color: #1da1f2;
+}
+@media (min-width: 720px) {
+  .kz-tweet-rail--hero {
+    flex-direction: row; overflow-x: auto; padding: 2px 2px 10px;
+    scroll-snap-type: x mandatory;
+  }
+  .kz-tweet-rail--hero .kz-tweet { width: min(340px, 42vw); }
 }
 
 /* Grid cards — calmer, contained */
@@ -1861,7 +1934,7 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
 .tournament-empty { color: var(--muted); text-align: center; padding: 32px 0; }
 
 @media (min-width: 900px) {
-  .tournament-hero { padding: 24px 28px; gap: 24px; }
+  .tournament-hero { padding: 24px 28px; }
   .tournament-scoreboard__score { font-size: 1.75rem; }
 }
 

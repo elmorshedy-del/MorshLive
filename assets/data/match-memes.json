@@ -9,7 +9,15 @@
       "likes": 70201,
       "retweets": 5609,
       "engagement": 82288,
-      "postedAt": "2026-06-11T21:03:09.000Z"
+      "postedAt": "2026-06-11T21:03:09.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKj8dEdagAARbv5.jpg",
+          "url": "https://pbs.twimg.com/media/HKj8dEdagAARbv5.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -20,7 +28,9 @@
       "likes": 31742,
       "retweets": 4675,
       "engagement": 41469,
-      "postedAt": "2026-06-11T21:09:15.000Z"
+      "postedAt": "2026-06-11T21:09:15.000Z",
+      "avatarUrl": null,
+      "media": []
     },
     {
       "type": "tweet",
@@ -31,7 +41,15 @@
       "likes": 9999,
       "retweets": 976,
       "engagement": 12094,
-      "postedAt": "2026-06-11T21:19:19.000Z"
+      "postedAt": "2026-06-11T21:19:19.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2065181156216299520/img/zAS2hVJj6VUWn1bZ.jpg",
+          "url": "https://video.twimg.com/amplify_video/2065181156216299520/vid/avc1/480x726/OOOUgEiCGXTJT5O0.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -42,7 +60,15 @@
       "likes": 18723,
       "retweets": 303,
       "engagement": 19340,
-      "postedAt": "2026-06-11T21:20:00.000Z"
+      "postedAt": "2026-06-11T21:20:00.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKj__-lawAA_ahy.jpg",
+          "url": "https://pbs.twimg.com/media/HKj__-lawAA_ahy.jpg"
+        }
+      ]
     }
   ],
   "czechia~southkorea": [
@@ -55,7 +81,15 @@
       "likes": 18482,
       "retweets": 784,
       "engagement": 20196,
-      "postedAt": "2026-06-12T04:42:56.000Z"
+      "postedAt": "2026-06-12T04:42:56.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2065292580796215296/img/3rYtjK0sSuCASUWq.jpg",
+          "url": "https://video.twimg.com/amplify_video/2065292580796215296/vid/avc1/720x924/v01IfM_J221zIHtj.mp4"
+        }
+      ]
     }
   ],
   "bosniaherzegovina~canada": [
@@ -68,7 +102,15 @@
       "likes": 23396,
       "retweets": 751,
       "engagement": 24971,
-      "postedAt": "2026-06-12T21:19:31.000Z"
+      "postedAt": "2026-06-12T21:19:31.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKpJsVjbIAAA-Hk.jpg",
+          "url": "https://pbs.twimg.com/media/HKpJsVjbIAAA-Hk.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -79,7 +121,15 @@
       "likes": 13222,
       "retweets": 698,
       "engagement": 14808,
-      "postedAt": "2026-06-12T21:04:00.000Z"
+      "postedAt": "2026-06-12T21:04:00.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKpB3RHaAAAF8oa.jpg",
+          "url": "https://pbs.twimg.com/media/HKpB3RHaAAAF8oa.jpg"
+        }
+      ]
     }
   ],
   "paraguay~unitedstates": [
@@ -92,7 +142,15 @@
       "likes": 18942,
       "retweets": 1473,
       "engagement": 22048,
-      "postedAt": "2026-06-13T03:03:27.000Z"
+      "postedAt": "2026-06-13T03:03:27.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKqYfo5aEAA0TZp.jpg",
+          "url": "https://pbs.twimg.com/media/HKqYfo5aEAA0TZp.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -103,7 +161,15 @@
       "likes": 19264,
       "retweets": 991,
       "engagement": 21405,
-      "postedAt": "2026-06-13T03:10:20.000Z"
+      "postedAt": "2026-06-13T03:10:20.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2065632223282573312/img/b-jW7YCw9pnMa6wy.jpg",
+          "url": "https://video.twimg.com/amplify_video/2065632223282573312/vid/avc1/1280x720/o-EJquyuZLAvguoy.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -114,7 +180,15 @@
       "likes": 72,
       "retweets": 4,
       "engagement": 82,
-      "postedAt": "2026-06-13T03:02:41.000Z"
+      "postedAt": "2026-06-13T03:02:41.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKqYWhNa8AIfcmd.jpg",
+          "url": "https://pbs.twimg.com/media/HKqYWhNa8AIfcmd.jpg"
+        }
+      ]
     }
   ],
   "qatar~switzerland": [
@@ -127,7 +201,15 @@
       "likes": 19006,
       "retweets": 1059,
       "engagement": 21271,
-      "postedAt": "2026-06-13T21:12:19.000Z"
+      "postedAt": "2026-06-13T21:12:19.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKuRtlNaIAAceVa.jpg",
+          "url": "https://pbs.twimg.com/media/HKuRtlNaIAAceVa.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -138,7 +220,15 @@
       "likes": 476,
       "retweets": 23,
       "engagement": 522,
-      "postedAt": "2026-06-13T21:20:00.000Z"
+      "postedAt": "2026-06-13T21:20:00.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKuTF40acAAg1aS.jpg",
+          "url": "https://pbs.twimg.com/media/HKuTF40acAAg1aS.jpg"
+        }
+      ]
     }
   ],
   "brazil~morocco": [
@@ -151,7 +241,15 @@
       "likes": 41794,
       "retweets": 2069,
       "engagement": 46074,
-      "postedAt": "2026-06-14T00:25:50.000Z"
+      "postedAt": "2026-06-14T00:25:50.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKu8vSJbwAAJmm6.jpg",
+          "url": "https://pbs.twimg.com/media/HKu8vSJbwAAJmm6.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -162,7 +260,15 @@
       "likes": 0,
       "retweets": 0,
       "engagement": 0,
-      "postedAt": "2026-06-14T00:29:08.000Z"
+      "postedAt": "2026-06-14T00:29:08.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/1944187419017859073/3KjUtvDF_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2065954563237007360/img/-EYK0wDdJXrXvBvI.jpg",
+          "url": "https://video.twimg.com/amplify_video/2065954563237007360/vid/avc1/1080x1080/BstUcJOLINQJ-R4V.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -173,7 +279,15 @@
       "likes": 168,
       "retweets": 6,
       "engagement": 180,
-      "postedAt": "2026-06-14T00:05:48.000Z"
+      "postedAt": "2026-06-14T00:05:48.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKu5czYagAA8Q5b.jpg",
+          "url": "https://pbs.twimg.com/media/HKu5czYagAA8Q5b.jpg"
+        }
+      ]
     }
   ],
   "haiti~scotland": [
@@ -186,7 +300,15 @@
       "likes": 47918,
       "retweets": 3703,
       "engagement": 55718,
-      "postedAt": "2026-06-14T03:09:25.000Z"
+      "postedAt": "2026-06-14T03:09:25.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKvjeCGbIAA155h.jpg",
+          "url": "https://pbs.twimg.com/media/HKvjeCGbIAA155h.jpg"
+        }
+      ]
     }
   ],
   "curacao~germany": [
@@ -199,7 +321,15 @@
       "likes": 92264,
       "retweets": 5433,
       "engagement": 103562,
-      "postedAt": "2026-06-14T19:38:55.000Z"
+      "postedAt": "2026-06-14T19:38:55.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/ext_tw_video_thumb/1425496035993047040/pu/img/ZjwqQIkQGpR2iZ_k.jpg",
+          "url": "https://video.twimg.com/ext_tw_video/1425496035993047040/pu/vid/640x360/qwrKvFLyrs4i8anO.mp4?tag=12"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -210,7 +340,15 @@
       "likes": 80979,
       "retweets": 5482,
       "engagement": 92399,
-      "postedAt": "2026-06-14T19:14:16.000Z"
+      "postedAt": "2026-06-14T19:14:16.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKzARgXbYAA87OD.jpg",
+          "url": "https://pbs.twimg.com/media/HKzARgXbYAA87OD.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -221,7 +359,15 @@
       "likes": 13694,
       "retweets": 1017,
       "engagement": 15929,
-      "postedAt": "2026-06-14T19:26:04.000Z"
+      "postedAt": "2026-06-14T19:26:04.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKzBpHTb0AAySJT.jpg",
+          "url": "https://pbs.twimg.com/media/HKzBpHTb0AAySJT.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -232,7 +378,15 @@
       "likes": 49929,
       "retweets": 4394,
       "engagement": 59198,
-      "postedAt": "2026-06-14T19:25:05.000Z"
+      "postedAt": "2026-06-14T19:25:05.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066239914929446912/img/aJOfT8eohyaPvkgm.jpg",
+          "url": "https://video.twimg.com/amplify_video/2066239914929446912/vid/avc1/480x720/zVP0F4roYlVYJF30.mp4?tag=14"
+        }
+      ]
     }
   ],
   "japan~netherlands": [
@@ -245,7 +399,15 @@
       "likes": 85439,
       "retweets": 4689,
       "engagement": 95127,
-      "postedAt": "2026-06-14T22:04:22.000Z"
+      "postedAt": "2026-06-14T22:04:22.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066280259197296640/img/lRMPBpSqfxy72vfz.jpg",
+          "url": "https://video.twimg.com/amplify_video/2066280259197296640/vid/avc1/888x720/4eRcVIzmohOvh7q9.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -256,7 +418,15 @@
       "likes": 21325,
       "retweets": 1326,
       "engagement": 24135,
-      "postedAt": "2026-06-14T23:44:28.000Z"
+      "postedAt": "2026-06-14T23:44:28.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066305637378867200/img/5bzckTo3U6SH6uq2.jpg",
+          "url": "https://video.twimg.com/amplify_video/2066305637378867200/vid/avc1/858x880/_bss5WnD20Msj7Q9.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -267,7 +437,15 @@
       "likes": 13483,
       "retweets": 788,
       "engagement": 15141,
-      "postedAt": "2026-06-14T22:18:18.000Z"
+      "postedAt": "2026-06-14T22:18:18.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066283835957137408/img/ii8Nr7ROLhDmRa86.jpg",
+          "url": "https://video.twimg.com/amplify_video/2066283835957137408/vid/avc1/480x360/caDzcVr3m4GtFRHR.mp4"
+        }
+      ]
     }
   ],
   "ecuador~ivorycoast": [
@@ -280,7 +458,15 @@
       "likes": 9142,
       "retweets": 616,
       "engagement": 10416,
-      "postedAt": "2026-06-15T01:12:03.000Z"
+      "postedAt": "2026-06-15T01:12:03.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK0SJJ-bEAA7kql.jpg",
+          "url": "https://pbs.twimg.com/media/HK0SJJ-bEAA7kql.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -291,7 +477,15 @@
       "likes": 44,
       "retweets": 0,
       "engagement": 46,
-      "postedAt": "2026-06-15T01:01:59.000Z"
+      "postedAt": "2026-06-15T01:01:59.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK0P3ozbcAAY7rp.jpg",
+          "url": "https://pbs.twimg.com/media/HK0P3ozbcAAY7rp.jpg"
+        }
+      ]
     }
   ],
   "sweden~tunisia": [
@@ -304,7 +498,15 @@
       "likes": 15135,
       "retweets": 809,
       "engagement": 16806,
-      "postedAt": "2026-06-15T04:05:55.000Z"
+      "postedAt": "2026-06-15T04:05:55.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066371296599142400/img/cZI7N_rEBd6Poj95.jpg",
+          "url": "https://video.twimg.com/amplify_video/2066371296599142400/vid/avc1/888x916/bqlUonH81tGGkv0p.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -315,7 +517,15 @@
       "likes": 182,
       "retweets": 5,
       "engagement": 193,
-      "postedAt": "2026-06-15T04:05:00.000Z"
+      "postedAt": "2026-06-15T04:05:00.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK05tTJaYAA2LZv.jpg",
+          "url": "https://pbs.twimg.com/media/HK05tTJaYAA2LZv.jpg"
+        }
+      ]
     }
   ],
   "capeverde~spain": [
@@ -328,7 +538,15 @@
       "likes": 791,
       "retweets": 81,
       "engagement": 960,
-      "postedAt": "2026-06-15T18:30:05.000Z"
+      "postedAt": "2026-06-15T18:30:05.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066588870515556352/img/ysKuFHCaFq_APvGL.jpg",
+          "url": "https://video.twimg.com/amplify_video/2066588870515556352/vid/avc1/720x1280/JH6nBoWXxf42AToQ.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -339,7 +557,15 @@
       "likes": 175,
       "retweets": 9,
       "engagement": 196,
-      "postedAt": "2026-06-15T18:15:07.000Z"
+      "postedAt": "2026-06-15T18:15:07.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK38YNlbMAAWY3P.jpg",
+          "url": "https://pbs.twimg.com/media/HK38YNlbMAAWY3P.jpg"
+        }
+      ]
     }
   ],
   "belgium~egypt": [
@@ -352,7 +578,15 @@
       "likes": 14811,
       "retweets": 865,
       "engagement": 16646,
-      "postedAt": "2026-06-15T21:16:20.000Z"
+      "postedAt": "2026-06-15T21:16:20.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK4laY4akAAbO8D.jpg",
+          "url": "https://pbs.twimg.com/media/HK4laY4akAAbO8D.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -363,7 +597,15 @@
       "likes": 3910,
       "retweets": 131,
       "engagement": 4214,
-      "postedAt": "2026-06-15T21:41:57.000Z"
+      "postedAt": "2026-06-15T21:41:57.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK4kwLFa8AAMZrn.jpg",
+          "url": "https://pbs.twimg.com/media/HK4kwLFa8AAMZrn.jpg"
+        }
+      ]
     }
   ],
   "saudiarabia~uruguay": [
@@ -376,7 +618,15 @@
       "likes": 34262,
       "retweets": 2512,
       "engagement": 39426,
-      "postedAt": "2026-06-16T00:09:55.000Z"
+      "postedAt": "2026-06-16T00:09:55.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2059703316653727744/img/vxAGojlnXi8ZrYvL.jpg",
+          "url": "https://video.twimg.com/amplify_video/2059703316653727744/vid/avc1/1280x720/gyI7ACbvs8Z4mWBH.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -387,7 +637,15 @@
       "likes": 10310,
       "retweets": 646,
       "engagement": 11869,
-      "postedAt": "2026-06-16T00:01:29.000Z"
+      "postedAt": "2026-06-16T00:01:29.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK5Loc-aQAAwA-3.jpg",
+          "url": "https://pbs.twimg.com/media/HK5Loc-aQAAwA-3.jpg"
+        }
+      ]
     }
   ],
   "iran~newzealand": [
@@ -400,7 +658,15 @@
       "likes": 50394,
       "retweets": 3379,
       "engagement": 57550,
-      "postedAt": "2026-06-16T03:03:18.000Z"
+      "postedAt": "2026-06-16T03:03:18.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK51MgCb0AAFkZA.jpg",
+          "url": "https://pbs.twimg.com/media/HK51MgCb0AAFkZA.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -411,7 +677,15 @@
       "likes": 440,
       "retweets": 19,
       "engagement": 479,
-      "postedAt": "2026-06-16T03:10:00.000Z"
+      "postedAt": "2026-06-16T03:10:00.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK52dqIa0AAz_-I.jpg",
+          "url": "https://pbs.twimg.com/media/HK52dqIa0AAz_-I.jpg"
+        }
+      ]
     }
   ],
   "france~senegal": [
@@ -424,7 +698,15 @@
       "likes": 35732,
       "retweets": 1870,
       "engagement": 39569,
-      "postedAt": "2026-06-16T22:04:13.000Z"
+      "postedAt": "2026-06-16T22:04:13.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066994447750230016/img/yT4ZAg2xQPSYEiYP.jpg",
+          "url": "https://video.twimg.com/amplify_video/2066994447750230016/vid/avc1/720x858/l2HuZkiOgVjqas-I.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -435,7 +717,15 @@
       "likes": 21482,
       "retweets": 877,
       "engagement": 23347,
-      "postedAt": "2026-06-16T21:31:17.000Z"
+      "postedAt": "2026-06-16T21:31:17.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK9yA_UbkAEDH7h.jpg",
+          "url": "https://pbs.twimg.com/media/HK9yA_UbkAEDH7h.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -446,7 +736,15 @@
       "likes": 14927,
       "retweets": 810,
       "engagement": 16627,
-      "postedAt": "2026-06-16T21:12:09.000Z"
+      "postedAt": "2026-06-16T21:12:09.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/ext_tw_video_thumb/1904405595857297408/pu/img/Yca5vx0IW9LnUvaU.jpg",
+          "url": "https://video.twimg.com/ext_tw_video/1904405595857297408/pu/vid/avc1/930x720/pd5i450OalJkLxh4.mp4?tag=12"
+        }
+      ]
     }
   ],
   "iraq~norway": [
@@ -459,7 +757,15 @@
       "likes": 8093,
       "retweets": 303,
       "engagement": 8780,
-      "postedAt": "2026-06-17T00:01:35.000Z"
+      "postedAt": "2026-06-17T00:01:35.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK-VQU6aMAArgTJ.jpg",
+          "url": "https://pbs.twimg.com/media/HK-VQU6aMAArgTJ.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -470,7 +776,15 @@
       "likes": 113,
       "retweets": 9,
       "engagement": 131,
-      "postedAt": "2026-06-17T00:00:01.000Z"
+      "postedAt": "2026-06-17T00:00:01.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK-Us8YbkAAFMeI.jpg",
+          "url": "https://pbs.twimg.com/media/HK-Us8YbkAAFMeI.jpg"
+        }
+      ]
     }
   ],
   "algeria~argentina": [
@@ -483,7 +797,15 @@
       "likes": 22663,
       "retweets": 1146,
       "engagement": 25194,
-      "postedAt": "2026-06-17T04:10:17.000Z"
+      "postedAt": "2026-06-17T04:10:17.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK_OE4WbEAAkPuD.jpg",
+          "url": "https://pbs.twimg.com/media/HK_OE4WbEAAkPuD.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -494,7 +816,15 @@
       "likes": 15853,
       "retweets": 1112,
       "engagement": 18193,
-      "postedAt": "2026-06-17T03:32:48.000Z"
+      "postedAt": "2026-06-17T03:32:48.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/ext_tw_video_thumb/1552208441455812608/pu/img/UwfF6Reex8opOKhZ.jpg",
+          "url": "https://video.twimg.com/ext_tw_video/1552208441455812608/pu/vid/728x470/xpBaMrmAUpCcV48A.mp4?tag=12"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -505,7 +835,15 @@
       "likes": 11758,
       "retweets": 458,
       "engagement": 12742,
-      "postedAt": "2026-06-17T03:10:05.000Z"
+      "postedAt": "2026-06-17T03:10:05.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067081975618469888/img/-Hmn2mtrZEdAsEdA.jpg",
+          "url": "https://video.twimg.com/amplify_video/2067081975618469888/vid/avc1/720x960/9U_1cvDM_PulujzH.mp4"
+        }
+      ]
     }
   ],
   "austria~jordan": [
@@ -518,7 +856,15 @@
       "likes": 4660,
       "retweets": 170,
       "engagement": 5063,
-      "postedAt": "2026-06-17T06:11:30.000Z"
+      "postedAt": "2026-06-17T06:11:30.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK_p5A2acAA6oAD.jpg",
+          "url": "https://pbs.twimg.com/media/HK_p5A2acAA6oAD.jpg"
+        }
+      ]
     }
   ],
   "congodr~portugal": [
@@ -531,7 +877,15 @@
       "likes": 38566,
       "retweets": 3543,
       "engagement": 46279,
-      "postedAt": "2026-06-17T20:00:18.000Z"
+      "postedAt": "2026-06-17T20:00:18.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLCnNsqawAAOcO3.jpg",
+          "url": "https://pbs.twimg.com/media/HLCnNsqawAAOcO3.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -542,7 +896,15 @@
       "likes": 26493,
       "retweets": 3556,
       "engagement": 34270,
-      "postedAt": "2026-06-17T19:25:36.000Z"
+      "postedAt": "2026-06-17T19:25:36.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067327367782240256/img/--zIvBQvcnji9qU7.jpg",
+          "url": "https://video.twimg.com/amplify_video/2067327367782240256/vid/avc1/720x1280/sXJibfHWFxjed0Xa.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -553,7 +915,15 @@
       "likes": 19248,
       "retweets": 1954,
       "engagement": 23552,
-      "postedAt": "2026-06-17T19:41:14.000Z"
+      "postedAt": "2026-06-17T19:41:14.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLCjN3obkAAWMfm.png",
+          "url": "https://pbs.twimg.com/media/HLCjN3obkAAWMfm.png"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -564,7 +934,15 @@
       "likes": 109,
       "retweets": 8,
       "engagement": 127,
-      "postedAt": "2026-06-17T20:15:02.000Z"
+      "postedAt": "2026-06-17T20:15:02.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067338392334192640/img/q0_Kg3uXCfSKScvy.jpg",
+          "url": "https://video.twimg.com/amplify_video/2067338392334192640/vid/avc1/360x640/5Gc-B59szbs6p4nv.mp4?tag=14"
+        }
+      ]
     }
   ],
   "croatia~england": [
@@ -577,7 +955,15 @@
       "likes": 20396,
       "retweets": 976,
       "engagement": 22436,
-      "postedAt": "2026-06-17T22:05:04.000Z"
+      "postedAt": "2026-06-17T22:05:04.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLDEJOubYAANYZG.jpg",
+          "url": "https://pbs.twimg.com/media/HLDEJOubYAANYZG.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -588,7 +974,15 @@
       "likes": 275,
       "retweets": 14,
       "engagement": 305,
-      "postedAt": "2026-06-17T22:25:05.000Z"
+      "postedAt": "2026-06-17T22:25:05.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLDIjxiasAA9aA_.jpg",
+          "url": "https://pbs.twimg.com/media/HLDIjxiasAA9aA_.jpg"
+        }
+      ]
     }
   ],
   "ghana~panama": [
@@ -601,7 +995,15 @@
       "likes": 27399,
       "retweets": 2845,
       "engagement": 33241,
-      "postedAt": "2026-06-18T01:17:25.000Z"
+      "postedAt": "2026-06-18T01:17:25.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067416088498077696/img/85aFkjKONTOnLokZ.jpg",
+          "url": "https://video.twimg.com/amplify_video/2067416088498077696/vid/avc1/1080x1638/pnVJI8-N8LL5IeCo.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -612,7 +1014,9 @@
       "likes": 5858,
       "retweets": 247,
       "engagement": 6404,
-      "postedAt": "2026-06-18T01:37:52.000Z"
+      "postedAt": "2026-06-18T01:37:52.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": []
     }
   ],
   "colombia~uzbekistan": [
@@ -625,7 +1029,15 @@
       "likes": 8188,
       "retweets": 503,
       "engagement": 9264,
-      "postedAt": "2026-06-18T04:35:14.000Z"
+      "postedAt": "2026-06-18T04:35:14.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2008768610945159168/img/9pXGSDH890gu-V9o.jpg",
+          "url": "https://video.twimg.com/amplify_video/2008768610945159168/vid/avc1/752x416/7L4wYp19wbYwAqPx.mp4"
+        }
+      ]
     }
   ],
   "czechia~southafrica": [
@@ -638,7 +1050,15 @@
       "likes": 17197,
       "retweets": 626,
       "engagement": 18547,
-      "postedAt": "2026-06-18T18:01:11.000Z"
+      "postedAt": "2026-06-18T18:01:11.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLHV8UZa4AAHeIc.jpg",
+          "url": "https://pbs.twimg.com/media/HLHV8UZa4AAHeIc.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -649,7 +1069,15 @@
       "likes": 6575,
       "retweets": 239,
       "engagement": 7109,
-      "postedAt": "2026-06-18T18:19:26.000Z"
+      "postedAt": "2026-06-18T18:19:26.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067673278362402816/img/mmEScJVrqU5OVsKI.jpg",
+          "url": "https://video.twimg.com/amplify_video/2067673278362402816/vid/avc1/1228x720/nMQdHYFn-Lk7DHjM.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -660,7 +1088,15 @@
       "likes": 0,
       "retweets": 0,
       "engagement": 0,
-      "postedAt": "2026-06-18T18:07:50.000Z"
+      "postedAt": "2026-06-18T18:07:50.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/1944187419017859073/3KjUtvDF_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/ext_tw_video_thumb/1904112162378756096/pu/img/a3tqa1nmQ5njjKNn.jpg",
+          "url": "https://video.twimg.com/ext_tw_video/1904112162378756096/pu/vid/avc1/718x646/gT_U76HtQ9mgyhx9.mp4?tag=12"
+        }
+      ]
     }
   ],
   "bosniaherzegovina~switzerland": [
@@ -673,7 +1109,9 @@
       "likes": 5525,
       "retweets": 288,
       "engagement": 6145,
-      "postedAt": "2026-06-18T21:10:22.000Z"
+      "postedAt": "2026-06-18T21:10:22.000Z",
+      "avatarUrl": null,
+      "media": []
     }
   ],
   "canada~qatar": [
@@ -686,7 +1124,15 @@
       "likes": 44799,
       "retweets": 4304,
       "engagement": 54027,
-      "postedAt": "2026-06-19T00:05:26.000Z"
+      "postedAt": "2026-06-19T00:05:26.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067760476411539457/img/TQxqhNxwFcg5nMXV.jpg",
+          "url": "https://video.twimg.com/amplify_video/2067760476411539457/vid/avc1/1080x1404/uTBQU9LKGd1tYGvd.mp4"
+        }
+      ]
     }
   ],
   "mexico~southkorea": [
@@ -699,7 +1145,15 @@
       "likes": 75187,
       "retweets": 3991,
       "engagement": 84392,
-      "postedAt": "2026-06-19T03:11:33.000Z"
+      "postedAt": "2026-06-19T03:11:33.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLJSivCbEAAYSA9.jpg",
+          "url": "https://pbs.twimg.com/media/HLJSivCbEAAYSA9.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -710,7 +1164,15 @@
       "likes": 59704,
       "retweets": 2048,
       "engagement": 63946,
-      "postedAt": "2026-06-19T03:01:03.000Z"
+      "postedAt": "2026-06-19T03:01:03.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2065512967400042497/img/57zICyCcJhnIySQB.jpg",
+          "url": "https://video.twimg.com/amplify_video/2065512967400042497/vid/avc1/576x322/zyvFczXA2aXmQMGf.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -721,7 +1183,15 @@
       "likes": 133,
       "retweets": 10,
       "engagement": 155,
-      "postedAt": "2026-06-19T03:00:29.000Z"
+      "postedAt": "2026-06-19T03:00:29.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLJRZQxacAERm5Z.jpg",
+          "url": "https://pbs.twimg.com/media/HLJRZQxacAERm5Z.jpg"
+        }
+      ]
     }
   ],
   "australia~unitedstates": [
@@ -734,7 +1204,15 @@
       "likes": 6213,
       "retweets": 433,
       "engagement": 7152,
-      "postedAt": "2026-06-19T21:04:07.000Z"
+      "postedAt": "2026-06-19T21:04:07.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068077165556678656/img/qHOYlxYI-HjsIIlT.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068077165556678656/vid/avc1/1080x652/8IzbtYiNMFqMnpq6.mp4"
+        }
+      ]
     }
   ],
   "morocco~scotland": [
@@ -747,7 +1225,15 @@
       "likes": 4104,
       "retweets": 116,
       "engagement": 4362,
-      "postedAt": "2026-06-20T00:15:40.000Z"
+      "postedAt": "2026-06-20T00:15:40.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068125344125820928/img/6oKKURJhXHG6Y9pt.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068125344125820928/vid/avc1/1128x720/ImoEHr0yLA9DZLnN.mp4"
+        }
+      ]
     }
   ],
   "brazil~haiti": [
@@ -760,7 +1246,15 @@
       "likes": 15945,
       "retweets": 810,
       "engagement": 17689,
-      "postedAt": "2026-06-20T02:31:15.000Z"
+      "postedAt": "2026-06-20T02:31:15.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068158917587386368/img/J8sN_pGddq9-LOdS.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068158917587386368/vid/avc1/480x480/DqczEa8FHUioYLXD.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -771,7 +1265,9 @@
       "likes": 7434,
       "retweets": 433,
       "engagement": 8366,
-      "postedAt": "2026-06-20T03:09:20.000Z"
+      "postedAt": "2026-06-20T03:09:20.000Z",
+      "avatarUrl": null,
+      "media": []
     }
   ],
   "paraguay~turkiye": [
@@ -784,7 +1280,15 @@
       "likes": 234656,
       "retweets": 17123,
       "engagement": 272594,
-      "postedAt": "2026-06-20T05:05:50.000Z"
+      "postedAt": "2026-06-20T05:05:50.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLO0r-HbUAADuVS.jpg",
+          "url": "https://pbs.twimg.com/media/HLO0r-HbUAADuVS.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -795,7 +1299,15 @@
       "likes": 27072,
       "retweets": 1843,
       "engagement": 31207,
-      "postedAt": "2026-06-20T05:47:33.000Z"
+      "postedAt": "2026-06-20T05:47:33.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068208746162278400/img/T6avOm7d-tCcsi8H.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068208746162278400/vid/avc1/1280x720/FMEFgO_6w4JRBKiI.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -806,7 +1318,15 @@
       "likes": 15475,
       "retweets": 1337,
       "engagement": 18404,
-      "postedAt": "2026-06-20T06:45:00.000Z"
+      "postedAt": "2026-06-20T06:45:00.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068222545351114752/img/J_2bKe8-O1vu3Pkv.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068222545351114752/vid/avc1/750x600/sj7fPLDrnJi8gnd7.mp4?tag=14"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -817,7 +1337,9 @@
       "likes": 394,
       "retweets": 43,
       "engagement": 492,
-      "postedAt": "2026-06-20T05:07:26.000Z"
+      "postedAt": "2026-06-20T05:07:26.000Z",
+      "avatarUrl": null,
+      "media": []
     }
   ],
   "netherlands~sweden": [
@@ -830,7 +1352,15 @@
       "likes": 29798,
       "retweets": 2069,
       "engagement": 34078,
-      "postedAt": "2026-06-20T19:33:05.000Z"
+      "postedAt": "2026-06-20T19:33:05.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLR-LINacAAVFpx.jpg",
+          "url": "https://pbs.twimg.com/media/HLR-LINacAAVFpx.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -841,7 +1371,9 @@
       "likes": 18654,
       "retweets": 905,
       "engagement": 20703,
-      "postedAt": "2026-06-20T19:12:57.000Z"
+      "postedAt": "2026-06-20T19:12:57.000Z",
+      "avatarUrl": null,
+      "media": []
     }
   ],
   "germany~ivorycoast": [
@@ -854,7 +1386,15 @@
       "likes": 26512,
       "retweets": 2084,
       "engagement": 31148,
-      "postedAt": "2026-06-20T22:14:04.000Z"
+      "postedAt": "2026-06-20T22:14:04.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLSizxPbwAAz7x7.jpg",
+          "url": "https://pbs.twimg.com/media/HLSizxPbwAAz7x7.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -865,7 +1405,15 @@
       "likes": 26850,
       "retweets": 1336,
       "engagement": 29628,
-      "postedAt": "2026-06-20T22:03:30.000Z"
+      "postedAt": "2026-06-20T22:03:30.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLSgkNDasAEZ1X9.jpg",
+          "url": "https://pbs.twimg.com/media/HLSgkNDasAEZ1X9.jpg"
+        }
+      ]
     }
   ],
   "curacao~ecuador": [
@@ -878,7 +1426,15 @@
       "likes": 61588,
       "retweets": 4311,
       "engagement": 70493,
-      "postedAt": "2026-06-21T02:02:45.000Z"
+      "postedAt": "2026-06-21T02:02:45.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068514765459398656/img/Yiok1P1LsiDBUj59.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068514765459398656/vid/avc1/888x964/vLeZuqIXEDcHInlc.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -889,7 +1445,15 @@
       "likes": 4788,
       "retweets": 226,
       "engagement": 5276,
-      "postedAt": "2026-06-21T02:17:07.000Z"
+      "postedAt": "2026-06-21T02:17:07.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066837609226088448/img/iWPS_02SjxFnw4oZ.jpg",
+          "url": "https://video.twimg.com/amplify_video/2066837609226088448/vid/avc1/828x464/AoMphh7g4BAPCm4u.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -900,7 +1464,15 @@
       "likes": 6686,
       "retweets": 563,
       "engagement": 7853,
-      "postedAt": "2026-06-21T03:05:48.000Z"
+      "postedAt": "2026-06-21T03:05:48.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068530431642005504/img/agzR6iMVxVuzimSp.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068530431642005504/vid/avc1/540x360/Uz7EvnEYtsCaxs4E.mp4?tag=14"
+        }
+      ]
     }
   ],
   "japan~tunisia": [
@@ -913,7 +1485,15 @@
       "likes": 65421,
       "retweets": 4902,
       "engagement": 75719,
-      "postedAt": "2026-06-21T06:11:20.000Z"
+      "postedAt": "2026-06-21T06:11:20.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068577369452122112/img/hFk1Pwzkbttiohhv.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068577369452122112/vid/avc1/888x1190/NZWT0uGFAde9oWoV.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -924,7 +1504,15 @@
       "likes": 17715,
       "retweets": 744,
       "engagement": 19290,
-      "postedAt": "2026-06-21T07:27:23.000Z"
+      "postedAt": "2026-06-21T07:27:23.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLUZtb4aIAA8Xgm.jpg",
+          "url": "https://pbs.twimg.com/media/HLUZtb4aIAA8Xgm.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -935,7 +1523,9 @@
       "likes": 12705,
       "retweets": 969,
       "engagement": 14751,
-      "postedAt": "2026-06-21T06:43:53.000Z"
+      "postedAt": "2026-06-21T06:43:53.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": []
     }
   ],
   "saudiarabia~spain": [
@@ -948,7 +1538,15 @@
       "likes": 39990,
       "retweets": 2006,
       "engagement": 44198,
-      "postedAt": "2026-06-21T18:15:39.000Z"
+      "postedAt": "2026-06-21T18:15:39.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLW2ADoaYAAtgTc.jpg",
+          "url": "https://pbs.twimg.com/media/HLW2ADoaYAAtgTc.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -959,7 +1557,15 @@
       "likes": 16362,
       "retweets": 773,
       "engagement": 17977,
-      "postedAt": "2026-06-21T18:44:05.000Z"
+      "postedAt": "2026-06-21T18:44:05.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/ext_tw_video_thumb/2023067631104974848/pu/img/EEjPIOvBwOzzhIjF.jpg",
+          "url": "https://video.twimg.com/ext_tw_video/2023067631104974848/pu/vid/avc1/1440x1080/ewMDDKCTq1-_I8kW.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -970,7 +1576,15 @@
       "likes": 2396,
       "retweets": 218,
       "engagement": 2857,
-      "postedAt": "2026-06-21T18:30:11.000Z"
+      "postedAt": "2026-06-21T18:30:11.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068763050413633536/img/KwiRuGN56smW4EQy.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068763050413633536/vid/avc1/480x720/GJ1bSYfhCMFemQLa.mp4"
+        }
+      ]
     }
   ],
   "belgium~iran": [
@@ -983,7 +1597,15 @@
       "likes": 77295,
       "retweets": 6482,
       "engagement": 90685,
-      "postedAt": "2026-06-21T22:18:34.000Z"
+      "postedAt": "2026-06-21T22:18:34.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLXrgUWbsAA6Gse.jpg",
+          "url": "https://pbs.twimg.com/media/HLXrgUWbsAA6Gse.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -994,7 +1616,15 @@
       "likes": 77150,
       "retweets": 4641,
       "engagement": 86675,
-      "postedAt": "2026-06-21T21:29:23.000Z"
+      "postedAt": "2026-06-21T21:29:23.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068807663417438208/img/MGPNMVcuvzvYeG-m.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068807663417438208/vid/avc1/720x528/Lnz51trXcM09CaOL.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1005,7 +1635,15 @@
       "likes": 50909,
       "retweets": 3006,
       "engagement": 57073,
-      "postedAt": "2026-06-21T22:04:33.000Z"
+      "postedAt": "2026-06-21T22:04:33.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLXqZfPaIAASQ-K.jpg",
+          "url": "https://pbs.twimg.com/media/HLXqZfPaIAASQ-K.jpg"
+        }
+      ]
     }
   ],
   "capeverde~uruguay": [
@@ -1018,7 +1656,15 @@
       "likes": 6721,
       "retweets": 620,
       "engagement": 7990,
-      "postedAt": "2026-06-22T01:23:50.000Z"
+      "postedAt": "2026-06-22T01:23:50.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068852375637704704/img/M9wSg5maKjXHGTjo.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068852375637704704/vid/avc1/960x540/rr7iYiP6xtFWrBay.mp4"
+        }
+      ]
     }
   ],
   "egypt~newzealand": [
@@ -1031,7 +1677,15 @@
       "likes": 57020,
       "retweets": 5341,
       "engagement": 68312,
-      "postedAt": "2026-06-22T03:00:53.000Z"
+      "postedAt": "2026-06-22T03:00:53.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLYtLM3acAAxsx-.jpg",
+          "url": "https://pbs.twimg.com/media/HLYtLM3acAAxsx-.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1042,7 +1696,15 @@
       "likes": 23237,
       "retweets": 1130,
       "engagement": 25571,
-      "postedAt": "2026-06-22T03:12:20.000Z"
+      "postedAt": "2026-06-22T03:12:20.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLYw4ChbUAAKeMx.jpg",
+          "url": "https://pbs.twimg.com/media/HLYw4ChbUAAKeMx.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1053,7 +1715,15 @@
       "likes": 8537,
       "retweets": 597,
       "engagement": 9759,
-      "postedAt": "2026-06-22T03:01:03.000Z"
+      "postedAt": "2026-06-22T03:01:03.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLYsFsXaYAAcyYa.jpg",
+          "url": "https://pbs.twimg.com/media/HLYsFsXaYAAcyYa.jpg"
+        }
+      ]
     }
   ],
   "argentina~austria": [
@@ -1066,7 +1736,9 @@
       "likes": 131688,
       "retweets": 6004,
       "engagement": 143944,
-      "postedAt": "2026-06-22T19:25:48.000Z"
+      "postedAt": "2026-06-22T19:25:48.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": []
     },
     {
       "type": "tweet",
@@ -1077,7 +1749,15 @@
       "likes": 62753,
       "retweets": 4413,
       "engagement": 71771,
-      "postedAt": "2026-06-22T19:05:29.000Z"
+      "postedAt": "2026-06-22T19:05:29.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLcKk0bbcAA87VY.jpg",
+          "url": "https://pbs.twimg.com/media/HLcKk0bbcAA87VY.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1088,7 +1768,15 @@
       "likes": 48439,
       "retweets": 2068,
       "engagement": 52754,
-      "postedAt": "2026-06-22T19:00:17.000Z"
+      "postedAt": "2026-06-22T19:00:17.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2020187741183758336/img/r5Qji6E0h5B1MDtN.jpg",
+          "url": "https://video.twimg.com/amplify_video/2020187741183758336/vid/avc1/576x462/LTuzf2DTqu0yELGU.mp4?tag=14"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1099,7 +1787,15 @@
       "likes": 0,
       "retweets": 0,
       "engagement": 0,
-      "postedAt": "2026-06-22T19:25:03.000Z"
+      "postedAt": "2026-06-22T19:25:03.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/1944187419017859073/3KjUtvDF_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLcPhBtW0AAP0Wk.jpg",
+          "url": "https://pbs.twimg.com/media/HLcPhBtW0AAP0Wk.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1110,7 +1806,15 @@
       "likes": 42909,
       "retweets": 3105,
       "engagement": 49553,
-      "postedAt": "2026-06-22T19:00:01.000Z"
+      "postedAt": "2026-06-22T19:00:01.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069131012685361152/img/g0RV1guPyjvlqdP0.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069131012685361152/vid/avc1/600x400/O5PTlOMc-yAIidTd.mp4"
+        }
+      ]
     }
   ],
   "france~iraq": [
@@ -1123,7 +1827,15 @@
       "likes": 31125,
       "retweets": 1995,
       "engagement": 35268,
-      "postedAt": "2026-06-22T23:22:20.000Z"
+      "postedAt": "2026-06-22T23:22:20.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLdFlP0asAAhJ7h.jpg",
+          "url": "https://pbs.twimg.com/media/HLdFlP0asAAhJ7h.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1134,7 +1846,15 @@
       "likes": 25962,
       "retweets": 1394,
       "engagement": 29289,
-      "postedAt": "2026-06-23T00:26:13.000Z"
+      "postedAt": "2026-06-23T00:26:13.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLdUcFraQAAobyA.jpg",
+          "url": "https://pbs.twimg.com/media/HLdUcFraQAAobyA.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1145,7 +1865,15 @@
       "likes": 9153,
       "retweets": 399,
       "engagement": 10016,
-      "postedAt": "2026-06-22T23:49:25.000Z"
+      "postedAt": "2026-06-22T23:49:25.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069183591880208384/img/NVbMeU2wR3s4M8_B.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069183591880208384/vid/avc1/576x576/swHPeIQYY-iGuYlP.mp4"
+        }
+      ]
     }
   ],
   "algeria~jordan": [
@@ -1158,7 +1886,15 @@
       "likes": 9271,
       "retweets": 474,
       "engagement": 10274,
-      "postedAt": "2026-06-23T05:13:45.000Z"
+      "postedAt": "2026-06-23T05:13:45.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLeWNm8bYAAtxMQ.jpg",
+          "url": "https://pbs.twimg.com/media/HLeWNm8bYAAtxMQ.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1169,7 +1905,15 @@
       "likes": 2511,
       "retweets": 181,
       "engagement": 2895,
-      "postedAt": "2026-06-23T05:00:34.000Z"
+      "postedAt": "2026-06-23T05:00:34.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLeSaXkboAAAd-c.jpg",
+          "url": "https://pbs.twimg.com/media/HLeSaXkboAAAd-c.jpg"
+        }
+      ]
     }
   ],
   "portugal~uzbekistan": [
@@ -1182,7 +1926,15 @@
       "likes": 61830,
       "retweets": 4953,
       "engagement": 72050,
-      "postedAt": "2026-06-23T19:04:01.000Z"
+      "postedAt": "2026-06-23T19:04:01.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069496544219602944/img/JgpC_fKxZR02yFve.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069496544219602944/vid/avc1/888x1266/ulEtpZd6XPtlbg8B.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1193,7 +1945,15 @@
       "likes": 0,
       "retweets": 0,
       "engagement": 0,
-      "postedAt": "2026-06-23T19:20:56.000Z"
+      "postedAt": "2026-06-23T19:20:56.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/1944187419017859073/3KjUtvDF_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLhYKQ6WgAAWIOL.jpg",
+          "url": "https://pbs.twimg.com/media/HLhYKQ6WgAAWIOL.jpg"
+        }
+      ]
     }
   ],
   "england~ghana": [
@@ -1206,7 +1966,15 @@
       "likes": 30028,
       "retweets": 2901,
       "engagement": 36256,
-      "postedAt": "2026-06-23T22:15:39.000Z"
+      "postedAt": "2026-06-23T22:15:39.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069539059496849408/img/ve3qZduTBW2ix-_o.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069539059496849408/vid/avc1/888x920/3anWG-bUhvp4Xvsx.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1217,7 +1985,15 @@
       "likes": 14804,
       "retweets": 1166,
       "engagement": 17322,
-      "postedAt": "2026-06-23T22:05:17.000Z"
+      "postedAt": "2026-06-23T22:05:17.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069542137017044992/img/Pc1SBhc4CUITAHAR.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069542137017044992/vid/avc1/888x956/kOHfwWLG5GaUhfns.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1228,7 +2004,15 @@
       "likes": 6507,
       "retweets": 874,
       "engagement": 8435,
-      "postedAt": "2026-06-23T22:00:33.000Z"
+      "postedAt": "2026-06-23T22:00:33.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069534707952545792/img/54iX__DyZdvEC7Z7.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069534707952545792/vid/avc1/720x1280/xz1lBp3mS6DxJC4m.mp4"
+        }
+      ]
     }
   ],
   "croatia~panama": [
@@ -1241,7 +2025,15 @@
       "likes": 47875,
       "retweets": 2180,
       "engagement": 52503,
-      "postedAt": "2026-06-24T01:29:03.000Z"
+      "postedAt": "2026-06-24T01:29:03.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069593395421708288/img/OroF4cpi_KmYrU3Z.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069593395421708288/vid/avc1/888x904/rk9HjqVxmQwL4hLV.mp4"
+        }
+      ]
     }
   ],
   "colombia~congodr": [
@@ -1254,7 +2046,15 @@
       "likes": 17314,
       "retweets": 706,
       "engagement": 18798,
-      "postedAt": "2026-06-24T04:11:42.000Z"
+      "postedAt": "2026-06-24T04:11:42.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069633129569230848/img/8X4lBlUNutZ2E67B.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069633129569230848/vid/avc1/640x360/Ap05bZrhdATVcCsf.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1265,7 +2065,15 @@
       "likes": 15627,
       "retweets": 930,
       "engagement": 17573,
-      "postedAt": "2026-06-24T04:01:10.000Z"
+      "postedAt": "2026-06-24T04:01:10.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069631751941705728/img/rKtq85DOUEGZzFQq.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069631751941705728/vid/avc1/888x1576/aIeGwmiH446y562H.mp4"
+        }
+      ]
     }
   ],
   "bosniaherzegovina~qatar": [
@@ -1278,7 +2086,15 @@
       "likes": 15488,
       "retweets": 711,
       "engagement": 16975,
-      "postedAt": "2026-06-24T21:07:10.000Z"
+      "postedAt": "2026-06-24T21:07:10.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLm5rexbMAAcaBR.jpg",
+          "url": "https://pbs.twimg.com/media/HLm5rexbMAAcaBR.jpg"
+        }
+      ]
     }
   ],
   "haiti~morocco": [
@@ -1291,7 +2107,15 @@
       "likes": 8838,
       "retweets": 287,
       "engagement": 9432,
-      "postedAt": "2026-06-25T00:37:18.000Z"
+      "postedAt": "2026-06-25T00:37:18.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069942355353014272/img/32sMHpF7h7RshDnA.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069942355353014272/vid/avc1/828x490/NbwrqICJyhDlKK2P.mp4"
+        }
+      ]
     }
   ],
   "brazil~scotland": [
@@ -1304,7 +2128,15 @@
       "likes": 23706,
       "retweets": 873,
       "engagement": 25554,
-      "postedAt": "2026-06-25T01:10:56.000Z"
+      "postedAt": "2026-06-25T01:10:56.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069951172505669632/img/_7Y5K_zvA3kXkAXY.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069951172505669632/vid/avc1/888x1036/qiJiiEd-Y_9Lzgkg.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1315,7 +2147,15 @@
       "likes": 8838,
       "retweets": 287,
       "engagement": 9432,
-      "postedAt": "2026-06-25T00:37:18.000Z"
+      "postedAt": "2026-06-25T00:37:18.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069942355353014272/img/32sMHpF7h7RshDnA.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069942355353014272/vid/avc1/828x490/NbwrqICJyhDlKK2P.mp4"
+        }
+      ]
     }
   ],
   "southafrica~southkorea": [
@@ -1328,7 +2168,15 @@
       "likes": 40698,
       "retweets": 4952,
       "engagement": 51306,
-      "postedAt": "2026-06-25T03:34:54.000Z"
+      "postedAt": "2026-06-25T03:34:54.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069987089090064384/img/_wRC9R64hwxe8xVL.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069987089090064384/vid/avc1/888x1466/EMH4bl6dUdLdblvw.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1339,7 +2187,15 @@
       "likes": 37122,
       "retweets": 2265,
       "engagement": 41838,
-      "postedAt": "2026-06-25T03:11:39.000Z"
+      "postedAt": "2026-06-25T03:11:39.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLoNSNXa0AEP-f2.jpg",
+          "url": "https://pbs.twimg.com/media/HLoNSNXa0AEP-f2.jpg"
+        }
+      ]
     }
   ],
   "ecuador~germany": [
@@ -1352,7 +2208,15 @@
       "likes": 15507,
       "retweets": 1273,
       "engagement": 18136,
-      "postedAt": "2026-06-25T22:48:10.000Z"
+      "postedAt": "2026-06-25T22:48:10.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2070277725043249152/img/yFztEpR1LhRWDkJx.jpg",
+          "url": "https://video.twimg.com/amplify_video/2070277725043249152/vid/avc1/888x756/LrQ0X-XFI9gmmtcV.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1363,7 +2227,15 @@
       "likes": 0,
       "retweets": 0,
       "engagement": 0,
-      "postedAt": "2026-06-25T22:07:37.000Z"
+      "postedAt": "2026-06-25T22:07:37.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/1944187419017859073/3KjUtvDF_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLsRfx3WIAAC0Xg.jpg",
+          "url": "https://pbs.twimg.com/media/HLsRfx3WIAAC0Xg.jpg"
+        }
+      ]
     }
   ],
   "australia~paraguay": [
@@ -1376,7 +2248,15 @@
       "likes": 19448,
       "retweets": 1195,
       "engagement": 21954,
-      "postedAt": "2026-06-26T04:39:41.000Z"
+      "postedAt": "2026-06-26T04:39:41.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLtp_k1aIAAit8k.jpg",
+          "url": "https://pbs.twimg.com/media/HLtp_k1aIAAit8k.jpg"
+        }
+      ]
     }
   ],
   "turkiye~unitedstates": [
@@ -1389,7 +2269,15 @@
       "likes": 98600,
       "retweets": 3544,
       "engagement": 105965,
-      "postedAt": "2026-06-26T04:02:03.000Z"
+      "postedAt": "2026-06-26T04:02:03.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2070341509510287361/img/PSY3WLEWzHH_YlzF.jpg",
+          "url": "https://video.twimg.com/amplify_video/2070341509510287361/vid/avc1/1272x720/tF0u1nSfICsGG383.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1400,7 +2288,15 @@
       "likes": 36512,
       "retweets": 1261,
       "engagement": 39147,
-      "postedAt": "2026-06-26T05:16:47.000Z"
+      "postedAt": "2026-06-26T05:16:47.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2070375487097151488/img/aAN8i5jBxXGu5G6c.jpg",
+          "url": "https://video.twimg.com/amplify_video/2070375487097151488/vid/avc1/360x360/tooCN-HJji2iw7aj.mp4"
+        }
+      ]
     }
   ],
   "france~norway": [
@@ -1413,7 +2309,15 @@
       "likes": 67008,
       "retweets": 5029,
       "engagement": 77379,
-      "postedAt": "2026-06-26T22:20:34.000Z"
+      "postedAt": "2026-06-26T22:20:34.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLxd_d_bMAA7jTA.jpg",
+          "url": "https://pbs.twimg.com/media/HLxd_d_bMAA7jTA.jpg"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1424,7 +2328,15 @@
       "likes": 26017,
       "retweets": 2224,
       "engagement": 30684,
-      "postedAt": "2026-06-26T21:17:52.000Z"
+      "postedAt": "2026-06-26T21:17:52.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2070617387054055424/img/eQrCQgTdoanddLd_.jpg",
+          "url": "https://video.twimg.com/amplify_video/2070617387054055424/vid/avc1/1078x1158/wtjEntiqanYIxcNi.mp4"
+        }
+      ]
     }
   ],
   "iraq~senegal": [
@@ -1437,7 +2349,9 @@
       "likes": 14942,
       "retweets": 941,
       "engagement": 16968,
-      "postedAt": "2026-06-26T21:39:32.000Z"
+      "postedAt": "2026-06-26T21:39:32.000Z",
+      "avatarUrl": null,
+      "media": []
     }
   ],
   "france~paraguay": [
@@ -1450,7 +2364,15 @@
       "likes": 12616,
       "retweets": 1316,
       "engagement": 15248,
-      "postedAt": "2026-07-04T23:59:04.000Z"
+      "postedAt": "2026-07-04T23:59:04.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2073552105047306240/img/rUvGSdpdhLKMe6Jd.jpg",
+          "url": "https://video.twimg.com/amplify_video/2073552105047306240/vid/avc1/600x400/aLPOD9WlBKd5FviP.mp4"
+        }
+      ]
     }
   ],
   "brazil~norway": [
@@ -1463,7 +2385,15 @@
       "likes": 9146,
       "retweets": 711,
       "engagement": 10610,
-      "postedAt": "2026-07-05T22:40:18.000Z"
+      "postedAt": "2026-07-05T22:40:18.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2073893938638073856/img/4NbfjKPmk1in_0CM.jpg",
+          "url": "https://video.twimg.com/amplify_video/2073893938638073856/vid/avc1/1080x720/JORgh5HXyZYTA_at.mp4"
+        }
+      ]
     },
     {
       "type": "tweet",
@@ -1474,7 +2404,9 @@
       "likes": 1,
       "retweets": 0,
       "engagement": 1,
-      "postedAt": "2026-07-05T22:12:43.000Z"
+      "postedAt": "2026-07-05T22:12:43.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/1944187419017859073/3KjUtvDF_normal.jpg",
+      "media": []
     },
     {
       "type": "tweet",
@@ -1485,7 +2417,9 @@
       "likes": 0,
       "retweets": 0,
       "engagement": 0,
-      "postedAt": "2026-07-05T22:10:00.000Z"
+      "postedAt": "2026-07-05T22:10:00.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/1944187419017859073/3KjUtvDF_normal.jpg",
+      "media": []
     },
     {
       "type": "tweet",
@@ -1496,7 +2430,15 @@
       "likes": 240,
       "retweets": 27,
       "engagement": 294,
-      "postedAt": "2026-07-05T22:50:00.000Z"
+      "postedAt": "2026-07-05T22:50:00.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2073901787510353920/img/R5Dz2H7xxsV3Mfq-.jpg",
+          "url": "https://video.twimg.com/amplify_video/2073901787510353920/vid/avc1/720x720/At-kW9y7qtHVEbQI.mp4"
+        }
+      ]
     }
   ]
 }

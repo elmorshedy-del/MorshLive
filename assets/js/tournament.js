@@ -14,6 +14,11 @@
     ));
   }
 
+  /** URLs in JSON may contain &amp; — decode for src/href attributes only. */
+  function assetUrl(url) {
+    return escapeHtml(String(url || "").replace(/&amp;/g, "&").trim());
+  }
+
   function formatDate(kickoffUtc) {
     if (!kickoffUtc) return "";
     try {
@@ -57,13 +62,17 @@
     }
   }
 
+  function memesNeedMedia(memes) {
+    return (memes || []).some((m) => m.type === "tweet" && m.tweetId && !(m.media && m.media.length));
+  }
+
   function memeMediaHtml(meme) {
     const item = (meme.media || [])[0];
     if (!item || !item.previewUrl) return "";
     const isVideo = item.type === "video" || item.type === "animated_gif";
     return `
       <div class="kz-tweet__media${isVideo ? " kz-tweet__media--video" : ""}">
-        <img src="${escapeHtml(item.previewUrl)}" alt="" loading="lazy" />
+        <img src="${assetUrl(item.previewUrl)}" alt="" loading="lazy" />
         ${isVideo ? `<span class="kz-tweet__play" aria-hidden="true">▶</span>` : ""}
       </div>`;
   }
@@ -73,7 +82,7 @@
     const likes = meme.likes != null ? meme.likes : 0;
     const rts = meme.retweets != null ? meme.retweets : 0;
     const avatar = meme.avatarUrl
-      ? `<img class="kz-tweet__avatar kz-tweet__avatar--img" src="${escapeHtml(meme.avatarUrl)}" alt="" loading="lazy" />`
+      ? `<img class="kz-tweet__avatar kz-tweet__avatar--img" src="${assetUrl(meme.avatarUrl)}" alt="" loading="lazy" />`
       : `<span class="kz-tweet__avatar" aria-hidden="true">${authorInitial(meme.author)}</span>`;
     return `
       <a class="kz-tweet" href="${escapeHtml(meme.url)}" target="_blank" rel="noopener noreferrer">
@@ -85,7 +94,7 @@
           </div>
           <span class="kz-tweet__x" aria-hidden="true">𝕏</span>
         </div>
-        <p class="kz-tweet__text">${tweetText(meme.text)}</p>
+        <p class="kz-tweet__text" dir="auto">${tweetText(meme.text)}</p>
         ${memeMediaHtml(meme)}
         <div class="kz-tweet__foot">
           <span class="kz-tweet__stat" title="${t("tournament.tweetLikes")}">
@@ -123,7 +132,9 @@
     const embed = escapeHtml(highlight.videoUrl);
     const launch = `
       <button type="button" class="tournament-video-launch" data-embed="${embed}" aria-label="${escapeHtml(t("tournament.highlightTitle"))}">
-        ${poster ? `<img class="tournament-video-launch__poster" src="${escapeHtml(poster)}" alt="" loading="lazy" />` : `<span class="tournament-video-launch__fallback"></span>`}
+        ${poster
+          ? `<img class="tournament-video-launch__poster" src="${assetUrl(poster)}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling&&(this.nextElementSibling.hidden=false)" /><span class="tournament-video-launch__fallback" hidden></span>`
+          : `<span class="tournament-video-launch__fallback"></span>`}
         <span class="tournament-video-launch__shade"></span>
         <span class="tournament-video-launch__play" aria-hidden="true">▶</span>
         ${title ? `<span class="tournament-video-launch__label">${title}</span>` : ""}
@@ -150,7 +161,7 @@
       return `<p class="tournament-nomemes">${t("tournament.noMemes")}</p>`;
     }
     const list = mode === "card" ? memes.slice(0, 3) : memes;
-    const gridClass = mode === "hero" ? "kz-tweet-rail" : "kz-tweet-stack";
+    const gridClass = mode === "hero" ? "kz-tweet-rail kz-tweet-rail--hero" : "kz-tweet-stack";
     return `
       <div class="tournament-memes-block tournament-memes-block--${mode}">
         ${sectionHead("𝕏", "x", t("tournament.memesTitle"), memes.length)}
@@ -190,16 +201,17 @@
       </article>`;
   }
 
-  async function fetchMemesForMatch(m) {
+  async function fetchMemesForMatch(m, force) {
     const local = sortedMemes((archive.memes && archive.memes[m.key]) || []);
     if (!m.home || !m.away) return local;
+    if (!force && local.length && !memesNeedMedia(local)) return local;
     const q = new URLSearchParams({
       home: m.home,
       away: m.away,
       kickoff: m.kickoffUtc || "",
     });
     try {
-      const res = await fetch(`/api/match-memes?${q}`);
+      const res = await fetch(`/api/match-memes?${q}`, { cache: "no-store" });
       if (!res.ok) return local;
       const data = await res.json();
       if (data.memes?.length) {
@@ -250,7 +262,7 @@
     const hasMemes = memes.length > 0;
     const hasHighlight = !!(m.highlight && m.highlight.videoUrl);
     return `
-      <article class="match-card tournament-match-card" data-stage="${escapeHtml(m.stage)}">
+      <article class="match-card tournament-match-card" data-stage="${escapeHtml(m.stage)}" data-match-key="${escapeHtml(m.key)}">
         <div class="match-top">
           <span class="league-tag">${escapeHtml(stageLabel(m.stage))}</span>
           <span class="status-pill status-ended">${formatDate(m.kickoffUtc)}</span>
@@ -277,26 +289,89 @@
       </article>`;
   }
 
+  function ensureVideoModal() {
+    let el = document.getElementById("tournament-video-modal");
+    if (el) return el;
+    el = document.createElement("div");
+    el.id = "tournament-video-modal";
+    el.className = "tournament-video-modal";
+    el.hidden = true;
+    el.innerHTML = `
+      <div class="tournament-video-modal__backdrop" data-close tabindex="-1"></div>
+      <div class="tournament-video-modal__dialog" role="dialog" aria-modal="true" aria-label="${escapeHtml(t("tournament.highlightTitle"))}">
+        <div class="tournament-video-modal__bar">
+          <span class="tournament-video-modal__title">${escapeHtml(t("tournament.highlightTitle"))}</span>
+          <button type="button" class="tournament-video-modal__close" data-close aria-label="Close">×</button>
+        </div>
+        <div class="tournament-video-modal__frame"></div>
+      </div>`;
+    document.body.appendChild(el);
+    const close = () => closeVideoModal();
+    el.querySelectorAll("[data-close]").forEach((node) => node.addEventListener("click", close));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !el.hidden) close();
+    });
+    return el;
+  }
+
+  function closeVideoModal() {
+    const el = document.getElementById("tournament-video-modal");
+    if (!el) return;
+    el.hidden = true;
+    const frame = el.querySelector(".tournament-video-modal__frame");
+    if (frame) frame.innerHTML = "";
+    document.body.classList.remove("tournament-video-modal-open");
+  }
+
+  function openVideoModal(embed) {
+    if (!embed) return;
+    const modal = ensureVideoModal();
+    const frame = modal.querySelector(".tournament-video-modal__frame");
+    frame.innerHTML = `
+      <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
+        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
+        sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`;
+    modal.hidden = false;
+    document.body.classList.add("tournament-video-modal-open");
+  }
+
   function bindVideoLaunch(root) {
     if (!root) return;
     root.querySelectorAll(".tournament-video-launch").forEach((btn) => {
       btn.addEventListener("click", () => {
-        const stage = btn.closest(".tournament-video-stage");
-        const embed = btn.dataset.embed || stage?.dataset.embed;
-        if (!stage || !embed || stage.dataset.loaded === "1") return;
-        stage.dataset.loaded = "1";
-        stage.innerHTML = `
-          <div class="tournament-video-frame tournament-video-frame--active">
-            <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
-              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
-              sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
-          </div>`;
+        const embed = btn.dataset.embed || btn.closest(".tournament-video-stage")?.dataset.embed;
+        openVideoModal(embed);
+      });
+    });
+  }
+
+  async function refreshMatchPanel(card) {
+    const key = card?.dataset?.matchKey;
+    if (!key || !archive) return;
+    const m = archive.matches.find((x) => x.key === key);
+    if (!m) return;
+    await fetchMemesForMatch(m, true);
+    const body = card.querySelector(".match-panel-body");
+    if (body) {
+      body.innerHTML = matchDetailHtml(m);
+      bindVideoLaunch(body);
+    }
+  }
+
+  function bindPanelMemes(root) {
+    if (!root) return;
+    root.querySelectorAll(".tournament-panel").forEach((panel) => {
+      panel.addEventListener("toggle", () => {
+        if (!panel.open) return;
+        const card = panel.closest(".tournament-match-card");
+        refreshMatchPanel(card).catch(() => { /* static memes */ });
       });
     });
   }
 
   function bindLazyMedia(root) {
     bindVideoLaunch(root);
+    bindPanelMemes(root);
   }
 
   function renderTabs() {
@@ -346,23 +421,12 @@
 
   async function enrichMemesFromApi() {
     if (!archive) return;
-    const needs = archive.matches.filter(
-      (m) => m.highlight?.videoUrl && !(archive.memes[m.key] || []).length
-    );
+    const needs = archive.matches.filter((m) => {
+      const memes = archive.memes[m.key] || [];
+      return memes.length ? memesNeedMedia(memes) : !!(m.highlight?.videoUrl);
+    });
     if (!needs.length) return;
-    await Promise.all(needs.map(async (m) => {
-      const q = new URLSearchParams({
-        home: m.home,
-        away: m.away,
-        kickoff: m.kickoffUtc || "",
-      });
-      try {
-        const res = await fetch(`/api/match-memes?${q}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.memes?.length) archive.memes[m.key] = data.memes;
-      } catch { /* worker API */ }
-    }));
+    await Promise.all(needs.map((m) => fetchMemesForMatch(m, true)));
   }
 
   async function loadArchive() {

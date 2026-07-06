@@ -2471,10 +2471,45 @@ function extractTweetMedia(tweet, includes) {
 function mediaFromSyndication(items) {
   return (items || []).map((m) => {
     const previewUrl = m.media_url_https || m.media_url || m.preview_image_url || "";
-    if (!previewUrl) return null;
     const type = m.type === "video" ? "video" : m.type === "animated_gif" ? "animated_gif" : "photo";
-    return { type, previewUrl, url: previewUrl };
+    let url = previewUrl;
+    if ((type === "video" || type === "animated_gif") && m.video_info?.variants) {
+      const mp4 = m.video_info.variants
+        .filter((v) => v.content_type === "video/mp4" && v.url)
+        .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
+      url = mp4[0]?.url || previewUrl;
+    }
+    if (!previewUrl && !url) return null;
+    return { type, previewUrl: previewUrl || url, url: url || previewUrl };
   }).filter(Boolean);
+}
+
+const SYNDICATION_TWEET_BASE = "https://cdn.syndication.twimg.com/tweet-result";
+
+async function fetchSyndicationTweet(tweetId) {
+  if (!tweetId) return null;
+  const params = new URLSearchParams({ id: String(tweetId), lang: "en", token: "0" });
+  try {
+    const res = await fetch(`${SYNDICATION_TWEET_BASE}?${params}`, {
+      headers: { "User-Agent": "Mozilla/5.0 (compatible; KoraZero/1.0)" },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+}
+
+function memeFromSyndicationTweet(meme, synd) {
+  if (!synd) return meme;
+  const media = mediaFromSyndication(synd.mediaDetails || synd.entities?.media || []);
+  const user = synd.user || {};
+  const avatarUrl = user.profile_image_url_https || user.profile_image_url || meme.avatarUrl || null;
+  return {
+    ...meme,
+    avatarUrl: avatarUrl || meme.avatarUrl,
+    media: media.length ? media : (meme.media || []),
+  };
 }
 
 function memeToEntry(tweet, author, includes) {
@@ -2526,23 +2561,41 @@ async function fetchTweetsByIds(bearer, ids) {
 }
 
 async function enrichMemesMedia(memes, bearer) {
-  if (!bearer || !memes?.length) return memes;
+  if (!memes?.length) return memes;
   const need = memes.filter((m) => m.tweetId && !(m.media && m.media.length));
   if (!need.length) return memes;
-  const hits = await fetchTweetsByIds(bearer, need.map((m) => m.tweetId));
-  return memes.map((m) => {
-    const hit = hits.get(String(m.tweetId));
-    if (!hit) return m;
-    const fresh = memeToEntry({ ...hit.tweet, text: hit.tweet.text || m.text }, m.author, hit.includes);
-    return {
-      ...m,
-      text: fresh.text || m.text,
-      likes: fresh.likes ?? m.likes,
-      retweets: fresh.retweets ?? m.retweets,
-      engagement: fresh.engagement ?? m.engagement,
-      avatarUrl: fresh.avatarUrl || m.avatarUrl,
-      media: fresh.media?.length ? fresh.media : (m.media || []),
-    };
+
+  let out = memes;
+  if (bearer) {
+    const hits = await fetchTweetsByIds(bearer, need.map((m) => m.tweetId));
+    out = memes.map((m) => {
+      const hit = hits.get(String(m.tweetId));
+      if (!hit) return m;
+      const fresh = memeToEntry({ ...hit.tweet, text: hit.tweet.text || m.text }, m.author, hit.includes);
+      return {
+        ...m,
+        text: fresh.text || m.text,
+        likes: fresh.likes ?? m.likes,
+        retweets: fresh.retweets ?? m.retweets,
+        engagement: fresh.engagement ?? m.engagement,
+        avatarUrl: fresh.avatarUrl || m.avatarUrl,
+        media: fresh.media?.length ? fresh.media : (m.media || []),
+      };
+    });
+  }
+
+  const stillNeed = out.filter((m) => m.tweetId && !(m.media && m.media.length));
+  if (!stillNeed.length) return out;
+
+  const syndHits = await Promise.all(
+    stillNeed.map(async (m) => ({ id: String(m.tweetId), synd: await fetchSyndicationTweet(m.tweetId) }))
+  );
+  const syndMap = new Map(syndHits.filter((h) => h.synd).map((h) => [h.id, h.synd]));
+  if (!syndMap.size) return out;
+
+  return out.map((m) => {
+    const synd = syndMap.get(String(m.tweetId));
+    return synd ? memeFromSyndicationTweet(m, synd) : m;
   });
 }
 
@@ -2684,7 +2737,7 @@ async function proxyMatchMemesApi(request, env) {
     } catch { /* static / syndication */ }
   }
 
-  if (bearer && memes.length) {
+  if (memes.length) {
     try {
       memes = await enrichMemesMedia(memes, bearer);
       if (source === "archive" || source === "pinned") source = "archive+media";
