@@ -1,7 +1,7 @@
 /* tournament.js — World Cup 2026 archive: stage tabs, ملخص, viral X memes */
 (function () {
   const t = (k, vars) => (window.I18N && window.I18N.t(k, vars)) || k;
-  const teamLabel = (n) => (window.TeamNames && window.TeamNames.label(n)) || n;
+  const teamLabel = (n) => (window.TeamNames && window.TeamNames.localize(n)) || n;
 
   let archive = null;
   let activeStage = "all";
