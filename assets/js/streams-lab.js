@@ -4,8 +4,6 @@
  */
 (function () {
   const iframe = document.getElementById("player");
-  const video = document.getElementById("lab-video");
-  const clapprEl = document.getElementById("lab-clappr");
   const grid = document.getElementById("channel-grid");
   const groupTabs = document.getElementById("group-tabs");
   const nowLabel = document.getElementById("now-label");
@@ -32,13 +30,6 @@
   let currentGroup = "ar";
   let probed = false;
   let refreshInFlight = null;
-  let hlsInstance = null;
-  let stallTimer = null;
-  let clapprPlayer = null;
-  let sourceIndex = 0;
-  let currentSources = [];
-  let loadGen = 0;
-  let sourceTries = 0;
 
   const LAB_DL_RE = /^\/lab\/dl\/(\d{1,6})\/?$/i;
 
@@ -46,313 +37,36 @@
     if (statusLine) statusLine.textContent = msg;
   }
 
-  function kzHlsOpts() {
-    return {
-      enableWorker: true,
-      lowLatencyMode: false,
-      startPosition: -1,
-      maxBufferLength: 14,
-      maxMaxBufferLength: 28,
-      backBufferLength: 30,
-      liveSyncDurationCount: 2,
-      liveMaxLatencyDurationCount: 6,
-      liveDurationInfinity: true,
-      maxLiveSyncPlaybackRate: 1.35,
-      highBufferWatchdogPeriod: 2,
-      maxBufferHole: 0.5,
-      nudgeOffset: 0.12,
-      nudgeMaxRetry: 4,
-      initialLiveManifestSize: 1,
-      startFragPrefetch: true,
-      manifestLoadingMaxRetry: 6,
-      manifestLoadingTimeOut: 10000,
-      levelLoadingMaxRetry: 4,
-      fragLoadingMaxRetry: 6,
-      fragLoadingTimeOut: 12000,
-      abrEwmaFastLive: 3,
-      abrEwmaSlowLive: 9,
-      capLevelToPlayerSize: true,
-    };
-  }
-
-  function kzAttachHls(v, src, onFatal) {
-    const Hls = window.Hls;
-    const hls = new Hls(kzHlsOpts());
-    hls.loadSource(src);
-    hls.attachMedia(v);
-    hls.on(Hls.Events.ERROR, (_e, d) => {
-      if (!d || !d.fatal) return;
-      if (d.type === "networkError") {
-        setTimeout(() => {
-          try {
-            hls.startLoad();
-          } catch {
-            onFatal();
-          }
-        }, 1000);
-        return;
-      }
-      if (d.type === "mediaError") {
-        try {
-          hls.recoverMediaError();
-          return;
-        } catch {
-          /* fall through */
-        }
-      }
-      onFatal();
-    });
-    return hls;
-  }
-
-  function kzWatchStall(v, onStall) {
-    let lastCt = 0;
-    let stallMs = 0;
-    return setInterval(() => {
-      if (v.paused || v.readyState < 2) {
-        stallMs = 0;
-        lastCt = v.currentTime;
-        return;
-      }
-      if (v.currentTime > 0 && v.currentTime === lastCt) {
-        stallMs += 3000;
-        if (stallMs >= 12000) {
-          stallMs = 0;
-          onStall();
-        }
-      } else {
-        stallMs = 0;
-      }
-      lastCt = v.currentTime;
-    }, 3000);
-  }
-
-  function destroyClappr() {
-    if (clapprPlayer) {
-      try {
-        clapprPlayer.destroy();
-      } catch {
-        /* ignore */
-      }
-      clapprPlayer = null;
-    }
-    if (clapprEl) clapprEl.innerHTML = "";
-  }
-
-  function destroyHls() {
-    if (stallTimer) {
-      clearInterval(stallTimer);
-      stallTimer = null;
-    }
-    if (hlsInstance) {
-      try {
-        hlsInstance.destroy();
-      } catch {
-        /* ignore */
-      }
-      hlsInstance = null;
-    }
-    if (video) {
-      video.onerror = null;
-      video.onloadeddata = null;
-      video.removeAttribute("src");
-      try {
-        video.load();
-      } catch {
-        /* ignore */
-      }
-    }
-  }
-
-  function showPlayer(mode) {
-    if (clapprEl) clapprEl.classList.toggle("is-hidden", mode !== "clappr");
-    if (video) video.classList.toggle("is-hidden", mode !== "video");
-    if (iframe) iframe.classList.toggle("is-hidden", mode !== "iframe");
-  }
-
   function dlhdIdFromRoute(route) {
     const m = String(route || "").match(LAB_DL_RE);
     return m ? m[1] : null;
   }
 
-  function routeUsesIframe(route) {
-    return route && !LAB_DL_RE.test(route);
-  }
-
-  function tryPlayVideo() {
-    if (!video) return;
-    const p = video.play && video.play();
-    if (p && p.catch) p.catch(() => {});
-  }
-
-  function nextSource(gen) {
-    if (gen !== loadGen || !currentSources.length) return;
-    sourceIndex = (sourceIndex + 1) % currentSources.length;
-    sourceTries++;
-    if (sourceTries <= currentSources.length * 6) {
-      setTimeout(() => playCurrentSource(gen), 400);
-    } else {
-      setStatus("تعذّر تشغيل البث — جرّب إعادة التحميل أو قناة أخرى");
-    }
-  }
-
-  function playCurrentSource(gen) {
-    if (gen !== loadGen || !video || !currentSources.length) return;
-    const src = currentSources[sourceIndex];
-    if (!src) return;
-
-    destroyHls();
-
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = src;
-      video.onerror = () => nextSource(gen);
-      video.onloadeddata = () => {
-        sourceTries = 0;
-      };
-      tryPlayVideo();
-      return;
-    }
-
-    if (window.Hls && window.Hls.isSupported()) {
-      hlsInstance = kzAttachHls(video, src, () => nextSource(gen));
-      stallTimer = kzWatchStall(video, () => nextSource(gen));
-      tryPlayVideo();
-      return;
-    }
-
-    video.src = src;
-    tryPlayVideo();
-  }
-
-  async function playLabClappr(m3u8, id, label, route) {
-    if (!clapprEl || !window.Clappr) return false;
-    destroyClappr();
-    destroyHls();
-    showPlayer("clappr");
-    if (iframe) iframe.src = "about:blank";
-
-    const p2pConfig = {
-      live: true,
-      token: "greek",
-      channelId: String(id),
-      announce: "https://ann.cdn-lab.shop/v1",
-      showSlogan: false,
-      sharePlaylist: false,
-      startFromSegmentOffset: 0,
-      trickleICE: true,
-    };
-
-    if (window.P2PEngineHls) {
-      try {
-        await P2PEngineHls.tryRegisterServiceWorker(p2pConfig);
-      } catch {
-        /* P2P optional */
-      }
-    }
-
-    clapprPlayer = new Clappr.Player({
-      source: m3u8,
-      parent: clapprEl,
-      mimeType: "application/x-mpegURL",
-      width: "100%",
-      height: "100%",
-      autoPlay: true,
-      mute: true,
-      playback: {
-        playInline: true,
-        hlsjsConfig: {
-          maxBufferLength: 5,
-          liveSyncDurationCount: 3,
-        },
-      },
-    });
-
-    if (window.P2PEngineHls) {
-      try {
-        p2pConfig.hlsjsInstance = clapprPlayer.core.getCurrentPlayback()?._hls;
-        new P2PEngineHls(p2pConfig);
-      } catch {
-        /* fall back to plain hls.js inside Clappr */
-      }
-    }
-
-    setStatus("البث: " + (label || route));
-    return true;
-  }
-
-  async function playLabDlhd(route, label) {
-    const id = dlhdIdFromRoute(route);
-    if (!id) return false;
-
-    const gen = ++loadGen;
-    sourceIndex = 0;
-    sourceTries = 0;
-    currentSources = [];
-
+  function playLabDlhd(route, label) {
+    if (!dlhdIdFromRoute(route)) return false;
     currentRoute = route;
     if (nowLabel) nowLabel.textContent = label || route;
     document.querySelectorAll(".lab-card").forEach((el) => {
       el.classList.toggle("active", el.dataset.route === route);
     });
-
-    setStatus("جارٍ تشغيل البث…");
-
-    let m3u8 = null;
-    try {
-      const res = await fetch("/api/lab-stream/" + id, { cache: "no-store" });
-      const data = await res.json();
-      if (gen !== loadGen) return true;
-      if (data.ok) {
-        m3u8 = data.m3u8 || null;
-        if (Array.isArray(data.sources) && data.sources.length) {
-          currentSources = data.sources.filter(Boolean);
-        }
-      }
-    } catch {
-      /* fall through */
-    }
-
-    if (gen !== loadGen) return true;
-
-    if (m3u8 && (await playLabClappr(m3u8, id, label, route))) {
-      return true;
-    }
-
-    if (currentSources.length && video) {
-      showPlayer("video");
-      if (iframe) iframe.src = "about:blank";
-      playCurrentSource(gen);
-      setStatus("البث (احتياطي): " + (label || route));
-      return true;
-    }
-
-    showPlayer("iframe");
-    destroyClappr();
-    destroyHls();
     if (iframe) iframe.src = route;
-    setStatus("تشغيل عبر صفحة مضمّنة — " + (label || route));
+    setStatus("جارٍ تشغيل البث — " + (label || route));
     return true;
   }
 
   function loadRoute(route, label) {
-    if (!route) return Promise.resolve();
+    if (!route || !iframe) return;
     currentRoute = route;
-
-    if (routeUsesIframe(route)) {
-      loadGen++;
-      destroyClappr();
-      destroyHls();
-      showPlayer("iframe");
-      if (iframe) iframe.src = route;
-      if (nowLabel) nowLabel.textContent = label || route;
-      document.querySelectorAll(".lab-card").forEach((el) => {
-        el.classList.toggle("active", el.dataset.route === route);
-      });
-      setStatus("البث: " + (label || route));
-      return Promise.resolve();
+    if (LAB_DL_RE.test(route)) {
+      playLabDlhd(route, label);
+      return;
     }
-
-    return playLabDlhd(route, label);
+    if (nowLabel) nowLabel.textContent = label || route;
+    document.querySelectorAll(".lab-card").forEach((el) => {
+      el.classList.toggle("active", el.dataset.route === route);
+    });
+    iframe.src = route;
+    setStatus("البث: " + (label || route));
   }
 
   function channelLabel(ch) {
@@ -681,9 +395,6 @@
     reloadBtn.addEventListener("click", () => {
       const keep = currentRoute;
       const lbl = nowLabel ? nowLabel.textContent : keep;
-      loadGen++;
-      destroyClappr();
-      destroyHls();
       if (iframe) iframe.src = "about:blank";
       setTimeout(() => loadRoute(keep, lbl), 120);
     });

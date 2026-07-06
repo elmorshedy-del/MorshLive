@@ -1855,32 +1855,77 @@ function dlhdUpstreamHeaders(target, request) {
   return streamFetchHeaders("dl", request);
 }
 
+function sanitizeLabPremiumTvHtml(html) {
+  return String(html || "")
+    .replace(/<script[^>]*\bllvpn\b[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<script[^>]*\bwaust\.at\b[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/<script[^>]*tag\.min\.js[^>]*>[\s\S]*?<\/script>/gi, "")
+    .replace(/src="\/\//g, 'src="https://')
+    .replace(/document\.addEventListener\('contextmenu'[^)]*\)[^;]*;/g, "")
+    .replace(/document\.onkeydown\s*=\s*function[\s\S]*?<\/script>/i, "</script>");
+}
+
+async function fetchLabPremiumTvHtml(id) {
+  const headers = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+    Referer: `${DLHD_BASE}/`,
+    Accept: "text/html,*/*",
+  };
+  try {
+    const sRes = await fetchWithTimeout(`${DLHD_BASE}/stream/stream-${id}.php`, { headers, redirect: "follow" });
+    if (!sRes.ok) return null;
+    const sTxt = await sRes.text();
+    const embed = sTxt.match(/<iframe[^>]+src="([^"]+\/premiumtv\/[^"]+)"/i);
+    if (!embed) return null;
+    let embedUrl = embed[1];
+    if (embedUrl.startsWith("//")) embedUrl = "https:" + embedUrl;
+    const eRes = await fetchWithTimeout(embedUrl, { headers, redirect: "follow" });
+    if (!eRes.ok) return null;
+    const eTxt = await eRes.text();
+    if (!/Clappr\.Player/i.test(eTxt) || !/atob\s*\(/i.test(eTxt)) return null;
+    return sanitizeLabPremiumTvHtml(eTxt);
+  } catch {
+    return null;
+  }
+}
+
 function labPlayerHtml(m3u8, id) {
   const src = String(m3u8 || "");
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>beIN ${id}</title>
-<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#player{width:100vw;height:100vh;background:#000}</style>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#player,#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
 <script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@swarmcloud/hls@latest/dist/p2p-engine.min.js"></script>
 </head><body>
 <div id="player"></div>
+<video id="v" style="display:none" playsinline webkit-playsinline muted controls></video>
 <script>
 (function(){
   var src=${JSON.stringify(src)};
   var id=${JSON.stringify(String(id))};
-  if(!src||!window.Clappr) return;
-  var p2pConfig={live:true,token:"greek",channelId:id,announce:"https://ann.cdn-lab.shop/v1",showSlogan:false,sharePlaylist:false,startFromSegmentOffset:0,trickleICE:true};
+  if(!src) return;
+  var isIos=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  var hasMse=!!(window.Hls&&window.Hls.isSupported&&window.Hls.isSupported());
+  var p2pConfig={live:true,token:"greek",channelId:id,announce:"https://ann.cdn-lab.shop/v1",showSlogan:false,sharePlaylist:false,startFromSegmentOffset:0,trickleICE:true,proxyOnly:isIos||!hasMse};
+  function attachP2p(hls){ if(!window.P2PEngineHls) return; try{ if(hls) p2pConfig.hlsjsInstance=hls; new P2PEngineHls(p2pConfig); }catch(e){} }
   (async function(){
     if(window.P2PEngineHls){ try{ await P2PEngineHls.tryRegisterServiceWorker(p2pConfig); }catch(e){} }
+    if(isIos||!hasMse||!window.Clappr){
+      var v=document.getElementById('v'); v.style.display='block'; document.getElementById('player').style.display='none';
+      attachP2p(null);
+      v.src=src; var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+      return;
+    }
     var player=new Clappr.Player({
-      source:src, parent:document.getElementById("player"), mimeType:"application/x-mpegURL",
+      source:src, parent:document.getElementById('player'), mimeType:"application/x-mpegURL",
       width:"100%", height:"100%", autoPlay:true, mute:true,
       playback:{ playInline:true, hlsjsConfig:{ maxBufferLength:5, liveSyncDurationCount:3 } }
     });
-    if(window.P2PEngineHls){
-      try{ p2pConfig.hlsjsInstance=player.core.getCurrentPlayback()._hls; new P2PEngineHls(p2pConfig); }catch(e){}
-    }
+    player.on(Clappr.Events.PLAYER_READY,function(){
+      var pb=player.core.getCurrentPlayback();
+      attachP2p(pb&&pb._hls);
+    });
   })();
 })();
 </script>
@@ -1888,13 +1933,15 @@ function labPlayerHtml(m3u8, id) {
 }
 
 async function proxyLabDlEmbed(request, id, env) {
-  const origin = new URL(request.url).origin;
-  const secret = env && env.STREAM_SIGNING_SECRET;
   const htmlHeaders = {
     "Content-Type": "text/html; charset=utf-8",
     "Cache-Control": "no-store",
     "X-KZ-Proxy": "lab-dlhd-embed",
   };
+  const proxied = await fetchLabPremiumTvHtml(id);
+  if (proxied) {
+    return new Response(proxied, { status: 200, headers: { ...htmlHeaders, "X-KZ-Proxy": "lab-dlhd-premiumtv" } });
+  }
   const m3u8 = await resolveDlStream(id);
   if (!m3u8) {
     return new Response(

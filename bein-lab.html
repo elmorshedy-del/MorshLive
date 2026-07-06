@@ -39,13 +39,10 @@
       box-shadow: var(--shadow); aspect-ratio: 16/9; margin-bottom: 14px;
       border: 1px solid var(--border);
     }
-    .lab-player-wrap iframe,
-    .lab-player-wrap video,
-    .lab-player-wrap #lab-clappr {
+    .lab-player-wrap iframe {
       width: 100%; height: 100%; border: 0; display: block;
       object-fit: contain; background: #000;
     }
-    .lab-player-wrap .is-hidden { display: none !important; }
     .lab-toolbar {
       display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
       margin-bottom: 18px;
@@ -150,10 +147,7 @@
     </div>
 
     <div class="lab-player-wrap">
-      <div id="lab-clappr" class="is-hidden"></div>
-      <video id="lab-video" class="is-hidden" controls autoplay muted playsinline webkit-playsinline
-        title="مشغّل beIN 24/7"></video>
-      <iframe id="player" class="is-hidden" title="مشغّل beIN 24/7"
+      <iframe id="player" title="مشغّل beIN 24/7"
         allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
         allowfullscreen referrerpolicy="no-referrer" src="about:blank"></iframe>
     </div>
@@ -186,9 +180,6 @@
     </p>
   </main>
 
-  <script src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@swarmcloud/hls@latest/dist/p2p-engine.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
-  <script src="assets/js/streams-lab.js?v=20260706lab7"></script>
+  <script src="assets/js/streams-lab.js?v=20260706lab8"></script>
 </body>
 </html>
