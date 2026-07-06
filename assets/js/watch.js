@@ -135,6 +135,26 @@
       <div class="alt-streams-grid">${panes.join("")}</div>`;
   }
 
+  function reloadAltStreamIframes(reason) {
+    document.querySelectorAll(".alt-stream-frame").forEach((frame) => {
+      try {
+        const u = new URL(frame.src);
+        u.searchParams.set("_heal", String(Date.now()));
+        frame.src = u.toString();
+      } catch {
+        /* ignore bad src */
+      }
+    });
+    if (reason) console.info("Alt stream heal:", reason);
+  }
+
+  function initAltStreamHeal() {
+    window.addEventListener("message", (ev) => {
+      if (!ev.data || ev.data.type !== "kz-alt-reload") return;
+      reloadAltStreamIframes(ev.data.reason || "stall");
+    });
+  }
+
   function reloadAltStreams() {
     altStreamsSignature = "";
     renderAltStreams();
@@ -552,6 +572,7 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     initNav();
+    initAltStreamHeal();
     initReloadButton();
     try {
       await refreshMatches({ force: false });
