@@ -3,7 +3,8 @@
  * Does not touch main watch page STREAM_SOURCES.
  */
 (function () {
-  const player = document.getElementById("player");
+  const iframe = document.getElementById("player");
+  const video = document.getElementById("lab-video");
   const grid = document.getElementById("channel-grid");
   const groupTabs = document.getElementById("group-tabs");
   const nowLabel = document.getElementById("now-label");
@@ -30,19 +31,247 @@
   let currentGroup = "ar";
   let probed = false;
   let refreshInFlight = null;
+  let hlsInstance = null;
+  let stallTimer = null;
+  let sourceIndex = 0;
+  let currentSources = [];
+  let loadGen = 0;
+  let sourceTries = 0;
+
+  const LAB_DL_RE = /^\/lab\/dl\/(\d{1,6})\/?$/i;
 
   function setStatus(msg) {
     if (statusLine) statusLine.textContent = msg;
   }
 
-  function loadRoute(route, label) {
-    if (!route || !player) return;
-    currentRoute = route;
-    player.src = route;
+  function kzHlsOpts() {
+    return {
+      enableWorker: true,
+      lowLatencyMode: false,
+      startPosition: -1,
+      maxBufferLength: 14,
+      maxMaxBufferLength: 28,
+      backBufferLength: 30,
+      liveSyncDurationCount: 2,
+      liveMaxLatencyDurationCount: 6,
+      liveDurationInfinity: true,
+      maxLiveSyncPlaybackRate: 1.35,
+      highBufferWatchdogPeriod: 2,
+      maxBufferHole: 0.5,
+      nudgeOffset: 0.12,
+      nudgeMaxRetry: 4,
+      initialLiveManifestSize: 1,
+      startFragPrefetch: true,
+      manifestLoadingMaxRetry: 6,
+      manifestLoadingTimeOut: 10000,
+      levelLoadingMaxRetry: 4,
+      fragLoadingMaxRetry: 6,
+      fragLoadingTimeOut: 12000,
+      abrEwmaFastLive: 3,
+      abrEwmaSlowLive: 9,
+      capLevelToPlayerSize: true,
+    };
+  }
+
+  function kzAttachHls(v, src, onFatal) {
+    const Hls = window.Hls;
+    const hls = new Hls(kzHlsOpts());
+    hls.loadSource(src);
+    hls.attachMedia(v);
+    hls.on(Hls.Events.ERROR, (_e, d) => {
+      if (!d || !d.fatal) return;
+      if (d.type === "networkError") {
+        setTimeout(() => {
+          try {
+            hls.startLoad();
+          } catch {
+            onFatal();
+          }
+        }, 1000);
+        return;
+      }
+      if (d.type === "mediaError") {
+        try {
+          hls.recoverMediaError();
+          return;
+        } catch {
+          /* fall through */
+        }
+      }
+      onFatal();
+    });
+    return hls;
+  }
+
+  function kzWatchStall(v, onStall) {
+    let lastCt = 0;
+    let stallMs = 0;
+    return setInterval(() => {
+      if (v.paused || v.readyState < 2) {
+        stallMs = 0;
+        lastCt = v.currentTime;
+        return;
+      }
+      if (v.currentTime > 0 && v.currentTime === lastCt) {
+        stallMs += 3000;
+        if (stallMs >= 12000) {
+          stallMs = 0;
+          onStall();
+        }
+      } else {
+        stallMs = 0;
+      }
+      lastCt = v.currentTime;
+    }, 3000);
+  }
+
+  function destroyHls() {
+    if (stallTimer) {
+      clearInterval(stallTimer);
+      stallTimer = null;
+    }
+    if (hlsInstance) {
+      try {
+        hlsInstance.destroy();
+      } catch {
+        /* ignore */
+      }
+      hlsInstance = null;
+    }
+    if (video) {
+      video.onerror = null;
+      video.onloadeddata = null;
+      video.removeAttribute("src");
+      try {
+        video.load();
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  function showPlayer(mode) {
+    if (video) video.classList.toggle("is-hidden", mode !== "video");
+    if (iframe) iframe.classList.toggle("is-hidden", mode !== "iframe");
+  }
+
+  function dlhdIdFromRoute(route) {
+    const m = String(route || "").match(LAB_DL_RE);
+    return m ? m[1] : null;
+  }
+
+  function routeUsesIframe(route) {
+    return route && !LAB_DL_RE.test(route);
+  }
+
+  function tryPlayVideo() {
+    if (!video) return;
+    const p = video.play && video.play();
+    if (p && p.catch) p.catch(() => {});
+  }
+
+  function nextSource(gen) {
+    if (gen !== loadGen || !currentSources.length) return;
+    sourceIndex = (sourceIndex + 1) % currentSources.length;
+    sourceTries++;
+    if (sourceTries <= currentSources.length * 6) {
+      setTimeout(() => playCurrentSource(gen), 400);
+    } else {
+      setStatus("تعذّر تشغيل البث — جرّب إعادة التحميل أو قناة أخرى");
+    }
+  }
+
+  function playCurrentSource(gen) {
+    if (gen !== loadGen || !video || !currentSources.length) return;
+    const src = currentSources[sourceIndex];
+    if (!src) return;
+
+    destroyHls();
+
+    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = src;
+      video.onerror = () => nextSource(gen);
+      video.onloadeddata = () => {
+        sourceTries = 0;
+      };
+      tryPlayVideo();
+      return;
+    }
+
+    if (window.Hls && window.Hls.isSupported()) {
+      hlsInstance = kzAttachHls(video, src, () => nextSource(gen));
+      stallTimer = kzWatchStall(video, () => nextSource(gen));
+      tryPlayVideo();
+      return;
+    }
+
+    video.src = src;
+    tryPlayVideo();
+  }
+
+  async function playLabDlhd(route, label) {
+    const id = dlhdIdFromRoute(route);
+    if (!id || !video) return false;
+
+    showPlayer("video");
+    if (iframe) iframe.src = "about:blank";
+    destroyHls();
+
+    const gen = ++loadGen;
+    sourceIndex = 0;
+    sourceTries = 0;
+    currentSources = [];
+
     if (nowLabel) nowLabel.textContent = label || route;
     document.querySelectorAll(".lab-card").forEach((el) => {
       el.classList.toggle("active", el.dataset.route === route);
     });
+
+    setStatus("جارٍ تشغيل البث…");
+
+    try {
+      const res = await fetch("/api/lab-stream/" + id, { cache: "no-store" });
+      const data = await res.json();
+      if (gen !== loadGen) return true;
+      if (data.ok && Array.isArray(data.sources) && data.sources.length) {
+        currentSources = data.sources.filter(Boolean);
+      }
+    } catch {
+      /* fall through to iframe */
+    }
+
+    if (gen !== loadGen) return true;
+
+    if (currentSources.length) {
+      playCurrentSource(gen);
+      setStatus("البث: " + (label || route));
+      return true;
+    }
+
+    showPlayer("iframe");
+    if (iframe) iframe.src = route;
+    setStatus("تشغيل عبر صفحة مضمّنة — " + (label || route));
+    return true;
+  }
+
+  function loadRoute(route, label) {
+    if (!route) return Promise.resolve();
+    currentRoute = route;
+
+    if (routeUsesIframe(route)) {
+      loadGen++;
+      destroyHls();
+      showPlayer("iframe");
+      if (iframe) iframe.src = route;
+      if (nowLabel) nowLabel.textContent = label || route;
+      document.querySelectorAll(".lab-card").forEach((el) => {
+        el.classList.toggle("active", el.dataset.route === route);
+      });
+      setStatus("البث: " + (label || route));
+      return Promise.resolve();
+    }
+
+    return playLabDlhd(route, label);
   }
 
   function channelLabel(ch) {
@@ -370,8 +599,11 @@
   if (reloadBtn) {
     reloadBtn.addEventListener("click", () => {
       const keep = currentRoute;
-      player.src = "about:blank";
-      setTimeout(() => loadRoute(keep, nowLabel ? nowLabel.textContent : keep), 120);
+      const lbl = nowLabel ? nowLabel.textContent : keep;
+      loadGen++;
+      destroyHls();
+      if (iframe) iframe.src = "about:blank";
+      setTimeout(() => loadRoute(keep, lbl), 120);
     });
   }
   if (bestBtn) bestBtn.addEventListener("click", () => pickBest(true));

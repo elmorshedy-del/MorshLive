@@ -65,7 +65,9 @@ const VIP_RESOLVE_DEADLINE_MS = 6000;
 // dlhd (daddylive) 24/7 source — fully isolated from the worldkoora /wk/ path.
 const DLHD_BASE = "https://dlhd.pk";
 const DL_EMBED_RE = /^\/dl\/(\d{1,6})\/?$/;  // /dl/{channelId} -> clean player page
-const LAB_DL_EMBED_RE = /^\/lab\/dl\/(\d{1,6})\/?$/i;  // experimental lab — dlhd premiumtv iframe
+const LAB_DL_EMBED_RE = /^\/lab\/dl\/(\d{1,6})\/?$/i;  // experimental lab player page
+const LAB_HLS_RE = /^\/lab\/hls$/i;                      // lab-only signed HLS proxy
+const LAB_STREAM_API_RE = /^\/api\/lab-stream\/(\d{1,6})\/?$/i;
 const DL_HLS_RE = /^\/dl\/hls$/i;            // signed HLS proxy for dlhd streams
 
 // Stable dlhd.pk 24/7 channel ids, keyed by our channel id. Each entry is an
@@ -1839,35 +1841,56 @@ function dlPlayerHtml(src, id) {
   return cleanHlsPlayerHtml(src, `beIN ${id}`);
 }
 
-function labDirectPlayerHtml(m3u8, id) {
-  const src = String(m3u8 || "");
+function dlhdUpstreamHeaders(target, request) {
+  const ua = request?.headers?.get("User-Agent") || "Mozilla/5.0";
+  try {
+    const u = new URL(target);
+    if (/phantemlis|premium\d/i.test(u.hostname + u.pathname)) {
+      const dir = u.href.slice(0, u.href.lastIndexOf("/") + 1);
+      return { "User-Agent": ua, Accept: "*/*", Referer: dir };
+    }
+  } catch {
+    /* fall through */
+  }
+  return streamFetchHeaders("dl", request);
+}
+
+function labPlayerHtml(sources, id) {
+  const list = Array.isArray(sources) ? sources.filter(Boolean) : [sources].filter(Boolean);
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>beIN ${id}</title>
 <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
 </head><body>
-<video id="v" controls autoplay muted playsinline crossorigin="anonymous"></video>
+<video id="v" controls autoplay muted playsinline webkit-playsinline></video>
 <script>
+${HLS_BOOT_FN}
 (function(){
-  var src=${JSON.stringify(src)};
-  var v=document.getElementById('v');
-  function go(){ var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){}); }
-  if(!src) return;
-  if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; v.addEventListener('loadedmetadata',go,{once:true}); go(); }
-  else if(window.Hls&&Hls.isSupported()){
-    var hls=new Hls({enableWorker:true,lowLatencyMode:false});
-    hls.loadSource(src);
-    hls.attachMedia(v);
-    hls.on(Hls.Events.MANIFEST_PARSED,go);
-    hls.on(Hls.Events.ERROR,function(_,d){ if(d.fatal) console.warn('lab-hls',d.type,d.details); });
-  } else { v.src=src; go(); }
+  var v=document.getElementById('v'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0;
+  function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
+  function next(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*6) setTimeout(load,400); }
+  function load(){
+    var src=sources[i]; if(!src) return;
+    destroy();
+    if(v.canPlayType('application/vnd.apple.mpegurl')){
+      v.src=src; v.onerror=next; v.onloadeddata=function(){ tries=0; };
+      var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+    } else if(window.Hls&&Hls.isSupported()){
+      hls=kzAttachHls(v,src,next);
+      kzWatchStall(v,hls,next);
+    } else { v.src=src; }
+    var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+  }
+  load();
 })();
 </script>
 </body></html>`;
 }
 
 async function proxyLabDlEmbed(request, id, env) {
+  const origin = new URL(request.url).origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
   const htmlHeaders = {
     "Content-Type": "text/html; charset=utf-8",
     "Cache-Control": "no-store",
@@ -1880,7 +1903,74 @@ async function proxyLabDlEmbed(request, id, env) {
       { status: 200, headers: htmlHeaders }
     );
   }
-  return new Response(labDirectPlayerHtml(m3u8, id), { status: 200, headers: htmlHeaders });
+  const sig = await signTarget(m3u8, secret);
+  const proxy = hlsProxyUrl(m3u8, origin, sig, "/lab/hls");
+  return new Response(labPlayerHtml([proxy, m3u8], id), { status: 200, headers: htmlHeaders });
+}
+
+async function proxyLabHls(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const target = incoming.searchParams.get("u");
+  const sig = incoming.searchParams.get("sig");
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  if (!target || !(await verifyTarget(target, sig, secret))) {
+    return new Response("Forbidden stream host", { status: 403 });
+  }
+  const isHead = request.method === "HEAD";
+  const headers = dlhdUpstreamHeaders(target, request);
+  try {
+    const res = await fetch(target, { method: request.method, headers, redirect: "follow" });
+    if (!res.ok) {
+      return new Response(isHead ? null : `Upstream error ${res.status}`, { status: res.status });
+    }
+    const type = (res.headers.get("Content-Type") || "").toLowerCase();
+    const isManifest = type.includes("mpegurl") || type.includes("m3u8") || /\.m3u8(?:\?|$)/i.test(target);
+    if (isManifest) {
+      const manifestHeaders = {
+        "Content-Type": "application/vnd.apple.mpegurl",
+        "Cache-Control": "public, max-age=3",
+        "Access-Control-Allow-Origin": "*",
+        "X-KZ-Proxy": "lab-hls-manifest",
+      };
+      if (isHead) return new Response(null, { status: 200, headers: manifestHeaders });
+      const text = await res.text();
+      const rewritten = await rewriteM3u8(text, target, origin, secret, "/lab/hls");
+      return new Response(rewritten, { status: 200, headers: manifestHeaders });
+    }
+    const outHeaders = {
+      "Content-Type": segmentContentType(target) || res.headers.get("Content-Type") || "application/octet-stream",
+      "Cache-Control": "public, max-age=60",
+      "Access-Control-Allow-Origin": "*",
+      "X-KZ-Proxy": "lab-hls-segment",
+    };
+    return new Response(isHead ? null : res.body, { status: res.status, headers: outHeaders });
+  } catch {
+    return new Response(isHead ? null : "Upstream unavailable", { status: 502 });
+  }
+}
+
+async function proxyLabStreamApi(request, id, env) {
+  const origin = new URL(request.url).origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const m3u8 = await resolveDlStream(id);
+  if (!m3u8) {
+    return new Response(JSON.stringify({ ok: false, error: "stream unavailable", id }), {
+      status: 200,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "Cache-Control": "no-store" },
+    });
+  }
+  const sig = await signTarget(m3u8, secret);
+  const proxy = hlsProxyUrl(m3u8, origin, sig, "/lab/hls");
+  return new Response(JSON.stringify({ ok: true, id, m3u8, proxy, sources: [proxy, m3u8] }), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Access-Control-Allow-Origin": "*",
+      "Cache-Control": "no-store",
+      "X-KZ-Proxy": "lab-stream",
+    },
+  });
 }
 
 async function proxyDlEmbed(request, id, env) {
@@ -3741,6 +3831,26 @@ export default {
     const labDl = url.pathname.match(LAB_DL_EMBED_RE);
     if (labDl && (method === "GET" || method === "HEAD")) {
       return proxyLabDlEmbed(request, labDl[1], env);
+    }
+    const labStream = url.pathname.match(LAB_STREAM_API_RE);
+    if (labStream && method === "GET") {
+      return proxyLabStreamApi(request, labStream[1], env);
+    }
+    if (LAB_HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
+      if (method === "OPTIONS") {
+        return new Response(null, {
+          status: 204,
+          headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Max-Age": "86400",
+          },
+        });
+      }
+      return withEdgeCache(request, (url.searchParams.get("u") || "").includes(".m3u8") ? 2 : 60, () =>
+        proxyLabHls(request, env)
+      );
     }
     if (DL_HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
       if (method === "OPTIONS") {
