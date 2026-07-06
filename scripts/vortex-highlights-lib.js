@@ -3,6 +3,7 @@
  *
  * Same embed host used by btolat / kawkabnews (e.g. …/embed/4Duh6QTRDC3M6).
  * Discovery: curated embed map → DuckDuckGo site: search → og:title verify.
+ * True highlights only — classified by editorial title (ملخص / أهداف), not duration.
  * ==========================================================================*/
 const path = require("path");
 const { pairKey } = require("./commentators-lib");
@@ -11,6 +12,9 @@ const VORTEX_HOST = "nvtboo.vortexvisionworks.com";
 const VORTEX_EMBED_BASE = `https://${VORTEX_HOST}/embed`;
 
 const UA = "Mozilla/5.0 (compatible; MorshLive/1.0)";
+
+/** Full-match replays / extended broadcasts — not highlight reels. */
+const FULL_MATCH_TITLE_RE = /مباراة\s+كاملة|كامل(?:ة)?\s*(?:للمباراة|المباراة)?|full\s*match|match\s*replay|replay\s*full|إعادة\s*كاملة|90\s*دقيقة|بث\s*كامل|extended\s*highlights?\s*\d{2,3}\s*min/i;
 
 /** Common Arabic transliteration variants (e.g. باراغواي vs باراجواي on vortex titles). */
 const TEAM_AR_ALIASES = {
@@ -37,16 +41,66 @@ function knownEmbedIds(match) {
   return { goals: hit.goals || null, full: hit.full || null };
 }
 
+/** Classify btolat/vortex editorial titles — goals reel vs ملخص reel. */
+function classifyHighlightTitle(title) {
+  const t = String(title || "").replace(/\s+/g, " ").trim();
+  if (!t || FULL_MATCH_TITLE_RE.test(t)) return null;
+  if (/^(?:اهداف|أهداف)\s+مباراة/i.test(t)) return "goals";
+  if (/^ملخص\s+مباراة/i.test(t)) return "full";
+  if (/ملخص/i.test(t) && /مباراة|كأس العالم|world cup/i.test(t)) return "full";
+  if (/(?:اهداف|أهداف)/i.test(t) && /مباراة|كأس العالم|world cup/i.test(t)) return "goals";
+  return null;
+}
+
+function isTrueHighlightTitle(title) {
+  return classifyHighlightTitle(title) != null;
+}
+
+function validateClip(clip) {
+  if (!clip || !clip.videoUrl) return null;
+  const kind = classifyHighlightTitle(clip.title);
+  if (!kind) return null;
+  return { ...clip, kind: clip.kind || kind };
+}
+
+/** Prefer editorial ملخص reel; fall back to أهداف reel. Both are true highlights. */
+function pickPrimaryHighlight(highlights) {
+  const goals = highlights?.goals;
+  const full = highlights?.full;
+  if (full) return full;
+  if (goals) return goals;
+  return null;
+}
+
+function normalizeHighlightBucket(bucket) {
+  if (!bucket) return bucket;
+  const out = {};
+  if (bucket.goals) {
+    const g = validateClip(bucket.goals);
+    if (g) out.goals = g;
+  }
+  if (bucket.full) {
+    const f = validateClip(bucket.full);
+    if (f) out.full = f;
+  }
+  return Object.keys(out).length ? out : null;
+}
+
+function enrichHighlightMeta(meta) {
+  if (!meta) return null;
+  return validateClip(meta);
+}
+
 async function findKnownVortexHighlights(match) {
   const ids = knownEmbedIds(match);
   const out = {};
   if (ids.goals) {
-    const meta = await fetchVortexEmbedMeta(ids.goals);
-    if (meta) out.goals = meta;
+    const meta = enrichHighlightMeta(await fetchVortexEmbedMeta(ids.goals));
+    if (meta) out.goals = { ...meta, kind: "goals" };
   }
   if (ids.full) {
-    const meta = await fetchVortexEmbedMeta(ids.full);
-    if (meta) out.full = meta;
+    const meta = enrichHighlightMeta(await fetchVortexEmbedMeta(ids.full));
+    if (meta) out.full = { ...meta, kind: "full" };
   }
   return out;
 }
@@ -83,100 +137,6 @@ function parseOgImage(html) {
   return m ? m[1] : "";
 }
 
-/** Reject full-match uploads mislabeled as ملخص (~20+ min). */
-const MAX_HIGHLIGHT_SECONDS = 20 * 60;
-
-function absUrl(url) {
-  const u = String(url || "").trim();
-  if (!u) return "";
-  if (u.startsWith("//")) return `https:${u}`;
-  if (u.startsWith("http")) return u;
-  return u;
-}
-
-function extractHlsUrlFromEmbed(html) {
-  const m = (html || "").match(/src:\{hls:'([^']+)'/);
-  return m ? absUrl(m[1]) : "";
-}
-
-function sumExtinfDuration(playlistText) {
-  let total = 0;
-  for (const line of String(playlistText || "").split("\n")) {
-    const m = line.match(/^#EXTINF:([0-9.]+)/);
-    if (m) total += parseFloat(m[1]) || 0;
-  }
-  return total;
-}
-
-async function fetchHlsDurationSeconds(hlsUrl) {
-  const masterUrl = absUrl(hlsUrl);
-  if (!masterUrl) return null;
-  try {
-    const master = await fetchText(masterUrl);
-    if (!master) return null;
-    const variantLine = master.split("\n").find((l) => l.trim() && !l.startsWith("#"));
-    if (!variantLine) return sumExtinfDuration(master) || null;
-    const base = masterUrl.replace(/[^/]+$/, "");
-    const variantUrl = absUrl(variantLine.trim().startsWith("http") ? variantLine.trim() : base + variantLine.trim());
-    const playlist = await fetchText(variantUrl);
-    const secs = sumExtinfDuration(playlist);
-    return secs > 0 ? Math.round(secs) : null;
-  } catch {
-    return null;
-  }
-}
-
-async function fetchEmbedDurationSeconds(embedId) {
-  if (!embedId) return null;
-  const html = await fetchText(`${VORTEX_EMBED_BASE}/${embedId}`);
-  const hls = extractHlsUrlFromEmbed(html);
-  if (!hls) return null;
-  return fetchHlsDurationSeconds(hls);
-}
-
-function clipTooLong(clip) {
-  const d = clip && clip.durationSeconds;
-  return typeof d === "number" && d > MAX_HIGHLIGHT_SECONDS;
-}
-
-/** Prefer full ملخص when ≤20m; otherwise goals; never surface 20m+ full as primary. */
-function pickPrimaryHighlight(highlights) {
-  const goals = highlights?.goals;
-  const full = highlights?.full;
-  if (full && !clipTooLong(full)) return full;
-  if (goals && !clipTooLong(goals)) return goals;
-  if (goals) return goals;
-  if (full) return full;
-  return null;
-}
-
-async function enrichClipDuration(clip) {
-  if (!clip || clip.durationSeconds != null) return clip;
-  const id = clip.embedId || (String(clip.videoUrl || "").match(/\/embed\/([A-Za-z0-9]+)/) || [])[1];
-  if (!id) return clip;
-  const durationSeconds = await fetchEmbedDurationSeconds(id);
-  if (durationSeconds == null) return clip;
-  return { ...clip, durationSeconds };
-}
-
-/** Drop or demote clips over MAX_HIGHLIGHT_SECONDS; set match.highlight. */
-async function normalizeHighlightBucket(bucket) {
-  if (!bucket) return bucket;
-  const out = { ...bucket };
-  if (out.goals) out.goals = await enrichClipDuration(out.goals);
-  if (out.full) out.full = await enrichClipDuration(out.full);
-  if (out.full && clipTooLong(out.full)) delete out.full;
-  if (out.goals && clipTooLong(out.goals) && out.full) delete out.goals;
-  return out;
-}
-
-async function enrichHighlightMeta(meta) {
-  if (!meta) return meta;
-  const enriched = await enrichClipDuration(meta);
-  if (clipTooLong(enriched)) return null;
-  return enriched;
-}
-
 function teamNamesForMatch(name, arabicFor) {
   const primary = arabicFor(name);
   const aliases = TEAM_AR_ALIASES[name] || [];
@@ -184,7 +144,7 @@ function teamNamesForMatch(name, arabicFor) {
 }
 
 function titleMatchesMatch(title, home, away, arabicFor) {
-  if (!title || !/ملخص|اهداف/i.test(title)) return false;
+  if (!isTrueHighlightTitle(title)) return false;
   const t = String(title).replace(/\s+/g, " ").trim();
   const homeHit = teamNamesForMatch(home, arabicFor).some((n) => t.includes(n));
   const awayHit = teamNamesForMatch(away, arabicFor).some((n) => t.includes(n));
@@ -214,18 +174,21 @@ async function fetchVortexEmbedMeta(id) {
   if (!html) return null;
   const title = parseOgTitle(html);
   if (!title) return null;
+  const kind = classifyHighlightTitle(title);
+  if (!kind) return null;
   return {
     videoUrl: `${VORTEX_EMBED_BASE}/${id}`,
     title,
     thumbnail: parseOgImage(html) || "",
     source: "vortex",
     embedId: id,
+    kind,
   };
 }
 
 async function findKnownVortexHighlight(match) {
   const known = await findKnownVortexHighlights(match);
-  return known.full || known.goals || null;
+  return pickPrimaryHighlight(known) || known.full || known.goals || null;
 }
 
 /** Find a vortexvisionworks ملخص embed for home vs away. */
@@ -254,17 +217,16 @@ module.exports = {
   VORTEX_EMBED_BASE,
   VORTEX_HOST,
   TEAM_AR_ALIASES,
-  MAX_HIGHLIGHT_SECONDS,
+  classifyHighlightTitle,
+  isTrueHighlightTitle,
   findVortexHighlight,
   findKnownVortexHighlight,
   findKnownVortexHighlights,
   titleMatchesMatch,
   fetchVortexEmbedMeta,
-  fetchEmbedDurationSeconds,
-  enrichClipDuration,
-  enrichHighlightMeta,
   normalizeHighlightBucket,
+  enrichHighlightMeta,
   pickPrimaryHighlight,
-  clipTooLong,
+  validateClip,
   extractEmbedIds,
 };

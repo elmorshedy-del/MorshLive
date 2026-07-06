@@ -108,7 +108,7 @@ async function main() {
   for (const m of matches) {
     const bt = btolatMap.get(m.key);
     const pinned = todayHighlights.get(m.key);
-    if (bt && await applyBtolatHighlights(m, bt, normalizeHighlightBucket)) {
+    if (bt && applyBtolatHighlights(m, bt, normalizeHighlightBucket)) {
       continue;
     }
     if (pinned?.videoUrl) {

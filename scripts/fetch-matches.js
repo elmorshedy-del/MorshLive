@@ -247,7 +247,7 @@ async function fetchYouTubeHighlight(match) {
       continue;
     }
     const bt = btolatMap.get(key);
-    if (bt && await applyBtolatHighlights(m, bt, normalizeHighlightBucket)) {
+    if (bt && applyBtolatHighlights(m, bt, normalizeHighlightBucket)) {
       const primary = m.highlight;
       highlightsByKey.set(key, { key, home: m.home, away: m.away, ...primary });
       if (m.highlights?.goals) {

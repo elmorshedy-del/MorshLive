@@ -2173,8 +2173,20 @@ function parseOgMeta(html, prop) {
   return m ? m[1] : "";
 }
 
+const FULL_MATCH_TITLE_RE = /مباراة\s+كاملة|كامل(?:ة)?\s*(?:للمباراة|المباراة)?|full\s*match|match\s*replay|replay\s*full|إعادة\s*كاملة|90\s*دقيقة|بث\s*كامل/i;
+
+function classifyHighlightTitle(title) {
+  const t = String(title || "").replace(/\s+/g, " ").trim();
+  if (!t || FULL_MATCH_TITLE_RE.test(t)) return null;
+  if (/^(?:اهداف|أهداف)\s+مباراة/i.test(t)) return "goals";
+  if (/^ملخص\s+مباراة/i.test(t)) return "full";
+  if (/ملخص/i.test(t) && /مباراة|كأس العالم|world cup/i.test(t)) return "full";
+  if (/(?:اهداف|أهداف)/i.test(t) && /مباراة|كأس العالم|world cup/i.test(t)) return "goals";
+  return null;
+}
+
 function vortexTitleMatches(title, home, away, teamAr) {
-  if (!title || !/ملخص|اهداف/i.test(title)) return false;
+  if (!classifyHighlightTitle(title)) return false;
   const t = String(title).replace(/\s+/g, " ").trim();
   const homeHit = vortexTeamNames(teamAr, home).some((n) => t.includes(n));
   const awayHit = vortexTeamNames(teamAr, away).some((n) => t.includes(n));
@@ -2200,19 +2212,28 @@ async function fetchVortexEmbedMeta(id) {
   const html = await res.text();
   const title = parseOgMeta(html, "og:title");
   if (!title) return null;
+  const kind = classifyHighlightTitle(title);
+  if (!kind) return null;
   return {
     videoUrl: `${VORTEX_EMBED_BASE}/${id}`,
     title,
     thumbnail: parseOgMeta(html, "og:image") || "",
     source: "vortex",
     embedId: id,
+    kind,
   };
 }
 
 async function searchKnownVortexHighlight(home, away, known) {
-  const id = known && known[highlightPairKey(home, away)];
-  if (!id) return null;
-  return fetchVortexEmbedMeta(id);
+  const hit = known && known[highlightPairKey(home, away)];
+  if (!hit) return null;
+  const ids = typeof hit === "string" ? { full: hit } : { goals: hit.goals, full: hit.full };
+  if (ids.full) {
+    const full = await fetchVortexEmbedMeta(ids.full);
+    if (full) return full;
+  }
+  if (ids.goals) return fetchVortexEmbedMeta(ids.goals);
+  return null;
 }
 
 async function searchVortexHighlight(home, away, teamAr, known) {

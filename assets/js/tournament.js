@@ -56,15 +56,17 @@
       </div>`;
   }
 
-  const MAX_CLIP_SECONDS = 20 * 60;
-
-  function clipTooLong(clip) {
-    const d = clip && clip.durationSeconds;
-    return typeof d === "number" && d > MAX_CLIP_SECONDS;
+  function isTrueHighlightClip(clip) {
+    if (!clip?.videoUrl) return false;
+    if (clip.kind === "goals" || clip.kind === "full") return true;
+    const t = String(clip.title || "");
+    if (/مباراة\s+كاملة|full\s*match|match\s*replay/i.test(t)) return false;
+    return /^(?:ملخص\s+مباراة|(?:اهداف|أهداف)\s+مباراة)/i.test(t)
+      || (/ملخص|اهداف|أهداف/i.test(t) && /مباراة|كأس العالم/i.test(t));
   }
 
   function clipUsable(clip) {
-    return !!(clip && clip.videoUrl && !clipTooLong(clip));
+    return isTrueHighlightClip(clip);
   }
 
   function matchClips(m) {

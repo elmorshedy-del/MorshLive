@@ -115,33 +115,22 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta) {
   return out;
 }
 
-const MAX_CLIP_SECONDS = 20 * 60;
-
-function clipTooLong(clip) {
-  const d = clip && clip.durationSeconds;
-  return typeof d === "number" && d > MAX_CLIP_SECONDS;
+/** Attach highlights.goals + highlights.full; primary = true ملخص reel or أهداف reel. */
+function applyBtolatHighlights(match, bucket, normalizeBucket) {
+  if (!bucket || (!bucket.goals && !bucket.full)) return false;
+  const cleaned = normalizeBucket ? normalizeBucket({ ...bucket }) : bucket;
+  if (!cleaned || (!cleaned.goals && !cleaned.full)) return false;
+  match.highlights = {};
+  if (cleaned.goals) match.highlights.goals = { ...cleaned.goals, kind: "goals" };
+  if (cleaned.full) match.highlights.full = { ...cleaned.full, kind: "full" };
+  match.highlight = pickPrimaryFromBucket(match.highlights) || match.highlights.full || match.highlights.goals;
+  return !!match.highlight;
 }
 
 function pickPrimaryFromBucket(highlights) {
-  const goals = highlights?.goals;
-  const full = highlights?.full;
-  if (full && !clipTooLong(full)) return full;
-  if (goals && !clipTooLong(goals)) return goals;
-  if (goals) return goals;
-  if (full) return full;
+  if (highlights?.full) return highlights.full;
+  if (highlights?.goals) return highlights.goals;
   return null;
-}
-
-/** Attach highlights.goals + highlights.full; keep highlight as best clip ≤20m. */
-async function applyBtolatHighlights(match, bucket, normalizeBucket) {
-  if (!bucket || (!bucket.goals && !bucket.full)) return false;
-  const cleaned = normalizeBucket ? await normalizeBucket({ ...bucket }) : bucket;
-  if (!cleaned || (!cleaned.goals && !cleaned.full)) return false;
-  match.highlights = {};
-  if (cleaned.goals) match.highlights.goals = { ...cleaned.goals };
-  if (cleaned.full) match.highlights.full = { ...cleaned.full };
-  match.highlight = pickPrimaryFromBucket(match.highlights) || match.highlights.full || match.highlights.goals;
-  return !!match.highlight;
 }
 
 module.exports = {
