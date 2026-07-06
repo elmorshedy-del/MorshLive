@@ -587,10 +587,26 @@ function bandLabel(b) {
   return window.I18N ? window.I18N.t("band." + b) : b;
 }
 
+/* Each side's share of the combined total — never the raw value as a width
+   (a percent stat like pass accuracy is independent per team and can be
+   80% + 80%). A trailing side with a real value keeps a visible sliver so it
+   never disappears; 0–0 leaves the neutral track empty. */
+function barShares(hv, av) {
+  const total = hv + av;
+  if (total <= 0) return { hPct: 0, aPct: 0, empty: true };
+  let hPct = (hv / total) * 100;
+  let aPct = 100 - hPct;
+  const FLOOR = 6;
+  if (hv > 0 && hPct < FLOOR) { hPct = FLOOR; aPct = 100 - FLOOR; }
+  else if (av > 0 && aPct < FLOOR) { aPct = FLOOR; hPct = 100 - FLOOR; }
+  return { hPct, aPct, empty: false };
+}
+
 /* Bars start at width:0 with the real value stashed in data-w, then
    window.activateStatBars() flips them to their target width on the next
    frame so the fill animates in instead of appearing pre-filled. */
-function statBarHtml(hPct, aPct) {
+function statBarHtml(hv, av) {
+  const { hPct, aPct } = barShares(hv, av);
   return `
     <div class="stat-bar">
       <div class="stat-bar-home" data-w="${hPct}" style="width:0%"></div>
@@ -604,13 +620,6 @@ function statRowHtml(def, home, away, noLead) {
   if (h == null && a == null) return "";
   const hv = h || 0;
   const av = a || 0;
-  // Always render as each side's share of the combined total, never the raw
-  // value as a width — a "percent" stat like pass accuracy is independent per
-  // team (can be 80% + 80%), so using the raw number as a bar width would
-  // overflow the row. The exact value still shows via the number label.
-  const total = hv + av;
-  const hPct = total ? (hv / total) * 100 : 0;
-  const aPct = total ? (av / total) * 100 : 0;
   const fmt = (v) => (def.percent ? `${Math.round(v)}%` : Math.round(v));
   const homeLead = !noLead && hv > av;
   const awayLead = !noLead && av > hv;
@@ -621,7 +630,7 @@ function statRowHtml(def, home, away, noLead) {
         <span class="stat-label">${def.labelAr}</span>
         <span class="stat-value stat-value-away${awayLead ? " stat-value--lead" : ""}">${fmt(av)}</span>
       </div>
-      ${statBarHtml(hPct, aPct)}
+      ${statBarHtml(hv, av)}
     </div>`;
 }
 
@@ -641,17 +650,19 @@ function statHeroHtml(m) {
   if (h == null && a == null) return "";
   const hv = h || 0;
   const av = a || 0;
+  // Possession is a share by definition — normalise so the two shown figures
+  // always add to 100 (ESPN's raw 44.5/55.5 would otherwise round to 45/56).
   const total = hv + av;
-  const hPct = total ? (hv / total) * 100 : 50;
-  const aPct = total ? (av / total) * 100 : 50;
+  const homePct = total ? Math.round((hv / total) * 100) : 50;
+  const awayPct = 100 - homePct;
   return `
     <div class="stat-hero">
       <div class="stat-hero-label">الاستحواذ</div>
       <div class="stat-hero-values">
-        <span class="stat-hero-value stat-hero-value--home">${Math.round(hv)}%</span>
-        <span class="stat-hero-value stat-hero-value--away">${Math.round(av)}%</span>
+        <span class="stat-hero-value stat-hero-value--home">${homePct}%</span>
+        <span class="stat-hero-value stat-hero-value--away">${awayPct}%</span>
       </div>
-      ${statBarHtml(hPct, aPct)}
+      ${statBarHtml(homePct, awayPct)}
     </div>`;
 }
 
@@ -695,48 +706,127 @@ function lineupPlayerHtml(p) {
   return `<li><span class="lineup-jersey">${dataEscapeHtml(p.jersey)}</span><span class="lineup-name">${dataEscapeHtml(p.name)}</span></li>`;
 }
 
-/* Green pitch: bands laid out left (attack) to right (goalkeeper), each
-   player's row position spread evenly within its band. A player currently
-   on loses no minutes here — a substitute swapped in keeps the tactical
-   band of whoever they replaced (see match-detail-lib.js), so the pitch
-   always reflects who is actually out there right now, cards and all. */
-const PITCH_BAND_X = { fwd: 13, mid: 40, def: 66, gk: 90 };
+/* Green pitch, laid out by the REAL formation (e.g. 4-2-3-1) rather than
+   collapsing everyone into 4 bands: the formation string gives the exact
+   number of players per line, so the pitch is proportional and never crams
+   5 players into one "midfield" column. A substitute keeps the pitch slot
+   of whoever they replaced (see match-detail-lib.js), so the layout always
+   reflects who is actually on the field right now. */
 
-function pitchRowY(count, i) {
-  if (count <= 1) return 50;
-  const pad = 14;
-  return pad + i * ((100 - pad * 2) / (count - 1));
+/* Depth score (defensive → attacking) from ESPN's position abbreviation,
+   used only to ORDER outfielders back-to-front; the formation counts decide
+   how that ordering is sliced into lines. */
+function posDepth(p) {
+  const a = (p.pos || "").toUpperCase();
+  if (a === "G" || p.band === "gk") return 0;
+  if (/^(LB|RB|WB|LWB|RWB)/.test(a)) return 11;
+  if (/^(CD|CB|SW|D)/.test(a)) return 10;
+  if (/^(DM|CDM)/.test(a)) return 20;
+  if (/^(AM|CAM)/.test(a)) return 40;
+  if (/^(F|CF|ST|S|FW|W|LW|RW|LF|RF)/.test(a)) return 50;
+  if (/^(M|CM|LM|RM|LCM|RCM)/.test(a)) return 30;
+  if (p.band === "def") return 10;
+  if (p.band === "fwd") return 50;
+  return 30;
+}
+
+/* Left→right weight within a line (maps to the pitch's vertical axis, since
+   the pitch is rotated 90°): left-flank first, centre, right-flank. */
+function posSide(p) {
+  const a = (p.pos || "").toUpperCase();
+  if (/L/.test(a)) return -1;
+  if (/R/.test(a)) return 1;
+  return 0;
+}
+
+/* Returns [{ p, x, y }] for every starter. Falls back to even bands when the
+   formation string is missing or its counts don't match the XI. */
+function pitchPositions(team) {
+  const starters = team.starters || [];
+  const gks = starters.filter((p) => p.band === "gk" || (p.pos || "").toUpperCase() === "G");
+  const outfield = starters.filter((p) => !gks.includes(p));
+  const rowSizes = String(team.formation || "").split(/[^0-9]+/).map(Number).filter((n) => n > 0);
+  const sumOut = rowSizes.reduce((a, b) => a + b, 0);
+
+  const usable = gks.length === 1 && rowSizes.length >= 2 && sumOut === outfield.length;
+  if (!usable) return pitchPositionsByBand(starters);
+
+  // Lines from goal line (GK) outward to attack.
+  const sorted = outfield.slice().sort((a, b) => posDepth(a) - posDepth(b)
+    || (a.formationPlace || 99) - (b.formationPlace || 99));
+  const lines = [gks];
+  let idx = 0;
+  for (const size of rowSizes) {
+    lines.push(sorted.slice(idx, idx + size));
+    idx += size;
+  }
+
+  // x: GK on the right (near its goal), attack on the left. y: spread within a line.
+  const N = lines.length;
+  const xRight = 92, xLeft = 9;
+  const out = [];
+  lines.forEach((line, r) => {
+    const x = N <= 1 ? xRight : xRight - r * ((xRight - xLeft) / (N - 1));
+    const ordered = line.slice().sort((a, b) => posSide(a) - posSide(b)
+      || (a.formationPlace || 99) - (b.formationPlace || 99));
+    const count = ordered.length;
+    ordered.forEach((p, i) => {
+      const y = count <= 1 ? 50 : 15 + i * (70 / (count - 1));
+      out.push({ p, x, y });
+    });
+  });
+  return out;
+}
+
+function pitchPositionsByBand(starters) {
+  const bandX = { fwd: 13, mid: 40, def: 66, gk: 90 };
+  const byBand = { gk: [], def: [], mid: [], fwd: [] };
+  starters.forEach((p) => { (byBand[p.band] || byBand.mid).push(p); });
+  const out = [];
+  ["gk", "def", "mid", "fwd"].forEach((b) => {
+    const list = byBand[b];
+    const count = list.length;
+    list.forEach((p, i) => {
+      const y = count <= 1 ? 50 : 15 + i * (70 / (count - 1));
+      out.push({ p, x: bandX[b], y });
+    });
+  });
+  return out;
+}
+
+function pitchCardHtml(p) {
+  // Second yellow shows as a red; a straight red also shows red. A lone yellow
+  // shows yellow. Rendered as a small tilted card, not a bare rectangle.
+  if (p.redCards > 0 && p.yellowCards > 0) {
+    return '<span class="pitch-card pitch-card--second" title="إنذار ثانٍ ← طرد"></span>';
+  }
+  if (p.redCards > 0) return '<span class="pitch-card pitch-card--red" title="بطاقة حمراء"></span>';
+  if (p.yellowCards > 0) return '<span class="pitch-card pitch-card--yellow" title="بطاقة صفراء"></span>';
+  return "";
 }
 
 function pitchDotHtml(p, x, y, isAway) {
-  const cardBadge = p.redCards > 0
-    ? '<span class="pitch-card pitch-card--red" title="بطاقة حمراء"></span>'
-    : p.yellowCards > 0
-      ? '<span class="pitch-card pitch-card--yellow" title="بطاقة صفراء"></span>'
-      : "";
   const subTitle = p.subFor
     ? `بديل عن ${p.subFor}${p.subMinute ? ` (${p.subMinute})` : ""}`
     : "";
-  const subBadge = p.subFor ? `<span class="pitch-sub-badge" title="${dataEscapeHtml(subTitle)}">⇄</span>` : "";
+  const subBadge = p.subFor ? `<span class="pitch-sub-badge" title="${dataEscapeHtml(subTitle)}">↑</span>` : "";
   return `
     <div class="pitch-dot${isAway ? " pitch-dot--away" : ""}" style="left:${x}%;top:${y}%">
-      <span class="pitch-jersey">${dataEscapeHtml(p.jersey)}${cardBadge}${subBadge}</span>
+      <span class="pitch-jersey">${dataEscapeHtml(p.jersey)}</span>
+      ${pitchCardHtml(p)}${subBadge}
       <span class="pitch-name">${dataEscapeHtml(p.name)}</span>
     </div>`;
 }
 
 function pitchHtml(team, isAway) {
-  const byBand = { gk: [], def: [], mid: [], fwd: [] };
-  team.starters.forEach((p) => { (byBand[p.band] || byBand.mid).push(p); });
-  const dots = BAND_ORDER.map((b) => {
-    const list = byBand[b];
-    const x = PITCH_BAND_X[b];
-    return list.map((p, i) => pitchDotHtml(p, x, pitchRowY(list.length, i), isAway)).join("");
-  }).join("");
+  const dots = pitchPositions(team)
+    .map(({ p, x, y }) => pitchDotHtml(p, x, y, isAway))
+    .join("");
   return `
     <div class="match-pitch">
       <div class="pitch-box pitch-box--gk"></div>
       <div class="pitch-box pitch-box--goal"></div>
+      <div class="pitch-spot"></div>
       ${dots}
     </div>`;
 }
@@ -768,6 +858,29 @@ function buildLineupsHtml(m) {
     </div>`;
 }
 
+/* Goal scorers + minutes (من سجّل ومتى) — a two-column strip, home on the
+   right (RTL). Penalty and own-goal are tagged. Returns "" when no goals. */
+const BALL_ICON = '<svg class="goal-ball" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#fff" stroke="rgba(0,0,0,.35)"/><path d="M12 6.5l3.2 2.3-1.2 3.8h-4l-1.2-3.8z" fill="#0e1424"/></svg>';
+
+function goalItemHtml(g) {
+  const tag = g.own ? ' <i class="goal-tag">ضد نفسه</i>' : g.penalty ? ' <i class="goal-tag">ركلة جزاء</i>' : "";
+  return `<li>${BALL_ICON}<span class="goal-scorer">${dataEscapeHtml(g.scorer)}</span><span class="goal-min">${dataEscapeHtml(g.minute)}</span>${tag}</li>`;
+}
+
+function buildGoalsHtml(m) {
+  const goals = m && m.goals;
+  if (!Array.isArray(goals) || !goals.length) return "";
+  const home = goals.filter((g) => g.side === "home").map(goalItemHtml).join("");
+  const away = goals.filter((g) => g.side === "away").map(goalItemHtml).join("");
+  if (!home && !away) return "";
+  return `
+    <div class="match-goals">
+      <ul class="goal-col goal-col--home">${home}</ul>
+      <span class="goal-sep">${BALL_ICON}</span>
+      <ul class="goal-col goal-col--away">${away}</ul>
+    </div>`;
+}
+
 let _matchDetailIdx = null;
 let _matchDetailAt = 0;
 async function loadMatchDetailIndex() {
@@ -792,6 +905,7 @@ function applyMatchDetail(matches, idx) {
     const out = { ...m };
     if (entry.lineups) out.lineups = entry.lineups;
     if (entry.stats) out.stats = entry.stats;
+    if (entry.goals) out.goals = entry.goals;
     return out;
   });
 }
@@ -808,6 +922,7 @@ async function enrichLiveMatchDetails(matches, { force } = {}) {
 
 window.buildStatsHtml = buildStatsHtml;
 window.buildLineupsHtml = buildLineupsHtml;
+window.buildGoalsHtml = buildGoalsHtml;
 window.activateStatBars = activateStatBars;
 
 function scheduleHighlightEnrich(matches) {

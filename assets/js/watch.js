@@ -158,6 +158,9 @@
   function renderMatchDetail() {
     const slot = document.getElementById("match-detail-slot");
     if (!slot) return;
+    const goalsHtml = match && window.buildGoalsHtml && window.buildGoalsHtml(match)
+      ? staticPanel(t("card.goals"), window.buildGoalsHtml(match))
+      : "";
     const lineupsHtml = match && match.lineups && window.buildLineupsHtml
       ? staticPanel(t("card.lineups"), window.buildLineupsHtml(match))
       : "";
@@ -166,7 +169,7 @@
     const statsHtml = hasStats
       ? statsNoticeSlot + staticPanel(t("card.stats"), window.buildStatsHtml(match))
       : "";
-    slot.innerHTML = lineupsHtml + statsHtml;
+    slot.innerHTML = goalsHtml + lineupsHtml + statsHtml;
     if (window.activateStatBars) window.activateStatBars(slot);
     if (hasStats && window.MatchNotice) {
       const noticeSlot = document.getElementById("stats-notice-slot");
@@ -179,7 +182,8 @@
   function matchDetailChanged(before, after) {
     if (!before || !after) return true;
     return JSON.stringify(before.lineups) !== JSON.stringify(after.lineups)
-      || JSON.stringify(before.stats) !== JSON.stringify(after.stats);
+      || JSON.stringify(before.stats) !== JSON.stringify(after.stats)
+      || JSON.stringify(before.goals) !== JSON.stringify(after.goals);
   }
 
   async function refreshMatchDetail() {
