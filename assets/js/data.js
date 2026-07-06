@@ -27,6 +27,12 @@ const EMBEDS = {
     defaultServer: 0,
     servers: 4,
   },
+  amine: {
+    url: "/wk/albaplayer/amine/",
+    servStart: 0,
+    defaultServer: 0,
+    servers: 4,
+  },
 };
 
 function embedUrlFor(embed, serv) {

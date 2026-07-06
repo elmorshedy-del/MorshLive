@@ -89,7 +89,7 @@ const EXTRA_CHANNEL_STREAMS = {};
 // Signed URLs minted by this worker bypass this list entirely, so it no longer
 // needs to be edited every time worldkoora rotates its CDN host.
 const ALLOWED_STREAM_HOST =
-  /(^|\.)((heinzromanigi|teworld|smarop|golatooa|554564\.sbs|futeure\.space|syria-llive\.live|ttvnw\.net|playlist\.ttvnw\.net)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+|1\.554564\.sbs|mev\.futeure\.space|eun[0-9]+\.playlist\.ttvnw\.net)$/i;
+  /(^|\.)((heinzromanigi|teworld|smarop|golatooa|554564\.sbs|bikriza\.site|futeure\.space|syria-llive\.live|ttvnw\.net|playlist\.ttvnw\.net)\.[a-z0-9.-]+|(cdn[0-9]?\.)?heinzromanigi1\.xyz|za\.teworld\.online|we\.smarop\.store|mashy\.[a-z0-9.-]+|1\.554564\.sbs|mev\.futeure\.space|eun[0-9]+\.playlist\.ttvnw\.net)$/i;
 
 // Last-known-good streams per VIP slot/serv when upstream HTML is blank or stale.
 // Do NOT pin promo-loop slates here (e.g. egcity1 yallakora redirect loops).
@@ -1311,79 +1311,93 @@ async function proxyWeshan(request, env) {
   } catch {
     return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
   }
+}
 
-function cachedHlsForSlot(slot, serv) {
-  const out = [];
-  const seen = new Set();
-  for (const s of vipServerOrder(serv)) {
-    const known = (LAST_KNOWN_VIP_STREAMS[slot] && LAST_KNOWN_VIP_STREAMS[slot][s]) || [];
-    for (const item of known) {
-      if (!item?.source || seen.has(item.source) || isBlockedStreamUrl(item.source)) continue;
-      seen.add(item.source);
-      out.push(item);
+const AMINE = "https://yallashooot.tv/albaplayer/amine/";
+const AMINE_RE = /^\/wk\/albaplayer\/amine\/?$/i;
+
+async function fetchAmineHtml(request, serv) {
+  const upstream = new URL(AMINE);
+  upstream.searchParams.set("serv", String(serv));
+  try {
+    const res = await fetchWithTimeout(upstream.toString(), {
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "text/html,application/xhtml+xml",
+        Referer: AMINE,
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    return res.text();
+  } catch {
+    return null;
+  }
+}
+
+function amineServerOrder(requestedServ) {
+  const order = [];
+  const raw = requestedServ != null && requestedServ !== "" ? Number(requestedServ) : 0;
+  if (Number.isFinite(raw) && raw >= 0 && raw <= 3) order.push(raw);
+  for (let s = 0; s <= 3; s++) if (!order.includes(s)) order.push(s);
+  return order;
+}
+
+async function proxyAmine(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "amine",
+  };
+  const requestedServ = incoming.searchParams.get("serv");
+
+  if (isHead) {
+    return new Response(null, { status: 200, headers: htmlHeaders });
+  }
+
+  try {
+    const seenSources = new Set();
+    const pool = [];
+    for (const serv of amineServerOrder(requestedServ)) {
+      const html = await fetchAmineHtml(request, serv);
+      if (!html) continue;
+      const resolved = await resolvePlayableSourceFromHtml(html, request, 0, new Set());
+      if (!resolved || !isHlsUrl(resolved.source) || seenSources.has(resolved.source)) continue;
+      const probe = await streamProbe(resolved.source, "plain", request);
+      if (!probe.ok) continue;
+      seenSources.add(resolved.source);
+      const sig = await signTarget(resolved.source, secret);
+      pool.push({ url: hlsProxyUrl(resolved.source, origin, sig), score: probe.score, serv });
     }
-  }
-  return out;
-}
+    pool.sort((a, b) => a.score - b.score);
+    const proxied = [];
+    for (const m of pool) if (!proxied.includes(m.url)) proxied.push(m.url);
 
-
-async function buildProxiedPool(candidates, dlMirrors, extras, origin, secret) {
-  const pool = [];
-  for (const c of candidates || []) {
-    if (isBlockedStreamUrl(c.source)) continue;
-    const sig = await signTarget(c.source, secret);
-    pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: c.score ?? 9999 });
-  }
-  for (const m of dlMirrors || []) pool.push(m);
-  for (const e of extras || []) pool.push(e);
-  pool.sort((a, b) => a.score - b.score);
-  const proxied = [];
-  for (const m of pool) if (!proxied.includes(m.url)) proxied.push(m.url);
-  return proxied;
-}
-
-function vipPlayerMode(request) {
-  const m = (new URL(request.url).searchParams.get("mode") || "dual").toLowerCase();
-  return m === "hls" || m === "twitch" ? m : "dual";
-}
-
-// mode=dual (default) | hls | twitch — chosen from the watch-page source picker.
-function respondVipPlayer(mode, proxied, twitchChannel, origin, htmlHeaders, meta) {
-  const extra = meta || {};
-  if (mode === "twitch") {
-    if (twitchChannel) return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
     if (proxied.length) {
       return new Response(cleanHlsPlayerHtml(proxied, "بث مباشر"), {
         status: 200,
-        headers: { ...htmlHeaders, "X-KZ-Player": "hls", "X-KZ-Mode-Fallback": "twitch-unavailable", ...extra },
+        headers: {
+          ...htmlHeaders,
+          "X-KZ-Serv": String((pool[0] && pool[0].serv) ?? ""),
+          "X-KZ-Mirrors": String(proxied.length),
+        },
       });
     }
-    return null;
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  } catch {
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
   }
-  if (mode === "hls" && proxied.length) {
-    return new Response(cleanHlsPlayerHtml(proxied, "بث مباشر"), {
-      status: 200,
-      headers: { ...htmlHeaders, "X-KZ-Player": "hls", ...extra },
-    });
-  }
-  if (twitchChannel && proxied.length) {
-    return dualPlayerResponse(proxied, twitchChannel, origin, htmlHeaders, extra);
-  }
-  if (twitchChannel) return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
-  if (proxied.length) {
-    return new Response(cleanHlsPlayerHtml(proxied, "بث مباشر"), {
-      status: 200,
-      headers: { ...htmlHeaders, "X-KZ-Player": "hls", ...extra },
-    });
-  }
-  return null;
-
+}
 
 async function proxyVip(request, slot, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
   const channelId = incoming.searchParams.get("ch") || "";
-  const mode = vipPlayerMode(request);
   const secret = env && env.STREAM_SIGNING_SECRET;
   const isHead = request.method === "HEAD";
   const htmlHeaders = {
@@ -1401,79 +1415,41 @@ async function proxyVip(request, slot, env) {
   }
 
   try {
-    const serv = Number(incoming.searchParams.get("serv") || 1);
+    const { candidates, firstHtml } = await resolveVipSlotStream(request, slot);
+    const twitchChannel =
+      LAST_KNOWN_TWITCH_CHANNELS[slot] || (await resolveTwitchChannel(request, slot, [firstHtml]));
 
-    // Fast path: upstream match HLS (serv=2) + optional dlhd backup + Twitch.
-    const [vipQuick, twitchQuick] = await Promise.all([
-      resolveVipSlotStreamQuick(request, slot),
-      resolveTwitchChannelQuick(request, slot),
-    ]);
-    let twitchChannel = twitchQuick;
-    const hasUpstream = (vipQuick.candidates || []).length > 0;
-    const dlQuick =
-      !hasUpstream && channelId && DLHD_CHANNEL_MIRROR_IDS[channelId]
-        ? await Promise.all(
-            DLHD_CHANNEL_MIRROR_IDS[channelId].map((id) => resolveDlMirror(id, origin, secret, request))
-          )
-        : [];
-    const dlMirrorsQuick = (dlQuick || []).filter(Boolean);
-    const hlsCandidates = [...(vipQuick.candidates || [])];
-    const proxiedQuick = await buildProxiedPool(hlsCandidates, dlMirrorsQuick, [], origin, secret);
-
-    const quickMeta = {
-      "X-KZ-Mirrors": String(proxiedQuick.length),
-      "X-KZ-Fast": "1",
-      "X-KZ-Serv": String((vipQuick.candidates && vipQuick.candidates[0] && vipQuick.candidates[0].serv) || serv),
-      "X-KZ-Twitch-Channel": twitchChannel || "",
-      "X-KZ-Mode": mode,
-    };
-    const quickResp = respondVipPlayer(mode, proxiedQuick, twitchChannel, origin, htmlHeaders, quickMeta);
-    if (quickResp) return quickResp;
-
-    const twitchCached = LAST_KNOWN_TWITCH_CHANNELS[slot] || null;
-    const knownHls = cachedHlsForSlot(slot, serv);
-
-    const resolveWork = Promise.all([
-      resolveVipSlotStream(request, slot).catch(() => ({ candidates: [], firstHtml: null })),
-      resolveDlChannelMirrors(channelId, origin, secret, request).catch(() => []),
-      resolveExtraChannelMirrors(channelId, origin, secret, request).catch(() => []),
-      (twitchCached
-        ? Promise.resolve(twitchCached)
-        : resolveTwitchChannel(request, slot, [])
-      ).catch(() => twitchCached),
-    ]);
-    const timed = await Promise.race([
-      resolveWork,
-      new Promise((resolve) => setTimeout(() => resolve(null), VIP_RESOLVE_DEADLINE_MS)),
-    ]);
-
-    let candidates = [];
-    let firstHtml = null;
-    let dlMirrors = [];
-    let extras = [];
-
-    if (timed) {
-      const vip = timed[0] || {};
-      candidates = vip.candidates || [];
-      firstHtml = vip.firstHtml || null;
-      dlMirrors = timed[1] || [];
-      extras = timed[2] || [];
-      twitchChannel = timed[3] || twitchCached;
-    } else {
-      // Deadline hit — return with cached Twitch + last-known HLS.
-      candidates = knownHls.map((item) => ({ ...item, score: 500, cached: true }));
-      resolveWork.catch(() => {});
+    const pool = [];
+    for (const c of candidates || []) {
+      const sig = await signTarget(c.source, secret);
+      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: c.score });
     }
+    for (const dlMirror of await resolveDlChannelMirrors(channelId, origin, secret, request)) pool.push(dlMirror);
+    for (const extra of await resolveExtraChannelMirrors(channelId, origin, secret, request)) pool.push(extra);
 
-    const proxied = await buildProxiedPool(candidates, dlMirrors, extras, origin, secret);
+    pool.sort((a, b) => a.score - b.score);
+    const proxied = [];
+    for (const m of pool) if (!proxied.includes(m.url)) proxied.push(m.url);
 
-    const slowMeta = {
-      "X-KZ-Mirrors": String(proxied.length),
-      "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
-      "X-KZ-Mode": mode,
-    };
-    const slowResp = respondVipPlayer(mode, proxied, twitchChannel, origin, htmlHeaders, slowMeta);
-    if (slowResp) return slowResp;
+    if (twitchChannel && proxied.length) {
+      return dualPlayerResponse(proxied, twitchChannel, origin, htmlHeaders, {
+        "X-KZ-Mirrors": String(proxied.length),
+        "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
+      });
+    }
+    if (twitchChannel) {
+      return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
+    }
+    if (proxied.length) {
+      return new Response(cleanHlsPlayerHtml(proxied, `${slot} بث`), {
+        status: 200,
+        headers: {
+          ...htmlHeaders,
+          "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
+          "X-KZ-Mirrors": String(proxied.length),
+        },
+      });
+    }
     if (firstHtml) {
       return new Response(await cleanWorldkooraHtml(firstHtml, slot, origin, secret, request), {
         status: 200,
@@ -2600,11 +2576,13 @@ export default {
     const method = request.method;
     const vip = url.pathname.match(VIP_RE);
     if (vip && (method === "GET" || method === "HEAD")) {
-      if (method === "HEAD") return proxyVip(request, vip[1].toLowerCase(), env);
-      return withEdgeCache(request, 45, () => proxyVip(request, vip[1].toLowerCase(), env));
+      return proxyVip(request, vip[1].toLowerCase(), env);
     }
     if (WESHAN_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyWeshan(request, env);
+    }
+    if (AMINE_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxyAmine(request, env);
     }
     if (HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
       if (method === "OPTIONS") {

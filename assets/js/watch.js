@@ -20,6 +20,7 @@
   const STREAM_SOURCES = [
     { key: "vip1", servs: [1, 2, 3, 4] },
     { key: "vip2", servs: [1, 2, 3, 4] },
+    { key: "amine", servs: [0, 1, 2, 3] },
     { key: "weshan", servs: [0, 1, 2, 3] },
   ];
 
@@ -293,6 +294,7 @@
 
   function sourceLabel(key) {
     if (key === "weshan") return t("watch.weshan");
+    if (key === "amine") return t("watch.amine");
     return key.toUpperCase();
   }
 
@@ -313,7 +315,7 @@
         for (const serv of src.servs) {
           const url = channelEmbedUrl(channel.id, src.key, serv);
           const isActive = (activeEmbedKey || defaultKey) === src.key && activeServ === serv;
-          buttons.push(`<button type="button" class="server-btn${isActive ? " active" : ""}${src.key === "weshan" ? " server-btn--alt" : ""}"
+          buttons.push(`<button type="button" class="server-btn${isActive ? " active" : ""}${src.key === "weshan" || src.key === "amine" ? " server-btn--alt" : ""}"
             data-srv="${serv}" data-embed="${src.key}" data-kind="reachable" data-url="${escapeHtml(url)}"
             data-label="${sourceLabel(src.key)} ${t("watch.server")} ${serv}">
             <span class="srv-label">${sourceLabel(src.key)} · ${t("watch.server")} ${serv}</span>

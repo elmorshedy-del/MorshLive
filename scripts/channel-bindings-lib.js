@@ -9,6 +9,7 @@ const SNAPSHOT_JSON = path.join(__dirname, "..", "assets", "data", "live-snapsho
 const EMBED_URLS = {
   vip1: "https://vip.worldkoora.com/albaplayer/vip1/",
   vip2: "https://vip.worldkoora.com/albaplayer/vip2/",
+  amine: "https://yallashooot.tv/albaplayer/amine/",
 };
 
 function loadBindings() {

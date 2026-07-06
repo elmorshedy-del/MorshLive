@@ -1,9 +1,9 @@
 {
-  "updatedAt": "2026-07-06T01:14:20.849Z",
+  "updatedAt": "2026-07-06T01:39:57.976Z",
   "bindingVersion": 10,
   "embedBinding": {
     "bein-max-1": "vip1",
-    "bein-max-2": "vip2",
+    "bein-max-2": "amine",
     "bein-max-3": "vip1",
     "bein-max-4": "vip2",
     "bein-sports-1": "vip1",
@@ -15,13 +15,13 @@
       "id": "espn-fifa.world-760505",
       "home": "Mexico",
       "away": "England",
-      "score": "0 - 0",
-      "minute": "14'",
+      "score": "0 - 2",
+      "minute": "40'",
       "channelId": "bein-max-2",
       "channel": "beIN MAX 2",
       "commentator": "حفيظ دراجي",
-      "embedKey": "vip2",
-      "embedUrl": "https://vip.worldkoora.com/albaplayer/vip2/",
+      "embedKey": "amine",
+      "embedUrl": "https://yallashooot.tv/albaplayer/amine/",
       "kickoffUtc": "2026-07-06T01:00Z"
     }
   ],

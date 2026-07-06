@@ -4,7 +4,7 @@ window.KZ_CHANNEL_BINDINGS = {
   "updatedAt": "2026-07-05T20:15:00.000Z",
   "embedBinding": {
     "bein-max-1": "vip1",
-    "bein-max-2": "vip2",
+    "bein-max-2": "amine",
     "bein-max-3": "vip1",
     "bein-max-4": "vip2",
     "bein-sports-1": "vip1",
