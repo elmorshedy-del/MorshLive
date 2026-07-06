@@ -2023,3 +2023,33 @@ body.tournament-video-modal-open { overflow: hidden; }
 .kz-hl-banner__teams, .kz-hl-banner__cta { position: relative; z-index: 1; padding-inline: 12px; }
 .kz-hl-banner__teams { font-weight: 800; font-size: .82rem; line-height: 1.35; margin-bottom: 2px; }
 .kz-hl-banner__cta { font-size: .72rem; font-weight: 700; color: var(--accent); padding-bottom: 10px; }
+
+/* Watch — layout only (all hooks preserved; channels stay visible above player) */
+.page-watch .watch-wrap { padding-top: 12px; }
+.page-watch .watch-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap; margin-bottom: 10px;
+}
+.page-watch .watch-topline {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex: 1 1 280px; flex-wrap: wrap;
+}
+.page-watch .watch-topline__title { margin: 0; font-size: clamp(1rem, 2.5vw, 1.25rem); font-weight: 800; }
+.page-watch .player-toolbar { margin: 0; }
+.page-watch .no-ads-badge--inline { margin-bottom: 0; font-size: .78rem; padding: 5px 12px; }
+.page-watch .watch-sources-card {
+  margin-bottom: 12px; padding: 12px 14px; border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.02);
+}
+.page-watch .watch-sources { margin: 0; }
+.page-watch .now-playing h1 { display: none; }
+.page-watch .now-playing .sub { margin-top: 0; font-size: .92rem; }
+.page-watch .info-grid { margin-top: 14px; }
+.page-watch .disclaimer { margin-top: 14px; font-size: .82rem; }
+.page-watch .watch-grid { margin-top: 16px; }
+@media (min-width: 900px) {
+  .page-watch .watch-sources {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start;
+  }
+  .page-watch .wc2026-banner { padding: 12px 0; }
+}
