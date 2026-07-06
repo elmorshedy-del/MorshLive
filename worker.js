@@ -108,39 +108,6 @@ const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
 .aplr-embed-holder,.aplr-embed-visible,.aplr-site-name{display:none!important;visibility:hidden!important;pointer-events:none!important}
 </style>`;
 
-// Upstream dlhd/kooracity injects ~30s full-screen "go to kooracity" pause loops into
-// some HLS mirrors. Jump to live edge on stall; switch mirror if still stuck.
-const KZ_HLS_ANTI_PAUSE_JS = `
-function kzInstallAntiPause(v, onSwitchMirror){
-  var lastT=-1, lastMove=Date.now(), userPaused=false, jumpTried=false;
-  v.addEventListener('pause', function(){ if(!v.seeking) userPaused=true; });
-  v.addEventListener('playing', function(){ userPaused=false; lastMove=Date.now(); lastT=v.currentTime; jumpTried=false; });
-  function jumpLive(){
-    try{
-      var b=v.buffered; if(!b||!b.length) return false;
-      var end=b.end(b.length-1); if(!isFinite(end)||end<1) return false;
-      v.currentTime=Math.max(0,end-1.5);
-      var p=v.play(); if(p&&p.catch)p.catch(function(){});
-      return true;
-    }catch(e){ return false; }
-  }
-  setInterval(function(){
-    if(userPaused||v.paused||document.hidden) return;
-    var t=v.currentTime;
-    if(lastT>=0&&t<lastT-0.5&&!v.seeking){ jumpTried=false; lastMove=Date.now(); lastT=t; onSwitchMirror(); return; }
-    if(t!==lastT){ lastT=t; lastMove=Date.now(); jumpTried=false; return; }
-    var stall=Date.now()-lastMove;
-    if(stall>=7000&&!jumpTried){ jumpTried=jumpLive(); if(jumpTried){ lastMove=Date.now(); return; } }
-    if(stall>=14000){ jumpTried=false; lastMove=Date.now(); lastT=-1; onSwitchMirror(); }
-  },1500);
-  v.addEventListener('waiting', function(){
-    setTimeout(function(){
-      if(userPaused||v.paused) return;
-      if(Date.now()-lastMove>=5000) jumpLive();
-    },4000);
-  });
-}`;
-
 const EMBED_SHIM = `<script id="kz-embed-shim">
 (function(){
   window.AplrDevprotocol='0';
@@ -860,7 +827,6 @@ function cleanHlsPlayerHtml(sources, title) {
 </head><body>
 <video id="v" controls autoplay muted playsinline data-kz-src=${JSON.stringify(list[0] || "")}></video>
 <script>
-${KZ_HLS_ANTI_PAUSE_JS}
 (function(){
   var v=document.getElementById('v'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0;
   function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
@@ -876,12 +842,12 @@ ${KZ_HLS_ANTI_PAUSE_JS}
       hls.on(Hls.Events.ERROR,function(_e,d){
         if(!d||!d.fatal) return;
         if(d.type==='mediaError'){ try{hls.recoverMediaError();return;}catch(e){} }
+        // network/other fatal: this mirror is down — advance to the next live one.
         next();
       });
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
   }
-  kzInstallAntiPause(v, next);
   load();
 })();
 </script>
@@ -942,7 +908,6 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
   <button type="button" id="kz-unmute"><span class="ico">🔊</span><span>اضغط لتشغيل الصوت</span></button>
 </div>
 <script>
-${KZ_HLS_ANTI_PAUSE_JS}
 (function(){
   var sources=${JSON.stringify(list)}, i=0, hls=null, tries=0, v=document.getElementById('v');
   var shell=document.getElementById('kz-shell'), soundBtn=document.getElementById('kz-sound'), unmute=document.getElementById('kz-unmute');
@@ -983,7 +948,6 @@ ${KZ_HLS_ANTI_PAUSE_JS}
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
     syncSoundUi();
   }
-  kzInstallAntiPause(v, nextHls);
   loadHls();
   var channel=${JSON.stringify(ch)}, parents=${JSON.stringify(parents)}, bar=document.getElementById('kz-quality'), player;
   player=new Twitch.Player('kz-twitch',{width:'100%',height:'100%',channel:channel,parent:parents,muted:true,autoplay:true});
