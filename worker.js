@@ -2391,7 +2391,10 @@ function memeInWindow(createdAt, window) {
 async function fetchAccountTweets(bearer, userId, startTime, endTime) {
   const params = new URLSearchParams({
     max_results: "30",
-    "tweet.fields": "created_at,public_metrics",
+    "tweet.fields": "created_at,public_metrics,attachments,author_id",
+    expansions: "attachments.media_keys,author_id",
+    "media.fields": "preview_image_url,url,type,variants,width,height",
+    "user.fields": "profile_image_url,username",
     start_time: startTime,
     end_time: endTime,
     exclude: "retweets,replies",
@@ -2399,9 +2402,9 @@ async function fetchAccountTweets(bearer, userId, startTime, endTime) {
   const res = await fetch(`${TWITTER_API_BASE}/users/${userId}/tweets?${params}`, {
     headers: { Authorization: `Bearer ${bearer}` },
   });
-  if (!res.ok) return [];
+  if (!res.ok) return { tweets: [], includes: {} };
   const json = await res.json();
-  return json.data || [];
+  return { tweets: json.data || [], includes: json.includes || {} };
 }
 
 const SYNDICATION_BASE = "https://syndication.twitter.com/srv/timeline-profile/screen-name";
@@ -2425,10 +2428,14 @@ async function fetchSyndicationTimeline(screenName, limit = 80) {
       const text = tweet.text || tweet.full_text || "";
       if (!id) return null;
       const metrics = tweet.public_metrics || {};
+      const syndMedia = tweet.mediaDetails || tweet.entities?.media || [];
       return {
         id: String(id),
         text,
         created_at: tweet.created_at || tweet.date || null,
+        author_id: tweet.user_id_str || tweet.user?.id_str || null,
+        syndication_media: syndMedia,
+        user: tweet.user || null,
         public_metrics: {
           like_count: metrics.like_count || tweet.favorite_count || 0,
           retweet_count: metrics.retweet_count || 0,
@@ -2439,8 +2446,46 @@ async function fetchSyndicationTimeline(screenName, limit = 80) {
     .filter(Boolean);
 }
 
-function memeToEntry(tweet, author) {
+function pickVideoVariant(variants) {
+  const list = Array.isArray(variants) ? variants : [];
+  const mp4 = list
+    .filter((v) => v.content_type === "video/mp4" && v.url)
+    .sort((a, b) => (b.bit_rate || 0) - (a.bit_rate || 0));
+  return mp4[0] || null;
+}
+
+function extractTweetMedia(tweet, includes) {
+  const keys = tweet?.attachments?.media_keys || [];
+  const bag = includes?.media || [];
+  return keys.map((key) => {
+    const m = bag.find((x) => x.media_key === key);
+    if (!m) return null;
+    const video = m.type === "video" || m.type === "animated_gif" ? pickVideoVariant(m.variants) : null;
+    const previewUrl = m.preview_image_url || m.url || video?.url || "";
+    const url = m.type === "photo" ? (m.url || previewUrl) : (video?.url || previewUrl);
+    if (!previewUrl && !url) return null;
+    return { type: m.type || "photo", previewUrl, url };
+  }).filter(Boolean);
+}
+
+function mediaFromSyndication(items) {
+  return (items || []).map((m) => {
+    const previewUrl = m.media_url_https || m.media_url || m.preview_image_url || "";
+    if (!previewUrl) return null;
+    const type = m.type === "video" ? "video" : m.type === "animated_gif" ? "animated_gif" : "photo";
+    return { type, previewUrl, url: previewUrl };
+  }).filter(Boolean);
+}
+
+function memeToEntry(tweet, author, includes) {
   const engagement = memeEngagement(tweet.public_metrics);
+  const users = includes?.users || [];
+  const user = users.find((u) => u.id === tweet.author_id) || tweet.user || null;
+  const avatarUrl = user?.profile_image_url || user?.profile_image_url_https || null;
+  let media = extractTweetMedia(tweet, includes);
+  if (!media.length && tweet.syndication_media) {
+    media = mediaFromSyndication(tweet.syndication_media);
+  }
   return {
     type: "tweet",
     url: `https://x.com/${author}/status/${tweet.id}`,
@@ -2451,7 +2496,54 @@ function memeToEntry(tweet, author) {
     retweets: tweet.public_metrics?.retweet_count || 0,
     engagement: Math.round(engagement),
     postedAt: tweet.created_at || null,
+    avatarUrl,
+    media,
   };
+}
+
+async function fetchTweetsByIds(bearer, ids) {
+  const out = new Map();
+  if (!bearer || !ids.length) return out;
+  const chunk = ids.slice(0, 100);
+  const params = new URLSearchParams({
+    ids: chunk.join(","),
+    "tweet.fields": "attachments,created_at,public_metrics,author_id",
+    expansions: "attachments.media_keys,author_id",
+    "media.fields": "preview_image_url,url,type,variants,width,height",
+    "user.fields": "profile_image_url,username",
+  });
+  try {
+    const res = await fetch(`${TWITTER_API_BASE}/tweets?${params}`, {
+      headers: { Authorization: `Bearer ${bearer}` },
+    });
+    if (!res.ok) return out;
+    const json = await res.json();
+    for (const tweet of json.data || []) {
+      out.set(String(tweet.id), { tweet, includes: json.includes || {} });
+    }
+  } catch { /* optional enrich */ }
+  return out;
+}
+
+async function enrichMemesMedia(memes, bearer) {
+  if (!bearer || !memes?.length) return memes;
+  const need = memes.filter((m) => m.tweetId && !(m.media && m.media.length));
+  if (!need.length) return memes;
+  const hits = await fetchTweetsByIds(bearer, need.map((m) => m.tweetId));
+  return memes.map((m) => {
+    const hit = hits.get(String(m.tweetId));
+    if (!hit) return m;
+    const fresh = memeToEntry({ ...hit.tweet, text: hit.tweet.text || m.text }, m.author, hit.includes);
+    return {
+      ...m,
+      text: fresh.text || m.text,
+      likes: fresh.likes ?? m.likes,
+      retweets: fresh.retweets ?? m.retweets,
+      engagement: fresh.engagement ?? m.engagement,
+      avatarUrl: fresh.avatarUrl || m.avatarUrl,
+      media: fresh.media?.length ? fresh.media : (m.media || []),
+    };
+  });
 }
 
 async function searchCuratedMemesSyndication(home, away, kickoffUtc) {
@@ -2470,7 +2562,7 @@ async function searchCuratedMemesSyndication(home, away, kickoffUtc) {
       .map((t) => ({ tweet: t, engagement: memeEngagement(t.public_metrics) }))
       .sort((a, b) => b.engagement - a.engagement)
       .slice(0, MEME_TOP_PER_ACCOUNT)
-      .map(({ tweet }) => memeToEntry(tweet, acct.username));
+      .map(({ tweet }) => memeToEntry(tweet, acct.username, {}));
     out.push(...hits);
   }
   return out;
@@ -2482,8 +2574,11 @@ async function searchCuratedMemes(bearer, home, away, kickoffUtc) {
   const out = [];
   for (const acct of MEME_SOURCE_ACCOUNTS) {
     let tweets;
+    let includes = {};
     try {
-      tweets = await fetchAccountTweets(bearer, acct.id, window.start, window.end);
+      const pack = await fetchAccountTweets(bearer, acct.id, window.start, window.end);
+      tweets = pack.tweets;
+      includes = pack.includes;
     } catch {
       continue;
     }
@@ -2496,7 +2591,7 @@ async function searchCuratedMemes(bearer, home, away, kickoffUtc) {
       }))
       .sort((a, b) => b.engagement - a.engagement)
       .slice(0, MEME_TOP_PER_ACCOUNT)
-      .map(({ tweet, engagement, author }) => memeToEntry(tweet, author));
+      .map(({ tweet, author }) => memeToEntry(tweet, author, includes));
     out.push(...hits);
   }
   return out;
@@ -2587,6 +2682,13 @@ async function proxyMatchMemesApi(request, env) {
         source = "twitter-curated";
       }
     } catch { /* static / syndication */ }
+  }
+
+  if (bearer && memes.length) {
+    try {
+      memes = await enrichMemesMedia(memes, bearer);
+      if (source === "archive" || source === "pinned") source = "archive+media";
+    } catch { /* text-only fallback */ }
   }
 
   return new Response(JSON.stringify({ key, memes }), {

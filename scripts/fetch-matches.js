@@ -26,6 +26,7 @@ const {
 const { attachSummaries, buildHighlightQueries, pickArabicVideo, arabicTeam } = require("./highlights-lib");
 const { findVortexHighlight } = require("./vortex-highlights-lib");
 const { scrapeBtolatHighlights } = require("./btolat-highlights-lib");
+const { fetchVortexEmbedMeta } = require("./vortex-highlights-lib");
 const { parseEspnMatchId, extractLineups, extractMatchStats } = require("./match-detail-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 const { writePollConfig } = require("./match-poll-lib");
@@ -240,11 +241,19 @@ async function fetchYouTubeHighlight(match) {
     }
     const bt = btolatMap.get(key);
     if (bt) {
+      let thumbnail = bt.thumbnail || "";
+      if (!thumbnail && bt.embedId) {
+        try {
+          const meta = await fetchVortexEmbedMeta(bt.embedId);
+          thumbnail = meta?.thumbnail || "";
+        } catch { /* optional poster */ }
+      }
       m.highlight = {
         videoUrl: bt.videoUrl,
         title: bt.title,
         source: bt.source,
         embedId: bt.embedId,
+        thumbnail,
       };
       highlightsByKey.set(key, { key, home: m.home, away: m.away, ...m.highlight });
       highlightsMatched++;

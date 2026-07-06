@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-06T02:02:10.108Z",
+  "updatedAt": "2026-07-06T02:18:26.108Z",
   "tournament": "FIFA World Cup 2026",
   "stages": [
     {
@@ -2162,7 +2162,7 @@
       "highlight": {
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/BD8ZRSAEM1XiE",
         "title": "ملخص مباراة المغرب وكندا 3 0 كأس العالم",
-        "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318186/poster/0.png?token=U1BYV2c0Q00rNmgrcVY0aGRTaFJJZjd2Y1R2dnRSdTljejNIRnhGT2xaYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MDM3Mjk2MjEwNjU3&amp;keypair=T3hTVDBmcGtYdk92ZnBUdmFma3dJZDZYYVJSeFI4ZVQyUnQ1ZkowN0QwUT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTAzNzI5NjIxMDY1Nw==",
+        "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318186/poster/0.png?token=ajBFSk1EMGp1eTRyNE5sQk9WTExlQmRMNHNJUTZ5T21hN0ZnV1BEdzBKaz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MDQ3MDUxMzU3MzA0&amp;keypair=b3FkSVptQ0QvVWE4TUU1NFpzdmNEODIzcnNsWnBIdHNrWlAxbm1nTnlNQT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTA0NzA1MTM1NzMwNA==",
         "source": "vortex",
         "embedId": "BD8ZRSAEM1XiE"
       }
@@ -2193,7 +2193,7 @@
       "highlight": {
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/4Duh6QTRDC3M6",
         "title": "ملخص مباراة فرنسا وباراجواي 1 0 كأس العالم",
-        "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318190/poster/0.png?token=Q1Iwb2VlOFRHZ2JNSzR1ZlZ1azk3bkFoMm9aOWRtN1VxYjVlTytZNnB5dz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MDM3Mjk5NjQ4Mjg0&amp;keypair=MGZtTXE2ZFlkWit6M0htTDVaVG12VTFqY0RpWGhzVlpIZEt2VDNodlVQQT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTAzNzI5OTY0ODI4NA==",
+        "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318190/poster/0.png?token=TmxuVk95Z0FGU3NZR3VPYnFhL3B6QWc4QmxtOXVveldObGhoOU1RQk9XRT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MDQ3MDU2MDQ0OTQy&amp;keypair=TW5EZnZlLzRaOUh2L1dXdWVmV0drWkp2eVFWZDQ4N0tYMi9VaE1zRFdXTT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTA0NzA1NjA0NDk0Mg==",
         "source": "vortex",
         "embedId": "4Duh6QTRDC3M6"
       }
@@ -2225,7 +2225,8 @@
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/mA5amQonpFi8V",
         "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
         "source": "vortex",
-        "embedId": "mA5amQonpFi8V"
+        "embedId": "mA5amQonpFi8V",
+        "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=S0lVTWVQeml5cWlINEJ3WDN4eE9sSTY4aEYxUVdad2phTlVuSmpOZ3NxQT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MDQ3MDU5NjM4ODA4&amp;keypair=VEdWSzU4M0NjK3lONm1xdHR1OThTQVJlOTBlWEJZTmJ4Z0lycWpvemVUQT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTA0NzA1OTYzODgwOA=="
       }
     }
   ],

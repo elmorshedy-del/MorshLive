@@ -12,7 +12,7 @@ const { normalizeEspnEvent, parseKickoffMs } = require("./matches-lib");
 const { pairKey } = require("./commentators-lib");
 const { attachSummaries } = require("./highlights-lib");
 const { scrapeBtolatHighlights } = require("./btolat-highlights-lib");
-const { findKnownVortexHighlight } = require("./vortex-highlights-lib");
+const { findKnownVortexHighlight, fetchVortexEmbedMeta } = require("./vortex-highlights-lib");
 const { arabicTeam } = require("./highlights-lib");
 const { discoverLatestHighlightMemes, discoverAllMatchMemes } = require("./twitter-memes-lib");
 
@@ -105,13 +105,21 @@ async function main() {
     const bt = btolatMap.get(m.key);
     const pinned = todayHighlights.get(m.key);
     if (bt) {
-      m.highlight = { videoUrl: bt.videoUrl, title: bt.title, source: bt.source, embedId: bt.embedId };
+      let thumbnail = bt.thumbnail || "";
+      if (!thumbnail && bt.embedId) {
+        try {
+          const meta = await fetchVortexEmbedMeta(bt.embedId);
+          thumbnail = meta?.thumbnail || "";
+        } catch { /* optional */ }
+      }
+      m.highlight = { videoUrl: bt.videoUrl, title: bt.title, source: bt.source, embedId: bt.embedId, thumbnail };
     } else if (pinned?.videoUrl) {
       m.highlight = {
         videoUrl: pinned.videoUrl,
         title: pinned.title,
         source: pinned.source,
         embedId: pinned.embedId,
+        thumbnail: pinned.thumbnail || "",
       };
     } else if (knownVortex[m.key]) {
       const known = await findKnownVortexHighlight(m);

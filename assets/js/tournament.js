@@ -57,14 +57,28 @@
     }
   }
 
+  function memeMediaHtml(meme) {
+    const item = (meme.media || [])[0];
+    if (!item || !item.previewUrl) return "";
+    const isVideo = item.type === "video" || item.type === "animated_gif";
+    return `
+      <div class="kz-tweet__media${isVideo ? " kz-tweet__media--video" : ""}">
+        <img src="${escapeHtml(item.previewUrl)}" alt="" loading="lazy" />
+        ${isVideo ? `<span class="kz-tweet__play" aria-hidden="true">▶</span>` : ""}
+      </div>`;
+  }
+
   function memeHtml(meme) {
     if (!meme || meme.type !== "tweet" || !meme.url) return "";
     const likes = meme.likes != null ? meme.likes : 0;
     const rts = meme.retweets != null ? meme.retweets : 0;
+    const avatar = meme.avatarUrl
+      ? `<img class="kz-tweet__avatar kz-tweet__avatar--img" src="${escapeHtml(meme.avatarUrl)}" alt="" loading="lazy" />`
+      : `<span class="kz-tweet__avatar" aria-hidden="true">${authorInitial(meme.author)}</span>`;
     return `
       <a class="kz-tweet" href="${escapeHtml(meme.url)}" target="_blank" rel="noopener noreferrer">
         <div class="kz-tweet__head">
-          <span class="kz-tweet__avatar" aria-hidden="true">${authorInitial(meme.author)}</span>
+          ${avatar}
           <div class="kz-tweet__who">
             <b>@${escapeHtml(meme.author || "X")}</b>
             ${meme.postedAt ? `<time datetime="${escapeHtml(meme.postedAt)}">${formatDate(meme.postedAt)}</time>` : ""}
@@ -72,6 +86,7 @@
           <span class="kz-tweet__x" aria-hidden="true">𝕏</span>
         </div>
         <p class="kz-tweet__text">${tweetText(meme.text)}</p>
+        ${memeMediaHtml(meme)}
         <div class="kz-tweet__foot">
           <span class="kz-tweet__stat" title="${t("tournament.tweetLikes")}">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
@@ -99,22 +114,32 @@
       </div>`;
   }
 
-  function videoBlock(highlight, mode, lazy) {
+  function videoBlock(highlight, mode, eager) {
     if (!highlight || !highlight.videoUrl) {
       return `<p class="tournament-novideo">${t("tournament.noHighlight")}</p>`;
     }
-    const srcAttr = lazy
-      ? `data-src="${escapeHtml(highlight.videoUrl)}"`
-      : `src="${escapeHtml(highlight.videoUrl)}"`;
+    const poster = highlight.thumbnail || "";
+    const title = highlight.title ? escapeHtml(highlight.title) : "";
+    const embed = escapeHtml(highlight.videoUrl);
+    const launch = `
+      <button type="button" class="tournament-video-launch" data-embed="${embed}" aria-label="${escapeHtml(t("tournament.highlightTitle"))}">
+        ${poster ? `<img class="tournament-video-launch__poster" src="${escapeHtml(poster)}" alt="" loading="lazy" />` : `<span class="tournament-video-launch__fallback"></span>`}
+        <span class="tournament-video-launch__shade"></span>
+        <span class="tournament-video-launch__play" aria-hidden="true">▶</span>
+        ${title ? `<span class="tournament-video-launch__label">${title}</span>` : ""}
+      </button>`;
+    const inline = `
+      <div class="tournament-video-frame tournament-video-frame--active">
+        <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
+          sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
+      </div>`;
     return `
       <div class="tournament-video-block tournament-video-block--${mode}">
         ${sectionHead("▶", "video", t("tournament.highlightTitle"))}
         <div class="tournament-video-shell">
-          ${highlight.title ? `<p class="tournament-video-title">${escapeHtml(highlight.title)}</p>` : ""}
-          <div class="tournament-video-frame">
-            <iframe ${srcAttr} title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
-              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
-              sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
+          <div class="tournament-video-stage" data-embed="${embed}">
+            ${eager ? inline : launch}
           </div>
         </div>
       </div>`;
@@ -165,12 +190,57 @@
       </article>`;
   }
 
+  async function fetchMemesForMatch(m) {
+    const local = sortedMemes((archive.memes && archive.memes[m.key]) || []);
+    if (!m.home || !m.away) return local;
+    const q = new URLSearchParams({
+      home: m.home,
+      away: m.away,
+      kickoff: m.kickoffUtc || "",
+    });
+    try {
+      const res = await fetch(`/api/match-memes?${q}`);
+      if (!res.ok) return local;
+      const data = await res.json();
+      if (data.memes?.length) {
+        archive.memes[m.key] = data.memes;
+        return sortedMemes(data.memes);
+      }
+    } catch { /* local */ }
+    return local;
+  }
+
+  function latestHighlightMatch() {
+    if (!archive?.matches?.length) return null;
+    return archive.matches
+      .filter((m) => m.highlight?.videoUrl && m.kickoffUtc)
+      .sort((a, b) => Date.parse(b.kickoffUtc) - Date.parse(a.kickoffUtc))[0] || null;
+  }
+
+  async function renderFeaturedAsync() {
+    const wrap = document.getElementById("tournament-featured");
+    const card = document.getElementById("tournament-featured-card");
+    const latest = latestHighlightMatch();
+    if (!wrap || !card || !latest) {
+      if (wrap) wrap.hidden = true;
+      return;
+    }
+    wrap.hidden = false;
+    await fetchMemesForMatch(latest);
+    card.innerHTML = featuredHeroHtml(latest);
+    bindVideoLaunch(card);
+  }
+
+  function renderFeatured() {
+    renderFeaturedAsync().catch(() => { /* retry on enrich */ });
+  }
+
   function matchDetailHtml(m) {
     const memes = sortedMemes((archive.memes && archive.memes[m.key]) || []);
     return `
       <div class="tournament-detail">
         ${m.summaryAr ? `<div class="tournament-recap tournament-recap--compact"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
-        ${videoBlock(m.highlight, "card", true)}
+        ${videoBlock(m.highlight, "card", false)}
         ${memesBlock(memes, "card")}
       </div>`;
   }
@@ -207,17 +277,26 @@
       </article>`;
   }
 
-  function bindLazyMedia(root) {
+  function bindVideoLaunch(root) {
     if (!root) return;
-    root.querySelectorAll("details").forEach((det) => {
-      const load = () => {
-        det.querySelectorAll("iframe[data-src]").forEach((iframe) => {
-          if (!iframe.src && iframe.dataset.src) iframe.src = iframe.dataset.src;
-        });
-      };
-      det.addEventListener("toggle", load);
-      if (det.open) load();
+    root.querySelectorAll(".tournament-video-launch").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const stage = btn.closest(".tournament-video-stage");
+        const embed = btn.dataset.embed || stage?.dataset.embed;
+        if (!stage || !embed || stage.dataset.loaded === "1") return;
+        stage.dataset.loaded = "1";
+        stage.innerHTML = `
+          <div class="tournament-video-frame tournament-video-frame--active">
+            <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
+              sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
+          </div>`;
+      });
     });
+  }
+
+  function bindLazyMedia(root) {
+    bindVideoLaunch(root);
   }
 
   function renderTabs() {
@@ -245,25 +324,6 @@
         renderGrid();
       });
     });
-  }
-
-  function latestHighlightMatch() {
-    if (!archive?.matches?.length) return null;
-    return archive.matches
-      .filter((m) => m.highlight?.videoUrl && m.kickoffUtc)
-      .sort((a, b) => Date.parse(b.kickoffUtc) - Date.parse(a.kickoffUtc))[0] || null;
-  }
-
-  function renderFeatured() {
-    const wrap = document.getElementById("tournament-featured");
-    const card = document.getElementById("tournament-featured-card");
-    const latest = latestHighlightMatch();
-    if (!wrap || !card || !latest) {
-      if (wrap) wrap.hidden = true;
-      return;
-    }
-    wrap.hidden = false;
-    card.innerHTML = featuredHeroHtml(latest);
   }
 
   function renderGrid() {
