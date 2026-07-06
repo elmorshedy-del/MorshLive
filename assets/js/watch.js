@@ -18,6 +18,7 @@
   let channel = CHANNELS[0];
   let match = null;
   const STREAM_SOURCES = [
+    { key: "sirtv", servs: [1], external: true },
     { key: "vip1", servs: [1, 2, 3, 4] },
     { key: "vip2", servs: [1, 2, 3, 4] },
     { key: "amine", servs: [0, 1, 2, 3] },
@@ -48,13 +49,18 @@
 
   function loadPlayer() {
     if (!shell) return;
-    const url = embedUrlFor(currentEmbed(), embedQuery(activeServ));
+    const embed = currentEmbed();
+    const url = embedUrlFor(embed, embedQuery(activeServ));
     if (!url || loadedUrl === url) return;
     loadedUrl = url;
+    const isExternal = !!(embed && embed.external);
+    const sandboxAttr = isExternal
+      ? ""
+      : 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ';
     shell.innerHTML =
       `<iframe class="embed-frame" src="${url}" ` +
-      `sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ` +
-      `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
+      sandboxAttr +
+      `allow="autoplay *; encrypted-media *; fullscreen *; picture-in-picture *" allowfullscreen ` +
       `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
   }
 
@@ -302,6 +308,7 @@
   }
 
   function sourceLabel(key) {
+    if (key === "sirtv") return t("watch.sirtv");
     if (key === "weshan") return t("watch.weshan");
     if (key === "amine") return t("watch.amine");
     return key.toUpperCase();
@@ -324,8 +331,9 @@
         for (const serv of src.servs) {
           const url = channelEmbedUrl(channel.id, src.key, serv);
           const isActive = (activeEmbedKey || defaultKey) === src.key && activeServ === serv;
-          buttons.push(`<button type="button" class="server-btn${isActive ? " active" : ""}${src.key === "weshan" || src.key === "amine" ? " server-btn--alt" : ""}"
-            data-srv="${serv}" data-embed="${src.key}" data-kind="reachable" data-url="${escapeHtml(url)}"
+          const kind = src.external ? "external" : "reachable";
+          buttons.push(`<button type="button" class="server-btn${isActive ? " active" : ""}${src.key === "weshan" || src.key === "amine" || src.key === "sirtv" ? " server-btn--alt" : ""}"
+            data-srv="${serv}" data-embed="${src.key}" data-kind="${kind}" data-url="${escapeHtml(url)}"
             data-label="${sourceLabel(src.key)} ${t("watch.server")} ${serv}">
             <span class="srv-label">${sourceLabel(src.key)} · ${t("watch.server")} ${serv}</span>
           </button>`);
@@ -439,9 +447,12 @@
     channel = picked.channel;
     match = picked.match;
     activeEmbedKey = params.get("player") || picked.embedKey || (match && match.embedKey) || null;
+    const routeKey = activeEmbedKey || picked.embedKey || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id)) || "vip1";
     if (params.has("serv")) activeServ = Number(params.get("serv"));
+    else if (routeKey === "sirtv") activeServ = 1;
     else if (match && match.streamServ != null) activeServ = Number(match.streamServ);
-    if (Number.isNaN(activeServ)) activeServ = 3;
+    if (Number.isNaN(activeServ)) activeServ = routeKey === "sirtv" ? 1 : 3;
+    if (!params.get("player") && routeKey === "sirtv") activeEmbedKey = "sirtv";
   }
 
   async function refreshMatches({ force } = {}) {

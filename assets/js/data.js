@@ -33,15 +33,20 @@ const EMBEDS = {
     defaultServer: 0,
     servers: 4,
   },
+  // TEMP: Sir TV ch1 while worldkoora/dlhd HLS variants 403 (Portugal vs Spain).
+  sirtv: {
+    url: "https://s.sirtv.space/2026/02/ch1.html?m=1",
+    external: true,
+    defaultServer: 1,
+    servers: 1,
+  },
 };
 
 function embedUrlFor(embed, serv) {
   if (!embed || !embed.url) return "";
   if (embed.external) {
-    const u = new URL(embed.url);
-    const s = serv != null && serv !== "" ? serv : (embed.defaultServer != null ? embed.defaultServer : 0);
-    u.searchParams.set("serv", String(s));
-    return u.toString();
+    // External pages ship their own player config — don't append our serv/match params.
+    return embed.url;
   }
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(embed.url, base);
