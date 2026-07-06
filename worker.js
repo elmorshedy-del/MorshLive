@@ -1884,18 +1884,8 @@ async function proxyVip(request, slot, env) {
           ...htmlHeaders,
           "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
           "X-KZ-Mirrors": String(proxied.length),
-          "X-KZ-Stream-Mode": "proxy",
         },
       });
-    }
-    const egress = workerEgressMeta(request);
-    const requestedServ = incoming.searchParams.get("serv") || 3;
-    if (channelId && await workerGeoBlockedNoProxy(channelId, slot, request)) {
-      const fallbacks = directFallbackUrls(channelId, slot, requestedServ);
-      return new Response(
-        geoDirectFallbackHtml(fallbacks, egress, channelId),
-        { status: 200, headers: geoFallbackHeaders(htmlHeaders, egress) }
-      );
     }
     if (firstHtml) {
       return new Response(await cleanWorldkooraHtml(firstHtml, slot, origin, secret, request), {

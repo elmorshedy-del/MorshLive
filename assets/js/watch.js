@@ -17,6 +17,7 @@
   let MATCHES = [];
   let channel = CHANNELS[0];
   let match = null;
+  let directStream = null;
   const STREAM_SOURCES = [
     { key: "vip1", servs: [1, 2, 3, 4] },
     { key: "vip2", servs: [1, 2, 3, 4] },
@@ -27,35 +28,7 @@
   let activeServ = params.has("serv") ? Number(params.get("serv")) : 3;
   let activeEmbedKey = params.get("player") || null;
   const shell = document.getElementById("player-shell");
-  const sideShell = document.getElementById("player-shell-side");
-  const dualWrap = document.getElementById("player-dual");
   let loadedUrl = "";
-
-  const EXTERNAL_EMBED_ALLOW =
-    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen";
-  const EXTERNAL_EMBED_SANDBOX =
-    "allow-scripts allow-same-origin allow-presentation allow-forms allow-popups allow-popups-to-escape-sandbox";
-
-  function sideEmbedConfig() {
-    return window.SITE_DATA && window.SITE_DATA.sideEmbedForMatch
-      ? window.SITE_DATA.sideEmbedForMatch(match)
-      : null;
-  }
-
-  function iframeHtml(url, { external } = {}) {
-    const sandbox = external
-      ? EXTERNAL_EMBED_SANDBOX
-      : "allow-scripts allow-same-origin allow-presentation allow-forms";
-    const allow = external
-      ? EXTERNAL_EMBED_ALLOW
-      : "autoplay; encrypted-media; fullscreen; picture-in-picture";
-    const referrer = external ? "no-referrer-when-downgrade" : EMBED_REFERRER;
-    return (
-      `<iframe class="embed-frame" src="${escapeHtml(url)}" ` +
-      `sandbox="${sandbox}" allow="${allow}" allowfullscreen ` +
-      `referrerpolicy="${referrer}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`
-    );
-  }
 
   function embedQuery(serv) {
     return { serv, matchId: match && match.id ? match.id : null };
@@ -77,67 +50,23 @@
   function loadPlayer() {
     if (!shell) return;
     const url = embedUrlFor(currentEmbed(), embedQuery(activeServ));
-    const side = sideEmbedConfig();
-    const signature = `${url}|${side ? side.url : ""}`;
-    if (!url || loadedUrl === signature) return;
-    loadedUrl = signature;
-    shell.innerHTML = iframeHtml(url);
-
-    if (side && sideShell) {
-      sideShell.hidden = false;
-      sideShell.innerHTML =
-        `<div class="player-pane-label">${t(side.labelKey || "watch.sideNtv")}</div>` +
-        iframeHtml(side.url, { external: true });
-      if (dualWrap) dualWrap.classList.add("player-dual--split");
-    } else if (sideShell) {
-      sideShell.hidden = true;
-      sideShell.innerHTML = "";
-      if (dualWrap) dualWrap.classList.remove("player-dual--split");
-    }
+    if (!url || loadedUrl === url) return;
+    loadedUrl = url;
+    shell.innerHTML =
+      `<iframe class="embed-frame" src="${url}" ` +
+      `sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ` +
+      `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
+      `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
   }
 
   function reloadPlayer() {
     loadedUrl = "";
     loadPlayer();
-    refreshStreamGeoNotice().catch(() => {});
   }
 
-  async function refreshStreamGeoNotice() {
-    const slot = document.getElementById("stream-geo-notice");
-    if (!slot || !channel || !channel.id) return;
-    const embedKey = activeEmbedKey || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id)) || "vip1";
-    const q = new URLSearchParams({ ch: channel.id, slot: embedKey, serv: String(activeServ) });
-    if (match && match.id) q.set("match", match.id);
-    try {
-      const res = await fetch(`/api/stream-diagnose?${q.toString()}`, { cache: "no-store" });
-      if (!res.ok) return;
-      const data = await res.json();
-      const route = document.getElementById("info-route");
-      if (data.proxyPlayable) {
-        slot.hidden = true;
-        slot.innerHTML = "";
-        if (route) route.textContent = "proxy";
-        return;
-      }
-      if (!data.geoSuspect && data.verdict !== "mixed_geo_and_dead") {
-        slot.hidden = true;
-        slot.innerHTML = "";
-        return;
-      }
-      const egress = data.workerEgress || {};
-      const where = egress.country ? `${egress.country}${egress.colo ? ` (${egress.colo})` : ""}` : "Cloudflare edge";
-      const links = (data.directFallbacks || [])
-        .map((f) => `<a href="${f.url}" target="_blank" rel="noopener noreferrer">${f.label}</a>`)
-        .join("");
-      slot.innerHTML =
-        `<div><b>Geo-block on proxy</b> — Worker edge ${where} cannot play HLS variants (403/451). ` +
-        `Direct upstream may still work in your region; player switches to direct mode when needed.</div>` +
-        (links ? `<div class="stream-geo-notice__links">${links}</div>` : "");
-      slot.hidden = false;
-      if (route) route.textContent = data.directMayWork ? "direct · geo" : data.verdict;
-    } catch {
-      /* optional */
-    }
+  function setDirectStreamUi() {
+    const card = document.querySelector(".watch-sources-card");
+    if (card) card.hidden = !!(directStream && directStream.hidePickers);
   }
 
   function timeZoneHtml(m) {
@@ -352,6 +281,10 @@
   function renderChannels() {
     const row = document.getElementById("channel-row");
     if (!row) return;
+    if (directStream && directStream.hidePickers) {
+      row.innerHTML = "";
+      return;
+    }
     const matchCh = match && match.channelId;
     row.innerHTML = CHANNELS.map((ch) => {
       const isActive = ch.id === channel.id;
@@ -379,6 +312,7 @@
   }
 
   function sourceLabel(key) {
+    if (key === "sirtv") return t("watch.sirtv");
     if (key === "weshan") return t("watch.weshan");
     if (key === "amine") return t("watch.amine");
     return key.toUpperCase();
@@ -387,6 +321,13 @@
   function renderServers({ rebind } = {}) {
     const row = document.getElementById("servers");
     if (!row) return;
+    if (directStream && directStream.hidePickers) {
+      row.innerHTML = "";
+      row.dataset.ch = channel.id;
+      row.dataset.embed = activeEmbedKey || "sirtv";
+      row.dataset.serv = String(activeServ);
+      return;
+    }
     const defaultKey = (match && match.embedKey) || window.SITE_DATA.embedKeyFor(channel.id);
     const needsRebuild = rebind !== false && (
       !row.querySelector(".server-btn") ||
@@ -509,12 +450,41 @@
     host.appendChild(btn);
   }
 
+  function applyDirectStream(direct) {
+    if (!direct || !direct.hidePickers) return false;
+    directStream = direct;
+    activeEmbedKey = direct.embedKey;
+    activeServ = 1;
+    setDirectStreamUi();
+    return true;
+  }
+
   function resolveSelection() {
+    const urlMatchId = params.get("match");
+    const urlDirect = urlMatchId && window.SITE_DATA.directStreamForMatchId
+      ? window.SITE_DATA.directStreamForMatchId(urlMatchId)
+      : null;
+    if (applyDirectStream(urlDirect)) {
+      const picked = window.resolveWatchSelection
+        ? window.resolveWatchSelection(MATCHES, CHANNELS, params)
+        : { channel: CHANNELS[0], match: null, embedKey: urlDirect.embedKey };
+      channel = picked.channel;
+      match = picked.match;
+      return;
+    }
+
     const picked = window.resolveWatchSelection
       ? window.resolveWatchSelection(MATCHES, CHANNELS, params)
-      : { channel: CHANNELS[0], match: null, embedKey: null };
+      : { channel: CHANNELS[0], match: null, embedKey: null, direct: null };
     channel = picked.channel;
     match = picked.match;
+    if (applyDirectStream(picked.direct || (match && window.SITE_DATA.directStreamForMatch
+      ? window.SITE_DATA.directStreamForMatch(match)
+      : null))) {
+      return;
+    }
+    directStream = null;
+    setDirectStreamUi();
     activeEmbedKey = params.get("player") || picked.embedKey || (match && match.embedKey) || null;
     if (params.has("serv")) activeServ = Number(params.get("serv"));
     else if (match && match.streamServ != null) activeServ = Number(match.streamServ);
@@ -550,12 +520,12 @@
     renderServers();
     renderSidebar();
     loadPlayer();
-    refreshStreamGeoNotice().catch(() => {});
     initReloadButton();
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(() => refreshMatchDetail().catch((e) => console.warn("Detail refresh failed:", e.message)), 60 * 1000);
     setInterval(() => {
+      if (directStream && directStream.hidePickers) return;
       const chRow = document.getElementById("channel-row");
       const srvRow = document.getElementById("servers");
       if (window.StreamCheck) {

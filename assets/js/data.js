@@ -33,21 +33,19 @@ const EMBEDS = {
     defaultServer: 0,
     servers: 4,
   },
+  // Rescue embed — used when RESCUE_MATCH_STREAMS_ENABLED + DIRECT_MATCH_STREAMS pin a match.
+  sirtv: { url: "/wk/albaplayer/sirtv/", defaultServer: 1, servers: 1 },
 };
 
-// Secondary player shown beside the primary embed (external iframe — uses viewer IP).
-const MATCH_SIDE_EMBEDS = {
-  "espn-fifa.world-760506": {
-    labelKey: "watch.sideNtv",
-    url: "https://ntv.cx/embed?t=OFd0cFZIcCtUQ3NleURxSUs1SW9VQW81eDZjTHdaUjNGL0RxZWZUU24zVTNIQlVsbEpqTkgzbkk3TmhiRGJwMw~~",
-  },
-  "portugal~spain": {
-    labelKey: "watch.sideNtv",
-    url: "https://ntv.cx/embed?t=OFd0cFZIcCtUQ3NleURxSUs1SW9VQW81eDZjTHdaUjNGL0RxZWZUU24zVTNIQlVsbEpqTkgzbkk3TmhiRGJwMw~~",
-  },
+// Flip to true to auto-play rescue embed and hide pickers for pinned matches.
+const RESCUE_MATCH_STREAMS_ENABLED = false;
+
+const DIRECT_MATCH_STREAMS = {
+  "espn-fifa.world-760506": { embedKey: "sirtv", hidePickers: true },
+  "portugal~spain": { embedKey: "sirtv", hidePickers: true },
 };
 
-function matchSideEmbedKey(m) {
+function matchStreamKey(m) {
   if (!m) return "";
   if (m.key) return String(m.key).toLowerCase();
   if (m.home && m.away) {
@@ -56,11 +54,16 @@ function matchSideEmbedKey(m) {
   return "";
 }
 
-function sideEmbedForMatch(m) {
-  if (!m) return null;
-  if (MATCH_SIDE_EMBEDS[m.id]) return MATCH_SIDE_EMBEDS[m.id];
-  const key = matchSideEmbedKey(m);
-  return key ? MATCH_SIDE_EMBEDS[key] || null : null;
+function directStreamForMatch(m) {
+  if (!RESCUE_MATCH_STREAMS_ENABLED || !m) return null;
+  if (DIRECT_MATCH_STREAMS[m.id]) return DIRECT_MATCH_STREAMS[m.id];
+  const key = matchStreamKey(m);
+  return key ? DIRECT_MATCH_STREAMS[key] || null : null;
+}
+
+function directStreamForMatchId(id) {
+  if (!RESCUE_MATCH_STREAMS_ENABLED || !id) return null;
+  return DIRECT_MATCH_STREAMS[id] || null;
 }
 
 function embedUrlFor(embed, serv) {
@@ -267,16 +270,17 @@ function resolveWatchSelection(matches, channels, searchParams) {
 
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
-  const embedKey = (match && match.embedKey) || embedKeyFor(chId);
+  const direct = match ? directStreamForMatch(match) : null;
+  const embedKey = (direct && direct.embedKey) || (match && match.embedKey) || embedKeyFor(chId);
   const channelWithEmbed = { ...channel, embed: { ...embedForKey(embedKey), channelId: chId } };
-  return { channel: channelWithEmbed, match, embedKey };
+  return { channel: channelWithEmbed, match, embedKey, direct };
 }
 
 // Expose for non-module scripts.
 window.SITE_DATA = {
   CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor,
   servIndexFromParam, EMBED_BINDING, streamOptionsFor, streamOptionUrl,
-  sideEmbedForMatch,
+  directStreamForMatch, directStreamForMatchId, RESCUE_MATCH_STREAMS_ENABLED,
 };
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;
