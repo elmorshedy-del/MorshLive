@@ -3532,15 +3532,24 @@ async function proxySiirMatchEmbed(request, postId, env) {
   return new Response(frame, { status: 200, headers: htmlHeaders });
 }
 
+async function probeDlhdLabLive(dlhdId) {
+  const m3u8 = await resolveDlStream(dlhdId);
+  return !!(m3u8 && isHlsUrl(m3u8));
+}
+
 async function probeStreamsLabEntry(ch, origin, secret, request) {
   if (ch.dlhdId) {
-    const primary = await resolveDlMirror(ch.dlhdId, origin, secret, request);
-    if (primary) return { live: true, route: ch.route, mirror: null };
+    // Light probe: resolveDlStream only (same check as /dl/{id} embed page).
+    // Full streamProbe was marking working channels dead in the lab API.
+    if (await probeDlhdLabLive(ch.dlhdId)) {
+      return { live: true, route: ch.route, mirror: null };
+    }
     for (const mirrorRoute of ch.mirrors || []) {
       const mid = parseInt(String(mirrorRoute).replace(/.*\//, ""), 10);
       if (!mid) continue;
-      const mirror = await resolveDlMirror(mid, origin, secret, request);
-      if (mirror) return { live: true, route: mirrorRoute, mirror: mirrorRoute };
+      if (await probeDlhdLabLive(mid)) {
+        return { live: true, route: mirrorRoute, mirror: mirrorRoute };
+      }
     }
     return { live: false, route: ch.route, mirror: null };
   }

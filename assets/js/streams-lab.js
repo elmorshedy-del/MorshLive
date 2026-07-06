@@ -389,7 +389,11 @@
     const probedMap = new Map([...probedPrimary, ...probedOther].map((c) => [c.id, c]));
     catalog.channels = (catalog.channels || []).map((ch) => {
       const p = probedMap.get(ch.id);
-      return p || ch;
+      if (!p) return ch;
+      if (p.live === true) return p;
+      // Never downgrade API-confirmed live channels when client probe times out.
+      if (ch.live === true) return ch;
+      return p;
     });
     updateLiveUi();
 
@@ -469,6 +473,11 @@
       renderGrid();
       renderExternal();
       renderSir247();
+      // Start playback immediately — don't wait for API/probes.
+      const quick = (catalog.channels || [])
+        .filter(isPrimaryChannel)
+        .sort((a, b) => (a.priority || 99) - (b.priority || 99))[0];
+      if (quick?.route && !currentRoute) loadRoute(quick.route, channelLabel(quick));
     })
     .catch(() => setStatus("تعذّر تحميل القائمة"))
     .finally(() => refreshStatus());
