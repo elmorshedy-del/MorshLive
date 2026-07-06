@@ -5,3 +5,6 @@ Thumbs.db
 .env.local
 .wrangler/
 node_modules/
+.auth/
+storage/
+crawlee_storage/

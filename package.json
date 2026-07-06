@@ -7,6 +7,9 @@
     "doc": "docs"
   },
   "scripts": {
+    "browsers:install": "playwright install chromium",
+    "crawl:twitch-dev": "node scripts/twitch-dev-console-crawl.mjs",
+    "twitch:secrets": "node scripts/setup-twitch-secrets.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -22,5 +25,9 @@
   "homepage": "https://github.com/elmorshedy-del/MorshLive#readme",
   "dependencies": {
     "playwright-core": "^1.61.1"
+  },
+  "devDependencies": {
+    "crawlee": "^3.17.0",
+    "playwright": "^1.61.1"
   }
 }
