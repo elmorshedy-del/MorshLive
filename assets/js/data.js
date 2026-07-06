@@ -38,25 +38,18 @@ const EMBEDS = {
   ntv: { url: "/wk/albaplayer/ntv/", defaultServer: 1, servers: 1 },
 };
 
-// Pinned matches that show the separate backup panel (Sir TV + NTV).
-const ALT_STREAM_MATCHES = {
-  "espn-fifa.world-760506": { sirTv: true, ntv: true },
-  "portugal~spain": { sirTv: true, ntv: true },
-};
-
 const ALT_STREAM_DEFS = {
   sirTv: { key: "sirTv", path: "/wk/albaplayer/sirtv/", labelKey: "watch.altSirTv" },
   ntv: { key: "ntv", path: "/wk/albaplayer/ntv/", labelKey: "watch.altNtv" },
 };
 
+// Show Sir TV + NTV backup panel for every match on the watch page (for now).
 function altStreamsForMatch(m) {
   if (!m) return null;
-  const pin = ALT_STREAM_MATCHES[m.id] || ALT_STREAM_MATCHES[matchStreamKey(m)] || null;
-  if (!pin) return null;
-  const out = {};
-  if (pin.sirTv) out.sirTv = ALT_STREAM_DEFS.sirTv;
-  if (pin.ntv) out.ntv = ALT_STREAM_DEFS.ntv;
-  return Object.keys(out).length ? out : null;
+  return {
+    sirTv: ALT_STREAM_DEFS.sirTv,
+    ntv: ALT_STREAM_DEFS.ntv,
+  };
 }
 
 function altStreamUrl(kind) {
