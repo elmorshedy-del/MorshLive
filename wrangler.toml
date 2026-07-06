@@ -1,6 +1,6 @@
 # Cloudflare Workers static assets — morshlive (production)
-# Git deploy command: npx wrangler deploy
-# Manual: npx wrangler deploy
+# Production CI: Cloudflare Workers Builds on push to main (see docs/DEPLOY.md).
+# Manual: npm run deploy  |  npx wrangler deploy
 # API token: .env locally (see .env.example), never commit it.
 
 name = "morshlive"

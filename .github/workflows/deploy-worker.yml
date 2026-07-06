@@ -1,14 +1,11 @@
-# Deploy the morshlive Worker to production on every push to main.
-# Fixes the gap where merges to main were not reaching production.
+# DEPRECATED — use Cloudflare Workers Builds (see docs/DEPLOY.md).
+# Disabled on push to avoid GitHub Actions billing. Merge to main → CF Builds deploys.
 #
-# Requires repo secret CLOUDFLARE_API_TOKEN with "Workers Scripts: Edit"
-# permission on the account in wrangler.toml. CLOUDFLARE_ACCOUNT_ID is optional
-# (account_id is already set in wrangler.toml).
+# Emergency manual deploy only:
+#   GitHub → Actions → Deploy Worker (morshlive) → Run workflow
 name: Deploy Worker (morshlive)
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

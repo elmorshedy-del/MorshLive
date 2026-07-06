@@ -1,8 +1,8 @@
+# DEPRECATED — korazero.com is served by Worker morshlive, not GitHub Pages.
+# Disabled on push to avoid GitHub Actions billing.
 name: Deploy to GitHub Pages
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

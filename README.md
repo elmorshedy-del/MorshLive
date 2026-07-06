@@ -39,7 +39,7 @@ assets/
 scripts/
   fetch-matches.js      # pulls fixtures from TheSportsDB + ESPN fallback
 .github/workflows/
-  update-matches.yml    # refreshes today.json on a schedule
+  update-matches.yml    # manual only — match refresh via CF Builds or npm run refresh:matches
 ```
 
 ## Adding channels
@@ -130,15 +130,15 @@ on the watch page.
 
 ## Deploy (korazero + Cloudflare)
 
-Full guide: **[docs/CLOUDFLARE.md](docs/CLOUDFLARE.md)**
+**Merge to `main` on GitHub → Cloudflare Workers Builds deploys** (no GitHub Actions billing).
 
-**Where your Cloudflare API goes:**
+Full guides: **[docs/DEPLOY.md](docs/DEPLOY.md)** · **[docs/CLOUDFLARE.md](docs/CLOUDFLARE.md)**
 
-| Method | Put token here |
-|--------|----------------|
-| Cloudflare Git connect | Nowhere — use dashboard OAuth |
-| GitHub Actions deploy | GitHub → **Settings → Secrets** → `CLOUDFLARE_API_TOKEN` |
-| Local `wrangler` deploy | `.env` file (copy from `.env.example`) |
+| Method | How |
+|--------|-----|
+| **Production (default)** | Merge PR to `main` → [Workers Builds](config/cloudflare-workers-builds.json) on Cloudflare |
+| Agent / local | `npm run deploy` (needs `.env` with `CLOUDFLARE_API_TOKEN`) |
+| Emergency | GitHub Actions → Deploy Worker → Run workflow (manual only) |
 
 **Never** put the API token in website code.
 

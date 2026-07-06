@@ -1,0 +1,283 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MorshLive / KoraZero — Cloudflare API token scopes",
+  "description": "Create ONE token with these permissions. Use for GitHub Actions (CLOUDFLARE_API_TOKEN), local .env, and Cursor cloud agents. Avoid IP restrictions unless you know all deploy egress IPs.",
+  "updated": "2026-07-06",
+  "project": {
+    "worker_name": "morshlive",
+    "production_domains": ["korazero.com", "www.korazero.com"],
+    "legacy_pages_project": "korazero",
+    "deploy_commands": [
+      "npx wrangler deploy",
+      "bash scripts/deploy-cloudflare.sh",
+      ".github/workflows/deploy-worker.yml (push to main)"
+    ],
+    "verify_command": "CLOUDFLARE_API_TOKEN=… CLOUDFLARE_ACCOUNT_ID=… node scripts/verify-deploy-token.js"
+  },
+  "token_preferences": {
+    "recommended_type": "User API Token",
+    "alternative_type": "Account API Token (cfat_…)",
+    "suggested_name": "MorshLive full deploy — GitHub + Cursor + local",
+    "account_id_env": "CLOUDFLARE_ACCOUNT_ID",
+    "token_env_names": ["CLOUDFLARE_API_TOKEN", "CLOUDFLARE_TOKEN5"],
+    "restrictions": {
+      "ip_filter": "none (recommended — agents and GitHub use dynamic IPs)",
+      "ttl": "no expiry or 1 year+ with calendar reminder",
+      "account_resources": "Include — All accounts (or your single account)",
+      "zone_resources": "Include — korazero.com (and any future zones on this account)"
+    }
+  },
+  "dashboard_quick_path": {
+    "url": "https://dash.cloudflare.com/profile/api-tokens",
+    "start_from_template": "Edit Cloudflare Workers",
+    "then_add": "See permissions.recommended_all_in_one below — template alone is not enough for korazero.com routes + secrets + Pages legacy"
+  },
+  "permissions": {
+    "required_now": [
+      {
+        "scope": "account",
+        "name": "Workers Scripts Edit",
+        "aliases": ["Workers Scripts Write"],
+        "purpose": "wrangler deploy, upload worker.js + static assets, wrangler secret put",
+        "used_by": [
+          "scripts/deploy-cloudflare.sh",
+          "scripts/setup-twitch-secrets.mjs",
+          "wrangler secret put STREAM_SIGNING_SECRET|YOUTUBE_API_KEY|TWITTER_BEARER_TOKEN|TWITCH_*"
+        ],
+        "why_it_failed_before": "Token could read scripts (GET 200) but lacked Edit — verify-deploy-token.js and deploy both need this"
+      },
+      {
+        "scope": "account",
+        "name": "Account Settings Read",
+        "aliases": ["Account Settings Read"],
+        "purpose": "Wrangler account lookup and token verification",
+        "used_by": ["npx wrangler deploy", "scripts/verify-deploy-token.js"]
+      },
+      {
+        "scope": "zone",
+        "name": "Workers Routes Edit",
+        "aliases": ["Workers Routes Write"],
+        "resource": "korazero.com",
+        "purpose": "[[routes]] in wrangler.toml — korazero.com/* and www.korazero.com/*",
+        "used_by": ["wrangler.toml routes", "custom domain on Worker morshlive"]
+      },
+      {
+        "scope": "user",
+        "name": "User Details Read",
+        "purpose": "Token verify endpoint (user-owned tokens)",
+        "used_by": ["scripts/verify-deploy-token.js"]
+      },
+      {
+        "scope": "user",
+        "name": "Memberships Read",
+        "aliases": ["User Memberships Read"],
+        "purpose": "Token verify + account membership check",
+        "used_by": ["scripts/verify-deploy-token.js", "Wrangler CI auth"]
+      }
+    ],
+    "recommended_all_in_one": [
+      {
+        "scope": "account",
+        "name": "Workers Scripts Edit",
+        "tier": "required"
+      },
+      {
+        "scope": "account",
+        "name": "Workers Scripts Read",
+        "tier": "recommended",
+        "purpose": "scripts/resolve-cloudflare-token.js probe, wrangler tail, debugging"
+      },
+      {
+        "scope": "account",
+        "name": "Account Settings Read",
+        "tier": "required"
+      },
+      {
+        "scope": "account",
+        "name": "Workers KV Storage Edit",
+        "aliases": ["Workers KV Storage Write"],
+        "tier": "recommended",
+        "purpose": "Future edge cache / rate-limit counters without burning request quota"
+      },
+      {
+        "scope": "account",
+        "name": "Workers R2 Storage Edit",
+        "aliases": ["Workers R2 Storage Write"],
+        "tier": "recommended",
+        "purpose": "Future VOD clips, meme archives, highlight blobs"
+      },
+      {
+        "scope": "account",
+        "name": "Workers Tail Read",
+        "tier": "recommended",
+        "purpose": "npx wrangler tail morshlive — live debug in production"
+      },
+      {
+        "scope": "account",
+        "name": "Cloudflare Pages Edit",
+        "aliases": ["Pages Write"],
+        "tier": "recommended",
+        "purpose": "Legacy korazero Pages project, npx wrangler pages deploy, docs/CLOUDFLARE.md Option B/C"
+      },
+      {
+        "scope": "account",
+        "name": "Cloudflare Pages Read",
+        "aliases": ["Pages Read"],
+        "tier": "recommended",
+        "purpose": "Inspect Pages deployments without edit accidents"
+      },
+      {
+        "scope": "account",
+        "name": "Workers Observability Edit",
+        "tier": "future",
+        "purpose": "Workers Logs / observability dashboards when enabled"
+      },
+      {
+        "scope": "account",
+        "name": "D1 Edit",
+        "aliases": ["D1 Write"],
+        "tier": "future",
+        "purpose": "Future match DB, user prefs, analytics at edge"
+      },
+      {
+        "scope": "account",
+        "name": "Queues Edit",
+        "aliases": ["Queues Write"],
+        "tier": "future",
+        "purpose": "Future async scrape jobs (siir-tv, highlights)"
+      },
+      {
+        "scope": "account",
+        "name": "Hyperdrive Edit",
+        "aliases": ["Hyperdrive Write"],
+        "tier": "future",
+        "purpose": "Future managed DB connection pooling"
+      },
+      {
+        "scope": "account",
+        "name": "Workers AI Read",
+        "tier": "future",
+        "purpose": "Future on-edge summarization / moderation"
+      },
+      {
+        "scope": "account",
+        "name": "Workers AI Edit",
+        "tier": "future",
+        "purpose": "Future Workers AI bindings deploy"
+      },
+      {
+        "scope": "account",
+        "name": "Secrets Store Edit",
+        "tier": "future",
+        "purpose": "Account-level secrets (if migrating off wrangler secret put)"
+      },
+      {
+        "scope": "zone",
+        "name": "Workers Routes Edit",
+        "resource": "korazero.com",
+        "tier": "required"
+      },
+      {
+        "scope": "zone",
+        "name": "Workers Routes Read",
+        "resource": "korazero.com",
+        "tier": "recommended",
+        "purpose": "Audit routes without changing them"
+      },
+      {
+        "scope": "zone",
+        "name": "DNS Read",
+        "tier": "recommended",
+        "resource": "korazero.com",
+        "purpose": "Verify korazero.com points to Worker not stale Pages"
+      },
+      {
+        "scope": "zone",
+        "name": "DNS Edit",
+        "aliases": ["DNS Write"],
+        "tier": "future",
+        "resource": "korazero.com",
+        "purpose": "Automate moving custom domain from Pages → Worker"
+      },
+      {
+        "scope": "zone",
+        "name": "SSL and Certificates Read",
+        "tier": "recommended",
+        "resource": "korazero.com",
+        "purpose": "Debug HTTPS / cert issues after domain moves"
+      },
+      {
+        "scope": "zone",
+        "name": "Zone Settings Read",
+        "tier": "recommended",
+        "resource": "korazero.com",
+        "purpose": "Cache level, security level, bot fight mode audits"
+      },
+      {
+        "scope": "user",
+        "name": "User Details Read",
+        "tier": "required"
+      },
+      {
+        "scope": "user",
+        "name": "Memberships Read",
+        "tier": "required"
+      }
+    ]
+  },
+  "worker_secrets_not_api_token": {
+    "note": "These are Worker runtime secrets (wrangler secret put), NOT Cloudflare API token scopes",
+    "secrets": [
+      { "name": "STREAM_SIGNING_SECRET", "required": true, "purpose": "/wk/hls and /dl/hls signed proxy" },
+      { "name": "YOUTUBE_API_KEY", "required": false, "purpose": "Arabic replay clips API" },
+      { "name": "TWITTER_BEARER_TOKEN", "required": false, "purpose": "/api/match-memes X API" },
+      { "name": "TWITCH_CLIENT_ID", "required": false, "purpose": "Helix live relay verification" },
+      { "name": "TWITCH_CLIENT_SECRET", "required": false, "purpose": "Helix live relay verification" },
+      { "name": "SIR_PLAYER", "required": false, "purpose": "siir-tv shootny player URL (production only, not in git)" },
+      { "name": "SIR_KEY", "required": false, "purpose": "siir-tv shootny key (production only, not in git)" }
+    ]
+  },
+  "github_actions_secrets": {
+    "required": [
+      { "name": "CLOUDFLARE_API_TOKEN", "value": "same token as below with full scopes" },
+      { "name": "CLOUDFLARE_ACCOUNT_ID", "value": "f06dda0c02d25976dcda319e942e432c" }
+    ],
+    "optional": [
+      { "name": "CLOUDFLARE_TOKEN5", "value": "alias — deploy.yml checks this if API_TOKEN missing" },
+      { "name": "YOUTUBE_API_KEY", "value": "only if baking highlights in CI — runtime uses Worker secret" }
+    ],
+    "not_cloudflare": [
+      "GITHUB billing must be active — Actions failed with 'account is locked due to a billing issue' (deploy blocker separate from token scopes)"
+    ]
+  },
+  "local_and_cursor_env": {
+    "file": ".env (gitignored, copy from .env.example)",
+    "variables": {
+      "CLOUDFLARE_API_TOKEN": "paste full-scope token once",
+      "CLOUDFLARE_ACCOUNT_ID": "paste account id once"
+    }
+  },
+  "create_token_checklist": [
+    "1. Open https://dash.cloudflare.com/profile/api-tokens → Create Token → Custom token",
+    "2. Token name: MorshLive full deploy",
+    "3. Permissions: add every item in permissions.recommended_all_in_one (account + zone + user)",
+    "4. Zone resources: korazero.com (or All zones on account)",
+    "5. Account resources: your account",
+    "6. Client IP: leave blank",
+    "7. TTL: optional",
+    "8. Create → copy token once",
+    "9. Set GitHub secret CLOUDFLARE_API_TOKEN + local .env CLOUDFLARE_API_TOKEN",
+    "10. Run: node scripts/verify-deploy-token.js — must print OK",
+    "11. Run: bash scripts/deploy-cloudflare.sh — must complete wrangler deploy"
+  ],
+  "minimal_if_paranoid": {
+    "description": "Smallest token that fixes today's deploy failure only — add future scopes before you need them",
+    "permissions": [
+      { "scope": "account", "name": "Workers Scripts Edit" },
+      { "scope": "account", "name": "Account Settings Read" },
+      { "scope": "zone", "name": "Workers Routes Edit", "resource": "korazero.com" },
+      { "scope": "user", "name": "User Details Read" },
+      { "scope": "user", "name": "Memberships Read" }
+    ]
+  }
+}
