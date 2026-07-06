@@ -27,10 +27,7 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }} # optional; enables Arabic highlight clips
         run: node scripts/fetch-matches.js
 
-      - name: Refresh tournament archive (ملخصات + memes index)
-        env:
-          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
-          TWITTER_FETCH_LATEST: "1"
+      - name: Refresh tournament archive (ملخصات; memes via Worker at runtime)
         run: node scripts/fetch-tournament-archive.js
 
       - name: Verify live channel routing

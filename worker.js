@@ -2575,17 +2575,18 @@ async function proxyMatchMemesApi(request, env) {
     source = "pinned";
   }
 
-  // X API only on explicit opt-in (?live=1) when static/syndication found nothing
-  const wantsLive = url.searchParams.get("live") === "1";
+  // Worker TWITTER_BEARER_TOKEN — no GitHub secret needed. Runs when archive +
+  // syndication are empty; edge-cached 30 min (withEdgeCache). ?live=1 forces refresh.
+  const forceLive = url.searchParams.get("live") === "1";
   const bearer = env && env.TWITTER_BEARER_TOKEN;
-  if (!memes.length && wantsLive && bearer) {
+  if (bearer && (forceLive || !memes.length)) {
     try {
       const live = await searchCuratedMemes(bearer, home, away, kickoff);
       if (live.length) {
         memes = live;
         source = "twitter-curated";
       }
-    } catch { /* static index */ }
+    } catch { /* static / syndication */ }
   }
 
   return new Response(JSON.stringify({ key, memes }), {
