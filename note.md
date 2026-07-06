@@ -171,6 +171,21 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 
 ---
 
+## Kooracity stream pause (not a bottom watermark)
+
+**What users see:** The whole stream **stops** for ~30 seconds with a full-screen message telling viewers to go to the original kooracity site («اذهب للموقع الأصلي»). It **loops** before the match resumes. This is **not** a small burned-in ticker — hiding it with CSS does nothing.
+
+**Where it comes from:** Some dlhd/worldkoora HLS mirrors inject branding pause segments into the feed.
+
+**Mitigation (worker `cleanHlsPlayerHtml` + `cleanDualPlayerHtml`):**
+- After **7s** with no time advance → jump to live edge (skip stuck segment)
+- After **14s** still stuck → switch to next verified mirror in the pool
+- If playback time **jumps backward** (looping branding clip) → switch mirror immediately
+
+**Not spam:** Same class as upstream kooracity branding, different from AlbaPlayer «مباشر» popup menus.
+
+---
+
 ## Platform patterns (reuse on next incident)
 
 | Pattern | Where | What to do |
