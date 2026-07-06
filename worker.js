@@ -1839,25 +1839,48 @@ function dlPlayerHtml(src, id) {
   return cleanHlsPlayerHtml(src, `beIN ${id}`);
 }
 
-async function proxyLabDlEmbed(request, id) {
+function labDirectPlayerHtml(m3u8, id) {
+  const src = String(m3u8 || "");
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>beIN ${id}</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+</head><body>
+<video id="v" controls autoplay muted playsinline crossorigin="anonymous"></video>
+<script>
+(function(){
+  var src=${JSON.stringify(src)};
+  var v=document.getElementById('v');
+  function go(){ var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){}); }
+  if(!src) return;
+  if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; v.addEventListener('loadedmetadata',go,{once:true}); go(); }
+  else if(window.Hls&&Hls.isSupported()){
+    var hls=new Hls({enableWorker:true,lowLatencyMode:false});
+    hls.loadSource(src);
+    hls.attachMedia(v);
+    hls.on(Hls.Events.MANIFEST_PARSED,go);
+    hls.on(Hls.Events.ERROR,function(_,d){ if(d.fatal) console.warn('lab-hls',d.type,d.details); });
+  } else { v.src=src; go(); }
+})();
+</script>
+</body></html>`;
+}
+
+async function proxyLabDlEmbed(request, id, env) {
   const htmlHeaders = {
     "Content-Type": "text/html; charset=utf-8",
     "Cache-Control": "no-store",
     "X-KZ-Proxy": "lab-dlhd-embed",
   };
-  const embedUrl = await resolveDlPremiumTvEmbed(id);
-  if (!embedUrl) {
+  const m3u8 = await resolveDlStream(id);
+  if (!m3u8) {
     return new Response(
       `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#000;color:#fff;font-family:sans-serif;display:grid;place-items:center;height:100vh;text-align:center"><div>البث غير متاح حالياً — أعد المحاولة<br><small>lab channel ${id}</small></div></body>`,
       { status: 200, headers: htmlHeaders }
     );
   }
-  const frame = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>beIN ${id}</title>
-<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}iframe{width:100%;height:100%;border:0;display:block}</style>
-</head><body><iframe src="${embedUrl}" allow="autoplay;encrypted-media;fullscreen;picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe></body></html>`;
-  return new Response(frame, { status: 200, headers: htmlHeaders });
+  return new Response(labDirectPlayerHtml(m3u8, id), { status: 200, headers: htmlHeaders });
 }
 
 async function proxyDlEmbed(request, id, env) {
@@ -3566,8 +3589,6 @@ async function proxySiirMatchEmbed(request, postId, env) {
 }
 
 async function probeDlhdLabLive(dlhdId) {
-  const premium = await resolveDlPremiumTvEmbed(dlhdId);
-  if (premium) return true;
   const m3u8 = await resolveDlStream(dlhdId);
   return !!(m3u8 && isHlsUrl(m3u8));
 }
@@ -3719,7 +3740,7 @@ export default {
     }
     const labDl = url.pathname.match(LAB_DL_EMBED_RE);
     if (labDl && (method === "GET" || method === "HEAD")) {
-      return proxyLabDlEmbed(request, labDl[1]);
+      return proxyLabDlEmbed(request, labDl[1], env);
     }
     if (DL_HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
       if (method === "OPTIONS") {
