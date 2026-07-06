@@ -802,6 +802,28 @@ img { max-width: 100%; display: block; }
   border-color: rgba(255, 201, 77, .5);
   background: rgba(255, 201, 77, .2);
 }
+.stream-geo-notice {
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 180, 0, .35);
+  background: rgba(255, 180, 0, .08);
+  color: var(--text);
+  font-size: .82rem;
+  line-height: 1.55;
+}
+.stream-geo-notice b { color: #ffb400; }
+.stream-geo-notice a {
+  color: var(--accent);
+  font-weight: 700;
+  text-decoration: none;
+}
+.stream-geo-notice__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 6px;
+}
 .kz-match-notice__body {
   display: flex;
   align-items: flex-start;

@@ -61,6 +61,45 @@
   function reloadPlayer() {
     loadedUrl = "";
     loadPlayer();
+    refreshStreamGeoNotice().catch(() => {});
+  }
+
+  async function refreshStreamGeoNotice() {
+    const slot = document.getElementById("stream-geo-notice");
+    if (!slot || !channel || !channel.id) return;
+    const embedKey = activeEmbedKey || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id)) || "vip1";
+    const q = new URLSearchParams({ ch: channel.id, slot: embedKey, serv: String(activeServ) });
+    if (match && match.id) q.set("match", match.id);
+    try {
+      const res = await fetch(`/api/stream-diagnose?${q.toString()}`, { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      const route = document.getElementById("info-route");
+      if (data.proxyPlayable) {
+        slot.hidden = true;
+        slot.innerHTML = "";
+        if (route) route.textContent = "proxy";
+        return;
+      }
+      if (!data.geoSuspect && data.verdict !== "mixed_geo_and_dead") {
+        slot.hidden = true;
+        slot.innerHTML = "";
+        return;
+      }
+      const egress = data.workerEgress || {};
+      const where = egress.country ? `${egress.country}${egress.colo ? ` (${egress.colo})` : ""}` : "Cloudflare edge";
+      const links = (data.directFallbacks || [])
+        .map((f) => `<a href="${f.url}" target="_blank" rel="noopener noreferrer">${f.label}</a>`)
+        .join("");
+      slot.innerHTML =
+        `<div><b>Geo-block on proxy</b> — Worker edge ${where} cannot play HLS variants (403/451). ` +
+        `Direct upstream may still work in your region; player switches to direct mode when needed.</div>` +
+        (links ? `<div class="stream-geo-notice__links">${links}</div>` : "");
+      slot.hidden = false;
+      if (route) route.textContent = data.directMayWork ? "direct · geo" : data.verdict;
+    } catch {
+      /* optional */
+    }
   }
 
   function timeZoneHtml(m) {
@@ -473,6 +512,7 @@
     renderServers();
     renderSidebar();
     loadPlayer();
+    refreshStreamGeoNotice().catch(() => {});
     initReloadButton();
     refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
