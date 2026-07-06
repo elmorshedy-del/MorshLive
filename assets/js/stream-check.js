@@ -208,6 +208,7 @@
     const url = btn.dataset.url;
     if (!url) return Promise.resolve({ ok: false });
     const kind = btn.dataset.kind || "reachable";
+    if (kind === "external") return Promise.resolve({ ok: true, ms: 0 });
     if (kind === "hls") return fromCache("hls:" + url, () => probeHls(url));
     return fromCache("reach:" + url, () => probeReachable(url));
   }
@@ -255,7 +256,7 @@
         if (active && !active.classList.contains("srv-down")) return { okCount, firstOk };
         const kind = firstOk.dataset.kind || "reachable";
         // Never auto-switch cross-origin embeds — it reloads the player mid-stream.
-        if (kind === "reachable") return { okCount, firstOk };
+        if (kind === "reachable" || kind === "external") return { okCount, firstOk };
         const needsSwitch = !active || active.classList.contains("srv-down");
         if (needsSwitch && active !== firstOk) firstOk.click();
       }

@@ -46,5 +46,6 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     loadRecentTweets().catch(() => { /* optional rail */ });
+    setInterval(() => loadRecentTweets().catch(() => {}), 3 * 60 * 1000);
   });
 })();
