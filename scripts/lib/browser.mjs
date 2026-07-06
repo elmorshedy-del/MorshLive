@@ -51,12 +51,22 @@ export async function launchStealthContext(userDataDir, options = {}) {
   const chromium = await loadPatchright();
   const headful = process.env.HEADFUL === "1" || options.headful === true;
   const hasChrome = !!chromeExecutable();
+  // Patchright: real Chrome + non-headless passes Twitch signup/login checks
+  const useHeadless = headful ? false : options.headless === true;
   return chromium.launchPersistentContext(userDataDir, {
     ...(hasChrome ? { channel: "chrome" } : { executablePath: chromeExecutable() }),
-    headless: headful ? false : options.headless !== false,
+    headless: useHeadless,
     viewport: headful ? null : { width: 1280, height: 900 },
     args: ["--no-sandbox", "--disable-setuid-sandbox", "--disable-dev-shm-usage"],
   });
+}
+
+export async function dismissCookieBanner(page) {
+  const proceed = page.getByRole("button", { name: /^Proceed$/i }).first();
+  if (await proceed.isVisible({ timeout: 2000 }).catch(() => false)) {
+    await proceed.click();
+    await page.waitForTimeout(500);
+  }
 }
 
 export function stealthEnabled() {

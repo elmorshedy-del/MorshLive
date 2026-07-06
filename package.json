@@ -11,6 +11,7 @@
     "browsers:stealth": "npx patchright install chrome",
     "crawl:twitch-dev": "node scripts/twitch-dev-console-crawl.mjs",
     "signup:twitch": "node scripts/twitch-signup.mjs",
+    "twitch:onboard": "node scripts/twitch-onboard.mjs",
     "twitch:secrets": "node scripts/setup-twitch-secrets.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
