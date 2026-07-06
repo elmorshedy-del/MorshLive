@@ -3314,6 +3314,20 @@ async function probeStreamsLabEntry(ch) {
   return { live: false, route: ch.route, mirror: null };
 }
 
+async function mapPool(items, limit, fn) {
+  const out = new Array(items.length);
+  let i = 0;
+  async function worker() {
+    while (i < items.length) {
+      const idx = i++;
+      out[idx] = await fn(items[idx], idx);
+    }
+  }
+  const workers = Array.from({ length: Math.min(limit, items.length) }, () => worker());
+  await Promise.all(workers);
+  return out;
+}
+
 async function proxyStreamsLabApi(request, env) {
   const origin = new URL(request.url).origin;
   const now = Date.now();
@@ -3338,23 +3352,21 @@ async function proxyStreamsLabApi(request, env) {
     });
   }
 
-  const channels = await Promise.all(
-    catalog.channels.map(async (ch) => {
-      const probe = await probeStreamsLabEntry(ch);
-      return {
-        id: ch.id,
-        name: ch.name,
-        sub: ch.sub,
-        group: ch.group,
-        source: ch.source,
-        route: probe.route,
-        primaryRoute: ch.route,
-        live: probe.live,
-        mirror: probe.mirror,
-        priority: ch.priority || 99,
-      };
-    })
-  );
+  const channels = await mapPool(catalog.channels, 5, async (ch) => {
+    const probe = await probeStreamsLabEntry(ch);
+    return {
+      id: ch.id,
+      name: ch.name,
+      sub: ch.sub,
+      group: ch.group,
+      source: ch.source,
+      route: probe.route,
+      primaryRoute: ch.route,
+      live: probe.live,
+      mirror: probe.mirror,
+      priority: ch.priority || 99,
+    };
+  });
 
   const liveCount = channels.filter((c) => c.live).length;
   const best = channels.filter((c) => c.live).sort((a, b) => a.priority - b.priority)[0] || null;
