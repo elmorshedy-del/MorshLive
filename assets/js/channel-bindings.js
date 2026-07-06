@@ -1,9 +1,9 @@
 /* Auto-synced from assets/data/channel-bindings.json by fetch-matches.js */
 window.KZ_CHANNEL_BINDINGS = {
-  "version": 12,
-  "updatedAt": "2026-07-06T19:20:00.000Z",
+  "version": 13,
+  "updatedAt": "2026-07-06T19:25:00.000Z",
   "embedBinding": {
-    "bein-max-1": "sirtv",
+    "bein-max-1": "vip1",
     "bein-max-2": "amine",
     "bein-max-3": "vip1",
     "bein-max-4": "vip2",
@@ -11,6 +11,21 @@ window.KZ_CHANNEL_BINDINGS = {
     "bein-sports-2": "vip1"
   },
   "calibration": [
+    {
+      "date": "2026-07-06T19:25:00.000Z",
+      "issue": "Portugal vs Spain — user wants Sir TV ch1 only, autoplay on card open, no server picker.",
+      "rootCause": "Prior fix used external iframe + global bein-max-1 binding; not deployed and still showed VIP fallbacks.",
+      "fix": "Match-pinned direct stream: espn-fifa.world-760506 → /wk/albaplayer/sirtv/ (Sir TV HLS proxy). Hide channel/server UI for this match only.",
+      "liveAtTime": [
+        {
+          "match": "Portugal vs Spain",
+          "channelId": "bein-max-1",
+          "channel": "beIN MAX 1",
+          "embedKey": "sirtv"
+        }
+      ],
+      "userReport": "No don't leave anything to try — play Sir TV directly on Portugal Spain card"
+    },
     {
       "date": "2026-07-06T19:20:00.000Z",
       "issue": "Portugal vs Spain (beIN MAX 1) — no stream plays; worldkoora/dlhd HLS variants return 403.",

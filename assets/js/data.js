@@ -33,14 +33,35 @@ const EMBEDS = {
     defaultServer: 0,
     servers: 4,
   },
-  // TEMP: Sir TV ch1 while worldkoora/dlhd HLS variants 403 (Portugal vs Spain).
-  sirtv: {
-    url: "https://s.sirtv.space/2026/02/ch1.html?m=1",
-    external: true,
-    defaultServer: 1,
-    servers: 1,
-  },
+  // TEMP: Sir TV ch1 — Portugal vs Spain direct stream (worker resolves HLS).
+  sirtv: { url: "/wk/albaplayer/sirtv/", defaultServer: 1, servers: 1 },
 };
+
+// Matches that bypass channel/server pickers and play one source immediately.
+const DIRECT_MATCH_STREAMS = {
+  "espn-fifa.world-760506": { embedKey: "sirtv", hidePickers: true },
+  "portugal~spain": { embedKey: "sirtv", hidePickers: true },
+};
+
+function matchStreamKey(m) {
+  if (!m) return "";
+  if (m.key) return String(m.key).toLowerCase();
+  if (m.home && m.away) {
+    return `${String(m.home).toLowerCase()}~${String(m.away).toLowerCase()}`;
+  }
+  return "";
+}
+
+function directStreamForMatch(m) {
+  if (!m) return null;
+  if (DIRECT_MATCH_STREAMS[m.id]) return DIRECT_MATCH_STREAMS[m.id];
+  const key = matchStreamKey(m);
+  return key ? DIRECT_MATCH_STREAMS[key] || null : null;
+}
+
+function directStreamForMatchId(id) {
+  return id ? DIRECT_MATCH_STREAMS[id] || null : null;
+}
 
 function embedUrlFor(embed, serv) {
   if (!embed || !embed.url) return "";
@@ -244,15 +265,17 @@ function resolveWatchSelection(matches, channels, searchParams) {
 
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
-  const embedKey = (match && match.embedKey) || embedKeyFor(chId);
+  const direct = match ? directStreamForMatch(match) : null;
+  const embedKey = (direct && direct.embedKey) || (match && match.embedKey) || embedKeyFor(chId);
   const channelWithEmbed = { ...channel, embed: { ...embedForKey(embedKey), channelId: chId } };
-  return { channel: channelWithEmbed, match, embedKey };
+  return { channel: channelWithEmbed, match, embedKey, direct };
 }
 
 // Expose for non-module scripts.
 window.SITE_DATA = {
   CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor,
   servIndexFromParam, EMBED_BINDING, streamOptionsFor, streamOptionUrl,
+  directStreamForMatch, directStreamForMatchId,
 };
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;
