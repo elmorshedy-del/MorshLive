@@ -27,7 +27,7 @@ const {
 const { attachSummaries, buildHighlightQueries, pickArabicVideo, arabicTeam } = require("./highlights-lib");
 const { findVortexHighlight, fetchVortexEmbedMeta, normalizeHighlightBucket, enrichHighlightMeta, pickPrimaryHighlight } = require("./vortex-highlights-lib");
 const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-highlights-lib");
-const { parseEspnMatchId, extractLineups, extractMatchStats } = require("./match-detail-lib");
+const { parseEspnMatchId, extractLineups, extractMatchStats, extractGoals } = require("./match-detail-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 const { writePollConfig } = require("./match-poll-lib");
 
@@ -358,10 +358,17 @@ async function fetchYouTubeHighlight(match) {
     const { m, summary } = result.value;
     const lineups = extractLineups(summary);
     const stats = extractMatchStats(summary);
+    const goals = extractGoals(summary);
     if (lineups) { m.lineups = lineups; lineupsMatched++; }
     if (stats) { m.stats = stats; statsMatched++; }
-    if (lineups || stats) {
-      matchDetailIndex.push({ key: pairKey(m.home, m.away), lineups: lineups || null, stats: stats || null });
+    if (goals && goals.length) { m.goals = goals; }
+    if (lineups || stats || (goals && goals.length)) {
+      matchDetailIndex.push({
+        key: pairKey(m.home, m.away),
+        lineups: lineups || null,
+        stats: stats || null,
+        goals: goals && goals.length ? goals : null,
+      });
     }
   }
 

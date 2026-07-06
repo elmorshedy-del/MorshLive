@@ -196,6 +196,7 @@
             <div class="tname">${teamLabel(m.away)}</div>
           </div>
         </div>
+        ${window.buildGoalsHtml ? window.buildGoalsHtml(m) : ""}
         <div class="live-detail-meta">${footMeta(m)}</div>
         <a class="watch-link live-detail-watch" href="${watchHref(m)}">${ICON.play} ${live ? t("card.watchNow") : t("card.watchCommentary")}</a>
         ${sections}
@@ -293,6 +294,7 @@
             <div class="tname">${teamLabel(m.away)}</div>
           </div>
         </div>
+        ${window.buildGoalsHtml ? window.buildGoalsHtml(m) : ""}
         ${timeZoneChips(m)}
         <div class="match-foot">
           <span class="match-meta">${footMeta(m)}</span>

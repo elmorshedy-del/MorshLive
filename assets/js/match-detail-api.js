@@ -102,11 +102,15 @@
   function playerEntry(p, cardsByAthleteId) {
     const athleteId = p.athlete && p.athlete.id;
     const cards = (athleteId && cardsByAthleteId && cardsByAthleteId[athleteId]) || { yellow: 0, red: 0 };
+    const abbr = (p.position && p.position.abbreviation) || "";
+    const fp = parseInt(p.formationPlace, 10);
     return {
       id: athleteId || "",
       jersey: p.jersey || "",
       name: (p.athlete && (p.athlete.shortName || p.athlete.displayName)) || "",
-      band: bandForPosition(p.position && p.position.abbreviation),
+      band: bandForPosition(abbr),
+      pos: abbr,
+      formationPlace: isNaN(fp) ? null : fp,
       position: (p.position && p.position.displayName) || "",
       yellowCards: cards.yellow,
       redCards: cards.red,
@@ -131,10 +135,13 @@
         const sub = outId && subsByOutAthleteId[outId];
         const incomingRaw = sub && byAthleteId[sub.inAthleteId];
         if (!incomingRaw) return playerEntry(p, cardsByAthleteId);
+        const outEntry = playerEntry(p, cardsByAthleteId);
         return {
           ...playerEntry(incomingRaw, cardsByAthleteId),
-          band: bandForPosition(p.position && p.position.abbreviation),
-          subFor: playerEntry(p, cardsByAthleteId).name,
+          band: outEntry.band,
+          pos: outEntry.pos,
+          formationPlace: outEntry.formationPlace,
+          subFor: outEntry.name,
           subMinute: sub.minute,
         };
       });
@@ -143,6 +150,53 @@
     }
     if (!out.home || !out.away) return null;
     return out;
+  }
+
+  function teamSideById(summary) {
+    const comp = summary && summary.header && summary.header.competitions && summary.header.competitions[0];
+    const competitors = (comp && comp.competitors) || [];
+    const map = {};
+    for (const c of competitors) {
+      const id = c.id || (c.team && c.team.id);
+      if (id && (c.homeAway === "home" || c.homeAway === "away")) map[String(id)] = c.homeAway;
+    }
+    return map;
+  }
+
+  function shortenName(full) {
+    const parts = String(full || "").trim().split(/\s+/);
+    if (parts.length < 2) return parts[0] || "";
+    return parts[0][0] + ". " + parts.slice(1).join(" ");
+  }
+
+  function extractGoals(summary) {
+    const events = (summary && summary.keyEvents) || [];
+    const sideById = teamSideById(summary);
+    const rows = [];
+    for (const e of events) {
+      if (!e.scoringPlay) continue;
+      const type = (e.type && e.type.type) || "";
+      if (/shootout/.test(type)) continue;
+      const teamId = e.team && e.team.id ? String(e.team.id) : null;
+      let side = teamId ? sideById[teamId] : null;
+      const own = /own/.test(type);
+      if (own && (side === "home" || side === "away")) side = side === "home" ? "away" : "home";
+      if (side !== "home" && side !== "away") continue;
+      const athlete = e.participants && e.participants[0] && e.participants[0].athlete;
+      const scorer = shortenName(athlete && (athlete.shortName || athlete.displayName));
+      const period = (e.period && e.period.number) || 0;
+      const clockVal = e.clock && typeof e.clock.value === "number" ? e.clock.value : 0;
+      rows.push({
+        side,
+        scorer,
+        minute: (e.clock && e.clock.displayValue) || "",
+        penalty: /penalty/.test(type),
+        own,
+        _order: period * 100000 + clockVal,
+      });
+    }
+    rows.sort((a, b) => a._order - b._order);
+    return rows.map((g) => ({ side: g.side, scorer: g.scorer, minute: g.minute, penalty: g.penalty, own: g.own }));
   }
 
   async function fetchSummary(match) {
@@ -172,6 +226,7 @@
         at: Date.now(),
         lineups: extractLineups(summary),
         stats: extractMatchStats(summary),
+        goals: extractGoals(summary),
       };
       _cache.set(match.id, detail);
       return detail;
@@ -186,6 +241,7 @@
     const out = { ...match };
     if (detail.lineups) out.lineups = detail.lineups;
     if (detail.stats) out.stats = detail.stats;
+    if (detail.goals) out.goals = detail.goals;
     return out;
   }
 

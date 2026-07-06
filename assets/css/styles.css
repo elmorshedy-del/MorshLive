@@ -428,12 +428,13 @@ img { max-width: 100%; display: block; }
 .stat-value-away.stat-value--lead { color: var(--stat-away); }
 .stat-label { color: var(--muted); font-weight: 600; text-align: center; flex: 1; }
 .stat-bar {
-  display: flex; gap: 2px; height: 8px; border-radius: 999px; overflow: hidden;
+  display: flex; gap: 3px; height: 9px; border-radius: 999px; overflow: hidden;
   background: var(--surface-2);
 }
 .stat-bar-home, .stat-bar-away { border-radius: 999px; transition: width .6s cubic-bezier(.16,1,.3,1); }
-.stat-bar-home { background: var(--stat-home); }
-.stat-bar-away { background: var(--stat-away); }
+.stat-bar-home { background: linear-gradient(90deg, color-mix(in srgb, var(--stat-home) 70%, #000), var(--stat-home)); }
+.stat-bar-away { background: linear-gradient(90deg, var(--stat-away), color-mix(in srgb, var(--stat-away) 70%, #000)); }
+.stat-hero .stat-bar { height: 13px; }
 
 /* ------------------------------------------------- التشكيلة الرسمية (lineups) */
 .match-lineups { display: flex; flex-direction: column; gap: 20px; }
@@ -472,40 +473,76 @@ img { max-width: 100%; display: block; }
 .pitch-box {
   position: absolute; top: 22%; bottom: 22%; border: 2px solid rgba(255,255,255,.32); border-radius: 2px;
 }
-.pitch-box--gk { right: 0; width: 7%; border-inline-end: none; }
-.pitch-box--goal { right: 0; width: 16%; border-inline-end: none; }
-.match-pitch::before {
-  content: ""; position: absolute; top: 50%; right: 40%; width: 44px; height: 44px;
-  border: 2px solid rgba(255,255,255,.32); border-radius: 50%; transform: translate(50%, -50%);
+.pitch-box--gk { right: 0; width: 6%; border-inline-end: none; }
+.pitch-box--goal { right: 0; width: 14%; border-inline-end: none; }
+/* halfway line */
+.match-pitch::after {
+  content: ""; position: absolute; top: 6%; bottom: 6%; left: 50%; width: 1px;
+  background: rgba(255,255,255,.16);
 }
+/* centre circle */
+.match-pitch::before {
+  content: ""; position: absolute; top: 50%; left: 50%; width: 22%; aspect-ratio: 1;
+  border: 2px solid rgba(255,255,255,.22); border-radius: 50%; transform: translate(-50%, -50%);
+}
+.pitch-spot { position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(255,255,255,.5); transform: translate(-50%, -50%); }
 .pitch-dot {
   position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column;
-  align-items: center; gap: 2px; width: 54px; z-index: 1;
+  align-items: center; gap: 3px; width: 60px; z-index: 1;
 }
 .pitch-jersey {
-  position: relative; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center;
-  font-size: .68rem; font-weight: 800; color: #fff; background: var(--stat-home);
-  border: 2px solid rgba(255,255,255,.75); box-shadow: 0 2px 6px rgba(0,0,0,.35);
+  position: relative; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+  font-size: .8rem; font-weight: 800; color: #fff;
+  background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.28), transparent 60%), var(--stat-home);
+  border: 2px solid rgba(255,255,255,.85); box-shadow: 0 3px 8px rgba(0,0,0,.45);
 }
-.pitch-dot--away .pitch-jersey { background: var(--stat-away); color: #04222b; }
+.pitch-dot--away .pitch-jersey { background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.32), transparent 60%), var(--stat-away); color: #04222b; }
 .pitch-name {
-  font-size: .6rem; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.85);
-  text-align: center; line-height: 1.1; max-width: 60px;
+  font-size: .64rem; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.9);
+  text-align: center; line-height: 1.15; max-width: 68px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
+/* Card + sub badges anchored to the jersey, absolutely positioned so they
+   never shift the dot layout. Rendered as small tilted cards. */
 .pitch-card {
-  position: absolute; top: -3px; inset-inline-start: -4px; width: 8px; height: 11px; border-radius: 2px;
-  box-shadow: 0 0 0 1px rgba(0,0,0,.4);
+  position: absolute; top: -5px; left: calc(50% + 9px); width: 9px; height: 12px; border-radius: 2px;
+  transform: rotate(12deg); box-shadow: 0 1px 3px rgba(0,0,0,.55); z-index: 2;
 }
-.pitch-card--yellow { background: #ffd400; }
-.pitch-card--red { background: #e2312d; }
+.pitch-card--yellow { background: linear-gradient(160deg, #ffe14d, #f5b800); }
+.pitch-card--red { background: linear-gradient(160deg, #ff5a52, #d21e18); }
+/* second yellow → red: a red card with a thin yellow edge */
+.pitch-card--second { background: linear-gradient(160deg, #ff5a52, #d21e18); box-shadow: 0 0 0 1.5px #ffd400, 0 1px 3px rgba(0,0,0,.55); }
 .pitch-sub-badge {
-  position: absolute; bottom: -4px; inset-inline-end: -4px; width: 13px; height: 13px; border-radius: 50%;
-  background: var(--accent); color: #06301f; font-size: .55rem; font-weight: 800; display: grid;
-  place-items: center; border: 1px solid rgba(255,255,255,.8);
+  position: absolute; top: -5px; left: calc(50% - 20px); width: 15px; height: 15px; border-radius: 50%;
+  background: var(--accent); color: #06301f; font-size: .7rem; font-weight: 900; display: grid;
+  place-items: center; line-height: 1; border: 1.5px solid rgba(255,255,255,.9); box-shadow: 0 1px 3px rgba(0,0,0,.5); z-index: 2;
 }
 @media (max-width: 420px) {
   .pitch-name { display: none; }
+  .pitch-jersey { width: 26px; height: 26px; font-size: .72rem; }
+  .pitch-dot { width: 40px; }
 }
+
+/* ------------------------------------------------- الأهداف (goal scorers) */
+.match-goals {
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: start; gap: 10px;
+  margin: 14px 0 4px; padding: 12px 8px; border-radius: 12px;
+  background: linear-gradient(180deg, rgba(255,255,255,.04), transparent), var(--surface);
+  border: 1px solid var(--border);
+}
+.goal-col { list-style: none; display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.goal-col--home { text-align: end; }
+.goal-col--home li { flex-direction: row-reverse; }
+.goal-col--away { text-align: start; }
+.goal-col li { display: flex; align-items: center; gap: 6px; font-size: .82rem; color: var(--text); min-width: 0; }
+.goal-ball { width: 14px; height: 14px; flex-shrink: 0; }
+.goal-scorer { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.goal-min { color: var(--gold); font-weight: 800; font-variant-numeric: tabular-nums; flex-shrink: 0;
+  direction: ltr; unicode-bidi: isolate; }
+.goal-tag { font-style: normal; font-size: .62rem; font-weight: 700; color: var(--muted);
+  background: var(--surface-2); border-radius: 999px; padding: 1px 6px; flex-shrink: 0; }
+.goal-sep { align-self: center; opacity: .5; }
+.goal-sep .goal-ball { width: 20px; height: 20px; }
 
 /* ------------------------------------------------- Live match center (home) */
 .live-detail-card {
