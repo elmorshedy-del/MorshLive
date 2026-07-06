@@ -7,6 +7,9 @@
     "doc": "docs"
   },
   "scripts": {
+    "deploy": "bash scripts/deploy-cloudflare.sh",
+    "refresh:matches": "node scripts/fetch-matches.js && node scripts/fetch-tournament-archive.js && node scripts/verify-channel-bindings.js",
+    "setup:workers-builds": "node scripts/setup-workers-builds.mjs",
     "browsers:install": "playwright install chromium",
     "browsers:stealth": "npx patchright install chrome",
     "crawl:twitch-dev": "node scripts/twitch-dev-console-crawl.mjs",

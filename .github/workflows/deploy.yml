@@ -1,8 +1,8 @@
+# DEPRECATED — use Cloudflare Workers Builds (see docs/DEPLOY.md).
+# Disabled on push to avoid GitHub Actions billing.
 name: Deploy to Cloudflare Workers
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
     inputs:
       cloudflare_api_token:

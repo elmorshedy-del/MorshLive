@@ -1,11 +1,8 @@
 name: Update today's matches
 
-# Refreshes assets/data/today.json with fixtures from TheSportsDB plus ESPN
-# fallback so the site always shows current games and scores. Runs a few times
-# a day and can be triggered manually from the Actions tab.
+# DEPRECATED on schedule — use Cloudflare Workers Builds build_command (npm run refresh:matches)
+# or run manually / via agent. See docs/DEPLOY.md
 on:
-  schedule:
-    - cron: "*/30 * * * *"   # every 30 minutes
   workflow_dispatch:
 
 permissions:
@@ -23,15 +20,9 @@ jobs:
 
       - name: Fetch today's fixtures
         env:
-          SPORTSDB_KEY: ${{ secrets.SPORTSDB_KEY }}     # optional; falls back to free key
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }} # optional; enables Arabic highlight clips
-        run: node scripts/fetch-matches.js
-
-      - name: Refresh tournament archive (ملخصات; memes via Worker at runtime)
-        run: node scripts/fetch-tournament-archive.js
-
-      - name: Verify live channel routing
-        run: node scripts/verify-channel-bindings.js
+          SPORTSDB_KEY: ${{ secrets.SPORTSDB_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: npm run refresh:matches
 
       - name: Commit if changed
         run: |

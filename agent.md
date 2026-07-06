@@ -51,7 +51,7 @@ Merge the PR to `main` **only when**:
 - Gemini feedback is addressed (or explicitly declined with reason in PR), and
 - CI is green (including **Gemini review gate** if enabled on the repo)
 
-After merge, confirm Cloudflare Worker `morshlive` deploy if the change affects the live site.
+After merge, confirm deploy: Cloudflare Workers Builds on `main`, or run `npm run deploy`.
 
 ## 4. Agent self-review checklist (Gemini timeout fallback only)
 
@@ -65,8 +65,9 @@ After merge, confirm Cloudflare Worker `morshlive` deploy if the change affects 
 
 ## 5. Deploy
 
-- Production: Cloudflare Worker **`morshlive`**
-- Custom domain: `korazero.com` → Worker (not stale Pages `korazero`)
+- Production: merge to `main` → **Cloudflare Workers Builds** (not GitHub Actions — see `docs/DEPLOY.md`)
+- Manual / agent: `npm run deploy` with `.env` Cloudflare token
+- Custom domain: `korazero.com` → Worker `morshlive`
 
 ## 6. User communication
 

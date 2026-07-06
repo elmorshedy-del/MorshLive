@@ -1,0 +1,64 @@
+{
+  "title": "Cloudflare Workers Builds — production CI (no GitHub Actions billing)",
+  "description": "Merge to main on GitHub → Cloudflare builds and deploys. GitHub only stores code; Cloudflare runs the pipeline.",
+  "updated": "2026-07-06",
+  "github_repository": "elmorshedy-del/MorshLive",
+  "production_branch": "main",
+  "worker": {
+    "name": "morshlive",
+    "tag": "87fc5392bcc1400eab25542b46944e4e",
+    "account_id": "f06dda0c02d25976dcda319e942e432c",
+    "domains": ["korazero.com", "www.korazero.com"]
+  },
+  "dashboard_setup": {
+    "url": "https://dash.cloudflare.com/f06dda0c02d25976dcda319e942e432c/workers/services/view/morshlive/production/settings/builds",
+    "steps": [
+      "Workers & Pages → morshlive → Settings → Builds",
+      "Connect → GitHub → authorize → select elmorshedy-del/MorshLive",
+      "Production branch: main",
+      "Root directory: / (repo root)",
+      "Build command (optional, refreshes match JSON before deploy): npm run refresh:matches",
+      "Deploy command: npx wrangler deploy",
+      "Save — push to main to verify"
+    ],
+    "note": "GitHub OAuth is between Cloudflare and GitHub — does NOT use GitHub Actions minutes or billing."
+  },
+  "production_trigger": {
+    "trigger_name": "Production — main",
+    "branch_includes": ["main"],
+    "branch_excludes": [],
+    "root_directory": "/",
+    "build_command": "npm run refresh:matches",
+    "deploy_command": "npx wrangler deploy",
+    "build_caching_enabled": true,
+    "environment_variables_optional": {
+      "SPORTSDB_KEY": "TheSportsDB API key (optional, default free key in script)",
+      "YOUTUBE_API_KEY": "Arabic highlight clips during build (optional)"
+    }
+  },
+  "preview_trigger": {
+    "trigger_name": "Preview — PR branches",
+    "branch_includes": ["*"],
+    "branch_excludes": ["main"],
+    "root_directory": "/",
+    "build_command": "",
+    "deploy_command": "npx wrangler versions upload",
+    "note": "Uploads preview versions without promoting to korazero.com"
+  },
+  "replaces_github_workflows": [
+    ".github/workflows/deploy-worker.yml",
+    ".github/workflows/deploy.yml",
+    ".github/workflows/github-pages.yml",
+    ".github/workflows/update-matches.yml"
+  ],
+  "manual_fallback": {
+    "deploy": "npm run deploy",
+    "refresh_matches_commit": "npm run refresh:matches && git add assets/data assets/js/channel-bindings.js && git commit && git push",
+    "verify_token": "node scripts/verify-deploy-token.js"
+  },
+  "api_setup_optional": {
+    "note": "Workers Builds API requires a USER-scoped token with Workers Builds Configuration Edit — account cfat_ tokens cannot configure builds.",
+    "docs": "https://developers.cloudflare.com/workers/ci-cd/builds/api-reference/",
+    "script": "scripts/setup-workers-builds.mjs (prints status + dashboard link)"
+  }
+}
