@@ -33,6 +33,14 @@ const WORLDKOORA = "https://mysportv.live";
 const WESHAN = "https://zenvixw.site/wordpress/albaplayer/weshan/";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
+const SIRTV_CH1_PLAYER = "https://we.shootsync.site/albaplayer/sniaer/";
+const SIRTV_CH1_REFERER = "https://s.sirtv.space/2026/02/ch1.html?m=1";
+const SIRTV_RE = /^\/wk\/albaplayer\/sirtv\/?$/i;
+const NTV_EMBED =
+  "https://ntv.cx/embed?t=OFd0cFZIcCtUQ3NleURxSUs1SW9VQW81eDZjTHdaUjNGL0RxZWZUU24zVTNIQlVsbEpqTkgzbkk3TmhiRGJwMw~~";
+const NTV_RE = /^\/wk\/albaplayer\/ntv\/?$/i;
+const ALT_STREAM_AD_HOSTS =
+  /cosetengarb|corruptioneasiest|histats|acscdn|aclib|doubleclick|googlesyndication|popads|propeller|exoclick|adsterra|mgid|taboola|outbrain|cloudflareinsights|console-ban|pubads|googletagmanager|google-analytics|imasdk|advertising|\/ads\//i;
 const POLL_RE = /^\/api\/poll\/([a-z0-9.-]+)\/?$/i;
 const POLL_STORE = "https://kz-poll.internal/";
 const POLL_TEAMS = {
@@ -1698,6 +1706,163 @@ function weshanServerOrder(requestedServ) {
   if (Number.isFinite(raw) && raw >= 0 && raw <= 3) order.push(raw);
   for (let s = 0; s <= 3; s++) if (!order.includes(s)) order.push(s);
   return order;
+}
+
+async function fetchSirTvCh1Html(request) {
+  try {
+    const res = await fetchWithTimeout(SIRTV_CH1_PLAYER, {
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "text/html,application/xhtml+xml",
+        Referer: SIRTV_CH1_REFERER,
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    return res.text();
+  } catch {
+    return null;
+  }
+}
+
+async function proxySirTv(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "sirtv-ch1",
+  };
+  if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
+
+  try {
+    const html = await fetchSirTvCh1Html(request);
+    if (!html) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    const candidates = extractHlsCandidates(html);
+    const seenSources = new Set();
+    const pool = [];
+    for (const c of candidates) {
+      if (!c.source || seenSources.has(c.source)) continue;
+      const probe = await streamProbe(c.source, "plain", request);
+      if (!probe.ok) continue;
+      seenSources.add(c.source);
+      const sig = await signTarget(c.source, secret);
+      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: probe.score });
+    }
+    pool.sort((a, b) => a.score - b.score);
+    const proxied = pool.map((m) => m.url);
+    if (!proxied.length) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    return new Response(cleanHlsPlayerHtml(proxied, "Sir TV"), { status: 200, headers: htmlHeaders });
+  } catch {
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  }
+}
+
+function extractAnyIframeSrc(html, base) {
+  const out = [];
+  for (const m of String(html || "").matchAll(/<iframe\b[^>]*\bsrc=(["'])([^"']+)\1/gi)) {
+    try {
+      out.push(new URL(m[2], base).href);
+    } catch {
+      // Skip malformed iframe URLs.
+    }
+  }
+  return out;
+}
+
+async function fetchAltStreamHtml(url, request, referer) {
+  try {
+    const res = await fetchWithTimeout(url, {
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "text/html,application/xhtml+xml",
+        Referer: referer || url,
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    return { url: res.url, html: await res.text() };
+  } catch {
+    return null;
+  }
+}
+
+async function resolveNtvPlayablePage(request) {
+  let page = await fetchAltStreamHtml(NTV_EMBED, request, "https://ntv.cx/");
+  if (!page) return null;
+  for (let depth = 0; depth < 5; depth++) {
+    const candidates = extractHlsCandidates(page.html);
+    if (candidates.length) return { html: page.html, url: page.url, candidates };
+    const iframes = extractAnyIframeSrc(page.html, page.url);
+    if (!iframes.length) break;
+    page = await fetchAltStreamHtml(iframes[0], request, page.url);
+    if (!page) break;
+  }
+  return page
+    ? { html: page.html, url: page.url, candidates: extractHlsCandidates(page.html) }
+    : null;
+}
+
+function sanitizeAltEmbedHtml(html, baseUrl) {
+  let out = String(html || "");
+  out = out.replace(/<script\b[^>]*src=["'][^"']+["'][^>]*>\s*<\/script>/gi, (tag) =>
+    (ALT_STREAM_AD_HOSTS.test(tag) ? "" : tag)
+  );
+  out = out.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, (tag) =>
+    (ALT_STREAM_AD_HOSTS.test(tag) ? "" : tag)
+  );
+  out = out.replace(/<noscript[\s\S]*?<\/noscript>/gi, "");
+  out = out.replace(/<meta[^>]+http-equiv=["']refresh["'][^>]*>/gi, "");
+  try {
+    const base = new URL(baseUrl);
+    out = out.replace(/<head>/i, `<head><base href="${base.origin}${base.pathname}${base.search}">`);
+  } catch {
+    // Keep upstream HTML as-is when base URL is invalid.
+  }
+  return out;
+}
+
+async function proxyNtv(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "ntv-clean",
+  };
+  if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
+
+  try {
+    const resolved = await resolveNtvPlayablePage(request);
+    if (!resolved) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+
+    const pool = [];
+    const seen = new Set();
+    for (const c of resolved.candidates || []) {
+      if (!c.source || seen.has(c.source)) continue;
+      const probe = await streamProbe(c.source, "plain", request);
+      if (!probe.ok) continue;
+      seen.add(c.source);
+      const sig = await signTarget(c.source, secret);
+      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: probe.score });
+    }
+    pool.sort((a, b) => a.score - b.score);
+    const proxied = pool.map((m) => m.url);
+    if (proxied.length) {
+      return new Response(cleanHlsPlayerHtml(proxied, "NTV"), { status: 200, headers: htmlHeaders });
+    }
+
+    const clean = sanitizeAltEmbedHtml(resolved.html, resolved.url);
+    return new Response(clean, { status: 200, headers: htmlHeaders });
+  } catch {
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  }
 }
 
 async function proxyWeshan(request, env) {
@@ -4386,6 +4551,12 @@ export default {
     }
     if (WESHAN_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyWeshan(request, env);
+    }
+    if (SIRTV_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxySirTv(request, env);
+    }
+    if (NTV_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxyNtv(request, env);
     }
     if (AMINE_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyAmine(request, env);

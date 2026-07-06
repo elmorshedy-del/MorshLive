@@ -33,17 +33,40 @@ const EMBEDS = {
     defaultServer: 0,
     servers: 4,
   },
-  // Rescue embed — used when RESCUE_MATCH_STREAMS_ENABLED + DIRECT_MATCH_STREAMS pin a match.
+  // Alternative backup players — proxied ad-free on /wk/albaplayer/{sirtv,ntv}/.
   sirtv: { url: "/wk/albaplayer/sirtv/", defaultServer: 1, servers: 1 },
+  ntv: { url: "/wk/albaplayer/ntv/", defaultServer: 1, servers: 1 },
 };
 
-// Flip to true to auto-play rescue embed and hide pickers for pinned matches.
-const RESCUE_MATCH_STREAMS_ENABLED = false;
-
-const DIRECT_MATCH_STREAMS = {
-  "espn-fifa.world-760506": { embedKey: "sirtv", hidePickers: true },
-  "portugal~spain": { embedKey: "sirtv", hidePickers: true },
+// Pinned matches that show the separate backup panel (Sir TV + NTV).
+const ALT_STREAM_MATCHES = {
+  "espn-fifa.world-760506": { sirTv: true, ntv: true },
+  "portugal~spain": { sirTv: true, ntv: true },
 };
+
+const ALT_STREAM_DEFS = {
+  sirTv: { key: "sirTv", path: "/wk/albaplayer/sirtv/", labelKey: "watch.altSirTv" },
+  ntv: { key: "ntv", path: "/wk/albaplayer/ntv/", labelKey: "watch.altNtv" },
+};
+
+function altStreamsForMatch(m) {
+  if (!m) return null;
+  const pin = ALT_STREAM_MATCHES[m.id] || ALT_STREAM_MATCHES[matchStreamKey(m)] || null;
+  if (!pin) return null;
+  const out = {};
+  if (pin.sirTv) out.sirTv = ALT_STREAM_DEFS.sirTv;
+  if (pin.ntv) out.ntv = ALT_STREAM_DEFS.ntv;
+  return Object.keys(out).length ? out : null;
+}
+
+function altStreamUrl(kind) {
+  const def = ALT_STREAM_DEFS[kind];
+  if (!def) return "";
+  const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
+  const u = new URL(def.path, base);
+  u.searchParams.set("_kz", "13");
+  return u.toString();
+}
 
 function matchStreamKey(m) {
   if (!m) return "";
@@ -52,18 +75,6 @@ function matchStreamKey(m) {
     return `${String(m.home).toLowerCase()}~${String(m.away).toLowerCase()}`;
   }
   return "";
-}
-
-function directStreamForMatch(m) {
-  if (!RESCUE_MATCH_STREAMS_ENABLED || !m) return null;
-  if (DIRECT_MATCH_STREAMS[m.id]) return DIRECT_MATCH_STREAMS[m.id];
-  const key = matchStreamKey(m);
-  return key ? DIRECT_MATCH_STREAMS[key] || null : null;
-}
-
-function directStreamForMatchId(id) {
-  if (!RESCUE_MATCH_STREAMS_ENABLED || !id) return null;
-  return DIRECT_MATCH_STREAMS[id] || null;
 }
 
 function embedUrlFor(embed, serv) {
@@ -270,17 +281,16 @@ function resolveWatchSelection(matches, channels, searchParams) {
 
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
-  const direct = match ? directStreamForMatch(match) : null;
-  const embedKey = (direct && direct.embedKey) || (match && match.embedKey) || embedKeyFor(chId);
+  const embedKey = (match && match.embedKey) || embedKeyFor(chId);
   const channelWithEmbed = { ...channel, embed: { ...embedForKey(embedKey), channelId: chId } };
-  return { channel: channelWithEmbed, match, embedKey, direct };
+  return { channel: channelWithEmbed, match, embedKey };
 }
 
 // Expose for non-module scripts.
 window.SITE_DATA = {
   CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor,
   servIndexFromParam, EMBED_BINDING, streamOptionsFor, streamOptionUrl,
-  directStreamForMatch, directStreamForMatchId, RESCUE_MATCH_STREAMS_ENABLED,
+  altStreamsForMatch, altStreamUrl,
 };
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;

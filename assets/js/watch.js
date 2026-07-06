@@ -17,8 +17,8 @@
   let MATCHES = [];
   let channel = CHANNELS[0];
   let match = null;
-  let directStream = null;
   let matchesReady = false;
+  let altStreamsSignature = "";
   const STREAM_SOURCES = [
     { key: "vip1", servs: [1, 2, 3, 4] },
     { key: "vip2", servs: [1, 2, 3, 4] },
@@ -63,11 +63,81 @@
   function reloadPlayer() {
     loadedUrl = "";
     loadPlayer();
+    reloadAltStreams();
   }
 
-  function setDirectStreamUi() {
-    const card = document.querySelector(".watch-sources-card");
-    if (card) card.hidden = !!(directStream && directStream.hidePickers);
+  function altStreamIframe(url) {
+    return (
+      `<iframe class="embed-frame alt-stream-frame" src="${escapeHtml(url)}" ` +
+      `sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ` +
+      `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
+      `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="lazy"></iframe>`
+    );
+  }
+
+  function renderAltStreams() {
+    const card = document.getElementById("alt-streams");
+    if (!card) return;
+    const cfg = window.SITE_DATA.altStreamsForMatch
+      ? window.SITE_DATA.altStreamsForMatch(match)
+      : null;
+    if (!cfg) {
+      card.hidden = true;
+      card.innerHTML = "";
+      altStreamsSignature = "";
+      return;
+    }
+
+    const parts = [];
+    if (cfg.sirTv && window.SITE_DATA.altStreamUrl) {
+      parts.push(`sirTv:${window.SITE_DATA.altStreamUrl("sirTv")}`);
+    }
+    if (cfg.ntv && window.SITE_DATA.altStreamUrl) {
+      parts.push(`ntv:${window.SITE_DATA.altStreamUrl("ntv")}`);
+    }
+    const signature = parts.join("|");
+    if (signature === altStreamsSignature && card.querySelector(".alt-stream-pane")) {
+      card.hidden = false;
+      return;
+    }
+    altStreamsSignature = signature;
+
+    const panes = [];
+    if (cfg.sirTv) {
+      panes.push(
+        `<div class="alt-stream-pane alt-stream-pane--sirtv">
+          <div class="alt-stream-head">
+            <span class="alt-stream-name">${escapeHtml(t(cfg.sirTv.labelKey))}</span>
+            <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
+          </div>
+          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("sirTv"))}</div>
+        </div>`
+      );
+    }
+    if (cfg.ntv) {
+      panes.push(
+        `<div class="alt-stream-pane alt-stream-pane--ntv">
+          <div class="alt-stream-head">
+            <span class="alt-stream-name">${escapeHtml(t(cfg.ntv.labelKey))}</span>
+            <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
+          </div>
+          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("ntv"))}</div>
+        </div>`
+      );
+    }
+
+    card.hidden = false;
+    card.innerHTML =
+      `<div class="alt-streams-head">
+        <h3 class="alt-streams-title">${escapeHtml(t("watch.altStreams"))}</h3>
+        <p class="alt-streams-note">${escapeHtml(t("watch.altStreamsNote"))}</p>
+      </div>
+      <div class="alt-streams-grid">${panes.join("")}</div>`;
+  }
+
+  function reloadAltStreams() {
+    altStreamsSignature = "";
+    renderAltStreams();
   }
 
   function timeZoneHtml(m) {
@@ -282,10 +352,6 @@
   function renderChannels() {
     const row = document.getElementById("channel-row");
     if (!row) return;
-    if (directStream && directStream.hidePickers) {
-      row.innerHTML = "";
-      return;
-    }
     const matchCh = match && match.channelId;
     row.innerHTML = CHANNELS.map((ch) => {
       const isActive = ch.id === channel.id;
@@ -313,7 +379,6 @@
   }
 
   function sourceLabel(key) {
-    if (key === "sirtv") return t("watch.sirtv");
     if (key === "weshan") return t("watch.weshan");
     if (key === "amine") return t("watch.amine");
     return key.toUpperCase();
@@ -322,13 +387,6 @@
   function renderServers({ rebind } = {}) {
     const row = document.getElementById("servers");
     if (!row) return;
-    if (directStream && directStream.hidePickers) {
-      row.innerHTML = "";
-      row.dataset.ch = channel.id;
-      row.dataset.embed = activeEmbedKey || "sirtv";
-      row.dataset.serv = String(activeServ);
-      return;
-    }
     const defaultKey = (match && match.embedKey) || window.SITE_DATA.embedKeyFor(channel.id);
     const needsRebuild = rebind !== false && (
       !row.querySelector(".server-btn") ||
@@ -451,41 +509,12 @@
     host.appendChild(btn);
   }
 
-  function applyDirectStream(direct) {
-    if (!direct || !direct.hidePickers) return false;
-    directStream = direct;
-    activeEmbedKey = direct.embedKey;
-    activeServ = 1;
-    setDirectStreamUi();
-    return true;
-  }
-
   function resolveSelection() {
-    const urlMatchId = params.get("match");
-    const urlDirect = urlMatchId && window.SITE_DATA.directStreamForMatchId
-      ? window.SITE_DATA.directStreamForMatchId(urlMatchId)
-      : null;
-    if (applyDirectStream(urlDirect)) {
-      const picked = window.resolveWatchSelection
-        ? window.resolveWatchSelection(MATCHES, CHANNELS, params)
-        : { channel: CHANNELS[0], match: null, embedKey: urlDirect.embedKey };
-      channel = picked.channel;
-      match = picked.match;
-      return;
-    }
-
     const picked = window.resolveWatchSelection
       ? window.resolveWatchSelection(MATCHES, CHANNELS, params)
-      : { channel: CHANNELS[0], match: null, embedKey: null, direct: null };
+      : { channel: CHANNELS[0], match: null, embedKey: null };
     channel = picked.channel;
     match = picked.match;
-    if (applyDirectStream(picked.direct || (match && window.SITE_DATA.directStreamForMatch
-      ? window.SITE_DATA.directStreamForMatch(match)
-      : null))) {
-      return;
-    }
-    directStream = null;
-    setDirectStreamUi();
     activeEmbedKey = params.get("player") || picked.embedKey || (match && match.embedKey) || null;
     if (params.has("serv")) activeServ = Number(params.get("serv"));
     else if (match && match.streamServ != null) activeServ = Number(match.streamServ);
@@ -499,6 +528,7 @@
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
+    renderAltStreams();
     const channelChanged = channel.id !== previousChannelId;
     const matchChanged = (match && match.id) !== previousMatchId;
     if (!matchesReady) {
@@ -533,11 +563,11 @@
       renderServers();
       renderSidebar();
       loadPlayer();
+      renderAltStreams();
     }
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(() => refreshMatchDetail().catch((e) => console.warn("Detail refresh failed:", e.message)), 60 * 1000);
     setInterval(() => {
-      if (directStream && directStream.hidePickers) return;
       const chRow = document.getElementById("channel-row");
       const srvRow = document.getElementById("servers");
       if (window.StreamCheck) {
