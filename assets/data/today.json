@@ -1,6 +1,6 @@
 {
   "date": "2026-07-06",
-  "updatedAt": "2026-07-06T08:46:55.552Z",
+  "updatedAt": "2026-07-06T09:01:36.655Z",
   "source": "espn",
   "sourceLabel": "ESPN",
   "commentarySource": "almaghrebsport",
@@ -337,31 +337,6 @@
       "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
       "source": "vortex",
       "embedId": "mA5amQonpFi8V"
-    },
-    {
-      "key": "england~mexico",
-      "home": "Mexico",
-      "away": "England",
-      "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/WAOCAqgXRSoPe",
-      "title": "ملخص مباراة انجلترا والمكسيك (3-2) كاس العالم",
-      "source": "vortex",
-      "embedId": "WAOCAqgXRSoPe",
-      "btolatId": "93943",
-      "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=dEVYcWNwN1RaUzZWeitRK0o1NUd6MjNOcDRkVDVZdit2RU40MW9lT2JKVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkyODAxMzkyNzg1NDY=&amp;keypair=eDU5MVlvbmFyVXlXYzI3bHRpREQ5dFJVUUxvNjRGOU1Uc1MySXpLbzk2OD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MjgwMTM5Mjc4NTQ2",
-      "kind": "full"
-    },
-    {
-      "key": "england~mexico",
-      "home": "Mexico",
-      "away": "England",
-      "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/b1dy0L8gi2Kbt",
-      "title": "اهداف مباراة انجلترا والمكسيك (3-2) كاس العالم",
-      "source": "vortex",
-      "embedId": "b1dy0L8gi2Kbt",
-      "btolatId": "93935",
-      "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318218/poster/0.png?token=TGJOT2FTM0lRSVp0YjZkdUgzcStHbENwL2lZblBtWjhFaG5DeVUzd2dQWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkyODAxNDY5MzUwMjU=&amp;keypair=S25GcEt4VzRmUmxSU2MzWUNyL0t1aTNxRW41NkgrQXNVOG1VbEdlajhFcz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MjgwMTQ2OTM1MDI1",
-      "kind": "goals",
-      "clip": "goals"
     },
     {
       "key": "england~mexico",
@@ -1560,33 +1535,12 @@
         }
       ],
       "summaryAr": "انتهت المباراة بفوز إنجلترا على المكسيك بنتيجة 3-2 ضمن FIFA World Cup على ملعب Estadio Banorte · Mexico City · Mexico. تعليق: حفيظ دراجي.",
-      "highlights": {
-        "goals": {
-          "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/b1dy0L8gi2Kbt",
-          "title": "اهداف مباراة انجلترا والمكسيك (3-2) كاس العالم",
-          "source": "vortex",
-          "embedId": "b1dy0L8gi2Kbt",
-          "btolatId": "93935",
-          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318218/poster/0.png?token=TGJOT2FTM0lRSVp0YjZkdUgzcStHbENwL2lZblBtWjhFaG5DeVUzd2dQWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkyODAxNDY5MzUwMjU=&amp;keypair=S25GcEt4VzRmUmxSU2MzWUNyL0t1aTNxRW41NkgrQXNVOG1VbEdlajhFcz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MjgwMTQ2OTM1MDI1",
-          "kind": "goals"
-        },
-        "full": {
-          "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/WAOCAqgXRSoPe",
-          "title": "ملخص مباراة انجلترا والمكسيك (3-2) كاس العالم",
-          "source": "vortex",
-          "embedId": "WAOCAqgXRSoPe",
-          "btolatId": "93943",
-          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=dEVYcWNwN1RaUzZWeitRK0o1NUd6MjNOcDRkVDVZdit2RU40MW9lT2JKVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkyODAxMzkyNzg1NDY=&amp;keypair=eDU5MVlvbmFyVXlXYzI3bHRpREQ5dFJVUUxvNjRGOU1Uc1MySXpLbzk2OD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MjgwMTM5Mjc4NTQ2",
-          "kind": "full"
-        }
-      },
       "highlight": {
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/WAOCAqgXRSoPe",
         "title": "ملخص مباراة انجلترا والمكسيك (3-2) كاس العالم",
+        "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=dEVYcWNwN1RaUzZWeitRK0o1NUd6MjNOcDRkVDVZdit2RU40MW9lT2JKVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkyODAxMzkyNzg1NDY=&amp;keypair=eDU5MVlvbmFyVXlXYzI3bHRpREQ5dFJVUUxvNjRGOU1Uc1MySXpLbzk2OD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MjgwMTM5Mjc4NTQ2",
         "source": "vortex",
         "embedId": "WAOCAqgXRSoPe",
-        "btolatId": "93943",
-        "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=dEVYcWNwN1RaUzZWeitRK0o1NUd6MjNOcDRkVDVZdit2RU40MW9lT2JKVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkyODAxMzkyNzg1NDY=&amp;keypair=eDU5MVlvbmFyVXlXYzI3bHRpREQ5dFJVUUxvNjRGOU1Uc1MySXpLbzk2OD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MjgwMTM5Mjc4NTQ2",
         "kind": "full"
       },
       "lineups": {
