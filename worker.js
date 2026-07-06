@@ -3292,8 +3292,13 @@ async function loadStreamsLabCatalog(env, origin) {
 }
 
 async function probeStreamsLabDl(id) {
-  const m3u8 = await resolveDlStream(Number(id));
-  return !!m3u8;
+  const headers = { "User-Agent": "Mozilla/5.0", Referer: `${DLHD_BASE}/` };
+  try {
+    const sTxt = await (await fetchWithTimeout(`${DLHD_BASE}/stream/stream-${id}.php`, { headers }, 3500)).text();
+    return /<iframe[^>]+src="[^"]+\/premiumtv\//i.test(sTxt);
+  } catch {
+    return false;
+  }
 }
 
 async function probeStreamsLabEntry(ch) {

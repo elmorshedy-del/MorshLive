@@ -10,6 +10,7 @@
     { "id": "us", "label": "أمريكا", "icon": "🇺🇸" },
     { "id": "es", "label": "إسباني", "icon": "🇪🇸" },
     { "id": "my", "label": "ماليزيا", "icon": "🇲🇾" },
+    { "id": "au", "label": "أستراليا", "icon": "🇦🇺" },
     { "id": "sir", "label": "SIR / siir", "icon": "📡" },
     { "id": "match", "label": "مباريات SIR", "icon": "🎬" }
   ],
@@ -48,6 +49,9 @@
     { "id": "dl-712", "route": "/dl/712", "name": "beIN Sports 1 Malaysia", "sub": "Malaysia", "group": "my", "source": "dlhd", "dlhdId": 712, "priority": 1 },
     { "id": "dl-713", "route": "/dl/713", "name": "beIN Sports 2 Malaysia", "sub": "Malaysia", "group": "my", "source": "dlhd", "dlhdId": 713, "priority": 2 },
     { "id": "dl-714", "route": "/dl/714", "name": "beIN Sports 3 Malaysia", "sub": "Malaysia", "group": "my", "source": "dlhd", "dlhdId": 714, "priority": 3 },
+    { "id": "dl-491", "route": "/dl/491", "name": "beIN Sports 1 Australia", "sub": "English", "group": "au", "source": "dlhd", "dlhdId": 491, "priority": 1 },
+    { "id": "dl-492", "route": "/dl/492", "name": "beIN Sports 2 Australia", "sub": "English", "group": "au", "source": "dlhd", "dlhdId": 492, "priority": 2 },
+    { "id": "dl-493", "route": "/dl/493", "name": "beIN Sports 3 Australia", "sub": "English", "group": "au", "source": "dlhd", "dlhdId": 493, "priority": 3 },
     { "id": "sir-ar1", "route": "/sir/ar1", "name": "SIR AR 1", "sub": "foozlive", "group": "sir", "source": "sir", "sirSlug": "ar1", "priority": 1 },
     { "id": "sir-ar2", "route": "/sir/ar2", "name": "SIR AR 2", "sub": "foozlive", "group": "sir", "source": "sir", "sirSlug": "ar2", "priority": 2 },
     { "id": "sir-fr", "route": "/sir/fr", "name": "SIR FR", "sub": "foozlive", "group": "sir", "source": "sir", "sirSlug": "fr", "priority": 3 },
