@@ -230,21 +230,6 @@ async function fetchYouTubeHighlight(match) {
     if (m.status !== "ended") continue;
     const key = pairKey(m.home, m.away);
     const pinned = highlightsByKey.get(key);
-    if (pinned && pinned.source === "vortex") {
-      const meta = await enrichHighlightMeta({
-        videoUrl: pinned.videoUrl,
-        title: pinned.title,
-        channelTitle: pinned.channelTitle,
-        thumbnail: pinned.thumbnail,
-        source: pinned.source,
-        embedId: pinned.embedId,
-      });
-      if (meta) {
-        m.highlight = meta;
-        highlightsMatched++;
-      }
-      continue;
-    }
     const bt = btolatMap.get(key);
     if (bt && applyBtolatHighlights(m, bt, normalizeHighlightBucket)) {
       const primary = m.highlight;
@@ -256,6 +241,28 @@ async function fetchYouTubeHighlight(match) {
         highlightsByKey.set(`${key}~full`, { key, home: m.home, away: m.away, ...m.highlights.full, clip: "full" });
       }
       highlightsMatched++;
+      continue;
+    }
+    if (pinned && pinned.source === "vortex") {
+      let meta = null;
+      if (pinned.embedId && !pinned.thumbnail) {
+        try {
+          meta = await fetchVortexEmbedMeta(pinned.embedId, { allowAnyTitle: true });
+        } catch { /* fall back to pinned fields */ }
+      }
+      meta = await enrichHighlightMeta({
+        videoUrl: pinned.videoUrl,
+        title: meta?.title || pinned.title,
+        channelTitle: pinned.channelTitle,
+        thumbnail: meta?.thumbnail || pinned.thumbnail,
+        source: pinned.source,
+        embedId: pinned.embedId,
+      });
+      if (meta) {
+        m.highlight = meta;
+        highlightsByKey.set(key, { key, home: m.home, away: m.away, ...meta });
+        highlightsMatched++;
+      }
       continue;
     }
     try {

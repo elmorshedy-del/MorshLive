@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-06T09:38:37.598Z",
+  "updatedAt": "2026-07-06T09:54:28.837Z",
   "tournament": "FIFA World Cup 2026",
   "stages": [
     {
@@ -46,20 +46,7 @@
       "stage": "group-stage",
       "key": "mexico~southafrica",
       "eventId": "760415",
-      "summaryAr": "انتهت المباراة بفوز المكسيك على جنوب أفريقيا بنتيجة 2-0 ضمن FIFA World Cup على ملعب Estadio Banorte · Mexico City · Mexico.",
-      "highlights": {},
-      "clips": [
-        {
-          "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/PETLTQAhSAuCO",
-          "title": "ساكا كاد ان يسجل هدف امام المكسيك بكأس العالم",
-          "source": "vortex",
-          "embedId": "PETLTQAhSAuCO",
-          "btolatId": "93934",
-          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318211/poster/0.png?token=bWk1Tm04bmIwdE1RZWVubmFUOU9uTU1ZWHk4aVpCVEl4amZhNXhITFlPOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxMS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzExMTEzNTM2OTYw&keypair=SEhHT0hva3lvMXFseXRoOWIwa05HdC9SRTFYRmZ0cmU3YzVGSjRFSmdMND06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxMS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMxMTExMzUzNjk2MA==",
-          "kind": "chance"
-        }
-      ],
-      "highlight": null
+      "summaryAr": "انتهت المباراة بفوز المكسيك على جنوب أفريقيا بنتيجة 2-0 ضمن FIFA World Cup على ملعب Estadio Banorte · Mexico City · Mexico."
     },
     {
       "id": "espn-fifa.world-760414",
@@ -2176,7 +2163,7 @@
         "full": {
           "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/BD8ZRSAEM1XiE",
           "title": "ملخص مباراة المغرب وكندا 3 0 كأس العالم",
-          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318186/poster/0.png?token=V3c1YmFXZlZQdk5xVERJZ1BYWDNycnF6cFdZQlBlYVhlTDczQnZ3NW9Tbz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzExMTIzMzgxMDIw&keypair=VmJrSmxoV09qS2o1S2YweGViNEp5SHFHRmkvMVFwMmdYU0hQemIwdUpraz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMxMTEyMzM4MTAyMA==",
+          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318186/poster/0.png?token=TVpxalRuK1c0R1FqTU5jVjc3WVdZRG5nVnJjd09TNjM5OHVBK0p0WTZKZz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjUxNjQ2OTMy&keypair=cGNHWno2SktRMXVuckpaNEpnNzhvdHI5V1Z2b0k2QWhlWDB2REprS2xyWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDY1MTY0NjkzMg==",
           "source": "vortex",
           "embedId": "BD8ZRSAEM1XiE",
           "kind": "full"
@@ -2185,7 +2172,7 @@
       "highlight": {
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/BD8ZRSAEM1XiE",
         "title": "ملخص مباراة المغرب وكندا 3 0 كأس العالم",
-        "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318186/poster/0.png?token=V3c1YmFXZlZQdk5xVERJZ1BYWDNycnF6cFdZQlBlYVhlTDczQnZ3NW9Tbz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzExMTIzMzgxMDIw&keypair=VmJrSmxoV09qS2o1S2YweGViNEp5SHFHRmkvMVFwMmdYU0hQemIwdUpraz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMxMTEyMzM4MTAyMA==",
+        "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318186/poster/0.png?token=TVpxalRuK1c0R1FqTU5jVjc3WVdZRG5nVnJjd09TNjM5OHVBK0p0WTZKZz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjUxNjQ2OTMy&keypair=cGNHWno2SktRMXVuckpaNEpnNzhvdHI5V1Z2b0k2QWhlWDB2REprS2xyWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDY1MTY0NjkzMg==",
         "source": "vortex",
         "embedId": "BD8ZRSAEM1XiE",
         "kind": "full"
@@ -2218,7 +2205,7 @@
         "full": {
           "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/4Duh6QTRDC3M6",
           "title": "ملخص مباراة فرنسا وباراجواي 1 0 كأس العالم",
-          "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318190/poster/0.png?token=TFNrVHJXSGNOV2FNMGFLZnRpZzVXVVRwcXlUZkkrdkRlUHBldWNVaW8vVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzExMTI2ODE4NjM4&keypair=eEQ2UXhTTEI5RGMvc3cyenlzRU1lT3FSQitnVU5ZZHM2Qm1xUStrR2Vwcz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMxMTEyNjgxODYzOA==",
+          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318190/poster/0.png?token=VktqU2dWVHNGcVhidHc4Q2djUm55anh5ZHR1NkhuOWxabjFBODJSM1ZFMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkzMjA2NTUyNDA3OTI=&keypair=b3pwZDUrdkp0MmhPU254M0JDQWtRVVo0anpoTnUwdlhKeDhIU0FZUUZFdz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjU1MjQwNzky",
           "source": "vortex",
           "embedId": "4Duh6QTRDC3M6",
           "kind": "full"
@@ -2227,7 +2214,7 @@
       "highlight": {
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/4Duh6QTRDC3M6",
         "title": "ملخص مباراة فرنسا وباراجواي 1 0 كأس العالم",
-        "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318190/poster/0.png?token=TFNrVHJXSGNOV2FNMGFLZnRpZzVXVVRwcXlUZkkrdkRlUHBldWNVaW8vVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzExMTI2ODE4NjM4&keypair=eEQ2UXhTTEI5RGMvc3cyenlzRU1lT3FSQitnVU5ZZHM2Qm1xUStrR2Vwcz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMxMTEyNjgxODYzOA==",
+        "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318190/poster/0.png?token=VktqU2dWVHNGcVhidHc4Q2djUm55anh5ZHR1NkhuOWxabjFBODJSM1ZFMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkzMjA2NTUyNDA3OTI=&keypair=b3pwZDUrdkp0MmhPU254M0JDQWtRVVo0anpoTnUwdlhKeDhIU0FZUUZFdz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjU1MjQwNzky",
         "source": "vortex",
         "embedId": "4Duh6QTRDC3M6",
         "kind": "full"
@@ -2781,7 +2768,7 @@
           "source": "vortex",
           "embedId": "mA5amQonpFi8V",
           "btolatId": "93932",
-          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=L1g1MVdrNmhKTzVKVmhVeTQzOHBaT05xaFMwRXRGMVdlOVRzZUFZSjdOZz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzExMTE5Nzg3MTYz&keypair=eHA4RURDL0dNZ2R5QWZBNGtHdWdaQndTUFYzQVFSUHlybUErUkV2dER3TT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMxMTExOTc4NzE2Mw==",
+          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=TU1aQnBhTm5GbDNCcDhRZXlZc1NUbmxnZUlOTXNLRzNCaVZONml1T3FRUT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjQ4MDUzMDU5&keypair=ZU5kdXRDOFlLTWJ1dGtxU0pNNEdLMzNvSksrVFpJZisraVJOU2ZKalJaND06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDY0ODA1MzA1OQ==",
           "kind": "full"
         }
       },
@@ -2791,7 +2778,7 @@
         "source": "vortex",
         "embedId": "mA5amQonpFi8V",
         "btolatId": "93932",
-        "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=L1g1MVdrNmhKTzVKVmhVeTQzOHBaT05xaFMwRXRGMVdlOVRzZUFZSjdOZz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzExMTE5Nzg3MTYz&keypair=eHA4RURDL0dNZ2R5QWZBNGtHdWdaQndTUFYzQVFSUHlybUErUkV2dER3TT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMxMTExOTc4NzE2Mw==",
+        "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=TU1aQnBhTm5GbDNCcDhRZXlZc1NUbmxnZUlOTXNLRzNCaVZONml1T3FRUT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjQ4MDUzMDU5&keypair=ZU5kdXRDOFlLTWJ1dGtxU0pNNEdLMzNvSksrVFpJZisraVJOU2ZKalJaND06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDY0ODA1MzA1OQ==",
         "kind": "full"
       }
     },
@@ -3363,7 +3350,7 @@
           "source": "vortex",
           "embedId": "b1dy0L8gi2Kbt",
           "btolatId": "93935",
-          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318218/poster/0.png?token=MzlmbUE1enBsNWV2NW41VW1IM3pGVjFtWGxkTzc5ZFIzOGN3czYyVXBiQT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzExMTA4NjkzMDYx&keypair=YUh5L1hVZmx2VW9pdUY0aHBHSVU2Yi9UNkY4a2F2TFBQcGZjamErSjJKaz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMxMTEwODY5MzA2MQ==",
+          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318218/poster/0.png?token=dHpBQjR3UUFRaEg0UnkwRktyUUNCZE41K0xuUEVLVFNKN2x3RDFLU3ZhMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkzMjA2MzY5NTg5NTY=&keypair=SnRyRzVJZjFzTTJuVFRqd2RXVVpQZThkYzQzNnVpNWhtNUlpckYraFpZTT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjM2OTU4OTU2",
           "kind": "goals"
         },
         "full": {
@@ -3372,7 +3359,7 @@
           "source": "vortex",
           "embedId": "WAOCAqgXRSoPe",
           "btolatId": "93943",
-          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=bmtOT0pJZ2xTbWJtVU1oVW9jckZJSzljdU1TTGFaVnZRcmRNY3U3QkhBVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkzMTEwOTY2NjE0MzQ=&keypair=eFgraWFYdjZxLytqMCtod2pTOHRObHhhck5ZQlRLOHZGUW9zRzRRMGNSUT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzExMDk2NjYxNDM0",
+          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=MiszNWVYYU9ZVWNENXQzN3FrMmpIMklRTmt2Um5RcjdUK0lwd0E1NGhRVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjIyMTE0NzQy&keypair=OXVDZmJMUFFSTThPWnUvUjVoZUgzeUNKSHorYlRuSXhwTXRrMDYyVkZrOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDYyMjExNDc0Mg==",
           "kind": "full"
         }
       },
@@ -3383,8 +3370,17 @@
           "source": "vortex",
           "embedId": "DPKuBX5PpQ0Ae",
           "btolatId": "93939",
-          "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318216/poster/0.png?token=VWNUNGFwd3RsMWtwT1FxRjdMMmJoTDFNMlQ2WjcxMXM3bmpvRkF5aU9Scz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxNi8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzExMTAyNTk5MTIy&keypair=SmZCMHdjcWo3VXo5K0QxNTZ6ZTZ3STBDYW9wZnowczJDNUhzbE4vamVEdz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxNi86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMxMTEwMjU5OTEyMg==",
+          "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318216/poster/0.png?token=UmVmcENZVjg4L2xRVUtzaVdZRlNUQk0ySUFLcGYyK24yOHp1c0xlWXlSaz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxNi8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjMwODY1MDI2&keypair=NGpGWnAxY0FXa09MdGpPS2sraCtxZ0VYRWIyaEwvbDJhQjYxWDA5VG56Yz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxNi86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDYzMDg2NTAyNg==",
           "kind": "save"
+        },
+        {
+          "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/PETLTQAhSAuCO",
+          "title": "ساكا كاد ان يسجل هدف امام المكسيك بكأس العالم",
+          "source": "vortex",
+          "embedId": "PETLTQAhSAuCO",
+          "btolatId": "93934",
+          "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318211/poster/0.png?token=NjM4OG5QVWJkdXZKcTZRNHdUeGFQU29rS3N0M1NCU21hY1ovam1BOVRTUT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxMS8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjQxOTU5MTE5&keypair=QkY1ZkZsdzV6S1kvd0Uzc2R4dEhidDZESkVraG9vdFQ0d21YTG9aOE9Lcz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxMS86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDY0MTk1OTExOQ==",
+          "kind": "chance"
         }
       ],
       "highlight": {
@@ -3393,7 +3389,7 @@
         "source": "vortex",
         "embedId": "WAOCAqgXRSoPe",
         "btolatId": "93943",
-        "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=bmtOT0pJZ2xTbWJtVU1oVW9jckZJSzljdU1TTGFaVnZRcmRNY3U3QkhBVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkzMTEwOTY2NjE0MzQ=&keypair=eFgraWFYdjZxLytqMCtod2pTOHRObHhhck5ZQlRLOHZGUW9zRzRRMGNSUT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzExMDk2NjYxNDM0",
+        "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=MiszNWVYYU9ZVWNENXQzN3FrMmpIMklRTmt2Um5RcjdUK0lwd0E1NGhRVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjIyMTE0NzQy&keypair=OXVDZmJMUFFSTThPWnUvUjVoZUgzeUNKSHorYlRuSXhwTXRrMDYyVkZrOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDYyMjExNDc0Mg==",
         "kind": "full"
       }
     }
