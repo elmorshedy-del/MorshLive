@@ -431,6 +431,7 @@
     renderLiveDetail();
     renderMatches(activeFilter);
     renderSaved();
+    if (window.loadRecentTweets) window.loadRecentTweets().catch(() => {});
     return meta;
   }
 
@@ -442,6 +443,7 @@
     renderSaved();
     await loadMatches();
     setInterval(() => loadMatches({ force: true }), 90 * 1000);
+    setInterval(() => { if (window.loadRecentTweets) window.loadRecentTweets().catch(() => {}); }, 10 * 60 * 1000);
     setInterval(() => refreshLiveMatchPanels().catch(() => {}), 60 * 1000);
   });
 })();

@@ -2334,6 +2334,9 @@ async function proxyHighlightApi(request, env) {
  * @TrollFootball @Contxtfootball @memesvsfootball
  * GET /api/match-memes?home=&away=&kickoff= */
 const MEMES_API_RE = /^\/api\/match-memes\/?$/i;
+const RECENT_MEMES_API_RE = /^\/api\/recent-memes\/?$/i;
+const RECENT_MEMES_MS = 24 * 60 * 60 * 1000;
+const RECENT_MEMES_LIMIT = 48;
 const TWITTER_API_BASE = "https://api.twitter.com/2";
 const MEME_SOURCE_ACCOUNTS = [
   { key: "TrollFootball", username: "TrollFootball", id: "571964518" },
@@ -2756,6 +2759,102 @@ async function proxyMatchMemesApi(request, env) {
   });
 }
 
+async function loadTodayMatches(env, origin) {
+  try {
+    const res = await env.ASSETS.fetch(`${origin}/assets/data/today.json`);
+    if (!res.ok) return [];
+    const json = await res.json();
+    return Array.isArray(json.matches) ? json.matches : [];
+  } catch {
+    return [];
+  }
+}
+
+function tweetPostedRecently(postedAt, sinceMs) {
+  const t = Date.parse(postedAt || "");
+  return !isNaN(t) && t >= sinceMs;
+}
+
+function matchKickoffRecently(kickoffUtc, sinceMs) {
+  const t = Date.parse(kickoffUtc || "");
+  return !isNaN(t) && t >= sinceMs;
+}
+
+async function proxyRecentMemesApi(request, env) {
+  const origin = new URL(request.url).origin;
+  const headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "public, max-age=600",
+    "X-KZ-Proxy": "recent-memes-api",
+  };
+  const sinceMs = Date.now() - RECENT_MEMES_MS;
+  const [idx, pinned, todayMatches] = await Promise.all([
+    loadMemesIndex(env, origin),
+    loadPinnedMemes(env, origin),
+    loadTodayMatches(env, origin),
+  ]);
+
+  const matchByKey = new Map();
+  const recentMatchKeys = new Set();
+  for (const m of todayMatches) {
+    if (!m.home || !m.away) continue;
+    const key = highlightPairKeyMemes(m.home, m.away);
+    matchByKey.set(key, m);
+    if (matchKickoffRecently(m.kickoffUtc, sinceMs)) recentMatchKeys.add(key);
+  }
+
+  const byTweetId = new Map();
+  const ingest = (matchKey, meme) => {
+    if (!meme || meme.type !== "tweet") return;
+    const meta = matchByKey.get(matchKey);
+    const postedOk = tweetPostedRecently(meme.postedAt, sinceMs);
+    const matchOk = recentMatchKeys.has(matchKey);
+    if (!postedOk && !matchOk) return;
+    const id = String(meme.tweetId || meme.url || "");
+    if (!id) return;
+    const row = {
+      ...meme,
+      matchKey,
+      home: meta?.home || meme.home || null,
+      away: meta?.away || meme.away || null,
+      score: meta?.score || meme.score || null,
+      kickoffUtc: meta?.kickoffUtc || meme.kickoffUtc || null,
+    };
+    const prev = byTweetId.get(id);
+    if (!prev || (row.engagement || 0) > (prev.engagement || 0)) byTweetId.set(id, row);
+  };
+
+  for (const [key, list] of Object.entries(idx)) {
+    for (const meme of list || []) ingest(key, meme);
+  }
+  for (const [key, list] of Object.entries(pinned)) {
+    for (const meme of list || []) ingest(key, meme);
+  }
+
+  let memes = [...byTweetId.values()]
+    .sort((a, b) => (b.engagement || 0) - (a.engagement || 0))
+    .slice(0, RECENT_MEMES_LIMIT);
+
+  const bearer = env && env.TWITTER_BEARER_TOKEN;
+  if (memes.length) {
+    try {
+      memes = await enrichMemesMedia(memes, bearer);
+    } catch { /* static */ }
+    memes = filterMemesWithMedia(memes);
+  }
+
+  return new Response(JSON.stringify({
+    memes,
+    count: memes.length,
+    windowHours: 24,
+    matchCount: recentMatchKeys.size,
+  }), {
+    status: 200,
+    headers,
+  });
+}
+
 
 export default {
   async fetch(request, env) {
@@ -2833,6 +2932,9 @@ export default {
     }
     if (MEMES_API_RE.test(url.pathname) && method === "GET") {
       return withEdgeCache(request, 1800, () => proxyMatchMemesApi(request, env));
+    }
+    if (RECENT_MEMES_API_RE.test(url.pathname) && method === "GET") {
+      return withEdgeCache(request, 600, () => proxyRecentMemesApi(request, env));
     }
     return env.ASSETS.fetch(request);
   },

@@ -1,4 +1,4 @@
-/* tournament.js — World Cup 2026 archive: stage tabs, ملخص, viral X memes */
+/* tournament.js — World Cup 2026 archive: stage tabs, ملخص highlights */
 (function () {
   "use strict";
 
@@ -32,21 +32,6 @@
     } catch { return ""; }
   }
 
-  function formatCount(n) {
-    const v = Number(n) || 0;
-    if (v >= 1000000) return (v / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
-    if (v >= 1000) return (v / 1000).toFixed(1).replace(/\.0$/, "") + "k";
-    return String(v);
-  }
-
-  function tweetText(text) {
-    return escapeHtml(String(text || "").replace(/https?:\/\/\S+/g, "").trim());
-  }
-
-  function authorInitial(author) {
-    return escapeHtml(String(author || "X").charAt(0).toUpperCase());
-  }
-
   function stageLabel(stage) {
     if (!stage) return "";
     const lang = document.documentElement.lang === "en" ? "labelEn" : "labelAr";
@@ -60,63 +45,6 @@
     if (toggle && links) {
       toggle.addEventListener("click", () => links.classList.toggle("open"));
     }
-  }
-
-  function memeMediaHtml(meme) {
-    const item = (meme.media || [])[0];
-    if (!item || !item.previewUrl) return "";
-    const isVideo = item.type === "video" || item.type === "animated_gif";
-    return `
-      <div class="kz-tweet__media${isVideo ? " kz-tweet__media--video" : ""}">
-        <img src="${assetUrl(item.previewUrl)}" alt="" loading="lazy" />
-        ${isVideo ? `<span class="kz-tweet__play" aria-hidden="true">▶</span>` : ""}
-      </div>`;
-  }
-
-  function memeHtml(meme) {
-    if (!meme || meme.type !== "tweet" || !meme.url || !memeHasMedia(meme)) return "";
-    const likes = meme.likes != null ? meme.likes : 0;
-    const rts = meme.retweets != null ? meme.retweets : 0;
-    const avatar = meme.avatarUrl
-      ? `<img class="kz-tweet__avatar kz-tweet__avatar--img" src="${assetUrl(meme.avatarUrl)}" alt="" loading="lazy" />`
-      : `<span class="kz-tweet__avatar" aria-hidden="true">${authorInitial(meme.author)}</span>`;
-    return `
-      <a class="kz-tweet" href="${escapeHtml(meme.url)}" target="_blank" rel="noopener noreferrer">
-        <div class="kz-tweet__head">
-          ${avatar}
-          <div class="kz-tweet__who">
-            <b>@${escapeHtml(meme.author || "X")}</b>
-            ${meme.postedAt ? `<time datetime="${escapeHtml(meme.postedAt)}">${formatDate(meme.postedAt)}</time>` : ""}
-          </div>
-          <span class="kz-tweet__x" aria-hidden="true">𝕏</span>
-        </div>
-        <p class="kz-tweet__text" dir="auto">${tweetText(meme.text)}</p>
-        ${memeMediaHtml(meme)}
-        <div class="kz-tweet__foot">
-          <span class="kz-tweet__stat" title="${t("tournament.tweetLikes")}">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            ${formatCount(likes)}
-          </span>
-          <span class="kz-tweet__stat" title="${t("tournament.tweetRts")}">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11l-3-3 1.4-1.4L22 8l-6.6 5.4L14 12l3-3H7V7zm10 10H6l3 3-1.4 1.4L2 16l6.6-5.4L10 12l-3 3h10v2z"/></svg>
-            ${formatCount(rts)}
-          </span>
-          <span class="kz-tweet__open">${t("tournament.viewOnX")} →</span>
-        </div>
-      </a>`;
-  }
-
-  function memeHasMedia(meme) {
-    const item = (meme?.media || [])[0];
-    return !!(item && (item.previewUrl || item.url));
-  }
-
-  function sortedMemes(memes) {
-    return [...(memes || [])].sort((a, b) => (b.engagement || 0) - (a.engagement || 0));
-  }
-
-  function mediaMemes(memes) {
-    return sortedMemes(memes).filter(memeHasMedia);
   }
 
   function sectionHead(icon, iconMod, title, count) {
@@ -186,19 +114,6 @@
     return `<div class="tournament-highlights-duo">${blocks.join("")}</div>`;
   }
 
-  function memesBlock(memes, mode) {
-    if (!memes.length) {
-      return `<p class="tournament-nomemes">${t("tournament.noMemes")}</p>`;
-    }
-    const list = mode === "card" ? memes.slice(0, 3) : memes;
-    const gridClass = mode === "hero" ? "kz-tweet-rail kz-tweet-rail--hero" : "kz-tweet-stack";
-    return `
-      <div class="tournament-memes-block tournament-memes-block--${mode}">
-        ${sectionHead("𝕏", "x", t("tournament.memesTitle"), memes.length)}
-        <div class="${gridClass}">${list.map(memeHtml).join("")}</div>
-      </div>`;
-  }
-
   function scoreboardHtml(m) {
     return `
       <div class="tournament-scoreboard">
@@ -221,35 +136,12 @@
   }
 
   function featuredHeroHtml(m) {
-    const memes = mediaMemes((archive.memes && archive.memes[m.key]) || []);
     return `
       <article class="tournament-hero">
         ${scoreboardHtml(m)}
         ${m.summaryAr ? `<div class="tournament-recap"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
         ${highlightsBlock(m, "hero")}
-        ${memesBlock(memes, "hero")}
       </article>`;
-  }
-
-  async function fetchMemesForMatch(m, force) {
-    const local = mediaMemes((archive.memes && archive.memes[m.key]) || []);
-    if (!m.home || !m.away) return local;
-    if (!force && local.length) return local;
-    const q = new URLSearchParams({
-      home: m.home,
-      away: m.away,
-      kickoff: m.kickoffUtc || "",
-    });
-    try {
-      const res = await fetch(`/api/match-memes?${q}`, { cache: "no-store" });
-      if (!res.ok) return local;
-      const data = await res.json();
-      if (data.memes?.length) {
-        archive.memes[m.key] = data.memes;
-        return mediaMemes(data.memes);
-      }
-    } catch { /* local */ }
-    return local;
   }
 
   function hasAnyHighlight(m) {
@@ -264,7 +156,7 @@
       .sort((a, b) => Date.parse(b.kickoffUtc) - Date.parse(a.kickoffUtc))[0] || null;
   }
 
-  async function renderFeaturedAsync() {
+  function renderFeatured() {
     const wrap = document.getElementById("tournament-featured");
     const card = document.getElementById("tournament-featured-card");
     const latest = latestHighlightMatch();
@@ -273,28 +165,19 @@
       return;
     }
     wrap.hidden = false;
-    await fetchMemesForMatch(latest);
     card.innerHTML = featuredHeroHtml(latest);
     bindVideoLaunch(card);
   }
 
-  function renderFeatured() {
-    renderFeaturedAsync().catch(() => { /* retry on enrich */ });
-  }
-
   function matchDetailHtml(m) {
-    const memes = mediaMemes((archive.memes && archive.memes[m.key]) || []);
     return `
       <div class="tournament-detail">
         ${m.summaryAr ? `<div class="tournament-recap tournament-recap--compact"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
         ${highlightsBlock(m, "card")}
-        ${memesBlock(memes, "card")}
       </div>`;
   }
 
   function matchCard(m) {
-    const memes = mediaMemes((archive.memes && archive.memes[m.key]) || []);
-    const hasMemes = memes.length > 0;
     const hasHighlight = hasAnyHighlight(m);
     const clipCount = (matchClips(m).goals ? 1 : 0) + (matchClips(m).full ? 1 : 0);
     return `
@@ -316,7 +199,6 @@
         </div>
         <div class="tournament-badges">
           ${hasHighlight ? `<span class="tournament-badge tournament-badge--hl">${clipCount > 1 ? t("tournament.badgeHighlights", { n: clipCount }) : t("tournament.badgeHighlight")}</span>` : ""}
-          ${hasMemes ? `<span class="tournament-badge tournament-badge--meme">${t("tournament.badgeMemes", { n: memes.length })}</span>` : ""}
         </div>
         <details class="match-panel tournament-panel">
           <summary class="match-panel-toggle">${t("tournament.openMatch")}</summary>
@@ -381,35 +263,6 @@
     });
   }
 
-  async function refreshMatchPanel(card) {
-    const key = card?.dataset?.matchKey;
-    if (!key || !archive) return;
-    const m = archive.matches.find((x) => x.key === key);
-    if (!m) return;
-    await fetchMemesForMatch(m, true);
-    const body = card.querySelector(".match-panel-body");
-    if (body) {
-      body.innerHTML = matchDetailHtml(m);
-      bindVideoLaunch(body);
-    }
-  }
-
-  function bindPanelMemes(root) {
-    if (!root) return;
-    root.querySelectorAll(".tournament-panel").forEach((panel) => {
-      panel.addEventListener("toggle", () => {
-        if (!panel.open) return;
-        const card = panel.closest(".tournament-match-card");
-        refreshMatchPanel(card).catch(() => { /* static memes */ });
-      });
-    });
-  }
-
-  function bindLazyMedia(root) {
-    bindVideoLaunch(root);
-    bindPanelMemes(root);
-  }
-
   function renderTabs() {
     const wrap = document.getElementById("tournament-tabs");
     if (!wrap || !archive) return;
@@ -452,31 +305,17 @@
     grid.innerHTML = list.length ? list.map((m) => matchCard(m)).join("") : "";
     if (empty) empty.hidden = !!list.length;
     if (count) count.textContent = t("tournament.matchesCount", { n: list.length });
-    bindLazyMedia(grid);
-  }
-
-  async function enrichMemesFromApi() {
-    if (!archive) return;
-    const needs = archive.matches.filter((m) => {
-      const memes = archive.memes[m.key] || [];
-      return !mediaMemes(memes).length && memes.length;
-    });
-    if (!needs.length) return;
-    await Promise.all(needs.map((m) => fetchMemesForMatch(m, true)));
+    bindVideoLaunch(grid);
   }
 
   async function loadArchive() {
     const res = await fetch("/assets/data/tournament-archive.json", { cache: "no-store" });
     if (!res.ok) throw new Error("archive load failed");
     archive = await res.json();
-    archive.memes = archive.memes || {};
     archive.matches = Array.isArray(archive.matches) ? archive.matches : [];
     renderFeatured();
     renderTabs();
     renderGrid();
-    enrichMemesFromApi()
-      .then(() => { renderFeatured(); renderGrid(); })
-      .catch(() => { /* static archive is enough */ });
   }
 
   document.addEventListener("DOMContentLoaded", () => {
