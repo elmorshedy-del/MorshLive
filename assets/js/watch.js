@@ -27,7 +27,35 @@
   let activeServ = params.has("serv") ? Number(params.get("serv")) : 3;
   let activeEmbedKey = params.get("player") || null;
   const shell = document.getElementById("player-shell");
+  const sideShell = document.getElementById("player-shell-side");
+  const dualWrap = document.getElementById("player-dual");
   let loadedUrl = "";
+
+  const EXTERNAL_EMBED_ALLOW =
+    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen";
+  const EXTERNAL_EMBED_SANDBOX =
+    "allow-scripts allow-same-origin allow-presentation allow-forms allow-popups allow-popups-to-escape-sandbox";
+
+  function sideEmbedConfig() {
+    return window.SITE_DATA && window.SITE_DATA.sideEmbedForMatch
+      ? window.SITE_DATA.sideEmbedForMatch(match)
+      : null;
+  }
+
+  function iframeHtml(url, { external } = {}) {
+    const sandbox = external
+      ? EXTERNAL_EMBED_SANDBOX
+      : "allow-scripts allow-same-origin allow-presentation allow-forms";
+    const allow = external
+      ? EXTERNAL_EMBED_ALLOW
+      : "autoplay; encrypted-media; fullscreen; picture-in-picture";
+    const referrer = external ? "no-referrer-when-downgrade" : EMBED_REFERRER;
+    return (
+      `<iframe class="embed-frame" src="${escapeHtml(url)}" ` +
+      `sandbox="${sandbox}" allow="${allow}" allowfullscreen ` +
+      `referrerpolicy="${referrer}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`
+    );
+  }
 
   function embedQuery(serv) {
     return { serv, matchId: match && match.id ? match.id : null };
@@ -49,13 +77,23 @@
   function loadPlayer() {
     if (!shell) return;
     const url = embedUrlFor(currentEmbed(), embedQuery(activeServ));
-    if (!url || loadedUrl === url) return;
-    loadedUrl = url;
-    shell.innerHTML =
-      `<iframe class="embed-frame" src="${url}" ` +
-      `sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ` +
-      `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
-      `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
+    const side = sideEmbedConfig();
+    const signature = `${url}|${side ? side.url : ""}`;
+    if (!url || loadedUrl === signature) return;
+    loadedUrl = signature;
+    shell.innerHTML = iframeHtml(url);
+
+    if (side && sideShell) {
+      sideShell.hidden = false;
+      sideShell.innerHTML =
+        `<div class="player-pane-label">${t(side.labelKey || "watch.sideNtv")}</div>` +
+        iframeHtml(side.url, { external: true });
+      if (dualWrap) dualWrap.classList.add("player-dual--split");
+    } else if (sideShell) {
+      sideShell.hidden = true;
+      sideShell.innerHTML = "";
+      if (dualWrap) dualWrap.classList.remove("player-dual--split");
+    }
   }
 
   function reloadPlayer() {

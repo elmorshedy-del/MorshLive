@@ -35,6 +35,34 @@ const EMBEDS = {
   },
 };
 
+// Secondary player shown beside the primary embed (external iframe — uses viewer IP).
+const MATCH_SIDE_EMBEDS = {
+  "espn-fifa.world-760506": {
+    labelKey: "watch.sideNtv",
+    url: "https://ntv.cx/embed?t=OFd0cFZIcCtUQ3NleURxSUs1SW9VQW81eDZjTHdaUjNGL0RxZWZUU24zVTNIQlVsbEpqTkgzbkk3TmhiRGJwMw~~",
+  },
+  "portugal~spain": {
+    labelKey: "watch.sideNtv",
+    url: "https://ntv.cx/embed?t=OFd0cFZIcCtUQ3NleURxSUs1SW9VQW81eDZjTHdaUjNGL0RxZWZUU24zVTNIQlVsbEpqTkgzbkk3TmhiRGJwMw~~",
+  },
+};
+
+function matchSideEmbedKey(m) {
+  if (!m) return "";
+  if (m.key) return String(m.key).toLowerCase();
+  if (m.home && m.away) {
+    return `${String(m.home).toLowerCase()}~${String(m.away).toLowerCase()}`;
+  }
+  return "";
+}
+
+function sideEmbedForMatch(m) {
+  if (!m) return null;
+  if (MATCH_SIDE_EMBEDS[m.id]) return MATCH_SIDE_EMBEDS[m.id];
+  const key = matchSideEmbedKey(m);
+  return key ? MATCH_SIDE_EMBEDS[key] || null : null;
+}
+
 function embedUrlFor(embed, serv) {
   if (!embed || !embed.url) return "";
   if (embed.external) {
@@ -248,6 +276,7 @@ function resolveWatchSelection(matches, channels, searchParams) {
 window.SITE_DATA = {
   CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor,
   servIndexFromParam, EMBED_BINDING, streamOptionsFor, streamOptionUrl,
+  sideEmbedForMatch,
 };
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;

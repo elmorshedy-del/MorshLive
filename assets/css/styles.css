@@ -611,6 +611,38 @@ img { max-width: 100%; display: block; }
 }
 .player-shell video { object-fit: contain; }
 .player-shell .embed-frame { border: 0; display: block; }
+.player-dual {
+  display: block;
+}
+.player-dual.player-dual--split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  align-items: start;
+}
+.player-dual.player-dual--split .player-shell {
+  aspect-ratio: 16 / 9;
+}
+.player-pane-label {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 2;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 5px 9px;
+  border-radius: 6px;
+  background: rgba(10, 12, 24, .72);
+  color: #fff;
+  pointer-events: none;
+}
+.player-shell--side {
+  border-color: rgba(24, 226, 154, .22);
+  box-shadow: 0 22px 70px rgba(0,0,0,.5), 0 0 0 1px rgba(24,226,154,.14);
+}
+@media (max-width: 960px) {
+  .player-dual.player-dual--split { grid-template-columns: 1fr; }
+}
 .player-overlay {
   position: absolute; inset: 0; display: grid; place-items: center;
   background: radial-gradient(circle at center, rgba(123,47,247,.15), rgba(0,0,0,.85));
