@@ -7,7 +7,11 @@
  *
  * Usage:
  *   npm run browsers:install
+ *   npm run browsers:stealth          # real Google Chrome for Patchright
  *   TWITCH_LOGIN_EMAIL=you@example.com npm run crawl:twitch-dev
+ *
+ * Stealth (Patchright + Chrome fingerprint):
+ *   STEALTH=1 npm run crawl:twitch-dev
  *
  * Optional: HEADFUL=1 for visible browser (local). Saves session under .auth/twitch-dev/
  *
@@ -18,7 +22,7 @@ import { mkdirSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { PlaywrightCrawler, Dataset } from "crawlee";
-import { crawleeLaunchContext } from "./lib/browser.mjs";
+import { crawleeLaunchContext, stealthEnabled } from "./lib/browser.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
@@ -41,12 +45,14 @@ async function snap(page, name) {
   return path;
 }
 
+const launchContext = await crawleeLaunchContext();
+
 const crawler = new PlaywrightCrawler({
   maxRequestsPerCrawl: 6,
   maxConcurrency: 1,
   requestHandlerTimeoutSecs: 120,
   launchContext: {
-    ...crawleeLaunchContext(),
+    ...launchContext,
     userDataDir: AUTH_DIR,
   },
   async requestHandler({ page, request, log }) {
@@ -109,7 +115,11 @@ const crawler = new PlaywrightCrawler({
   },
 });
 
-console.log("Crawlee + Playwright → Twitch Developer Console");
+console.log(
+  "Crawlee +",
+  stealthEnabled() ? "Patchright (Chrome fingerprint)" : "Playwright",
+  "→ Twitch Developer Console",
+);
 console.log("Session dir:", AUTH_DIR);
 console.log("Screenshots:", SHOTS);
 if (EMAIL) console.log("Login email:", EMAIL);

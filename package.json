@@ -8,6 +8,7 @@
   },
   "scripts": {
     "browsers:install": "playwright install chromium",
+    "browsers:stealth": "npx patchright install chrome",
     "crawl:twitch-dev": "node scripts/twitch-dev-console-crawl.mjs",
     "signup:twitch": "node scripts/twitch-signup.mjs",
     "twitch:secrets": "node scripts/setup-twitch-secrets.mjs",
@@ -29,6 +30,7 @@
   },
   "devDependencies": {
     "crawlee": "^3.17.0",
+    "patchright": "^1.52.0",
     "playwright": "^1.61.1"
   }
 }

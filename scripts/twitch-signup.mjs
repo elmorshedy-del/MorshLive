@@ -1,26 +1,25 @@
 #!/usr/bin/env node
 /**
- * Twitch signup assist — https://github.com/apify/crawlee + Playwright
+ * Twitch signup via Patchright (undetected Playwright + real Chrome fingerprint)
+ * https://github.com/Kaliiiiiiiiii-Vinyzu/patchright-nodejs
  *
- * Twitch blocks headless/cloud signup ("browser not supported").
- * Run locally with a real browser:
- *   HEADFUL=1 npm run signup:twitch
- *
- * Env (optional):
- *   TWITCH_SIGNUP_EMAIL=darkmatter1339@gmail.com
- *   TWITCH_SIGNUP_USERNAME=korazero_dm1339
- *   TWITCH_LOGIN_PASSWORD=...  (auto-generated if missing)
+ *   npm run browsers:stealth
+ *   npm run signup:twitch                    # Patchright by default
+ *   STEALTH=0 npm run signup:twitch          # vanilla Playwright
+ *   HEADFUL=1 npm run signup:twitch          # best for signup + email verify
  */
 import { randomBytes } from "node:crypto";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { launchBrowser } from "./lib/browser.mjs";
+import { launchBrowser, launchStealthContext } from "./lib/browser.mjs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
+const AUTH_DIR = resolve(ROOT, ".auth/twitch-signup");
 const SHOTS = process.env.CRAWL_SHOTS || "/opt/cursor/artifacts/twitch-signup";
 mkdirSync(SHOTS, { recursive: true });
+mkdirSync(AUTH_DIR, { recursive: true });
 
 function loadEnv() {
   const path = resolve(ROOT, ".env");
@@ -46,6 +45,7 @@ const env = loadEnv();
 const EMAIL = process.env.TWITCH_SIGNUP_EMAIL || env.TWITCH_SIGNUP_EMAIL || "darkmatter1339@gmail.com";
 const USERNAME = process.env.TWITCH_SIGNUP_USERNAME || env.TWITCH_SIGNUP_USERNAME || "korazero_dm1339";
 const PASSWORD = process.env.TWITCH_LOGIN_PASSWORD || env.TWITCH_LOGIN_PASSWORD || `Kz${randomBytes(12).toString("base64url")}!7`;
+const USE_STEALTH = process.env.STEALTH !== "0";
 
 saveEnv({
   TWITCH_SIGNUP_EMAIL: EMAIL,
@@ -54,18 +54,27 @@ saveEnv({
   TWITCH_LOGIN_PASSWORD: PASSWORD,
 });
 
-const headless = process.env.HEADFUL !== "1";
-console.log("Twitch signup:", EMAIL, USERNAME, headless ? "(headless)" : "(HEADFUL)");
+const headful = process.env.HEADFUL === "1";
+console.log("Twitch signup:", EMAIL, USERNAME, USE_STEALTH ? "[Patchright]" : "[playwright]", headful ? "HEADFUL" : "headless");
 
-const browser = await launchBrowser({ headless });
-const context = await browser.newContext({
-  userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-  viewport: { width: 1280, height: 900 },
-});
-await context.addInitScript(() => {
-  Object.defineProperty(navigator, "webdriver", { get: () => undefined });
-});
-const page = await context.newPage();
+let browser;
+let context;
+let page;
+let closeable;
+
+if (USE_STEALTH) {
+  context = await launchStealthContext(AUTH_DIR, { headful });
+  page = context.pages()[0] || await context.newPage();
+  closeable = context;
+} else {
+  browser = await launchBrowser({ headless: !headful });
+  context = await browser.newContext({
+    userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    viewport: { width: 1280, height: 900 },
+  });
+  page = await context.newPage();
+  closeable = browser;
+}
 
 await page.goto("https://www.twitch.tv/signup", { waitUntil: "domcontentloaded", timeout: 45000 });
 await page.waitForTimeout(2000);
@@ -79,16 +88,17 @@ await page.locator("select").nth(1).selectOption("15");
 await page.locator("select").nth(2).selectOption("1990");
 await page.screenshot({ path: resolve(SHOTS, "filled.png"), fullPage: true });
 
-const unsupported = await page.locator("text=browser is not currently supported").count();
+const bodyAfterFill = await page.locator("body").innerText();
+const unsupported = /browser is not currently supported/i.test(bodyAfterFill);
 if (unsupported) {
-  console.warn("\n⚠ Twitch says browser unsupported (common in headless cloud).");
-  console.warn("Run on your Mac/PC: HEADFUL=1 npm run signup:twitch");
-  console.warn("Credentials saved in .env — use same email/username/password there.");
+  console.warn("\n⚠ Twitch still reports unsupported browser.");
+  if (!USE_STEALTH) console.warn("Retry with: npm run signup:twitch (Patchright is default)");
+  if (!headful) console.warn("Or locally: HEADFUL=1 npm run signup:twitch");
 }
 
-if (!headless) {
-  console.log("\nComplete Sign Up in the browser window, then verify email at", EMAIL);
-  console.log("Press Enter here after verification...");
+if (headful) {
+  console.log("\nComplete Sign Up in the browser, verify email at", EMAIL);
+  console.log("Press Enter when done...");
   await new Promise((r) => process.stdin.once("data", r));
 } else {
   await page.getByRole("button", { name: /^Sign Up$/i }).click().catch(() => {});
@@ -98,12 +108,12 @@ if (!headless) {
   if (/verify|check your email|sent you/i.test(body)) {
     console.log("✓ Verification email likely sent — check", EMAIL);
   } else if (/browser is not currently supported/i.test(body)) {
-    console.log("✗ Signup blocked in this environment. Use HEADFUL=1 locally.");
+    console.log("✗ Blocked. Use HEADFUL=1 on a real machine.");
   } else {
     console.log("URL:", page.url());
     console.log(body.slice(0, 500).replace(/\s+/g, " "));
   }
 }
 
-await browser.close();
-console.log("\nNext: verify inbox → npm run crawl:twitch-dev → create KoraZero app → npm run twitch:secrets");
+await closeable.close();
+console.log("\nNext: verify inbox → STEALTH=1 npm run crawl:twitch-dev → npm run twitch:secrets");
