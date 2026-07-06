@@ -33,9 +33,9 @@ const matchId = process.argv[5] || "";
   if (Array.isArray(body.statuses)) {
     const live = body.statuses.filter((s) => s.live).slice(0, 5);
     if (live.length) {
-      console.log("Top live title matches:");
+      console.log("Pure-TV live candidates:");
       for (const row of live) {
-        console.log(`  ${row.login} score=${row.titleScore} viewers=${row.viewers} — ${row.title || ""}`);
+        console.log(`  ${row.login} [${row.game || "?"}] score=${row.titleScore} — ${row.title || ""}`);
       }
     }
   }

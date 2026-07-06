@@ -868,6 +868,57 @@ function scoreStreamTitleForMatch(title, match) {
   return score;
 }
 
+// Reject facecam / watch-party streams — keep TV-style rebroadcasts only.
+const TWITCH_FACE_GAMES = new Set([
+  "just chatting",
+  "irl",
+  "special events",
+  "talk shows",
+  "pools, hot tubs, and beaches",
+  "asmr",
+  "co-working",
+  "music",
+  "art",
+]);
+const TWITCH_SPORTS_GAME_RE = /sport|fifa|football|soccer|fc\s*\d|pes|nba|nfl|madden/i;
+const TWITCH_FACE_TITLE_RE =
+  /face\s*cam|facecam|web\s*cam|webcam|watch\s*(party|along)|watchalong|reaction|reacting|vlog|podcast|ردة\s*فعل|كاميرا|كام\b|مع\s*كام|تحليل|ستوديو|talking|دردشة|شات\b|chatting/i;
+const TWITCH_PURE_TITLE_RE =
+  /bein|بين\s*ماكس|bein\s*max|max\s*\d|مباراة|ملخص|بث\s*مباشر|كأس\s*العالم|world\s*cup|fifa|\bvs\b|×|v\s*[sS]\b|\d+\s*[-–]\s*\d+/i;
+
+function isPureTvTwitchStream(stream) {
+  if (!stream) return false;
+  const game = String(stream.game_name || "").toLowerCase().trim();
+  if (game && TWITCH_FACE_GAMES.has(game)) return false;
+
+  const title = String(stream.title || "");
+  if (TWITCH_FACE_TITLE_RE.test(title)) return false;
+
+  for (const tag of stream.tags || []) {
+    const t = String(tag).toLowerCase();
+    if (/facecam|webcam|watchparty|watchalong|reaction|react|irl|justchatting/.test(t)) return false;
+  }
+
+  if (game && TWITCH_SPORTS_GAME_RE.test(game)) return true;
+  if (TWITCH_PURE_TITLE_RE.test(title)) return true;
+
+  // Unknown category + generic title → treat as facecam (common for watch-alongs).
+  return false;
+}
+
+function scoreTwitchStreamCandidate(stream, match, upstreamFirst) {
+  if (!isPureTvTwitchStream(stream)) return -9999;
+  const login = sanitizeTwitchLogin(stream.user_login);
+  if (!login) return -9999;
+
+  let score = match ? scoreStreamTitleForMatch(stream.title, match) : 0;
+  if (upstreamFirst.includes(login)) score += 50;
+  if (TWITCH_SPORTS_GAME_RE.test(String(stream.game_name || ""))) score += 15;
+  score += Math.min(10, Math.floor((Number(stream.viewer_count) || 0) / 500));
+  if (!upstreamFirst.includes(login)) score -= 25;
+  return score;
+}
+
 async function resolveMatchForTwitch(request, env, channelId) {
   const incoming = new URL(request.url);
   const matchId = incoming.searchParams.get("match");
@@ -891,14 +942,15 @@ async function discoverTwitchSearchLogins(match, seedLogins, env) {
     if (ch) out.add(ch);
   }
   if (!match) return [...out];
+  // Broad team-name search finds facecam watch-parties — only search broadcaster-style terms.
   const queries = [
-    `${match.home} ${match.away}`,
-    `${match.homeAbbr || ""} ${match.awayAbbr || ""}`.trim(),
     match.channel || "",
     "beIN MAX Arabic",
+    "beIN Sports Arabic",
+    "beIN MAX live",
   ].filter((q) => q && q.length >= 3);
   for (const q of queries) {
-    const data = await twitchHelixGet(`search/channels?query=${encodeURIComponent(q)}&first=12`, env);
+    const data = await twitchHelixGet(`search/channels?query=${encodeURIComponent(q)}&first=8`, env);
     for (const row of (data && data.data) || []) {
       const login = sanitizeTwitchLogin(row.broadcaster_login);
       if (login) out.add(login);
@@ -921,47 +973,51 @@ async function pickLiveTwitchForMatch(match, upstreamFirst, configCandidates, en
 
   const searchLogins = await discoverTwitchSearchLogins(match, seeds, env);
   const streams = await twitchHelixLiveStreams(searchLogins, env);
-  if (!streams.length) return null;
+  const pureStreams = streams.filter(isPureTvTwitchStream);
+  if (!pureStreams.length) return null;
 
   let bestLogin = null;
   let bestScore = -1;
-  for (const s of streams) {
-    const login = sanitizeTwitchLogin(s.user_login);
-    if (!login) continue;
-    const titleScore = match ? scoreStreamTitleForMatch(s.title, match) : 0;
-    const upstreamBonus = upstreamFirst.includes(login) ? 25 : 0;
-    const viewersBonus = Math.min(10, Math.floor((Number(s.viewer_count) || 0) / 500));
-    const total = titleScore + upstreamBonus + viewersBonus;
+  for (const s of pureStreams) {
+    const total = scoreTwitchStreamCandidate(s, match, upstreamFirst);
     if (total > bestScore) {
       bestScore = total;
-      bestLogin = login;
+      bestLogin = sanitizeTwitchLogin(s.user_login);
     }
   }
 
   const minScore = match ? 8 : 0;
   if (bestScore < minScore) {
-    const upstreamLive = streams
+    const upstreamPure = pureStreams
       .map((s) => sanitizeTwitchLogin(s.user_login))
       .filter((login) => login && upstreamFirst.includes(login));
-    if (upstreamLive.length === 1) return upstreamLive[0];
+    if (upstreamPure.length === 1) return upstreamPure[0];
     return null;
   }
   return bestLogin;
 }
 
-async function pickLiveTwitchChannel(candidates, env) {
+async function pickLiveTwitchChannel(candidates, env, upstreamFirst = []) {
   const uniq = [];
   for (const raw of candidates) {
     const ch = sanitizeTwitchLogin(raw);
     if (ch && !uniq.includes(ch)) uniq.push(ch);
   }
   if (!uniq.length) return null;
-  const helix = await twitchHelixLiveMap(uniq, env);
-  if (!helix) return null;
-  for (const ch of uniq) {
-    if (helix.get(ch)) return ch;
+  const streams = await twitchHelixLiveStreams(uniq, env);
+  const pureStreams = streams.filter(isPureTvTwitchStream);
+  if (!pureStreams.length) return null;
+
+  let bestLogin = null;
+  let bestScore = -1;
+  for (const s of pureStreams) {
+    const total = scoreTwitchStreamCandidate(s, null, upstreamFirst);
+    if (total > bestScore) {
+      bestScore = total;
+      bestLogin = sanitizeTwitchLogin(s.user_login);
+    }
   }
-  return null;
+  return bestLogin;
 }
 
 async function scrapeTwitchUpstream(request, slot, htmlHints) {
@@ -1008,7 +1064,7 @@ async function resolveTwitchChannel(request, slot, htmlHints, env, channelId) {
   let live = null;
   if (helixReady) {
     live = await pickLiveTwitchForMatch(match, upstreamFirst, configCandidates, env);
-    if (!live) live = await pickLiveTwitchChannel(candidates, env);
+    if (!live) live = await pickLiveTwitchChannel(candidates, env, upstreamFirst);
   } else if (upstreamFirst.length) {
     live = upstreamFirst[0];
   }
@@ -3177,20 +3233,24 @@ async function proxyTwitchApi(request, env) {
 
   const statuses = searchLogins.map((login) => {
     const stream = streams.find((s) => String(s.user_login).toLowerCase() === login.toLowerCase());
+    const pureTv = stream ? isPureTvTwitchStream(stream) : false;
     return {
       login,
       live: !!stream,
+      pureTv,
+      game: stream ? stream.game_name : null,
       title: stream ? stream.title : null,
       viewers: stream ? stream.viewer_count : 0,
       titleScore: stream && match ? scoreStreamTitleForMatch(stream.title, match) : 0,
       source: upstream.includes(login) ? "upstream" : "search",
     };
-  }).sort((a, b) => b.titleScore - a.titleScore || b.viewers - a.viewers);
+  }).filter((row) => row.live && row.pureTv)
+    .sort((a, b) => b.titleScore - a.titleScore || b.viewers - a.viewers);
 
   let resolved = null;
   if (helixReady) {
     resolved = await pickLiveTwitchForMatch(match, upstream, configCandidates, env);
-    if (!resolved) resolved = await pickLiveTwitchChannel(searchLogins, env);
+    if (!resolved) resolved = await pickLiveTwitchChannel(searchLogins, env, upstream);
   } else {
     resolved = upstream[0] || null;
   }
