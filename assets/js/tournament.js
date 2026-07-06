@@ -1,11 +1,12 @@
 /* tournament.js — World Cup 2026 archive: stage tabs, ملخص, viral X memes */
 (function () {
+  "use strict";
+
   const t = (k, vars) => (window.I18N && window.I18N.t(k, vars)) || k;
   const teamLabel = (n) => (window.TeamNames && window.TeamNames.localize(n)) || n;
 
   let archive = null;
   let activeStage = "all";
-  let twitterWidgetsLoaded = false;
 
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => (
@@ -26,6 +27,21 @@
     } catch { return ""; }
   }
 
+  function formatCount(n) {
+    const v = Number(n) || 0;
+    if (v >= 1000000) return (v / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+    if (v >= 1000) return (v / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+    return String(v);
+  }
+
+  function tweetText(text) {
+    return escapeHtml(String(text || "").replace(/https?:\/\/\S+/g, "").trim());
+  }
+
+  function authorInitial(author) {
+    return escapeHtml(String(author || "X").charAt(0).toUpperCase());
+  }
+
   function stageLabel(stage) {
     if (!stage) return "";
     const lang = document.documentElement.lang === "en" ? "labelEn" : "labelAr";
@@ -41,59 +57,121 @@
     }
   }
 
-  function loadTwitterWidgets() {
-    if (twitterWidgetsLoaded) {
-      if (window.twttr && window.twttr.widgets) window.twttr.widgets.load();
-      return;
-    }
-    const s = document.createElement("script");
-    s.src = "https://platform.twitter.com/widgets.js";
-    s.async = true;
-    s.charset = "utf-8";
-    s.onload = () => {
-      twitterWidgetsLoaded = true;
-      if (window.twttr && window.twttr.widgets) window.twttr.widgets.load();
-    };
-    document.body.appendChild(s);
-  }
-
   function memeHtml(meme) {
     if (!meme || meme.type !== "tweet" || !meme.url) return "";
+    const likes = meme.likes != null ? meme.likes : 0;
+    const rts = meme.retweets != null ? meme.retweets : 0;
     return `
-      <div class="meme-card meme-card--tweet">
-        <blockquote class="twitter-tweet" data-dnt="true" data-theme="dark">
-          <a href="${escapeHtml(meme.url)}"></a>
-        </blockquote>
-        ${meme.author ? `<div class="meme-meta">@${escapeHtml(meme.author)}</div>` : ""}
+      <a class="kz-tweet" href="${escapeHtml(meme.url)}" target="_blank" rel="noopener noreferrer">
+        <div class="kz-tweet__head">
+          <span class="kz-tweet__avatar" aria-hidden="true">${authorInitial(meme.author)}</span>
+          <div class="kz-tweet__who">
+            <b>@${escapeHtml(meme.author || "X")}</b>
+            ${meme.postedAt ? `<time datetime="${escapeHtml(meme.postedAt)}">${formatDate(meme.postedAt)}</time>` : ""}
+          </div>
+          <span class="kz-tweet__x" aria-hidden="true">𝕏</span>
+        </div>
+        <p class="kz-tweet__text">${tweetText(meme.text)}</p>
+        <div class="kz-tweet__foot">
+          <span class="kz-tweet__stat" title="${t("tournament.tweetLikes")}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            ${formatCount(likes)}
+          </span>
+          <span class="kz-tweet__stat" title="${t("tournament.tweetRts")}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h11l-3-3 1.4-1.4L22 8l-6.6 5.4L14 12l3-3H7V7zm10 10H6l3 3-1.4 1.4L2 16l6.6-5.4L10 12l-3 3h10v2z"/></svg>
+            ${formatCount(rts)}
+          </span>
+          <span class="kz-tweet__open">${t("tournament.viewOnX")} →</span>
+        </div>
+      </a>`;
+  }
+
+  function sortedMemes(memes) {
+    return [...(memes || [])].sort((a, b) => (b.engagement || 0) - (a.engagement || 0));
+  }
+
+  function sectionHead(icon, iconMod, title, count) {
+    return `
+      <div class="tournament-section-head">
+        <span class="tournament-section-icon tournament-section-icon--${iconMod}" aria-hidden="true">${icon}</span>
+        <h4>${title}</h4>
+        ${count != null ? `<span class="tournament-section-count">${count}</span>` : ""}
       </div>`;
   }
 
+  function videoBlock(highlight, mode, lazy) {
+    if (!highlight || !highlight.videoUrl) {
+      return `<p class="tournament-novideo">${t("tournament.noHighlight")}</p>`;
+    }
+    const srcAttr = lazy
+      ? `data-src="${escapeHtml(highlight.videoUrl)}"`
+      : `src="${escapeHtml(highlight.videoUrl)}"`;
+    return `
+      <div class="tournament-video-block tournament-video-block--${mode}">
+        ${sectionHead("▶", "video", t("tournament.highlightTitle"))}
+        <div class="tournament-video-shell">
+          ${highlight.title ? `<p class="tournament-video-title">${escapeHtml(highlight.title)}</p>` : ""}
+          <div class="tournament-video-frame">
+            <iframe ${srcAttr} title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
+              allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
+              sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function memesBlock(memes, mode) {
+    if (!memes.length) {
+      return `<p class="tournament-nomemes">${t("tournament.noMemes")}</p>`;
+    }
+    const list = mode === "card" ? memes.slice(0, 3) : memes;
+    const gridClass = mode === "hero" ? "kz-tweet-rail" : "kz-tweet-stack";
+    return `
+      <div class="tournament-memes-block tournament-memes-block--${mode}">
+        ${sectionHead("𝕏", "x", t("tournament.memesTitle"), memes.length)}
+        <div class="${gridClass}">${list.map(memeHtml).join("")}</div>
+      </div>`;
+  }
+
+  function scoreboardHtml(m) {
+    return `
+      <div class="tournament-scoreboard">
+        <div class="tournament-scoreboard__meta">
+          <span class="league-tag">${escapeHtml(stageLabel(m.stage))}</span>
+          <time class="status-pill status-ended">${formatDate(m.kickoffUtc)}</time>
+        </div>
+        <div class="tournament-scoreboard__teams">
+          <div class="tournament-scoreboard__team">
+            ${m.homeBadge ? `<img class="crest" src="${escapeHtml(m.homeBadge)}" alt="" loading="lazy" />` : ""}
+            <span>${teamLabel(m.home)}</span>
+          </div>
+          <div class="tournament-scoreboard__score">${escapeHtml(m.score)}</div>
+          <div class="tournament-scoreboard__team">
+            ${m.awayBadge ? `<img class="crest" src="${escapeHtml(m.awayBadge)}" alt="" loading="lazy" />` : ""}
+            <span>${teamLabel(m.away)}</span>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function featuredHeroHtml(m) {
+    const memes = sortedMemes((archive.memes && archive.memes[m.key]) || []);
+    return `
+      <article class="tournament-hero">
+        ${scoreboardHtml(m)}
+        ${m.summaryAr ? `<div class="tournament-recap"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
+        ${videoBlock(m.highlight, "hero", false)}
+        ${memesBlock(memes, "hero")}
+      </article>`;
+  }
+
   function matchDetailHtml(m) {
-    const memes = (archive.memes && archive.memes[m.key]) || [];
-    const highlight = m.highlight;
-    const highlightBlock = highlight && highlight.videoUrl
-      ? `<div class="tournament-highlight">
-           <h4>${t("tournament.highlightTitle")}</h4>
-           <div class="match-highlight-video">
-             <iframe src="${escapeHtml(highlight.videoUrl)}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
-               allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
-               sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
-           </div>
-         </div>`
-      : `<p class="tournament-novideo">${t("tournament.noHighlight")}</p>`;
-
-    const memesBlock = memes.length
-      ? `<div class="tournament-memes">
-           <h4>${t("tournament.memesTitle")}</h4>
-           <div class="meme-grid">${memes.map(memeHtml).join("")}</div>
-         </div>`
-      : `<p class="tournament-nomemes">${t("tournament.noMemes")}</p>`;
-
+    const memes = sortedMemes((archive.memes && archive.memes[m.key]) || []);
     return `
       <div class="tournament-detail">
-        ${m.summaryAr ? `<p class="match-summary-text">${escapeHtml(m.summaryAr)}</p>` : ""}
-        ${highlightBlock}
-        ${memesBlock}
+        ${m.summaryAr ? `<div class="tournament-recap tournament-recap--compact"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
+        ${videoBlock(m.highlight, "card", true)}
+        ${memesBlock(memes, "card")}
       </div>`;
   }
 
@@ -127,6 +205,19 @@
           <div class="match-panel-body">${matchDetailHtml(m)}</div>
         </details>
       </article>`;
+  }
+
+  function bindLazyMedia(root) {
+    if (!root) return;
+    root.querySelectorAll("details").forEach((det) => {
+      const load = () => {
+        det.querySelectorAll("iframe[data-src]").forEach((iframe) => {
+          if (!iframe.src && iframe.dataset.src) iframe.src = iframe.dataset.src;
+        });
+      };
+      det.addEventListener("toggle", load);
+      if (det.open) load();
+    });
   }
 
   function renderTabs() {
@@ -163,14 +254,6 @@
       .sort((a, b) => Date.parse(b.kickoffUtc) - Date.parse(a.kickoffUtc))[0] || null;
   }
 
-  function featuredMatchCard(m) {
-    const card = matchCard(m);
-    return card
-      .replace('class="match-card tournament-match-card"', 'class="match-card tournament-match-card tournament-match-card--featured"')
-      .replace("<details", '<details open')
-      .replace('class="match-panel tournament-panel"', 'class="match-panel tournament-panel tournament-panel--featured"');
-  }
-
   function renderFeatured() {
     const wrap = document.getElementById("tournament-featured");
     const card = document.getElementById("tournament-featured-card");
@@ -180,8 +263,7 @@
       return;
     }
     wrap.hidden = false;
-    card.innerHTML = featuredMatchCard(latest);
-    if ((archive.memes && archive.memes[latest.key] || []).length) loadTwitterWidgets();
+    card.innerHTML = featuredHeroHtml(latest);
   }
 
   function renderGrid() {
@@ -196,11 +278,10 @@
       : archive.matches.filter((m) => m.stage === activeStage))
       .filter((m) => !latest || m.key !== latest.key);
 
-    grid.innerHTML = list.length ? list.map(matchCard).join("") : "";
+    grid.innerHTML = list.length ? list.map((m) => matchCard(m)).join("") : "";
     if (empty) empty.hidden = !!list.length;
     if (count) count.textContent = t("tournament.matchesCount", { n: list.length });
-
-    if (list.some((m) => (archive.memes && archive.memes[m.key] || []).length)) loadTwitterWidgets();
+    bindLazyMedia(grid);
   }
 
   async function enrichMemesFromApi() {
