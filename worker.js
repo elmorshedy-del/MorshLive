@@ -2672,6 +2672,7 @@ const MEMES_API_RE = /^\/api\/match-memes\/?$/i;
 const RECENT_MEMES_API_RE = /^\/api\/recent-memes\/?$/i;
 const EDGE_API_RE = /^\/api\/edge\/?$/i;
 const TWITCH_API_RE = /^\/api\/twitch\/?$/i;
+const STREAMS_LAB_RE = /^\/api\/streams-lab\/?$/i;
 const RECENT_MEMES_MS = 24 * 60 * 60 * 1000;
 const RECENT_MEMES_LIMIT = 48;
 const TWITTER_API_BASE = "https://api.twitter.com/2";
@@ -3277,6 +3278,112 @@ async function proxyTwitchApi(request, env) {
   });
 }
 
+let _streamsLabCache = { at: 0, data: null };
+const STREAMS_LAB_CACHE_MS = 45_000;
+
+async function loadStreamsLabCatalog(env, origin) {
+  try {
+    const res = await env.ASSETS.fetch(new URL("/assets/data/streams-lab.json", origin));
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function probeStreamsLabDl(id) {
+  const m3u8 = await resolveDlStream(Number(id));
+  return !!m3u8;
+}
+
+async function probeStreamsLabEntry(ch) {
+  if (ch.dlhdId) {
+    const live = await probeStreamsLabDl(ch.dlhdId);
+    if (live) return { live: true, route: ch.route, mirror: null };
+    for (const mirror of ch.mirrors || []) {
+      const m = String(mirror).match(/\/dl\/(\d+)/i);
+      if (!m) continue;
+      if (await probeStreamsLabDl(m[1])) return { live: true, route: mirror, mirror };
+    }
+    return { live: false, route: ch.route, mirror: null };
+  }
+  if (ch.sirSlug) {
+    const master = await resolveSirMaster(ch.sirSlug);
+    return { live: !!master, route: ch.route, mirror: null };
+  }
+  return { live: false, route: ch.route, mirror: null };
+}
+
+async function proxyStreamsLabApi(request, env) {
+  const origin = new URL(request.url).origin;
+  const now = Date.now();
+  if (_streamsLabCache.data && now - _streamsLabCache.at < STREAMS_LAB_CACHE_MS) {
+    return new Response(JSON.stringify(_streamsLabCache.data), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "public, max-age=30, stale-while-revalidate=60",
+        "X-KZ-Proxy": "streams-lab",
+        "X-KZ-Cache": "hit",
+      },
+    });
+  }
+
+  const catalog = await loadStreamsLabCatalog(env, origin);
+  if (!catalog || !Array.isArray(catalog.channels)) {
+    return new Response(JSON.stringify({ ok: false, error: "catalog missing" }), {
+      status: 500,
+      headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+    });
+  }
+
+  const channels = await Promise.all(
+    catalog.channels.map(async (ch) => {
+      const probe = await probeStreamsLabEntry(ch);
+      return {
+        id: ch.id,
+        name: ch.name,
+        sub: ch.sub,
+        group: ch.group,
+        source: ch.source,
+        route: probe.route,
+        primaryRoute: ch.route,
+        live: probe.live,
+        mirror: probe.mirror,
+        priority: ch.priority || 99,
+      };
+    })
+  );
+
+  const liveCount = channels.filter((c) => c.live).length;
+  const best = channels.filter((c) => c.live).sort((a, b) => a.priority - b.priority)[0] || null;
+
+  const payload = {
+    ok: true,
+    updatedAt: new Date().toISOString(),
+    liveCount,
+    total: channels.length,
+    best,
+    groups: catalog.groups || [],
+    external: catalog.external || [],
+    channels,
+  };
+
+  _streamsLabCache = { at: now, data: payload };
+
+  return new Response(JSON.stringify(payload), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Access-Control-Allow-Origin": "*",
+      "Cache-Control": "public, max-age=30, stale-while-revalidate=60",
+      "X-KZ-Proxy": "streams-lab",
+      "X-KZ-Cache": "miss",
+    },
+  });
+}
+
 
 export default {
   async fetch(request, env) {
@@ -3363,6 +3470,9 @@ export default {
     }
     if (TWITCH_API_RE.test(url.pathname) && method === "GET") {
       return proxyTwitchApi(request, env);
+    }
+    if (STREAMS_LAB_RE.test(url.pathname) && method === "GET") {
+      return proxyStreamsLabApi(request, env);
     }
     if (method === "GET" && url.pathname.startsWith("/assets/data/") && /\.json$/i.test(url.pathname)) {
       const res = await env.ASSETS.fetch(request);

@@ -13,6 +13,8 @@
     "signup:twitch": "node scripts/twitch-signup.mjs",
     "twitch:onboard": "node scripts/twitch-onboard.mjs",
     "twitch:secrets": "node scripts/setup-twitch-secrets.mjs",
+    "probe:streams-lab": "node scripts/probe-streams-lab.mjs",
+    "probe:dlhd-bein": "node scripts/probe-dlhd-bein.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
