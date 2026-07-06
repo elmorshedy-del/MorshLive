@@ -21,7 +21,6 @@
   const PRIMARY_GROUPS = ["ar", "max", "sir"];
   const GROUP_PICK_ORDER = { ar: 1, max: 2, sir: 3, other: 99 };
   const REGION_STATS = ["ar", "max", "sir"];
-  const PROBE_TIMEOUT_MS = 10_000;
 
   let catalog = { channels: [], groups: [], external: [], defaultGroup: "ar" };
   let apiBest = null;
@@ -31,7 +30,6 @@
   let currentGroup = "ar";
   let probed = false;
   let refreshInFlight = null;
-  let bgProbeGen = 0;
 
   function setStatus(msg) {
     if (statusLine) statusLine.textContent = msg;
@@ -306,51 +304,6 @@
     return null;
   }
 
-  async function mapPool(items, limit, fn) {
-    const out = new Array(items.length);
-    let i = 0;
-    async function worker() {
-      while (i < items.length) {
-        const idx = i++;
-        out[idx] = await fn(items[idx], idx);
-      }
-    }
-    await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => worker()));
-    return out;
-  }
-
-  function probeSignal() {
-    if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
-      return AbortSignal.timeout(PROBE_TIMEOUT_MS);
-    }
-    const ctrl = new AbortController();
-    setTimeout(() => ctrl.abort(), PROBE_TIMEOUT_MS);
-    return ctrl.signal;
-  }
-
-  async function probeEmbed(route) {
-    try {
-      const r = await fetch(route, { cache: "no-store", signal: probeSignal() });
-      const t = await r.text();
-      return r.ok && (/\/dl\/hls\?/.test(t) || /\/sir\/hls\?/.test(t) || /playerv5\.php|shootny/i.test(t));
-    } catch {
-      return false;
-    }
-  }
-
-  async function probeDlhdChannel(ch) {
-    const mirrors = ch.mirrors || [];
-    if (await probeEmbed(ch.route)) {
-      return { ...ch, live: true, route: ch.route, mirror: null };
-    }
-    for (const mirror of mirrors) {
-      if (await probeEmbed(mirror)) {
-        return { ...ch, live: true, route: mirror, mirror };
-      }
-    }
-    return { ...ch, live: false, route: ch.route, mirror: null };
-  }
-
   function mergeApiChannels(apiData) {
     const apiMap = new Map((apiData.channels || []).map((c) => [c.id, c]));
     const merged = (catalog.channels || []).map((ch) => {
@@ -371,43 +324,11 @@
     updateLiveUi();
     renderExternal();
     renderSir247();
-  }
 
-  async function probeDlhdBackground(gen) {
-    const dlhd = (catalog.channels || [])
-      .filter((c) => c.source === "dlhd")
-      .sort((a, b) => groupPickRank(a) - groupPickRank(b) || (a.priority || 99) - (b.priority || 99));
-    if (!dlhd.length) return;
-
-    const primaryDlhd = dlhd.filter(isPrimaryChannel);
-    const otherDlhd = dlhd.filter((c) => !isPrimaryChannel(c));
-    const probedPrimary = await mapPool(primaryDlhd, 6, probeDlhdChannel);
-    if (gen !== bgProbeGen) return;
-    const probedOther = await mapPool(otherDlhd, 5, probeDlhdChannel);
-    if (gen !== bgProbeGen) return;
-
-    const probedMap = new Map([...probedPrimary, ...probedOther].map((c) => [c.id, c]));
-    catalog.channels = (catalog.channels || []).map((ch) => {
-      const p = probedMap.get(ch.id);
-      if (!p) return ch;
-      if (p.live === true) return p;
-      // Never downgrade API-confirmed live channels when client probe times out.
-      if (ch.live === true) return ch;
-      return p;
-    });
-    updateLiveUi();
-
+    const ts = new Date().toLocaleTimeString("ar-SA");
     const liveCount = catalog.channels.filter((c) => c.live).length;
     const arLive = catalog.channels.filter((c) => c.live && isPrimaryChannel(c)).length;
-    const ts = new Date().toLocaleTimeString("ar-SA");
     setStatus(`آخر فحص: ${ts} — ${arLive} عربي · ${liveCount} إجمالي`);
-
-    const keepCurrent =
-      currentRoute &&
-      (catalog.channels.some((c) => c.route === currentRoute && c.live) ||
-        sir247.some((c) => c.route === currentRoute && c.live) ||
-        siirMatches.some((m) => m.route === currentRoute && m.live));
-    if (!keepCurrent && !currentRoute) pickBest(true);
   }
 
   async function refreshStatus() {
@@ -432,14 +353,7 @@
 
         mergeApiChannels(apiData);
 
-        const hadRoute = !!currentRoute;
-        if (!hadRoute) pickBest(true);
-        else setStatus("جارٍ التحقق من القنوات في الخلفية…");
-
-        bgProbeGen += 1;
-        const gen = bgProbeGen;
-        probeDlhdBackground(gen).catch(() => {});
-
+        if (!currentRoute) pickBest(true);
         return catalog;
       } catch (e) {
         setStatus("تعذّر فحص المصادر: " + (e.message || e));
@@ -473,7 +387,6 @@
       renderGrid();
       renderExternal();
       renderSir247();
-      // Start playback immediately — don't wait for API/probes.
       const quick = (catalog.channels || [])
         .filter(isPrimaryChannel)
         .sort((a, b) => (a.priority || 99) - (b.priority || 99))[0];

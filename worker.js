@@ -65,6 +65,7 @@ const VIP_RESOLVE_DEADLINE_MS = 6000;
 // dlhd (daddylive) 24/7 source — fully isolated from the worldkoora /wk/ path.
 const DLHD_BASE = "https://dlhd.pk";
 const DL_EMBED_RE = /^\/dl\/(\d{1,6})\/?$/;  // /dl/{channelId} -> clean player page
+const LAB_DL_EMBED_RE = /^\/lab\/dl\/(\d{1,6})\/?$/i;  // experimental lab — dlhd premiumtv iframe
 const DL_HLS_RE = /^\/dl\/hls$/i;            // signed HLS proxy for dlhd streams
 
 // Stable dlhd.pk 24/7 channel ids, keyed by our channel id. Each entry is an
@@ -1807,6 +1808,17 @@ async function proxyVip(request, slot, env) {
  * rotating CDN host needs no allowlist. The dlhd CDN rejects requests carrying
  * an Origin header (400) and needs no Referer — its m3u8 URLs are
  * self-authorizing (md5/expires) tokens, so we send neither. */
+async function resolveDlPremiumTvEmbed(id) {
+  const headers = { "User-Agent": "Mozilla/5.0", Referer: `${DLHD_BASE}/` };
+  try {
+    const sTxt = await (await fetchWithTimeout(`${DLHD_BASE}/stream/stream-${id}.php`, { headers })).text();
+    const m = sTxt.match(/<iframe[^>]+src="([^"]+\/premiumtv\/[^"]+)"/i);
+    return m ? m[1] : null;
+  } catch {
+    return null;
+  }
+}
+
 async function resolveDlStream(id) {
   const headers = { "User-Agent": "Mozilla/5.0", Referer: `${DLHD_BASE}/` };
   try {
@@ -1825,6 +1837,27 @@ async function resolveDlStream(id) {
 
 function dlPlayerHtml(src, id) {
   return cleanHlsPlayerHtml(src, `beIN ${id}`);
+}
+
+async function proxyLabDlEmbed(request, id) {
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store",
+    "X-KZ-Proxy": "lab-dlhd-embed",
+  };
+  const embedUrl = await resolveDlPremiumTvEmbed(id);
+  if (!embedUrl) {
+    return new Response(
+      `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#000;color:#fff;font-family:sans-serif;display:grid;place-items:center;height:100vh;text-align:center"><div>البث غير متاح حالياً — أعد المحاولة<br><small>lab channel ${id}</small></div></body>`,
+      { status: 200, headers: htmlHeaders }
+    );
+  }
+  const frame = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>beIN ${id}</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}iframe{width:100%;height:100%;border:0;display:block}</style>
+</head><body><iframe src="${embedUrl}" allow="autoplay;encrypted-media;fullscreen;picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe></body></html>`;
+  return new Response(frame, { status: 200, headers: htmlHeaders });
 }
 
 async function proxyDlEmbed(request, id, env) {
@@ -3533,6 +3566,8 @@ async function proxySiirMatchEmbed(request, postId, env) {
 }
 
 async function probeDlhdLabLive(dlhdId) {
+  const premium = await resolveDlPremiumTvEmbed(dlhdId);
+  if (premium) return true;
   const m3u8 = await resolveDlStream(dlhdId);
   return !!(m3u8 && isHlsUrl(m3u8));
 }
@@ -3681,6 +3716,10 @@ export default {
     const dl = url.pathname.match(DL_EMBED_RE);
     if (dl && (method === "GET" || method === "HEAD")) {
       return proxyDlEmbed(request, dl[1], env);
+    }
+    const labDl = url.pathname.match(LAB_DL_EMBED_RE);
+    if (labDl && (method === "GET" || method === "HEAD")) {
+      return proxyLabDlEmbed(request, labDl[1]);
     }
     if (DL_HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
       if (method === "OPTIONS") {
