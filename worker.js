@@ -1839,35 +1839,9 @@ function dlPlayerHtml(src, id) {
   return cleanHlsPlayerHtml(src, `beIN ${id}`);
 }
 
-function labDirectPlayerHtml(m3u8, id) {
-  const src = String(m3u8 || "");
-  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>beIN ${id}</title>
-<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
-</head><body>
-<video id="v" controls autoplay muted playsinline crossorigin="anonymous"></video>
-<script>
-(function(){
-  var src=${JSON.stringify(src)};
-  var v=document.getElementById('v');
-  function go(){ var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){}); }
-  if(!src) return;
-  if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; v.addEventListener('loadedmetadata',go,{once:true}); go(); }
-  else if(window.Hls&&Hls.isSupported()){
-    var hls=new Hls({enableWorker:true,lowLatencyMode:false});
-    hls.loadSource(src);
-    hls.attachMedia(v);
-    hls.on(Hls.Events.MANIFEST_PARSED,go);
-    hls.on(Hls.Events.ERROR,function(_,d){ if(d.fatal) console.warn('lab-hls',d.type,d.details); });
-  } else { v.src=src; go(); }
-})();
-</script>
-</body></html>`;
-}
-
 async function proxyLabDlEmbed(request, id, env) {
+  const origin = new URL(request.url).origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
   const htmlHeaders = {
     "Content-Type": "text/html; charset=utf-8",
     "Cache-Control": "no-store",
@@ -1880,7 +1854,15 @@ async function proxyLabDlEmbed(request, id, env) {
       { status: 200, headers: htmlHeaders }
     );
   }
-  return new Response(labDirectPlayerHtml(m3u8, id), { status: 200, headers: htmlHeaders });
+  // Must go through the same signed same-origin proxy as the working /dl/{id}
+  // route: cleanHlsPlayerHtml's <video> is crossorigin="anonymous", so the
+  // browser enforces CORS on every request. dlhd's CDN doesn't send the
+  // Access-Control-Allow-Origin headers a cross-origin video element needs,
+  // so loading its m3u8 URL directly silently fails in every real browser —
+  // even though a server-side fetch (no CORS involved) returns 200 fine.
+  const sig = await signTarget(m3u8, secret);
+  const src = hlsProxyUrl(m3u8, origin, sig, "/dl/hls");
+  return new Response(dlPlayerHtml(src, id), { status: 200, headers: htmlHeaders });
 }
 
 async function proxyDlEmbed(request, id, env) {
