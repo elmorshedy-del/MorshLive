@@ -1,6 +1,6 @@
 {
   "date": "2026-07-06",
-  "updatedAt": "2026-07-06T09:38:28.949Z",
+  "updatedAt": "2026-07-06T09:54:20.868Z",
   "source": "espn",
   "sourceLabel": "ESPN",
   "commentarySource": "almaghrebsport",
@@ -336,7 +336,10 @@
       "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/mA5amQonpFi8V",
       "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
       "source": "vortex",
-      "embedId": "mA5amQonpFi8V"
+      "embedId": "mA5amQonpFi8V",
+      "btolatId": "93932",
+      "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=dHRhVnBBdllURmptdFgxSEtEdTRRTW92amY5RXg0Vzk0bE5RM0RVdVFBOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjA2MzMyOTk5&keypair=a05pY3ZPRzRveWFwd2ZNMkVnWkdIUWFuTjMzZEF1N29Pd2Jlby9hL2Vodz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDYwNjMzMjk5OQ==",
+      "kind": "full"
     },
     {
       "key": "england~mexico",
@@ -347,7 +350,45 @@
       "source": "vortex",
       "embedId": "WAOCAqgXRSoPe",
       "btolatId": "93943",
-      "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=dEVYcWNwN1RaUzZWeitRK0o1NUd6MjNOcDRkVDVZdit2RU40MW9lT2JKVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkyODAxMzkyNzg1NDY=&amp;keypair=eDU5MVlvbmFyVXlXYzI3bHRpREQ5dFJVUUxvNjRGOU1Uc1MySXpLbzk2OD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MjgwMTM5Mjc4NTQ2",
+      "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=LzUwTDVvc3RVWWVzeUJZSnoyQWJDUlFBODk0ckhFUm9Id3hNam1MVDJYWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTgxMDE5NzA5&keypair=VCtodjF1ZEpUR0VOUmREMEVFZzl3OGNqNDhLWElIdks4WENOTlJUZkpsMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDU4MTAxOTcwOQ==",
+      "kind": "full"
+    },
+    {
+      "key": "england~mexico",
+      "home": "Mexico",
+      "away": "England",
+      "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/b1dy0L8gi2Kbt",
+      "title": "اهداف مباراة انجلترا والمكسيك (3-2) كاس العالم",
+      "source": "vortex",
+      "embedId": "b1dy0L8gi2Kbt",
+      "btolatId": "93935",
+      "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318218/poster/0.png?token=YTNubG9UOERDQVdTRE1oMHU5RzFmK2R0Vk5NKzFFMnlnYkZJdmxVY0RwYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkzMjA1OTM4MzI2MTk=&keypair=cXpaQkticEpudjZuZnMyRFVXZmdQM1lseTZTeVpQNlRyZFAvV2pzYzZ2WT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTkzODMyNjE5",
+      "kind": "goals",
+      "clip": "goals"
+    },
+    {
+      "key": "england~mexico",
+      "home": "Mexico",
+      "away": "England",
+      "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/WAOCAqgXRSoPe",
+      "title": "ملخص مباراة انجلترا والمكسيك (3-2) كاس العالم",
+      "source": "vortex",
+      "embedId": "WAOCAqgXRSoPe",
+      "btolatId": "93943",
+      "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=LzUwTDVvc3RVWWVzeUJZSnoyQWJDUlFBODk0ckhFUm9Id3hNam1MVDJYWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTgxMDE5NzA5&keypair=VCtodjF1ZEpUR0VOUmREMEVFZzl3OGNqNDhLWElIdks4WENOTlJUZkpsMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDU4MTAxOTcwOQ==",
+      "kind": "full",
+      "clip": "full"
+    },
+    {
+      "key": "brazil~norway",
+      "home": "Brazil",
+      "away": "Norway",
+      "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/mA5amQonpFi8V",
+      "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
+      "source": "vortex",
+      "embedId": "mA5amQonpFi8V",
+      "btolatId": "93932",
+      "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=dHRhVnBBdllURmptdFgxSEtEdTRRTW92amY5RXg0Vzk0bE5RM0RVdVFBOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjA2MzMyOTk5&keypair=a05pY3ZPRzRveWFwd2ZNMkVnWkdIUWFuTjMzZEF1N29Pd2Jlby9hL2Vodz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDYwNjMzMjk5OQ==",
       "kind": "full",
       "clip": "full"
     }
@@ -1535,12 +1576,53 @@
         }
       ],
       "summaryAr": "انتهت المباراة بفوز إنجلترا على المكسيك بنتيجة 3-2 ضمن FIFA World Cup على ملعب Estadio Banorte · Mexico City · Mexico. تعليق: حفيظ دراجي.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/b1dy0L8gi2Kbt",
+          "title": "اهداف مباراة انجلترا والمكسيك (3-2) كاس العالم",
+          "source": "vortex",
+          "embedId": "b1dy0L8gi2Kbt",
+          "btolatId": "93935",
+          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318218/poster/0.png?token=YTNubG9UOERDQVdTRE1oMHU5RzFmK2R0Vk5NKzFFMnlnYkZJdmxVY0RwYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkzMjA1OTM4MzI2MTk=&keypair=cXpaQkticEpudjZuZnMyRFVXZmdQM1lseTZTeVpQNlRyZFAvV2pzYzZ2WT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTkzODMyNjE5",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/WAOCAqgXRSoPe",
+          "title": "ملخص مباراة انجلترا والمكسيك (3-2) كاس العالم",
+          "source": "vortex",
+          "embedId": "WAOCAqgXRSoPe",
+          "btolatId": "93943",
+          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=LzUwTDVvc3RVWWVzeUJZSnoyQWJDUlFBODk0ckhFUm9Id3hNam1MVDJYWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTgxMDE5NzA5&keypair=VCtodjF1ZEpUR0VOUmREMEVFZzl3OGNqNDhLWElIdks4WENOTlJUZkpsMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDU4MTAxOTcwOQ==",
+          "kind": "full"
+        }
+      },
+      "clips": [
+        {
+          "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/DPKuBX5PpQ0Ae",
+          "title": "بيلينجهام ينقذ مرماه من هدف محقق للمكسيك امام انجلترا في كأس العالم",
+          "source": "vortex",
+          "embedId": "DPKuBX5PpQ0Ae",
+          "btolatId": "93939",
+          "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318216/poster/0.png?token=NUFyQlc3eVB4TmhhREMrTmVkcXJJNkZ0b0daQTdBSVdoc05XdGxSQUloVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxNi8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTg3MTEzNjU1&keypair=d0hOT21HL3RRbFNwZiszWUdLdUxvTEpXSDF5UTBRWlJtdXo1azFCUUhmYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxNi86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDU4NzExMzY1NQ==",
+          "kind": "save"
+        },
+        {
+          "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/PETLTQAhSAuCO",
+          "title": "ساكا كاد ان يسجل هدف امام المكسيك بكأس العالم",
+          "source": "vortex",
+          "embedId": "PETLTQAhSAuCO",
+          "btolatId": "93934",
+          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318211/poster/0.png?token=dmdrTjdBVEdRcHZFejlpd0gvbWE4a2JwMStnQVZlVWVLSUZLSkRBVUorOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxMS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTk4ODMyNzk5&keypair=TGhQNGI5RXBWOS9vcFVqcU9wRktVQ0F1dEd1a0RRSEZwQ1RSTzdqdWpjaz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxMS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDU5ODgzMjc5OQ==",
+          "kind": "chance"
+        }
+      ],
       "highlight": {
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/WAOCAqgXRSoPe",
         "title": "ملخص مباراة انجلترا والمكسيك (3-2) كاس العالم",
-        "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=dEVYcWNwN1RaUzZWeitRK0o1NUd6MjNOcDRkVDVZdit2RU40MW9lT2JKVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkyODAxMzkyNzg1NDY=&amp;keypair=eDU5MVlvbmFyVXlXYzI3bHRpREQ5dFJVUUxvNjRGOU1Uc1MySXpLbzk2OD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MjgwMTM5Mjc4NTQ2",
         "source": "vortex",
         "embedId": "WAOCAqgXRSoPe",
+        "btolatId": "93943",
+        "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=LzUwTDVvc3RVWWVzeUJZSnoyQWJDUlFBODk0ckhFUm9Id3hNam1MVDJYWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTgxMDE5NzA5&keypair=VCtodjF1ZEpUR0VOUmREMEVFZzl3OGNqNDhLWElIdks4WENOTlJUZkpsMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDU4MTAxOTcwOQ==",
         "kind": "full"
       },
       "lineups": {
@@ -2108,11 +2190,24 @@
         }
       ],
       "summaryAr": "انتهت المباراة بفوز النرويج على البرازيل بنتيجة 2-1 ضمن FIFA World Cup على ملعب MetLife Stadium · East Rutherford, New Jersey · USA. تعليق: علي الكعبي.",
+      "highlights": {
+        "full": {
+          "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/mA5amQonpFi8V",
+          "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
+          "source": "vortex",
+          "embedId": "mA5amQonpFi8V",
+          "btolatId": "93932",
+          "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=dHRhVnBBdllURmptdFgxSEtEdTRRTW92amY5RXg0Vzk0bE5RM0RVdVFBOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjA2MzMyOTk5&keypair=a05pY3ZPRzRveWFwd2ZNMkVnWkdIUWFuTjMzZEF1N29Pd2Jlby9hL2Vodz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDYwNjMzMjk5OQ==",
+          "kind": "full"
+        }
+      },
       "highlight": {
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/mA5amQonpFi8V",
         "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
         "source": "vortex",
         "embedId": "mA5amQonpFi8V",
+        "btolatId": "93932",
+        "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=dHRhVnBBdllURmptdFgxSEtEdTRRTW92amY5RXg0Vzk0bE5RM0RVdVFBOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjA2MzMyOTk5&keypair=a05pY3ZPRzRveWFwd2ZNMkVnWkdIUWFuTjMzZEF1N29Pd2Jlby9hL2Vodz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDYwNjMzMjk5OQ==",
         "kind": "full"
       },
       "lineups": {

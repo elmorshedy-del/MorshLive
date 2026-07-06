@@ -112,13 +112,13 @@ function buildContextualPairKey(teams, opts) {
   return best && best.score >= 1.45 ? best.key : null;
 }
 
-function buildContextualPairKeyFromTitle(title, opts) {
+function scoreContextualPairKeyFromTitle(title, opts) {
   const matches = Array.isArray(opts?.matches) ? opts.matches : [];
   if (!matches.length || !opts?.pairKeyFn) return null;
   const normTitle = normalizeArabic(title);
   if (!normTitle) return null;
 
-  let best = null;
+  const scored = [];
   for (const m of matches) {
     if (!m?.home || !m?.away) continue;
     const homeScore = Math.max(
@@ -136,12 +136,31 @@ function buildContextualPairKeyFromTitle(title, opts) {
         .map((n) => (normTitle.includes(n) ? Math.min(1, n.length / 4) : 0))
     );
     const score = homeScore + awayScore;
-    if (score > 0 && (!best || score > best.score)) {
-      best = { score, key: m.key || opts.pairKeyFn(m.home, m.away) };
-    }
+    if (score > 0) scored.push({ score, key: m.key || opts.pairKeyFn(m.home, m.away), match: m });
   }
 
-  return best && best.score >= 0.9 ? best.key : null;
+  scored.sort((a, b) => b.score - a.score);
+  return scored[0] || null;
+}
+
+function buildContextualPairKeyFromTitle(title, opts) {
+  const best = scoreContextualPairKeyFromTitle(title, opts);
+  if (!best) return null;
+  // Extra clips often mention only the opponent ("Saka chance vs Mexico").
+  // A single-team hit is ambiguous across a full tournament archive; use the
+  // Btolat feed group instead of guessing unless both teams are present.
+  return best.score >= 1.45 ? best.key : null;
+}
+
+function candidatePairKey(video, opts, pairKeyFn, activeKey) {
+  const teams = titleTeams(video.title);
+  const contextualOpts = { ...opts, pairKeyFn };
+  if (teams) {
+    return buildContextualPairKey(teams, contextualOpts) || pairKeyFn(teams.a, teams.b);
+  }
+  const key = buildContextualPairKeyFromTitle(video.title, contextualOpts);
+  if (key) return key;
+  return isPrimaryKind(video.kind) ? null : activeKey;
 }
 
 async function fetchBtolatEmbedId(btolatId) {
@@ -171,22 +190,22 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
   const candidates = [];
   for (const feed of BTOLAT_VIDEO_FEEDS) {
     const html = await fetchText(feed);
+    let activeKey = null;
     for (const v of parseBtolatVideos(html)) {
-      if (seenIds.has(v.btolatId)) continue;
       const kind = classifyBtolatTitle(v.title);
       if (!kind) continue;
+      const video = { ...v, kind };
+      const key = candidatePairKey(video, opts, pairKeyFn, activeKey);
+      if (key && isPrimaryKind(kind)) activeKey = key;
+      if (seenIds.has(v.btolatId)) continue;
       seenIds.add(v.btolatId);
-      candidates.push({ ...v, kind });
+      candidates.push({ ...video, key });
     }
   }
 
   const out = new Map();
   for (const v of candidates) {
-    const teams = titleTeams(v.title);
-    const key = teams
-      ? buildContextualPairKey(teams, { ...opts, pairKeyFn }) || pairKeyFn(teams.a, teams.b)
-      : buildContextualPairKeyFromTitle(v.title, { ...opts, pairKeyFn });
-    if (!key) continue;
+    if (!v.key) continue;
     const embedId = await fetchBtolatEmbedId(v.btolatId);
     if (!embedId) continue;
 
@@ -205,8 +224,8 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
       kind: v.kind,
     });
 
-    if (!out.has(key)) out.set(key, {});
-    const bucket = out.get(key);
+    if (!out.has(v.key)) out.set(v.key, {});
+    const bucket = out.get(v.key);
     if (isPrimaryKind(v.kind)) {
       if (!bucket[v.kind]) bucket[v.kind] = clip;
     } else {
