@@ -3368,7 +3368,12 @@ async function proxyStreamsLabApi(request, env) {
   });
 
   const liveCount = channels.filter((c) => c.live === true).length;
-  const best = channels.filter((c) => c.live === true).sort((a, b) => a.priority - b.priority)[0] || null;
+  const primaryGroups = new Set(catalog.primaryGroups || ["ar", "max", "sir"]);
+  const groupRank = (g) => (primaryGroups.has(g) ? primaryGroups.size - [...primaryGroups].indexOf(g) : 0);
+  const liveChannels = channels.filter((c) => c.live === true);
+  const primaryLive = liveChannels.filter((c) => primaryGroups.has(c.group));
+  const bestPool = primaryLive.length ? primaryLive : liveChannels;
+  const best = bestPool.sort((a, b) => groupRank(b.group) - groupRank(a.group) || a.priority - b.priority)[0] || null;
 
   const payload = {
     ok: true,

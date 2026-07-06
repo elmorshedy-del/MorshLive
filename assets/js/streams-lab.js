@@ -15,11 +15,13 @@
   const bestBtn = document.getElementById("best-btn");
   const refreshBtn = document.getElementById("refresh-status");
 
-  const REGION_STATS = ["ar", "fr", "en", "tr"];
+  const PRIMARY_GROUPS = ["ar", "max", "sir"];
+  const GROUP_PICK_ORDER = { ar: 1, max: 2, sir: 3, other: 99 };
+  const REGION_STATS = ["ar", "max", "sir"];
 
-  let catalog = { channels: [], groups: [], external: [] };
+  let catalog = { channels: [], groups: [], external: [], defaultGroup: "ar" };
   let currentRoute = null;
-  let currentGroup = "all";
+  let currentGroup = "ar";
   let probed = false;
 
   function setStatus(msg) {
@@ -55,10 +57,19 @@
     return scoped.filter((c) => c.live).length;
   }
 
+  function isPrimaryChannel(ch) {
+    return PRIMARY_GROUPS.includes(ch.group);
+  }
+
+  function groupPickRank(ch) {
+    return GROUP_PICK_ORDER[ch.group] || 50;
+  }
+
   function updateLiveUi() {
     const channels = catalog.channels || [];
     const liveCount = channels.filter((c) => c.live).length;
-    if (liveCountEl) liveCountEl.textContent = String(liveCount);
+    const arLive = channels.filter((c) => c.live && isPrimaryChannel(c)).length;
+    if (liveCountEl) liveCountEl.textContent = arLive ? String(arLive) + " عربي" : String(liveCount);
     if (totalCountEl) totalCountEl.textContent = String(channels.length);
     updateRegionStats();
     renderGroups();
@@ -79,10 +90,12 @@
     if (!groupTabs) return;
     groupTabs.innerHTML = "";
     const hash = (location.hash || "").replace("#", "");
-    if (hash && hash !== currentGroup && (hash === "all" || (catalog.groups || []).some((g) => g.id === hash))) {
-      currentGroup = hash;
-    }
-    const groups = [{ id: "all", label: "الكل", icon: "★" }, ...(catalog.groups || [])];
+    const valid = (catalog.groups || []).some((g) => g.id === hash);
+    if (hash && valid) currentGroup = hash;
+    else if (!hash && catalog.defaultGroup) currentGroup = catalog.defaultGroup;
+
+    const groups = [...(catalog.groups || [])];
+    groups.push({ id: "all", label: "الكل", icon: "★" });
     groups.forEach((g) => {
       const b = document.createElement("button");
       b.type = "button";
@@ -143,11 +156,17 @@
   function pickBest(autoPlay) {
     const live = (catalog.channels || []).filter((c) => c.live);
     if (!live.length) {
-      setStatus("لا يوجد بث متاح حالياً — جارٍ إعادة الفحص…");
+      setStatus("لا يوجد بث عربي متاح حالياً — جارٍ إعادة الفحص…");
       return null;
     }
-    live.sort((a, b) => (a.priority || 99) - (b.priority || 99));
-    const best = live[0];
+    const primary = live.filter(isPrimaryChannel);
+    const pool = primary.length ? primary : live;
+    pool.sort((a, b) => {
+      const g = groupPickRank(a) - groupPickRank(b);
+      if (g !== 0) return g;
+      return (a.priority || 99) - (b.priority || 99);
+    });
+    const best = pool[0];
     if (autoPlay) loadRoute(best.route, channelLabel(best));
     return best;
   }
@@ -205,10 +224,18 @@
 
       const sirMap = new Map((apiData.channels || []).filter((c) => c.source === "sir").map((c) => [c.id, c]));
 
-      const dlhd = (catalog.channels || []).filter((c) => c.source === "dlhd");
+      const dlhd = (catalog.channels || [])
+        .filter((c) => c.source === "dlhd")
+        .sort((a, b) => groupPickRank(a) - groupPickRank(b) || (a.priority || 99) - (b.priority || 99));
       const sir = (catalog.channels || []).filter((c) => c.source === "sir");
 
-      const probedDlhd = await mapPool(dlhd, 5, probeDlhdChannel);
+      setStatus("جارٍ فحص القنوات العربية…");
+      const primaryDlhd = dlhd.filter(isPrimaryChannel);
+      const otherDlhd = dlhd.filter((c) => !isPrimaryChannel(c));
+      const probedPrimary = await mapPool(primaryDlhd, 5, probeDlhdChannel);
+      setStatus("جارٍ فحص القنوات الأخرى…");
+      const probedOther = await mapPool(otherDlhd, 4, probeDlhdChannel);
+      const probedDlhd = [...probedPrimary, ...probedOther];
       const probedSir = sir.map((ch) => {
         const fromApi = sirMap.get(ch.id);
         const live = fromApi ? !!fromApi.live : false;
@@ -221,11 +248,12 @@
       probed = true;
 
       const liveCount = catalog.channels.filter((c) => c.live).length;
+      const arLive = catalog.channels.filter((c) => c.live && isPrimaryChannel(c)).length;
       updateLiveUi();
       renderExternal();
 
       const ts = new Date().toLocaleTimeString("ar-SA");
-      setStatus(`آخر فحص: ${ts} — ${liveCount}/${catalog.channels.length} بثّ متاح`);
+      setStatus(`آخر فحص: ${ts} — ${arLive} عربي · ${liveCount} إجمالي`);
 
       if (!currentRoute || !catalog.channels.find((c) => c.route === currentRoute && c.live)) {
         pickBest(true);
@@ -251,7 +279,8 @@
     .then((r) => r.json())
     .then((data) => {
       catalog = { ...data, channels: (data.channels || []).map((c) => ({ ...c, live: null })) };
-      if (totalCountEl) totalCountEl.textContent = String((data.channels || []).length);
+      currentGroup = data.defaultGroup || "ar";
+      if (totalCountEl) totalCountEl.textContent = String((data.channels || []).filter(isPrimaryChannel).length);
       renderGroups();
       renderGrid();
       renderExternal();
