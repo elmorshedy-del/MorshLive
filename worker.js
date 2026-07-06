@@ -26,7 +26,7 @@ const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
 const POLL_RE = /^\/api\/poll\/([a-z0-9-]+)\/?$/i;
 const POLL_STORE = "https://kz-poll.internal/";
 const POLL_TEAMS = {
-  "brazil-norway-20260705": ["brazil", "norway"],
+  "mexico-england-20260706": ["mexico", "england"],
 };
 const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
 // Worldkoora exposes "البث 1..N" as redundant servers for the SAME channel in a

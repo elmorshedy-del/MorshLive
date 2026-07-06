@@ -1,6 +1,6 @@
 {
   "date": "2026-07-06",
-  "updatedAt": "2026-07-06T01:14:20.849Z",
+  "updatedAt": "2026-07-06T01:27:37.013Z",
   "source": "espn",
   "sourceLabel": "ESPN",
   "commentarySource": "almaghrebsport",
@@ -818,38 +818,38 @@
       },
       "stats": {
         "home": {
-          "foulsCommitted": 3,
+          "foulsCommitted": 6,
           "yellowCards": 0,
           "redCards": 0,
           "offsides": 0,
-          "wonCorners": 0,
-          "saves": 0,
-          "possessionPct": 48.6,
-          "totalShots": 1,
-          "shotsOnTarget": 0,
-          "totalPasses": 53,
+          "wonCorners": 2,
+          "saves": 1,
+          "possessionPct": 52.7,
+          "totalShots": 3,
+          "shotsOnTarget": 1,
+          "totalPasses": 106,
           "passPct": 90,
-          "totalCrosses": 0,
+          "totalCrosses": 3,
           "totalTackles": 2,
-          "interceptions": 1,
-          "totalClearance": 1
+          "interceptions": 2,
+          "totalClearance": 3
         },
         "away": {
           "foulsCommitted": 1,
           "yellowCards": 1,
           "redCards": 0,
           "offsides": 0,
-          "wonCorners": 1,
-          "saves": 0,
-          "possessionPct": 51.4,
-          "totalShots": 0,
-          "shotsOnTarget": 0,
-          "totalPasses": 55,
+          "wonCorners": 2,
+          "saves": 1,
+          "possessionPct": 47.3,
+          "totalShots": 1,
+          "shotsOnTarget": 1,
+          "totalPasses": 95,
           "passPct": 90,
-          "totalCrosses": 1,
-          "totalTackles": 0,
+          "totalCrosses": 2,
+          "totalTackles": 2,
           "interceptions": 1,
-          "totalClearance": 0
+          "totalClearance": 3
         }
       }
     },
@@ -1348,7 +1348,7 @@
           "possessionPct": 33.6,
           "totalShots": 14,
           "shotsOnTarget": 4,
-          "totalPasses": 330,
+          "totalPasses": 331,
           "passPct": 80,
           "totalCrosses": 16,
           "totalTackles": 23,
@@ -1365,12 +1365,12 @@
           "possessionPct": 66.4,
           "totalShots": 9,
           "shotsOnTarget": 5,
-          "totalPasses": 679,
+          "totalPasses": 681,
           "passPct": 90,
           "totalCrosses": 13,
           "totalTackles": 14,
           "interceptions": 6,
-          "totalClearance": 17
+          "totalClearance": 18
         }
       }
     }
@@ -1379,7 +1379,7 @@
     {
       "id": "espn-fifa.world-760505",
       "status": "live",
-      "minute": "14'",
+      "minute": "27'",
       "home": "Mexico",
       "away": "England",
       "homeAbbr": "MEX",
@@ -1887,38 +1887,38 @@
       },
       "stats": {
         "home": {
-          "foulsCommitted": 3,
+          "foulsCommitted": 6,
           "yellowCards": 0,
           "redCards": 0,
           "offsides": 0,
-          "wonCorners": 0,
-          "saves": 0,
-          "possessionPct": 48.6,
-          "totalShots": 1,
-          "shotsOnTarget": 0,
-          "totalPasses": 53,
+          "wonCorners": 2,
+          "saves": 1,
+          "possessionPct": 52.7,
+          "totalShots": 3,
+          "shotsOnTarget": 1,
+          "totalPasses": 106,
           "passPct": 90,
-          "totalCrosses": 0,
+          "totalCrosses": 3,
           "totalTackles": 2,
-          "interceptions": 1,
-          "totalClearance": 1
+          "interceptions": 2,
+          "totalClearance": 3
         },
         "away": {
           "foulsCommitted": 1,
           "yellowCards": 1,
           "redCards": 0,
           "offsides": 0,
-          "wonCorners": 1,
-          "saves": 0,
-          "possessionPct": 51.4,
-          "totalShots": 0,
-          "shotsOnTarget": 0,
-          "totalPasses": 55,
+          "wonCorners": 2,
+          "saves": 1,
+          "possessionPct": 47.3,
+          "totalShots": 1,
+          "shotsOnTarget": 1,
+          "totalPasses": 95,
           "passPct": 90,
-          "totalCrosses": 1,
-          "totalTackles": 0,
+          "totalCrosses": 2,
+          "totalTackles": 2,
           "interceptions": 1,
-          "totalClearance": 0
+          "totalClearance": 3
         }
       }
     },
@@ -2533,7 +2533,7 @@
           "possessionPct": 33.6,
           "totalShots": 14,
           "shotsOnTarget": 4,
-          "totalPasses": 330,
+          "totalPasses": 331,
           "passPct": 80,
           "totalCrosses": 16,
           "totalTackles": 23,
@@ -2550,12 +2550,12 @@
           "possessionPct": 66.4,
           "totalShots": 9,
           "shotsOnTarget": 5,
-          "totalPasses": 679,
+          "totalPasses": 681,
           "passPct": 90,
           "totalCrosses": 13,
           "totalTackles": 14,
           "interceptions": 6,
-          "totalClearance": 17
+          "totalClearance": 18
         }
       }
     }
