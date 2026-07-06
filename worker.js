@@ -3228,6 +3228,19 @@ async function proxyRecentMemesApi(request, env) {
     for (const meme of list || []) ingest(key, meme);
   }
 
+  const syndicateCandidates = [...recentMatchKeys]
+    .filter((key) => !(idx[key]?.length || pinned[key]?.length))
+    .map((key) => ({ key, m: matchByKey.get(key) }))
+    .filter((x) => x.m)
+    .sort((a, b) => Date.parse(b.m.kickoffUtc) - Date.parse(a.m.kickoffUtc))
+    .slice(0, 3);
+  for (const { key, m } of syndicateCandidates) {
+    try {
+      const hits = await searchCuratedMemesSyndication(m.home, m.away, m.kickoffUtc);
+      for (const meme of hits) ingest(key, meme);
+    } catch { /* syndication optional */ }
+  }
+
   let memes = [...byTweetId.values()]
     .sort((a, b) => (b.engagement || 0) - (a.engagement || 0))
     .slice(0, RECENT_MEMES_LIMIT);

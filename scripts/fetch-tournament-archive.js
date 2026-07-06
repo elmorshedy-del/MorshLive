@@ -9,7 +9,7 @@ const fs = require("fs");
 const path = require("path");
 const https = require("https");
 const { normalizeEspnEvent, parseKickoffMs } = require("./matches-lib");
-const { pairKey } = require("./commentators-lib");
+const { arabicTeamToEnglish, pairKey } = require("./commentators-lib");
 const { attachSummaries } = require("./highlights-lib");
 const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-highlights-lib");
 const { findKnownVortexHighlight, findKnownVortexHighlights, fetchVortexEmbedMeta, normalizeHighlightBucket, enrichHighlightMeta, pickPrimaryHighlight } = require("./vortex-highlights-lib");
@@ -59,7 +59,8 @@ function buildArToEn() {
   out.set("الولايات المتحدة", "United States");
   out.set("كوريا الجنوبية", "South Korea");
   out.set("ساحل العاج", "Ivory Coast");
-  return (ar) => out.get(ar) || out.get(ar.replace(/\s+/g, "")) || ar;
+  return (ar) =>
+    arabicTeamToEnglish(ar) || out.get(ar) || out.get(ar.replace(/\s+/g, "")) || ar;
 }
 
 async function fetchAllEspnEnded() {

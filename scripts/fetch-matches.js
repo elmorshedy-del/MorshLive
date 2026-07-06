@@ -20,6 +20,7 @@ const {
 const {
   attachCommentators,
   mergeCommentaryIndex,
+  arabicTeamToEnglish,
   pairKey,
   pinEndedChannels,
 } = require("./commentators-lib");
@@ -113,7 +114,8 @@ function buildArToEn() {
   out.set("الولايات المتحدة", "United States");
   out.set("كوريا الجنوبية", "South Korea");
   out.set("ساحل العاج", "Ivory Coast");
-  return (ar) => out.get(ar) || out.get(String(ar).replace(/\s+/g, "")) || ar;
+  return (ar) =>
+    arabicTeamToEnglish(ar) || out.get(ar) || out.get(String(ar).replace(/\s+/g, "")) || ar;
 }
 
 /** Search YouTube for an Arabic-commentary highlights video for one match. */

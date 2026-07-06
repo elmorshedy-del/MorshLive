@@ -4,24 +4,6 @@
   "titleEn": "Who do you think wins?",
   "polls": [
     {
-      "pollId": "espn-fifa.world-760505",
-      "matchIds": [
-        "espn-fifa.world-760505"
-      ],
-      "homeKey": "mexico",
-      "awayKey": "england",
-      "teams": {
-        "mexico": {
-          "nameAr": "المكسيك",
-          "nameEn": "Mexico"
-        },
-        "england": {
-          "nameAr": "إنجلترا",
-          "nameEn": "England"
-        }
-      }
-    },
-    {
       "pollId": "espn-fifa.world-760506",
       "matchIds": [
         "espn-fifa.world-760506"
