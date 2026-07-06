@@ -17,6 +17,8 @@
   let MATCHES = [];
   let channel = CHANNELS[0];
   let match = null;
+  let matchesReady = false;
+  let altStreamsSignature = "";
   const STREAM_SOURCES = [
     { key: "vip1", servs: [1, 2, 3, 4] },
     { key: "vip2", servs: [1, 2, 3, 4] },
@@ -61,6 +63,81 @@
   function reloadPlayer() {
     loadedUrl = "";
     loadPlayer();
+    reloadAltStreams();
+  }
+
+  function altStreamIframe(url) {
+    return (
+      `<iframe class="embed-frame alt-stream-frame" src="${escapeHtml(url)}" ` +
+      `sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ` +
+      `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
+      `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="lazy"></iframe>`
+    );
+  }
+
+  function renderAltStreams() {
+    const card = document.getElementById("alt-streams");
+    if (!card) return;
+    const cfg = window.SITE_DATA.altStreamsForMatch
+      ? window.SITE_DATA.altStreamsForMatch(match)
+      : null;
+    if (!cfg) {
+      card.hidden = true;
+      card.innerHTML = "";
+      altStreamsSignature = "";
+      return;
+    }
+
+    const parts = [];
+    if (cfg.sirTv && window.SITE_DATA.altStreamUrl) {
+      parts.push(`sirTv:${window.SITE_DATA.altStreamUrl("sirTv")}`);
+    }
+    if (cfg.ntv && window.SITE_DATA.altStreamUrl) {
+      parts.push(`ntv:${window.SITE_DATA.altStreamUrl("ntv")}`);
+    }
+    const signature = parts.join("|");
+    if (signature === altStreamsSignature && card.querySelector(".alt-stream-pane")) {
+      card.hidden = false;
+      return;
+    }
+    altStreamsSignature = signature;
+
+    const panes = [];
+    if (cfg.sirTv) {
+      panes.push(
+        `<div class="alt-stream-pane alt-stream-pane--sirtv">
+          <div class="alt-stream-head">
+            <span class="alt-stream-name">${escapeHtml(t(cfg.sirTv.labelKey))}</span>
+            <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
+          </div>
+          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("sirTv"))}</div>
+        </div>`
+      );
+    }
+    if (cfg.ntv) {
+      panes.push(
+        `<div class="alt-stream-pane alt-stream-pane--ntv">
+          <div class="alt-stream-head">
+            <span class="alt-stream-name">${escapeHtml(t(cfg.ntv.labelKey))}</span>
+            <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
+          </div>
+          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("ntv"))}</div>
+        </div>`
+      );
+    }
+
+    card.hidden = false;
+    card.innerHTML =
+      `<div class="alt-streams-head">
+        <h3 class="alt-streams-title">${escapeHtml(t("watch.altStreams"))}</h3>
+        <p class="alt-streams-note">${escapeHtml(t("watch.altStreamsNote"))}</p>
+      </div>
+      <div class="alt-streams-grid">${panes.join("")}</div>`;
+  }
+
+  function reloadAltStreams() {
+    altStreamsSignature = "";
+    renderAltStreams();
   }
 
   function timeZoneHtml(m) {
@@ -451,30 +528,43 @@
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
+    renderAltStreams();
     const channelChanged = channel.id !== previousChannelId;
     const matchChanged = (match && match.id) !== previousMatchId;
-    if (channelChanged) renderChannels();
-    if (channelChanged || matchChanged) {
+    if (!matchesReady) {
+      renderChannels();
       renderServers({ rebind: true });
-      reloadPlayer();
-      if (matchChanged) {
-        const pollSlot = document.getElementById("match-poll-slot");
-        if (pollSlot) delete pollSlot.dataset.pollReady;
+      loadPlayer();
+      matchesReady = true;
+    } else {
+      if (channelChanged) renderChannels();
+      if (channelChanged || matchChanged) {
+        renderServers({ rebind: true });
+        reloadPlayer();
+        if (matchChanged) {
+          const pollSlot = document.getElementById("match-poll-slot");
+          if (pollSlot) delete pollSlot.dataset.pollReady;
+        }
       }
     }
     renderSidebar();
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     initNav();
-    resolveSelection();
-    fillInfo();
-    renderChannels();
-    renderServers();
-    renderSidebar();
-    loadPlayer();
     initReloadButton();
-    refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
+    try {
+      await refreshMatches({ force: false });
+    } catch (e) {
+      console.warn("Initial match refresh failed:", e.message);
+      resolveSelection();
+      fillInfo();
+      renderChannels();
+      renderServers();
+      renderSidebar();
+      loadPlayer();
+      renderAltStreams();
+    }
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(() => refreshMatchDetail().catch((e) => console.warn("Detail refresh failed:", e.message)), 60 * 1000);
     setInterval(() => {

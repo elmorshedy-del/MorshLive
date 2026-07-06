@@ -97,7 +97,7 @@
       league: e.strLeague || "مباراة",
       venue: [e.strVenue, e.strCity].filter(Boolean).join(" · "),
       channel: null,
-      channelId: "bein-sports-1",
+      channelId: null,
       commentator: null,
       source: "thesportsdb",
     };
@@ -182,7 +182,7 @@
         competition.venue && competition.venue.address && competition.venue.address.country,
       ].filter(Boolean).join(" · "),
       channel: null,
-      channelId: "bein-sports-1",
+      channelId: null,
       commentator: null,
       source: "espn",
     };
@@ -218,6 +218,7 @@
     if (incoming.minute) merged.minute = incoming.minute;
     if (hasScore(incoming)) merged.score = incoming.score;
     if (incoming.channel && !merged.channel) merged.channel = incoming.channel;
+    if (incoming.channelId && !merged.channelId) merged.channelId = incoming.channelId;
     if (incoming.commentator && !merged.commentator) merged.commentator = incoming.commentator;
     if (incoming.venue && !merged.venue) merged.venue = incoming.venue;
     merged.source = existing.source === incoming.source ? existing.source : `${existing.source}+${incoming.source}`;

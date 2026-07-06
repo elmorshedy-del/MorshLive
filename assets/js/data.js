@@ -33,7 +33,49 @@ const EMBEDS = {
     defaultServer: 0,
     servers: 4,
   },
+  // Alternative backup players — proxied ad-free on /wk/albaplayer/{sirtv,ntv}/.
+  sirtv: { url: "/wk/albaplayer/sirtv/", defaultServer: 1, servers: 1 },
+  ntv: { url: "/wk/albaplayer/ntv/", defaultServer: 1, servers: 1 },
 };
+
+// Pinned matches that show the separate backup panel (Sir TV + NTV).
+const ALT_STREAM_MATCHES = {
+  "espn-fifa.world-760506": { sirTv: true, ntv: true },
+  "portugal~spain": { sirTv: true, ntv: true },
+};
+
+const ALT_STREAM_DEFS = {
+  sirTv: { key: "sirTv", path: "/wk/albaplayer/sirtv/", labelKey: "watch.altSirTv" },
+  ntv: { key: "ntv", path: "/wk/albaplayer/ntv/", labelKey: "watch.altNtv" },
+};
+
+function altStreamsForMatch(m) {
+  if (!m) return null;
+  const pin = ALT_STREAM_MATCHES[m.id] || ALT_STREAM_MATCHES[matchStreamKey(m)] || null;
+  if (!pin) return null;
+  const out = {};
+  if (pin.sirTv) out.sirTv = ALT_STREAM_DEFS.sirTv;
+  if (pin.ntv) out.ntv = ALT_STREAM_DEFS.ntv;
+  return Object.keys(out).length ? out : null;
+}
+
+function altStreamUrl(kind) {
+  const def = ALT_STREAM_DEFS[kind];
+  if (!def) return "";
+  const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
+  const u = new URL(def.path, base);
+  u.searchParams.set("_kz", "13");
+  return u.toString();
+}
+
+function matchStreamKey(m) {
+  if (!m) return "";
+  if (m.key) return String(m.key).toLowerCase();
+  if (m.home && m.away) {
+    return `${String(m.home).toLowerCase()}~${String(m.away).toLowerCase()}`;
+  }
+  return "";
+}
 
 function embedUrlFor(embed, serv) {
   if (!embed || !embed.url) return "";
@@ -248,6 +290,7 @@ function resolveWatchSelection(matches, channels, searchParams) {
 window.SITE_DATA = {
   CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor,
   servIndexFromParam, EMBED_BINDING, streamOptionsFor, streamOptionUrl,
+  altStreamsForMatch, altStreamUrl,
 };
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;
@@ -382,6 +425,20 @@ async function loadCommentaryIndex() {
     _commentaryIdx = _commentaryIdx || {};
   }
   return _commentaryIdx;
+}
+
+function applyTodayChannelIds(matches, todayMatches) {
+  if (!Array.isArray(todayMatches) || !todayMatches.length) return matches;
+  const byId = new Map(
+    todayMatches.filter((m) => m.id && m.channelId).map((m) => [m.id, m])
+  );
+  return matches.map((m) => {
+    const src = byId.get(m.id);
+    if (!src || !src.channelId) return m;
+    const out = { ...m, channelId: src.channelId };
+    if (src.channel) out.channel = src.channel;
+    return out;
+  });
 }
 
 function applyCommentary(matches, idx) {
@@ -955,7 +1012,8 @@ window.getMatches = async function getMatches({ force } = {}) {
         const didx = {};
         (data.matchDetailIndex || []).forEach((d) => { didx[d.key] = d; });
         const withCommentary = applyCommentary(live.matches, idx);
-        const withHighlights = applyHighlights(withCommentary, hidx);
+        const withChannels = applyTodayChannelIds(withCommentary, data.matches);
+        const withHighlights = applyHighlights(withChannels, hidx);
         const withStaticDetail = applyMatchDetail(withHighlights, didx);
         const withLiveDetail = await enrichLiveMatchDetails(withStaticDetail, { force });
         scheduleHighlightEnrich(withLiveDetail);

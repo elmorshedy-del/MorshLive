@@ -1,6 +1,6 @@
 {
-  "version": 11,
-  "updatedAt": "2026-07-06T19:10:00.000Z",
+  "version": 12,
+  "updatedAt": "2026-07-06T21:55:00.000Z",
   "embedBinding": {
     "bein-max-1": "vip1",
     "bein-max-2": "amine",
@@ -10,6 +10,14 @@
     "bein-sports-2": "vip1"
   },
   "calibration": [
+    {
+      "date": "2026-07-06T21:55:00.000Z",
+      "issue": "Stream dead on korazero but works on raw worldkoora/dlhd in MENA — ops couldn't tell geo vs dead CDN.",
+      "rootCause": "Cloudflare Worker egress geo-blocked on phantemlis variants (master 200, variant 403); streamProbe soft-approved dead chains. User browser in MENA can still play direct upstream.",
+      "fix": "probeHlsChain flags geoSuspect; /api/stream-diagnose returns verdict + directFallbacks; VIP falls back to direct iframe (user IP) when proxy geo-blocked; watch page shows geo notice.",
+      "liveAtTime": [],
+      "userReport": "If geo blocked for us let it work elsewhere and we should know that"
+    },
     {
       "date": "2026-07-06T19:10:00.000Z",
       "issue": "Portugal vs Spain (beIN MAX 1) — home showed VS with no minute when today.json lagged behind kickoff.",

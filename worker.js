@@ -33,6 +33,14 @@ const WORLDKOORA = "https://mysportv.live";
 const WESHAN = "https://zenvixw.site/wordpress/albaplayer/weshan/";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
+const SIRTV_CH1_PLAYER = "https://we.shootsync.site/albaplayer/sniaer/";
+const SIRTV_CH1_REFERER = "https://s.sirtv.space/2026/02/ch1.html?m=1";
+const SIRTV_RE = /^\/wk\/albaplayer\/sirtv\/?$/i;
+const NTV_EMBED =
+  "https://ntv.cx/embed?t=OFd0cFZIcCtUQ3NleURxSUs1SW9VQW81eDZjTHdaUjNGL0RxZWZUU24zVTNIQlVsbEpqTkgzbkk3TmhiRGJwMw~~";
+const NTV_RE = /^\/wk\/albaplayer\/ntv\/?$/i;
+const ALT_STREAM_AD_HOSTS =
+  /cosetengarb|corruptioneasiest|histats|acscdn|aclib|doubleclick|googlesyndication|popads|propeller|exoclick|adsterra|mgid|taboola|outbrain|cloudflareinsights|console-ban|pubads|googletagmanager|google-analytics|imasdk|advertising|\/ads\//i;
 const POLL_RE = /^\/api\/poll\/([a-z0-9.-]+)\/?$/i;
 const POLL_STORE = "https://kz-poll.internal/";
 const POLL_TEAMS = {
@@ -468,66 +476,131 @@ function parseTargetDuration(manifest) {
   return m ? Number(m[1]) : null;
 }
 
-// DEEP liveness + smoothness probe: walk master -> variant -> first segment and
-// actually pull segment bytes. This stops the recurring "master says #EXTM3U but
-// the segments 403, so the stream is off" bug, AND measures how quickly the whole
-// chain responds so we can auto-play the SMOOTHEST mirror (lowest edge latency,
-// most buffered segments, sane target duration) rather than a random live one.
-// Returns { ok, ms, score, soft? } — lower score = smoother.
-async function streamProbe(source, kind, request) {
+// Geo/IP gate signatures — master playlist OK but child playlist or segment blocked.
+const GEO_BLOCK_STATUSES = new Set([403, 451, 410]);
+
+function isGeoBlockStatus(status) {
+  return GEO_BLOCK_STATUSES.has(Number(status));
+}
+
+function geoSuspectFromSteps(steps) {
+  if (!steps || !steps.length) return false;
+  const masterOk = steps.some((s) => s.step === "master" && s.ok);
+  if (!masterOk) return steps.some((s) => s.step === "master" && s.status === 451);
+  return steps.some((s) => (s.step === "variant" || s.step === "segment") && isGeoBlockStatus(s.status));
+}
+
+function streamVerdictFromMirrors(mirrors) {
+  const working = mirrors.filter((m) => m.playable);
+  const geo = mirrors.filter((m) => m.geoSuspect);
+  const dead = mirrors.filter((m) => !m.playable && !m.geoSuspect);
+  if (working.length) return "working";
+  if (geo.length && !dead.length) return "likely_geo_block";
+  if (geo.length && dead.length) return "mixed_geo_and_dead";
+  if (geo.length) return "likely_geo_block";
+  return "likely_dead";
+}
+
+// Full HLS chain probe with step-by-step diagnosis (master → variant → segment).
+// Returns { ok, ms, score, soft?, geoSuspect?, failure?, steps[] }.
+async function probeHlsChain(source, kind, request) {
   const headers = streamFetchHeaders(kind, request);
   const started = Date.now();
-  const softOk = (extraPenalty = 0) => {
-    const ms = Date.now() - started;
-    return { ok: true, ms, score: ms + extraPenalty, soft: true };
-  };
+  const steps = [];
+  const finish = (fields) => ({
+    ms: Date.now() - started,
+    steps,
+    geoSuspect: geoSuspectFromSteps(steps),
+    ...fields,
+  });
+
   try {
     const res = await fetchWithTimeout(source, { headers, redirect: "follow" }, PROBE_TIMEOUT_MS);
-    if (!res.ok) return { ok: false };
+    steps.push({ step: "master", status: res.status, ok: res.ok });
+    if (!res.ok) {
+      return finish({
+        ok: false,
+        failure: res.status === 451 ? "geo_451" : "master_fail",
+      });
+    }
     const text = await res.text();
-    if (!text.trimStart().startsWith("#EXTM3U")) return { ok: false };
-    if (manifestIsStale(text)) return { ok: false };
+    if (!text.trimStart().startsWith("#EXTM3U")) {
+      return finish({ ok: false, failure: "not_m3u8" });
+    }
+    if (manifestIsStale(text)) {
+      return finish({ ok: false, failure: "stale_manifest" });
+    }
 
     let mediaManifestUrl = source;
     let mediaText = text;
     if (/#EXT-X-STREAM-INF/i.test(text)) {
       const variant = firstMediaLine(text);
-      if (!variant) return { ok: false };
+      if (!variant) return finish({ ok: false, failure: "no_variant_line" });
       const variantUrl = resolveStreamUrl(variant, source);
       const vres = await fetchWithTimeout(variantUrl, { headers, redirect: "follow" }, PROBE_TIMEOUT_MS);
+      steps.push({ step: "variant", status: vres.status, ok: vres.ok, url: variantUrl });
       if (!vres.ok) {
-        // Master is live but child playlist may be edge-gated; our signed proxy often works.
-        return softOk(2500);
+        const geoSuspect = isGeoBlockStatus(vres.status);
+        return finish({
+          ok: false,
+          failure: geoSuspect ? "variant_block" : "variant_fail",
+          geoSuspect,
+        });
       }
       mediaText = await vres.text();
-      if (!mediaText.trimStart().startsWith("#EXTM3U")) return softOk(2800);
-      if (manifestIsStale(mediaText)) return softOk(2900);
+      if (!mediaText.trimStart().startsWith("#EXTM3U")) {
+        return finish({ ok: false, failure: "variant_not_m3u8", soft: true });
+      }
+      if (manifestIsStale(mediaText)) {
+        return finish({ ok: false, failure: "stale_variant", soft: true });
+      }
       mediaManifestUrl = variantUrl;
     }
 
     const seg = firstMediaLine(mediaText);
-    if (!seg) return softOk(3000);
+    if (!seg) {
+      return finish({ ok: true, score: 3000, soft: true });
+    }
     const segUrl = resolveStreamUrl(seg, mediaManifestUrl);
+    if (isHlsUrl(segUrl)) {
+      const ms = Date.now() - started;
+      const segCount = (mediaText.match(/#EXTINF/gi) || []).length;
+      const targetDur = parseTargetDuration(mediaText) || 6;
+      const bufferPenalty = segCount >= 3 ? 0 : 400;
+      const targetPenalty = targetDur > 6 ? (targetDur - 6) * 80 : 0;
+      return finish({ ok: true, score: ms + bufferPenalty + targetPenalty });
+    }
+
+    const sres = await fetchWithTimeout(
+      segUrl,
+      { headers: { ...headers, Range: "bytes=0-2047" }, redirect: "follow" },
+      PROBE_TIMEOUT_MS
+    );
+    steps.push({ step: "segment", status: sres.status, ok: sres.status === 200 || sres.status === 206, url: segUrl });
+    if (!(sres.status === 200 || sres.status === 206)) {
+      const geoSuspect = isGeoBlockStatus(sres.status);
+      return finish({
+        ok: false,
+        failure: geoSuspect ? "segment_block" : "segment_fail",
+        geoSuspect,
+      });
+    }
+    const ctype = (sres.headers.get("Content-Type") || "").toLowerCase();
+    if (ctype.includes("text/html")) {
+      return finish({ ok: false, failure: "segment_html", soft: true });
+    }
     let segBytesOk = true;
-    if (!isHlsUrl(segUrl)) {
-      const sres = await fetchWithTimeout(
-        segUrl,
-        { headers: { ...headers, Range: "bytes=0-2047" }, redirect: "follow" },
-        PROBE_TIMEOUT_MS
-      );
-      if (!(sres.status === 200 || sres.status === 206)) return softOk(3200);
-      const ctype = (sres.headers.get("Content-Type") || "").toLowerCase();
-      if (ctype.includes("text/html")) return softOk(3400);
-      if (sres.body) {
-        const reader = sres.body.getReader();
-        const { value, done } = await reader.read();
-        try { await reader.cancel(); } catch { /* noop */ }
-        segBytesOk = !done && !!value && value.byteLength > 0;
-      } else {
-        const buf = await sres.arrayBuffer();
-        segBytesOk = buf.byteLength > 0;
-      }
-      if (!segBytesOk) return softOk(3600);
+    if (sres.body) {
+      const reader = sres.body.getReader();
+      const { value, done } = await reader.read();
+      try { await reader.cancel(); } catch { /* noop */ }
+      segBytesOk = !done && !!value && value.byteLength > 0;
+    } else {
+      const buf = await sres.arrayBuffer();
+      segBytesOk = buf.byteLength > 0;
+    }
+    if (!segBytesOk) {
+      return finish({ ok: false, failure: "segment_empty", soft: true });
     }
 
     const ms = Date.now() - started;
@@ -535,14 +608,38 @@ async function streamProbe(source, kind, request) {
     const targetDur = parseTargetDuration(mediaText) || 6;
     const bufferPenalty = segCount >= 3 ? 0 : 400;
     const targetPenalty = targetDur > 6 ? (targetDur - 6) * 80 : 0;
-    return { ok: true, ms, score: ms + bufferPenalty + targetPenalty };
+    return finish({ ok: true, score: ms + bufferPenalty + targetPenalty });
   } catch {
-    // fall through to soft manifest check
+    return finish({ ok: false, failure: "probe_error" });
   }
-  if (await manifestLooksLive(source, kind, request)) {
-    return { ok: true, ms: 9999, score: 9000, soft: true };
+}
+
+// DEEP liveness + smoothness probe: walk master -> variant -> first segment and
+// actually pull segment bytes. Geo-blocked chains (master 200, variant/segment 403/451)
+// return ok:false + geoSuspect:true — no more soft-approving dead phantemlis mirrors.
+// Returns { ok, ms, score, soft?, geoSuspect?, failure? } — lower score = smoother.
+async function streamProbe(source, kind, request) {
+  const chain = await probeHlsChain(source, kind, request);
+  if (chain.ok) {
+    return {
+      ok: true,
+      ms: chain.ms,
+      score: chain.score,
+      soft: chain.soft || false,
+    };
   }
-  return { ok: false };
+  if (chain.geoSuspect) {
+    return {
+      ok: false,
+      geoSuspect: true,
+      failure: chain.failure,
+      ms: chain.ms,
+    };
+  }
+  if (chain.soft && await manifestLooksLive(source, kind, request)) {
+    return { ok: true, ms: chain.ms || 9999, score: 9000, soft: true };
+  }
+  return { ok: false, failure: chain.failure, ms: chain.ms };
 }
 
 async function manifestLooksLive(source, kind, request) {
@@ -1529,7 +1626,6 @@ async function resolveVipSlotStream(request, slot) {
 
   const probed = await Promise.all(
     resolvedList.map(async (r) => {
-      if (r.cached) return { r, p: { ok: true, score: r.score ?? 500, soft: true } };
       const p = await streamProbe(r.source, "wk", request);
       return { r, p };
     })
@@ -1610,6 +1706,163 @@ function weshanServerOrder(requestedServ) {
   if (Number.isFinite(raw) && raw >= 0 && raw <= 3) order.push(raw);
   for (let s = 0; s <= 3; s++) if (!order.includes(s)) order.push(s);
   return order;
+}
+
+async function fetchSirTvCh1Html(request) {
+  try {
+    const res = await fetchWithTimeout(SIRTV_CH1_PLAYER, {
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "text/html,application/xhtml+xml",
+        Referer: SIRTV_CH1_REFERER,
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    return res.text();
+  } catch {
+    return null;
+  }
+}
+
+async function proxySirTv(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "sirtv-ch1",
+  };
+  if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
+
+  try {
+    const html = await fetchSirTvCh1Html(request);
+    if (!html) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    const candidates = extractHlsCandidates(html);
+    const seenSources = new Set();
+    const pool = [];
+    for (const c of candidates) {
+      if (!c.source || seenSources.has(c.source)) continue;
+      const probe = await streamProbe(c.source, "plain", request);
+      if (!probe.ok) continue;
+      seenSources.add(c.source);
+      const sig = await signTarget(c.source, secret);
+      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: probe.score });
+    }
+    pool.sort((a, b) => a.score - b.score);
+    const proxied = pool.map((m) => m.url);
+    if (!proxied.length) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    return new Response(cleanHlsPlayerHtml(proxied, "Sir TV"), { status: 200, headers: htmlHeaders });
+  } catch {
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  }
+}
+
+function extractAnyIframeSrc(html, base) {
+  const out = [];
+  for (const m of String(html || "").matchAll(/<iframe\b[^>]*\bsrc=(["'])([^"']+)\1/gi)) {
+    try {
+      out.push(new URL(m[2], base).href);
+    } catch {
+      // Skip malformed iframe URLs.
+    }
+  }
+  return out;
+}
+
+async function fetchAltStreamHtml(url, request, referer) {
+  try {
+    const res = await fetchWithTimeout(url, {
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "text/html,application/xhtml+xml",
+        Referer: referer || url,
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    return { url: res.url, html: await res.text() };
+  } catch {
+    return null;
+  }
+}
+
+async function resolveNtvPlayablePage(request) {
+  let page = await fetchAltStreamHtml(NTV_EMBED, request, "https://ntv.cx/");
+  if (!page) return null;
+  for (let depth = 0; depth < 5; depth++) {
+    const candidates = extractHlsCandidates(page.html);
+    if (candidates.length) return { html: page.html, url: page.url, candidates };
+    const iframes = extractAnyIframeSrc(page.html, page.url);
+    if (!iframes.length) break;
+    page = await fetchAltStreamHtml(iframes[0], request, page.url);
+    if (!page) break;
+  }
+  return page
+    ? { html: page.html, url: page.url, candidates: extractHlsCandidates(page.html) }
+    : null;
+}
+
+function sanitizeAltEmbedHtml(html, baseUrl) {
+  let out = String(html || "");
+  out = out.replace(/<script\b[^>]*src=["'][^"']+["'][^>]*>\s*<\/script>/gi, (tag) =>
+    (ALT_STREAM_AD_HOSTS.test(tag) ? "" : tag)
+  );
+  out = out.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, (tag) =>
+    (ALT_STREAM_AD_HOSTS.test(tag) ? "" : tag)
+  );
+  out = out.replace(/<noscript[\s\S]*?<\/noscript>/gi, "");
+  out = out.replace(/<meta[^>]+http-equiv=["']refresh["'][^>]*>/gi, "");
+  try {
+    const base = new URL(baseUrl);
+    out = out.replace(/<head>/i, `<head><base href="${base.origin}${base.pathname}${base.search}">`);
+  } catch {
+    // Keep upstream HTML as-is when base URL is invalid.
+  }
+  return out;
+}
+
+async function proxyNtv(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "ntv-clean",
+  };
+  if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
+
+  try {
+    const resolved = await resolveNtvPlayablePage(request);
+    if (!resolved) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+
+    const pool = [];
+    const seen = new Set();
+    for (const c of resolved.candidates || []) {
+      if (!c.source || seen.has(c.source)) continue;
+      const probe = await streamProbe(c.source, "plain", request);
+      if (!probe.ok) continue;
+      seen.add(c.source);
+      const sig = await signTarget(c.source, secret);
+      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: probe.score });
+    }
+    pool.sort((a, b) => a.score - b.score);
+    const proxied = pool.map((m) => m.url);
+    if (proxied.length) {
+      return new Response(cleanHlsPlayerHtml(proxied, "NTV"), { status: 200, headers: htmlHeaders });
+    }
+
+    const clean = sanitizeAltEmbedHtml(resolved.html, resolved.url);
+    return new Response(clean, { status: 200, headers: htmlHeaders });
+  } catch {
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  }
 }
 
 async function proxyWeshan(request, env) {
@@ -2881,6 +3134,7 @@ const MEMES_API_RE = /^\/api\/match-memes\/?$/i;
 const RECENT_MEMES_API_RE = /^\/api\/recent-memes\/?$/i;
 const X_MEDIA_API_RE = /^\/api\/x-media\/?$/i;
 const EDGE_API_RE = /^\/api\/edge\/?$/i;
+const STREAM_DIAGNOSE_RE = /^\/api\/stream-diagnose\/?$/i;
 const TWITCH_API_RE = /^\/api\/twitch\/?$/i;
 const STREAMS_LAB_RE = /^\/api\/streams-lab\/?$/i;
 const SIIR_MATCHES_RE = /^\/api\/siir-matches\/?$/i;
@@ -3665,6 +3919,134 @@ async function proxyRecentMemesApi(request, env) {
 }
 
 
+function directFallbackUrls(channelId, slot, serv = 3) {
+  const urls = [];
+  const u = new URL(`${WORLDKOORA}/albaplayer/${slot}/`);
+  u.searchParams.set("serv", String(serv));
+  if (channelId) u.searchParams.set("ch", channelId);
+  urls.push({ label: "worldkoora", url: u.toString() });
+  for (const id of (DLHD_CHANNEL_MIRROR_IDS[channelId] || []).slice(0, 3)) {
+    urls.push({ label: `dlhd-${id}`, url: `${DLHD_BASE}/stream/stream-${id}.php` });
+  }
+  return urls;
+}
+
+function workerEgressMeta(request) {
+  const cf = request.cf || {};
+  return {
+    country: cf.country || null,
+    colo: cf.colo || null,
+    city: cf.city || null,
+    region: cf.region || null,
+    continent: cf.continent || null,
+  };
+}
+
+function diagnosisNote(verdict, egress) {
+  const where = egress.country ? `Worker egress: ${egress.country}${egress.colo ? ` (${egress.colo})` : ""}` : "Worker egress unknown";
+  if (verdict === "likely_geo_block") {
+    return `${where}. Master playlists load but variant/segment returns 403/451 — upstream likely geo/IP-gated from Cloudflare edge. Stream may still work in-browser in MENA on the raw site, but not via our proxy until mirror or egress changes.`;
+  }
+  if (verdict === "mixed_geo_and_dead") {
+    return `${where}. Some mirrors geo-blocked, others dead — not a single root cause.`;
+  }
+  if (verdict === "working") {
+    return `${where}. At least one mirror passed full HLS chain probe from this edge.`;
+  }
+  return `${where}. No mirror passed probe — upstream likely offline or URLs rotated.`;
+}
+
+async function mirrorDiagnosisRow(label, source, kind, request) {
+  if (!source) return { label, source: null, playable: false, geoSuspect: false, failure: "no_url" };
+  let host = null;
+  try { host = new URL(source).hostname; } catch { /* noop */ }
+  const chain = await probeHlsChain(source, kind, request);
+  return {
+    label,
+    host,
+    source: source.slice(0, 180),
+    playable: !!chain.ok,
+    geoSuspect: !!chain.geoSuspect,
+    failure: chain.failure || null,
+    soft: !!chain.soft,
+    ms: chain.ms,
+    steps: chain.steps,
+  };
+}
+
+async function proxyStreamDiagnoseApi(request, env) {
+  const url = new URL(request.url);
+  const channelId = url.searchParams.get("ch") || "bein-max-1";
+  const slot = (url.searchParams.get("slot") || "vip1").toLowerCase();
+  const egress = workerEgressMeta(request);
+  const probeUrl = new URL(`${url.origin}/wk/albaplayer/${slot}/`);
+  probeUrl.searchParams.set("ch", channelId);
+  if (url.searchParams.get("serv")) probeUrl.searchParams.set("serv", url.searchParams.get("serv"));
+  if (url.searchParams.get("match")) probeUrl.searchParams.set("match", url.searchParams.get("match"));
+  const probeRequest = new Request(probeUrl.toString(), {
+    method: "GET",
+    headers: request.headers,
+  });
+
+  const mirrors = [];
+  const dlIds = DLHD_CHANNEL_MIRROR_IDS[channelId] || [];
+  const dlProbeIds = [...new Set([...dlIds, ...GLOBAL_DLHD_FALLBACK_IDS])].slice(0, 6);
+  for (const id of dlProbeIds) {
+    const m3u8 = await resolveDlStream(id);
+    mirrors.push(await mirrorDiagnosisRow(`dlhd-${id}`, m3u8, "dl", probeRequest));
+  }
+
+  try {
+    const { candidates } = await resolveVipSlotStreamQuick(probeRequest, slot);
+    for (const c of (candidates || []).slice(0, 4)) {
+      mirrors.push(await mirrorDiagnosisRow(`worldkoora-${slot}-serv${c.serv || "?"}`, c.source, "wk", probeRequest));
+    }
+  } catch { /* vip optional */ }
+
+  try {
+    const sirHtml = await fetchSirTvCh1Html(probeRequest);
+    if (sirHtml) {
+      for (const c of extractHlsCandidates(sirHtml).slice(0, 2)) {
+        mirrors.push(await mirrorDiagnosisRow("sirtv-ch1", c.source, "plain", probeRequest));
+      }
+    }
+  } catch { /* sirtv optional */ }
+
+  const verdict = streamVerdictFromMirrors(mirrors);
+  const directFallbacks = directFallbackUrls(channelId, slot, url.searchParams.get("serv") || 3);
+  const viewer = workerEgressMeta(request);
+  const headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "no-store",
+    "X-KZ-Proxy": "stream-diagnose",
+    "X-KZ-Stream-Verdict": verdict,
+    "X-KZ-Worker-Country": egress.country || "",
+  };
+  if (verdict === "likely_geo_block" || verdict === "mixed_geo_and_dead") {
+    headers["X-KZ-Stream-Geo-Suspect"] = "1";
+  }
+
+  return new Response(JSON.stringify({
+    ok: true,
+    at: new Date().toISOString(),
+    channelId,
+    slot,
+    workerEgress: egress,
+    viewerCountry: viewer.country,
+    viewerColo: viewer.colo,
+    verdict,
+    note: diagnosisNote(verdict, egress),
+    geoSuspect: verdict === "likely_geo_block" || verdict === "mixed_geo_and_dead",
+    proxyPlayable: mirrors.some((m) => m.playable),
+    directMayWork: (verdict === "likely_geo_block" || verdict === "mixed_geo_and_dead"),
+    directFallbacks,
+    playableCount: mirrors.filter((m) => m.playable).length,
+    geoBlockedCount: mirrors.filter((m) => m.geoSuspect).length,
+    mirrors,
+  }), { status: 200, headers });
+}
+
 function proxyEdgeApi(request) {
   const cf = request.cf || {};
   const headers = {
@@ -4111,6 +4493,12 @@ export default {
     if (WESHAN_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyWeshan(request, env);
     }
+    if (SIRTV_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxySirTv(request, env);
+    }
+    if (NTV_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxyNtv(request, env);
+    }
     if (AMINE_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyAmine(request, env);
     }
@@ -4196,6 +4584,9 @@ export default {
     }
     if (EDGE_API_RE.test(url.pathname) && method === "GET") {
       return proxyEdgeApi(request);
+    }
+    if (STREAM_DIAGNOSE_RE.test(url.pathname) && method === "GET") {
+      return proxyStreamDiagnoseApi(request, env);
     }
     if (TWITCH_API_RE.test(url.pathname) && method === "GET") {
       return proxyTwitchApi(request, env);
