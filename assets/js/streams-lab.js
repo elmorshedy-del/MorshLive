@@ -3,7 +3,7 @@
  * Does not touch main watch page STREAM_SOURCES.
  */
 (function () {
-  const player = document.getElementById("player");
+  const iframe = document.getElementById("player");
   const grid = document.getElementById("channel-grid");
   const groupTabs = document.getElementById("group-tabs");
   const nowLabel = document.getElementById("now-label");
@@ -31,18 +31,42 @@
   let probed = false;
   let refreshInFlight = null;
 
+  const LAB_DL_RE = /^\/lab\/dl\/(\d{1,6})\/?$/i;
+
   function setStatus(msg) {
     if (statusLine) statusLine.textContent = msg;
   }
 
-  function loadRoute(route, label) {
-    if (!route || !player) return;
+  function dlhdIdFromRoute(route) {
+    const m = String(route || "").match(LAB_DL_RE);
+    return m ? m[1] : null;
+  }
+
+  function playLabDlhd(route, label) {
+    if (!dlhdIdFromRoute(route)) return false;
     currentRoute = route;
-    player.src = route;
     if (nowLabel) nowLabel.textContent = label || route;
     document.querySelectorAll(".lab-card").forEach((el) => {
       el.classList.toggle("active", el.dataset.route === route);
     });
+    if (iframe) iframe.src = route;
+    setStatus("جارٍ تشغيل البث — " + (label || route));
+    return true;
+  }
+
+  function loadRoute(route, label) {
+    if (!route || !iframe) return;
+    currentRoute = route;
+    if (LAB_DL_RE.test(route)) {
+      playLabDlhd(route, label);
+      return;
+    }
+    if (nowLabel) nowLabel.textContent = label || route;
+    document.querySelectorAll(".lab-card").forEach((el) => {
+      el.classList.toggle("active", el.dataset.route === route);
+    });
+    iframe.src = route;
+    setStatus("البث: " + (label || route));
   }
 
   function channelLabel(ch) {
@@ -370,8 +394,9 @@
   if (reloadBtn) {
     reloadBtn.addEventListener("click", () => {
       const keep = currentRoute;
-      player.src = "about:blank";
-      setTimeout(() => loadRoute(keep, nowLabel ? nowLabel.textContent : keep), 120);
+      const lbl = nowLabel ? nowLabel.textContent : keep;
+      if (iframe) iframe.src = "about:blank";
+      setTimeout(() => loadRoute(keep, lbl), 120);
     });
   }
   if (bestBtn) bestBtn.addEventListener("click", () => pickBest(true));
