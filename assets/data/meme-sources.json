@@ -1,0 +1,8 @@
+{
+  "topPerAccount": 3,
+  "accounts": [
+    { "key": "TrollFootball", "username": "TrollFootball" },
+    { "key": "Contxtfootball", "username": "Contxtfootball" },
+    { "key": "memesvsfootball", "username": "memesvsfootball" }
+  ]
+}

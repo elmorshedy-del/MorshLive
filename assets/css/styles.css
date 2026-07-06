@@ -1875,24 +1875,33 @@ body.tournament-video-modal-open { overflow: hidden; }
   background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06);
 }
 .kz-tweet__text {
-  margin: 0; font-size: .86rem; line-height: 1.6; color: var(--text);
-  display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden;
+  margin: 0; font-size: .86rem; line-height: 1.5; color: var(--text);
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
   unicode-bidi: plaintext;
 }
 .kz-tweet__media {
   position: relative; border-radius: 12px; overflow: hidden;
   border: 1px solid rgba(255,255,255,.08); background: #05080f;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 1 / 1;
+  min-height: 220px;
+  flex-shrink: 0;
 }
-.kz-tweet__media img {
-  width: 100%; height: 100%; object-fit: cover; display: block;
+.kz-tweet__media img,
+.kz-tweet__media video {
+  width: 100%; height: 100%; object-fit: contain; display: block;
+  background: #05080f;
 }
+.kz-tweet__media--video { cursor: pointer; }
 .kz-tweet__media--video .kz-tweet__play {
   position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
   width: 42px; height: 42px; border-radius: 50%;
   display: grid; place-items: center; font-size: .9rem; color: #fff;
   background: rgba(0,0,0,.55); border: 1px solid rgba(255,255,255,.25);
+  border: none; cursor: pointer; padding: 0;
 }
+.kz-tweet__media--video[data-playing="1"] { cursor: default; }
+.kz-tweet__video { background: #000; }
+.kz-tweet__x { text-decoration: none; }
 .kz-tweet__foot {
   display: flex; align-items: center; gap: 10px; margin-top: auto;
   padding-top: 8px; border-top: 1px solid rgba(255,255,255,.06);
@@ -1912,7 +1921,8 @@ body.tournament-video-modal-open { overflow: hidden; }
     flex-direction: row; overflow-x: auto; padding: 2px 2px 10px;
     scroll-snap-type: x mandatory;
   }
-  .kz-tweet-rail--hero .kz-tweet { width: min(340px, 42vw); }
+  .kz-tweet-rail--hero .kz-tweet { width: min(380px, 44vw); }
+  .kz-tweet-rail--hero .kz-tweet__media { min-height: 280px; }
 }
 
 /* Grid cards — calmer, contained */
@@ -1969,12 +1979,19 @@ body.tournament-video-modal-open { overflow: hidden; }
   margin: 0 0 16px; max-width: 56ch; font-size: .9rem; line-height: 1.65; color: var(--muted);
 }
 .kz-tweet-rail--home {
-  display: flex; gap: 12px; overflow-x: auto; padding: 2px 2px 12px;
+  display: flex; gap: 14px; overflow-x: auto; padding: 2px 2px 12px;
   scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
 }
 .kz-tweet-rail--home::-webkit-scrollbar { display: none; }
 .kz-tweet-rail--home .kz-tweet {
-  flex: 0 0 min(300px, 82vw); width: min(300px, 82vw); scroll-snap-align: start;
+  flex: 0 0 min(360px, 92vw); width: min(360px, 92vw); scroll-snap-align: start;
+}
+.kz-tweet-rail--home .kz-tweet__media {
+  aspect-ratio: 1 / 1;
+  min-height: min(360px, 72vw);
+}
+.kz-tweet-rail--home .kz-tweet__text {
+  -webkit-line-clamp: 2;
 }
 .kz-tweet__match {
   align-self: flex-start; max-width: 100%;
@@ -1985,7 +2002,13 @@ body.tournament-video-modal-open { overflow: hidden; }
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
 @media (min-width: 900px) {
-  .kz-tweet-rail--home .kz-tweet { flex-basis: min(320px, 28vw); width: min(320px, 28vw); }
+  .kz-tweet-rail--home .kz-tweet {
+    flex-basis: min(420px, 32vw);
+    width: min(420px, 32vw);
+  }
+  .kz-tweet-rail--home .kz-tweet__media {
+    min-height: 380px;
+  }
 }
 
 /* Home — ملخص banners by day */
