@@ -19,6 +19,17 @@
     return escapeHtml(String(url || "").replace(/&amp;/g, "&").trim());
   }
 
+  function replayEmbedUrl(embed) {
+    try {
+      const url = new URL(String(embed || ""), location.href);
+      if (url.hostname === "nvtboo.vortexvisionworks.com") {
+        const m = url.pathname.match(/\/embed\/([A-Za-z0-9]+)/);
+        if (m) return `/replay/embed/${encodeURIComponent(m[1])}`;
+      }
+    } catch { /* direct fallback */ }
+    return embed;
+  }
+
   function formatDate(kickoffUtc) {
     if (!kickoffUtc) return "";
     try {
@@ -91,7 +102,7 @@
     const hint = clipKind === "goals" ? t("tournament.goalsHint") : t("tournament.fullHint");
     const poster = highlight.thumbnail || "";
     const title = highlight.title ? escapeHtml(highlight.title) : "";
-    const embed = escapeHtml(highlight.videoUrl);
+    const embed = escapeHtml(replayEmbedUrl(highlight.videoUrl));
     const launch = `
       <button type="button" class="tournament-video-launch" data-embed="${embed}" aria-label="${escapeHtml(sectionTitle)}">
         ${poster
@@ -103,9 +114,9 @@
       </button>`;
     const inline = `
       <div class="tournament-video-frame tournament-video-frame--active">
-        <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
+        <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="eager"
           allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
-          sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
+          sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
       </div>`;
     return `
       <div class="tournament-video-block tournament-video-block--${mode} tournament-video-block--${clipKind || "full"}">
@@ -128,6 +139,40 @@
     if (goals) blocks.push(videoBlock(goals, mode, false, "goals"));
     if (full) blocks.push(videoBlock(full, mode, false, "full"));
     return `<div class="tournament-highlights-duo">${blocks.join("")}</div>`;
+  }
+
+  function clipKindLabel(kind) {
+    return t(`tournament.clipKind.${kind || "clip"}`);
+  }
+
+  function notableClipsBlock(m) {
+    const clips = (m.clips || [])
+      .filter((clip) => clip && clip.videoUrl)
+      .filter((clip) => clip.kind !== "goals" && clip.kind !== "full");
+    if (!clips.length) return "";
+    return `
+      <div class="tournament-clips-block">
+        ${sectionHead("★", "video", t("tournament.notableClipsTitle"), clips.length)}
+        <div class="tournament-clips-grid">
+          ${clips.map((clip) => {
+            const embed = escapeHtml(clip.videoUrl);
+            const poster = clip.thumbnail || "";
+            const title = clip.title ? escapeHtml(clip.title) : escapeHtml(clipKindLabel(clip.kind));
+            return `
+              <button type="button" class="tournament-clip-card tournament-video-launch"
+                data-embed="${embed}" aria-label="${title}">
+                <span class="tournament-clip-card__media">
+                  ${poster
+                    ? `<img src="${assetUrl(poster)}" alt="" loading="lazy" onerror="this.hidden=true;this.nextElementSibling&&(this.nextElementSibling.hidden=false)" /><span class="tournament-video-launch__fallback" hidden></span>`
+                    : `<span class="tournament-video-launch__fallback"></span>`}
+                  <span class="tournament-video-launch__play" aria-hidden="true">▶</span>
+                </span>
+                <span class="tournament-clip-card__kind">${escapeHtml(clipKindLabel(clip.kind))}</span>
+                <span class="tournament-clip-card__title">${title}</span>
+              </button>`;
+          }).join("")}
+        </div>
+      </div>`;
   }
 
   function scoreboardHtml(m) {
@@ -190,12 +235,14 @@
       <div class="tournament-detail">
         ${m.summaryAr ? `<div class="tournament-recap tournament-recap--compact"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
         ${highlightsBlock(m, "card")}
+        ${notableClipsBlock(m)}
       </div>`;
   }
 
   function matchCard(m) {
     const hasHighlight = hasAnyHighlight(m);
     const clipCount = (matchClips(m).goals ? 1 : 0) + (matchClips(m).full ? 1 : 0);
+    const notableCount = (m.clips || []).filter((clip) => clip && clip.videoUrl).length;
     return `
       <article class="match-card tournament-match-card" data-stage="${escapeHtml(m.stage)}" data-match-key="${escapeHtml(m.key)}">
         <div class="match-top">
@@ -215,6 +262,7 @@
         </div>
         <div class="tournament-badges">
           ${hasHighlight ? `<span class="tournament-badge tournament-badge--hl">${clipCount > 1 ? t("tournament.badgeHighlights", { n: clipCount }) : t("tournament.badgeHighlight")}</span>` : ""}
+          ${notableCount ? `<span class="tournament-badge tournament-badge--clips">${t("tournament.badgeClips", { n: notableCount })}</span>` : ""}
         </div>
         <details class="match-panel tournament-panel">
           <summary class="match-panel-toggle">${t("tournament.openMatch")}</summary>
@@ -257,14 +305,35 @@
     document.body.classList.remove("tournament-video-modal-open");
   }
 
+  const warmedEmbeds = new Set();
+  function warmEmbed(embed) {
+    if (!embed || warmedEmbeds.has(embed)) return;
+    warmedEmbeds.add(embed);
+    let url;
+    try { url = new URL(embed, location.href); } catch { return; }
+    const origin = url.origin;
+    for (const [rel, href] of [["dns-prefetch", origin], ["preconnect", origin], ["prefetch", url.href]]) {
+      const exists = [...document.head.querySelectorAll(`link[rel="${rel}"]`)]
+        .some((link) => link.href === href);
+      if (exists) continue;
+      const link = document.createElement("link");
+      link.rel = rel;
+      link.href = href;
+      if (rel === "preconnect") link.crossOrigin = "";
+      if (rel === "prefetch") link.as = "document";
+      document.head.appendChild(link);
+    }
+  }
+
   function openVideoModal(embed) {
     if (!embed) return;
+    warmEmbed(embed);
     const modal = ensureVideoModal();
     const frame = modal.querySelector(".tournament-video-modal__frame");
     frame.innerHTML = `
-      <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
+      <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="eager"
         allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
-        sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`;
+        sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>`;
     modal.hidden = false;
     document.body.classList.add("tournament-video-modal-open");
   }
@@ -272,9 +341,13 @@
   function bindVideoLaunch(root) {
     if (!root) return;
     root.querySelectorAll(".tournament-video-launch").forEach((btn) => {
+      const embedForBtn = () => btn.dataset.embed || btn.closest(".tournament-video-stage")?.dataset.embed;
+      const warm = () => warmEmbed(embedForBtn());
+      btn.addEventListener("pointerenter", warm, { once: true });
+      btn.addEventListener("focus", warm, { once: true });
+      btn.addEventListener("touchstart", warm, { once: true, passive: true });
       btn.addEventListener("click", () => {
-        const embed = btn.dataset.embed || btn.closest(".tournament-video-stage")?.dataset.embed;
-        openVideoModal(embed);
+        openVideoModal(embedForBtn());
       });
     });
   }

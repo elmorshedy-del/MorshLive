@@ -7,105 +7,17 @@
  * repeat, so we aggregate every commentator/channel per team-pair.
  *
  * Fixtures come from ESPN/TheSportsDB in English, the source is Arabic, so we
- * join by team name via an alias map (normalized on both sides).
+ * join by team name via fuzzy Arabic resolver (team-names-ar.json).
  * ==========================================================================*/
+const path = require("path");
+const { createArabicTeamResolver, normalizeArabic } = require("./arabic-team-resolver");
 
-/* Arabic team name → canonical English (matching ESPN/TheSportsDB naming). */
-const NATION_ALIASES = [
-  [["البرتغال"], "Portugal"],
-  [["اوزبكستان", "أوزبكستان", "اوزباكستان"], "Uzbekistan"],
-  [["انجلترا", "إنجلترا", "انكلترا", "إنكلترا"], "England"],
-  [["غانا"], "Ghana"],
-  [["بنما", "بناما"], "Panama"],
-  [["كرواتيا"], "Croatia"],
-  [["كولومبيا"], "Colombia"],
-  [["الكونغو الديمقراطية", "ج.الكونغو", "جمهورية الكونغو الديمقراطية", "الكونغو الديموقراطية", "الكونغو"], "Congo DR"],
-  [["سويسرا"], "Switzerland"],
-  [["كندا"], "Canada"],
-  [["البوسنة والهرسك", "البوسنة", "البوسنة و الهرسك"], "Bosnia-Herzegovina"],
-  [["قطر"], "Qatar"],
-  [["المغرب"], "Morocco"],
-  [["هايتي"], "Haiti"],
-  [["اسكتلندا", "إسكتلندا", "سكوتلندا", "اسكوتلندا"], "Scotland"],
-  [["البرازيل"], "Brazil"],
-  [["تشيكيا", "التشيك", "جمهورية التشيك", "التشيك"], "Czechia"],
-  [["المكسيك"], "Mexico"],
-  [["جنوب افريقيا", "جنوب أفريقيا", "جنوب إفريقيا"], "South Africa"],
-  [["كوريا الجنوبية"], "South Korea"],
-  [["كوريا الشمالية"], "North Korea"],
-  [["النرويج"], "Norway"],
-  [["السنغال"], "Senegal"],
-  [["الاردن", "الأردن"], "Jordan"],
-  [["الجزائر"], "Algeria"],
-  [["الولايات المتحدة", "أمريكا", "امريكا", "الولايات المتحدة الامريكية"], "United States"],
-  [["الارجنتين", "الأرجنتين"], "Argentina"],
-  [["فرنسا"], "France"],
-  [["اسبانيا", "إسبانيا"], "Spain"],
-  [["المانيا", "ألمانيا"], "Germany"],
-  [["ايطاليا", "إيطاليا"], "Italy"],
-  [["هولندا"], "Netherlands"],
-  [["بلجيكا"], "Belgium"],
-  [["اوروغواي", "أوروغواي", "الاوروغواي", "الأوروغواي"], "Uruguay"],
-  [["الدنمارك"], "Denmark"],
-  [["السويد"], "Sweden"],
-  [["صربيا"], "Serbia"],
-  [["بولندا"], "Poland"],
-  [["اليابان"], "Japan"],
-  [["استراليا", "أستراليا"], "Australia"],
-  [["ايران", "إيران"], "Iran"],
-  [["السعودية", "العربية السعودية"], "Saudi Arabia"],
-  [["تونس"], "Tunisia"],
-  [["مصر"], "Egypt"],
-  [["نيجيريا"], "Nigeria"],
-  [["الكاميرون"], "Cameroon"],
-  [["ساحل العاج", "كوت ديفوار"], "Ivory Coast"],
-  [["الاكوادور", "الإكوادور"], "Ecuador"],
-  [["كوستاريكا"], "Costa Rica"],
-  [["باراغواي", "الباراغواي", "باراجواي"], "Paraguay"],
-  [["بيرو"], "Peru"],
-  [["تشيلي"], "Chile"],
-  [["فنزويلا"], "Venezuela"],
-  [["ويلز"], "Wales"],
-  [["ايرلندا", "أيرلندا", "جمهورية ايرلندا"], "Republic of Ireland"],
-  [["النمسا"], "Austria"],
-  [["المجر"], "Hungary"],
-  [["تركيا", "توركيا"], "Turkey"],
-  [["اليونان"], "Greece"],
-  [["رومانيا"], "Romania"],
-  [["سلوفاكيا"], "Slovakia"],
-  [["سلوفينيا"], "Slovenia"],
-  [["البانيا", "ألبانيا"], "Albania"],
-  [["شمال مقدونيا", "مقدونيا الشمالية"], "North Macedonia"],
-  [["نيوزيلندا", "نيوزيلاندا"], "New Zealand"],
-  [["الامارات", "الإمارات"], "United Arab Emirates"],
-  [["العراق"], "Iraq"],
-  [["عمان", "عُمان"], "Oman"],
-  [["الكويت"], "Kuwait"],
-  [["البحرين"], "Bahrain"],
-  [["فلسطين"], "Palestine"],
-  [["لبنان"], "Lebanon"],
-  [["سوريا"], "Syria"],
-  [["ليبيا"], "Libya"],
-  [["انغولا", "أنغولا"], "Angola"],
-  [["مالي"], "Mali"],
-  [["بوركينا فاسو"], "Burkina Faso"],
-  [["الراس الاخضر", "الرأس الأخضر"], "Cape Verde"],
-  [["جامايكا"], "Jamaica"],
-  [["هندوراس"], "Honduras"],
-  [["كوراساو", "كوراكاو"], "Curacao"],
-];
+const TEAM_AR_PATH = path.join(__dirname, "..", "assets", "data", "team-names-ar.json");
+let _arabicResolver = null;
 
-function normalizeArabic(s) {
-  return (s || "")
-    .replace(/[\u064B-\u0652\u0670\u0640]/g, "")
-    .replace(/[أإآ]/g, "ا")
-    .replace(/ى/g, "ي")
-    .replace(/ة/g, "ه")
-    .replace(/ؤ/g, "و")
-    .replace(/ئ/g, "ي")
-    .replace(/ء/g, "")
-    .replace(/[^\u0621-\u064A]/g, "")
-    .replace(/^ال/, "");
+function arabicTeamToEnglish(ar) {
+  if (!_arabicResolver) _arabicResolver = createArabicTeamResolver(TEAM_AR_PATH);
+  return _arabicResolver(ar);
 }
 
 function normalizeEnglish(s) {
@@ -114,18 +26,6 @@ function normalizeEnglish(s) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "");
-}
-
-const AR_TO_EN = (() => {
-  const map = new Map();
-  for (const [variants, english] of NATION_ALIASES) {
-    for (const v of variants) map.set(normalizeArabic(v), english);
-  }
-  return map;
-})();
-
-function arabicTeamToEnglish(ar) {
-  return AR_TO_EN.get(normalizeArabic(ar)) || null;
 }
 
 function pairKey(enHome, enAway) {

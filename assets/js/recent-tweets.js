@@ -33,6 +33,7 @@
       showMatch: true,
       railClass: "kz-tweet-rail kz-tweet-rail--home",
     });
+    window.KZTweets.bindVideoPlayers(rail);
   }
 
   async function loadRecentTweets() {

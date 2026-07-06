@@ -1,6 +1,6 @@
 {
   "date": "2026-07-06",
-  "updatedAt": "2026-07-06T02:02:11.759Z",
+  "updatedAt": "2026-07-06T09:38:28.949Z",
   "source": "espn",
   "sourceLabel": "ESPN",
   "commentarySource": "almaghrebsport",
@@ -59,7 +59,7 @@
       ],
       "channel": "beIN MAX 2",
       "channelId": "bein-max-2",
-      "locked": false
+      "locked": true
     },
     {
       "key": "australia~egypt",
@@ -337,6 +337,19 @@
       "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
       "source": "vortex",
       "embedId": "mA5amQonpFi8V"
+    },
+    {
+      "key": "england~mexico",
+      "home": "Mexico",
+      "away": "England",
+      "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/WAOCAqgXRSoPe",
+      "title": "ملخص مباراة انجلترا والمكسيك (3-2) كاس العالم",
+      "source": "vortex",
+      "embedId": "WAOCAqgXRSoPe",
+      "btolatId": "93943",
+      "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=dEVYcWNwN1RaUzZWeitRK0o1NUd6MjNOcDRkVDVZdit2RU40MW9lT2JKVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkyODAxMzkyNzg1NDY=&amp;keypair=eDU5MVlvbmFyVXlXYzI3bHRpREQ5dFJVUUxvNjRGOU1Uc1MySXpLbzk2OD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MjgwMTM5Mjc4NTQ2",
+      "kind": "full",
+      "clip": "full"
     }
   ],
   "matchDetailIndex": [
@@ -361,17 +374,19 @@
               "name": "J. Vásquez",
               "band": "def",
               "position": "Center Left Defender",
-              "yellowCards": 0,
+              "yellowCards": 1,
               "redCards": 0
             },
             {
-              "id": "224323",
-              "jersey": "3",
-              "name": "C. Montes",
+              "id": "241627",
+              "jersey": "4",
+              "name": "E. Álvarez",
               "band": "def",
-              "position": "Center Right Defender",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "C. Montes",
+              "subMinute": "45'"
             },
             {
               "id": "132098",
@@ -383,13 +398,15 @@
               "redCards": 0
             },
             {
-              "id": "178746",
-              "jersey": "2",
-              "name": "J. Sánchez",
+              "id": "283827",
+              "jersey": "8",
+              "name": "Á. Fidalgo",
               "band": "def",
-              "position": "Right Back",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "J. Sánchez",
+              "subMinute": "79'"
             },
             {
               "id": "276942",
@@ -401,22 +418,26 @@
               "redCards": 0
             },
             {
-              "id": "242614",
-              "jersey": "7",
-              "name": "L. Romo",
+              "id": "303577",
+              "jersey": "26",
+              "name": "B. Gutiérrez",
               "band": "mid",
-              "position": "Left Midfielder",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "L. Romo",
+              "subMinute": "61'"
             },
             {
-              "id": "389575",
-              "jersey": "19",
-              "name": "G. Mora",
+              "id": "260775",
+              "jersey": "11",
+              "name": "S. Gimenez",
               "band": "mid",
-              "position": "Right Midfielder",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "G. Mora",
+              "subMinute": "61'"
             },
             {
               "id": "167060",
@@ -428,13 +449,15 @@
               "redCards": 0
             },
             {
-              "id": "233075",
-              "jersey": "16",
-              "name": "J. Quiñones",
+              "id": "193566",
+              "jersey": "22",
+              "name": "G. Martínez",
               "band": "fwd",
-              "position": "Left Forward",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "J. Quiñones",
+              "subMinute": "81'"
             },
             {
               "id": "194308",
@@ -602,7 +625,7 @@
               "name": "M. Guéhi",
               "band": "def",
               "position": "Center Left Defender",
-              "yellowCards": 0,
+              "yellowCards": 1,
               "redCards": 0
             },
             {
@@ -615,13 +638,15 @@
               "redCards": 0
             },
             {
-              "id": "328464",
-              "jersey": "3",
-              "name": "N. O'Reilly",
+              "id": "267711",
+              "jersey": "25",
+              "name": "D. Spence",
               "band": "def",
-              "position": "Left Back",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "N. O'Reilly",
+              "subMinute": "74'"
             },
             {
               "id": "298524",
@@ -630,7 +655,7 @@
               "band": "def",
               "position": "Right Back",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 1
             },
             {
               "id": "291281",
@@ -642,13 +667,15 @@
               "redCards": 0
             },
             {
-              "id": "238472",
-              "jersey": "8",
-              "name": "E. Anderson",
+              "id": "198138",
+              "jersey": "15",
+              "name": "D. Burn",
               "band": "mid",
-              "position": "Left Midfielder",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "E. Anderson",
+              "subMinute": "75'"
             },
             {
               "id": "238262",
@@ -660,13 +687,15 @@
               "redCards": 0
             },
             {
-              "id": "142200",
-              "jersey": "9",
-              "name": "H. Kane",
+              "id": "265653",
+              "jersey": "17",
+              "name": "M. Rogers",
               "band": "fwd",
-              "position": "Forward",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "H. Kane",
+              "subMinute": "90'"
             },
             {
               "id": "268782",
@@ -678,13 +707,15 @@
               "redCards": 0
             },
             {
-              "id": "280555",
-              "jersey": "7",
-              "name": "B. Saka",
+              "id": "157974",
+              "jersey": "5",
+              "name": "J. Stones",
               "band": "mid",
-              "position": "Attacking Midfielder Right",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "B. Saka",
+              "subMinute": "57'"
             }
           ],
           "subs": [
@@ -712,7 +743,7 @@
               "name": "J. Henderson",
               "band": "mid",
               "position": "Substitute",
-              "yellowCards": 0,
+              "yellowCards": 1,
               "redCards": 0
             },
             {
@@ -828,38 +859,38 @@
       },
       "stats": {
         "home": {
-          "foulsCommitted": 8,
-          "yellowCards": 0,
+          "foulsCommitted": 14,
+          "yellowCards": 2,
           "redCards": 0,
-          "offsides": 0,
-          "wonCorners": 4,
-          "saves": 1,
-          "possessionPct": 62.7,
-          "totalShots": 7,
-          "shotsOnTarget": 3,
-          "totalPasses": 245,
+          "offsides": 1,
+          "wonCorners": 12,
+          "saves": 2,
+          "possessionPct": 66.9,
+          "totalShots": 20,
+          "shotsOnTarget": 5,
+          "totalPasses": 453,
           "passPct": 90,
-          "totalCrosses": 12,
-          "totalTackles": 10,
-          "interceptions": 5,
-          "totalClearance": 4
+          "totalCrosses": 52,
+          "totalTackles": 16,
+          "interceptions": 7,
+          "totalClearance": 13
         },
         "away": {
-          "foulsCommitted": 3,
-          "yellowCards": 1,
-          "redCards": 0,
+          "foulsCommitted": 7,
+          "yellowCards": 4,
+          "redCards": 1,
           "offsides": 0,
           "wonCorners": 2,
-          "saves": 2,
-          "possessionPct": 37.3,
-          "totalShots": 3,
-          "shotsOnTarget": 3,
-          "totalPasses": 148,
-          "passPct": 90,
-          "totalCrosses": 3,
-          "totalTackles": 14,
-          "interceptions": 1,
-          "totalClearance": 12
+          "saves": 3,
+          "possessionPct": 33.1,
+          "totalShots": 6,
+          "shotsOnTarget": 5,
+          "totalPasses": 244,
+          "passPct": 80,
+          "totalCrosses": 4,
+          "totalTackles": 18,
+          "interceptions": 4,
+          "totalClearance": 49
         }
       }
     },
@@ -1387,16 +1418,108 @@
   ],
   "matches": [
     {
+      "id": "espn-fifa.world-760506",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Portugal",
+      "away": "Spain",
+      "homeAbbr": "POR",
+      "awayAbbr": "ESP",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/por.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/esp.png",
+      "score": "VS",
+      "time": "19:00",
+      "kickoffUtc": "2026-07-06T19:00Z",
+      "league": "FIFA World Cup",
+      "venue": "AT&T Stadium · Arlington, Texas · USA",
+      "channel": "beIN MAX 1",
+      "channelId": "bein-max-1",
+      "commentator": "عصام الشوالي",
+      "source": "espn",
+      "commentators": [
+        {
+          "name": "عصام الشوالي",
+          "channel": "beIN MAX 1"
+        }
+      ]
+    },
+    {
+      "id": "espn-fifa.world-760507",
+      "status": "upcoming",
+      "minute": "",
+      "home": "United States",
+      "away": "Belgium",
+      "homeAbbr": "USA",
+      "awayAbbr": "BEL",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/bel.png",
+      "score": "VS",
+      "time": "00:00",
+      "kickoffUtc": "2026-07-07T00:00Z",
+      "league": "FIFA World Cup",
+      "venue": "Lumen Field · Seattle, Washington · USA",
+      "channel": "beIN MAX 2",
+      "channelId": "bein-max-2",
+      "commentator": "حفيظ دراجي",
+      "source": "espn",
+      "commentators": [
+        {
+          "name": "حفيظ دراجي",
+          "channel": "beIN MAX 2"
+        }
+      ]
+    },
+    {
+      "id": "espn-fifa.world-760509",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Argentina",
+      "away": "Egypt",
+      "homeAbbr": "ARG",
+      "awayAbbr": "EGY",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/arg.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/egy.png",
+      "score": "VS",
+      "time": "16:00",
+      "kickoffUtc": "2026-07-07T16:00Z",
+      "league": "FIFA World Cup",
+      "venue": "Mercedes-Benz Stadium · Atlanta, Georgia · USA",
+      "channel": null,
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn"
+    },
+    {
+      "id": "espn-fifa.world-760508",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Switzerland",
+      "away": "Colombia",
+      "homeAbbr": "SUI",
+      "awayAbbr": "COL",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/sui.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/col.png",
+      "score": "VS",
+      "time": "20:00",
+      "kickoffUtc": "2026-07-07T20:00Z",
+      "league": "FIFA World Cup",
+      "venue": "BC Place · Vancouver · Canada",
+      "channel": null,
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn"
+    },
+    {
       "id": "espn-fifa.world-760505",
-      "status": "live",
-      "minute": "45'+6'",
+      "status": "ended",
+      "minute": "",
       "home": "Mexico",
       "away": "England",
       "homeAbbr": "MEX",
       "awayAbbr": "ENG",
       "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/mex.png",
       "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/eng.png",
-      "score": "1 - 2",
+      "score": "2 - 3",
       "time": "01:00",
       "kickoffUtc": "2026-07-06T01:00Z",
       "league": "FIFA World Cup",
@@ -1411,6 +1534,15 @@
           "channel": "beIN MAX 2"
         }
       ],
+      "summaryAr": "انتهت المباراة بفوز إنجلترا على المكسيك بنتيجة 3-2 ضمن FIFA World Cup على ملعب Estadio Banorte · Mexico City · Mexico. تعليق: حفيظ دراجي.",
+      "highlight": {
+        "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/WAOCAqgXRSoPe",
+        "title": "ملخص مباراة انجلترا والمكسيك (3-2) كاس العالم",
+        "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=dEVYcWNwN1RaUzZWeitRK0o1NUd6MjNOcDRkVDVZdit2RU40MW9lT2JKVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkyODAxMzkyNzg1NDY=&amp;keypair=eDU5MVlvbmFyVXlXYzI3bHRpREQ5dFJVUUxvNjRGOU1Uc1MySXpLbzk2OD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MjgwMTM5Mjc4NTQ2",
+        "source": "vortex",
+        "embedId": "WAOCAqgXRSoPe",
+        "kind": "full"
+      },
       "lineups": {
         "home": {
           "formation": "4-3-3",
@@ -1430,17 +1562,19 @@
               "name": "J. Vásquez",
               "band": "def",
               "position": "Center Left Defender",
-              "yellowCards": 0,
+              "yellowCards": 1,
               "redCards": 0
             },
             {
-              "id": "224323",
-              "jersey": "3",
-              "name": "C. Montes",
+              "id": "241627",
+              "jersey": "4",
+              "name": "E. Álvarez",
               "band": "def",
-              "position": "Center Right Defender",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "C. Montes",
+              "subMinute": "45'"
             },
             {
               "id": "132098",
@@ -1452,13 +1586,15 @@
               "redCards": 0
             },
             {
-              "id": "178746",
-              "jersey": "2",
-              "name": "J. Sánchez",
+              "id": "283827",
+              "jersey": "8",
+              "name": "Á. Fidalgo",
               "band": "def",
-              "position": "Right Back",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "J. Sánchez",
+              "subMinute": "79'"
             },
             {
               "id": "276942",
@@ -1470,22 +1606,26 @@
               "redCards": 0
             },
             {
-              "id": "242614",
-              "jersey": "7",
-              "name": "L. Romo",
+              "id": "303577",
+              "jersey": "26",
+              "name": "B. Gutiérrez",
               "band": "mid",
-              "position": "Left Midfielder",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "L. Romo",
+              "subMinute": "61'"
             },
             {
-              "id": "389575",
-              "jersey": "19",
-              "name": "G. Mora",
+              "id": "260775",
+              "jersey": "11",
+              "name": "S. Gimenez",
               "band": "mid",
-              "position": "Right Midfielder",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "G. Mora",
+              "subMinute": "61'"
             },
             {
               "id": "167060",
@@ -1497,13 +1637,15 @@
               "redCards": 0
             },
             {
-              "id": "233075",
-              "jersey": "16",
-              "name": "J. Quiñones",
+              "id": "193566",
+              "jersey": "22",
+              "name": "G. Martínez",
               "band": "fwd",
-              "position": "Left Forward",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "J. Quiñones",
+              "subMinute": "81'"
             },
             {
               "id": "194308",
@@ -1671,7 +1813,7 @@
               "name": "M. Guéhi",
               "band": "def",
               "position": "Center Left Defender",
-              "yellowCards": 0,
+              "yellowCards": 1,
               "redCards": 0
             },
             {
@@ -1684,13 +1826,15 @@
               "redCards": 0
             },
             {
-              "id": "328464",
-              "jersey": "3",
-              "name": "N. O'Reilly",
+              "id": "267711",
+              "jersey": "25",
+              "name": "D. Spence",
               "band": "def",
-              "position": "Left Back",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "N. O'Reilly",
+              "subMinute": "74'"
             },
             {
               "id": "298524",
@@ -1699,7 +1843,7 @@
               "band": "def",
               "position": "Right Back",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 1
             },
             {
               "id": "291281",
@@ -1711,13 +1855,15 @@
               "redCards": 0
             },
             {
-              "id": "238472",
-              "jersey": "8",
-              "name": "E. Anderson",
+              "id": "198138",
+              "jersey": "15",
+              "name": "D. Burn",
               "band": "mid",
-              "position": "Left Midfielder",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "E. Anderson",
+              "subMinute": "75'"
             },
             {
               "id": "238262",
@@ -1729,13 +1875,15 @@
               "redCards": 0
             },
             {
-              "id": "142200",
-              "jersey": "9",
-              "name": "H. Kane",
+              "id": "265653",
+              "jersey": "17",
+              "name": "M. Rogers",
               "band": "fwd",
-              "position": "Forward",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "H. Kane",
+              "subMinute": "90'"
             },
             {
               "id": "268782",
@@ -1747,13 +1895,15 @@
               "redCards": 0
             },
             {
-              "id": "280555",
-              "jersey": "7",
-              "name": "B. Saka",
+              "id": "157974",
+              "jersey": "5",
+              "name": "J. Stones",
               "band": "mid",
-              "position": "Attacking Midfielder Right",
+              "position": "Substitute",
               "yellowCards": 0,
-              "redCards": 0
+              "redCards": 0,
+              "subFor": "B. Saka",
+              "subMinute": "57'"
             }
           ],
           "subs": [
@@ -1781,7 +1931,7 @@
               "name": "J. Henderson",
               "band": "mid",
               "position": "Substitute",
-              "yellowCards": 0,
+              "yellowCards": 1,
               "redCards": 0
             },
             {
@@ -1897,132 +2047,40 @@
       },
       "stats": {
         "home": {
-          "foulsCommitted": 8,
-          "yellowCards": 0,
+          "foulsCommitted": 14,
+          "yellowCards": 2,
           "redCards": 0,
-          "offsides": 0,
-          "wonCorners": 4,
-          "saves": 1,
-          "possessionPct": 62.7,
-          "totalShots": 7,
-          "shotsOnTarget": 3,
-          "totalPasses": 245,
+          "offsides": 1,
+          "wonCorners": 12,
+          "saves": 2,
+          "possessionPct": 66.9,
+          "totalShots": 20,
+          "shotsOnTarget": 5,
+          "totalPasses": 453,
           "passPct": 90,
-          "totalCrosses": 12,
-          "totalTackles": 10,
-          "interceptions": 5,
-          "totalClearance": 4
+          "totalCrosses": 52,
+          "totalTackles": 16,
+          "interceptions": 7,
+          "totalClearance": 13
         },
         "away": {
-          "foulsCommitted": 3,
-          "yellowCards": 1,
-          "redCards": 0,
+          "foulsCommitted": 7,
+          "yellowCards": 4,
+          "redCards": 1,
           "offsides": 0,
           "wonCorners": 2,
-          "saves": 2,
-          "possessionPct": 37.3,
-          "totalShots": 3,
-          "shotsOnTarget": 3,
-          "totalPasses": 148,
-          "passPct": 90,
-          "totalCrosses": 3,
-          "totalTackles": 14,
-          "interceptions": 1,
-          "totalClearance": 12
+          "saves": 3,
+          "possessionPct": 33.1,
+          "totalShots": 6,
+          "shotsOnTarget": 5,
+          "totalPasses": 244,
+          "passPct": 80,
+          "totalCrosses": 4,
+          "totalTackles": 18,
+          "interceptions": 4,
+          "totalClearance": 49
         }
       }
-    },
-    {
-      "id": "espn-fifa.world-760506",
-      "status": "upcoming",
-      "minute": "",
-      "home": "Portugal",
-      "away": "Spain",
-      "homeAbbr": "POR",
-      "awayAbbr": "ESP",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/por.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/esp.png",
-      "score": "VS",
-      "time": "19:00",
-      "kickoffUtc": "2026-07-06T19:00Z",
-      "league": "FIFA World Cup",
-      "venue": "AT&T Stadium · Arlington, Texas · USA",
-      "channel": "beIN MAX 1",
-      "channelId": "bein-max-1",
-      "commentator": "عصام الشوالي",
-      "source": "espn",
-      "commentators": [
-        {
-          "name": "عصام الشوالي",
-          "channel": "beIN MAX 1"
-        }
-      ]
-    },
-    {
-      "id": "espn-fifa.world-760507",
-      "status": "upcoming",
-      "minute": "",
-      "home": "United States",
-      "away": "Belgium",
-      "homeAbbr": "USA",
-      "awayAbbr": "BEL",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/usa.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/bel.png",
-      "score": "VS",
-      "time": "00:00",
-      "kickoffUtc": "2026-07-07T00:00Z",
-      "league": "FIFA World Cup",
-      "venue": "Lumen Field · Seattle, Washington · USA",
-      "channel": "beIN MAX 2",
-      "channelId": "bein-max-2",
-      "commentator": "حفيظ دراجي",
-      "source": "espn",
-      "commentators": [
-        {
-          "name": "حفيظ دراجي",
-          "channel": "beIN MAX 2"
-        }
-      ]
-    },
-    {
-      "id": "espn-fifa.world-760509",
-      "status": "upcoming",
-      "minute": "",
-      "home": "Argentina",
-      "away": "Egypt",
-      "homeAbbr": "ARG",
-      "awayAbbr": "EGY",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/arg.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/egy.png",
-      "score": "VS",
-      "time": "16:00",
-      "kickoffUtc": "2026-07-07T16:00Z",
-      "league": "FIFA World Cup",
-      "venue": "Mercedes-Benz Stadium · Atlanta, Georgia · USA",
-      "channel": null,
-      "channelId": "bein-sports-1",
-      "commentator": null,
-      "source": "espn"
-    },
-    {
-      "id": "espn-fifa.world-760508",
-      "status": "upcoming",
-      "minute": "",
-      "home": "Switzerland",
-      "away": "Colombia",
-      "homeAbbr": "SUI",
-      "awayAbbr": "COL",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/sui.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/col.png",
-      "score": "VS",
-      "time": "20:00",
-      "kickoffUtc": "2026-07-07T20:00Z",
-      "league": "FIFA World Cup",
-      "venue": "BC Place · Vancouver · Canada",
-      "channel": null,
-      "channelId": "bein-sports-1",
-      "commentator": null,
-      "source": "espn"
     },
     {
       "id": "espn-fifa.world-760504",
@@ -2054,7 +2112,8 @@
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/mA5amQonpFi8V",
         "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
         "source": "vortex",
-        "embedId": "mA5amQonpFi8V"
+        "embedId": "mA5amQonpFi8V",
+        "kind": "full"
       },
       "lineups": {
         "home": {

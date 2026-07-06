@@ -1,0 +1,17 @@
+{
+  "topPerAccount": 3,
+  "universalTerms": [
+    "World Cup",
+    "FIFA World Cup",
+    "WC2026",
+    "WorldCup",
+    "كأس العالم",
+    "كاس العالم",
+    "المونديال"
+  ],
+  "accounts": [
+    { "key": "TrollFootball", "username": "TrollFootball", "id": "571964518" },
+    { "key": "Contxtfootball", "username": "Contxtfootball", "id": "1944187286301614082" },
+    { "key": "memesvsfootball", "username": "memesvsfootball", "id": "1597531205657772033" }
+  ]
+}

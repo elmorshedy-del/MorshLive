@@ -20,6 +20,7 @@ const {
 const {
   attachCommentators,
   mergeCommentaryIndex,
+  arabicTeamToEnglish,
   pairKey,
   pinEndedChannels,
 } = require("./commentators-lib");
@@ -109,11 +110,8 @@ function buildArToEn() {
     out.set(ar, en);
     out.set(ar.replace(/\s+/g, ""), en);
   }
-  out.set("باراجواي", "Paraguay");
-  out.set("الولايات المتحدة", "United States");
-  out.set("كوريا الجنوبية", "South Korea");
-  out.set("ساحل العاج", "Ivory Coast");
-  return (ar) => out.get(ar) || out.get(String(ar).replace(/\s+/g, "")) || ar;
+  return (ar) =>
+    arabicTeamToEnglish(ar) || out.get(ar) || out.get(String(ar).replace(/\s+/g, "")) || ar;
 }
 
 /** Search YouTube for an Arabic-commentary highlights video for one match. */
@@ -220,7 +218,8 @@ async function fetchYouTubeHighlight(match) {
   try {
     btolatMap = await scrapeBtolatHighlights(
       (a, b) => pairKey(arToEn(a), arToEn(b)),
-      (id) => fetchVortexEmbedMeta(id)
+      (id) => fetchVortexEmbedMeta(id, { allowAnyTitle: true }),
+      { matches, arabicTeam }
     );
     const dualCount = [...btolatMap.values()].filter((b) => b.goals && b.full).length;
     console.log(`btolat highlights: ${btolatMap.size} matches (${dualCount} with goals+full)`);

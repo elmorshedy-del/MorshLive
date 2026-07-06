@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-06T02:02:11.759Z",
+  "updatedAt": "2026-07-06T09:38:28.949Z",
   "bindingVersion": 10,
   "embedBinding": {
     "bein-max-1": "vip1",
@@ -9,22 +9,8 @@
     "bein-sports-1": "vip1",
     "bein-sports-2": "vip1"
   },
-  "liveCount": 1,
-  "routes": [
-    {
-      "id": "espn-fifa.world-760505",
-      "home": "Mexico",
-      "away": "England",
-      "score": "1 - 2",
-      "minute": "45'+6'",
-      "channelId": "bein-max-2",
-      "channel": "beIN MAX 2",
-      "commentator": "حفيظ دراجي",
-      "embedKey": "amine",
-      "embedUrl": "https://yallashooot.tv/albaplayer/amine/",
-      "kickoffUtc": "2026-07-06T01:00Z"
-    }
-  ],
+  "liveCount": 0,
+  "routes": [],
   "conflicts": [],
   "ok": true,
   "warning": null

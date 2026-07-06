@@ -18,40 +18,34 @@ const TWITTER_API = "https://api.twitter.com/2";
 const SYNDICATION = "https://syndication.twitter.com/srv/timeline-profile/screen-name";
 const UA = "Mozilla/5.0 (compatible; MorshLive/1.0)";
 const USER_IDS_PATH = path.join(__dirname, "..", "assets", "data", "twitter-user-ids.json");
+const MEME_SOURCES_PATH = path.join(__dirname, "..", "assets", "data", "meme-sources.json");
 
-/** Exact handles — spelling verified via /2/users/by/username */
-const MEME_SOURCES = [
-  { key: "TrollFootball", username: "TrollFootball" },
-  { key: "Contxtfootball", username: "Contxtfootball" },
-  { key: "memesvsfootball", username: "memesvsfootball" },
-];
+function loadMemeSourcesConfig() {
+  try {
+    const json = JSON.parse(fs.readFileSync(MEME_SOURCES_PATH, "utf8"));
+    const accounts = Array.isArray(json.accounts)
+      ? json.accounts.filter((a) => a && a.key && a.username)
+      : [];
+    return {
+      accounts,
+      topPerAccount: Number(json.topPerAccount) || 3,
+    };
+  } catch {
+    return { accounts: [], topPerAccount: 3 };
+  }
+}
 
-const TOP_PER_ACCOUNT = 3;
+function memeSources() {
+  return loadMemeSourcesConfig().accounts;
+}
+
+function topPerAccount() {
+  return loadMemeSourcesConfig().topPerAccount;
+}
+
 const MATCH_DURATION_MS = 105 * 60 * 1000;
-const POST_MATCH_START_MS = 15 * 60 * 1000;
-const POST_MATCH_END_MS = 120 * 60 * 1000;
-
-const TEAM_ALIASES = {
-  "United States": ["USA", "USMNT", "America"],
-  France: ["Les Bleus", "Mbappé", "Mbappe", "Deschamps", "Griezmann"],
-  Paraguay: ["La Albirroja", "Albirroja", "Alfaro"],
-  Morocco: ["Atlas Lions", "Hakimi", "Ziyech"],
-  Canada: ["CanMNT", "David", "Larin"],
-  Brazil: ["Seleção", "Selecao", "Vini", "Vinicius", "Neymar"],
-  Germany: ["Die Mannschaft", "Musiala", "Wirtz"],
-  Argentina: ["Albiceleste", "Messi", "Lautaro"],
-  England: ["Three Lions", "Kane", "Bellingham", "Saka"],
-  Portugal: ["Ronaldo", "Rúbio", "Leão"],
-  Spain: ["La Roja", "Yamal", "Morata"],
-  Netherlands: ["Oranje", "Depay", "Gakpo"],
-  Colombia: ["James", "Rodríguez"],
-  Mexico: ["El Tri", "Ochoa"],
-  Croatia: ["Modrić", "Modric"],
-  Belgium: ["De Bruyne", "Doku"],
-  Senegal: ["Mané", "Mane"],
-  Japan: ["Samurai Blue", "Kubo"],
-  "South Korea": ["Son", "Heung-min"],
-};
+const MEME_LOOKBACK_BEFORE_KICKOFF_MS = 15 * 60 * 1000;
+const MEME_MATCH_CONTEXT_MS = 72 * 60 * 60 * 1000;
 
 function normalizeBearer(token) {
   return token ? String(token).trim() : "";
@@ -110,9 +104,14 @@ async function resolveMemeUserIds(bearerToken) {
   const accounts = { ...(cached.accounts || {}) };
   let changed = false;
 
-  for (const src of MEME_SOURCES) {
+  for (const src of memeSources()) {
     const hit = accounts[src.key];
     if (hit && hit.id && hit.username) continue;
+    if (src.id && src.username) {
+      accounts[src.key] = { id: String(src.id), username: src.username };
+      changed = true;
+      continue;
+    }
     if (!token) continue;
     try {
       const json = await twitterGet(
@@ -137,11 +136,6 @@ async function resolveMemeUserIds(bearerToken) {
   return accounts;
 }
 
-function namesForTeam(team) {
-  const aliases = TEAM_ALIASES[team] || [];
-  return [team, ...aliases].filter(Boolean);
-}
-
 function playerNamesFromMatch(match) {
   const names = [];
   const push = (n) => {
@@ -161,8 +155,8 @@ function playerNamesFromMatch(match) {
 function captionMentionsMatch(text, home, away, match) {
   const t = String(text || "").toLowerCase();
   const terms = [
-    ...namesForTeam(home),
-    ...namesForTeam(away),
+    home,
+    away,
     ...playerNamesFromMatch(match),
   ]
     .map((s) => s.toLowerCase())
@@ -183,10 +177,11 @@ function engagementScore(metrics) {
 function postMatchWindow(kickoffUtc) {
   const kickoff = Date.parse(kickoffUtc || "");
   if (isNaN(kickoff)) return null;
-  const matchEnd = kickoff + MATCH_DURATION_MS;
+  const now = Date.now();
+  const contextEnd = kickoff + MEME_MATCH_CONTEXT_MS;
   return {
-    start: new Date(matchEnd + POST_MATCH_START_MS).toISOString(),
-    end: new Date(matchEnd + POST_MATCH_END_MS).toISOString(),
+    start: new Date(kickoff - MEME_LOOKBACK_BEFORE_KICKOFF_MS).toISOString(),
+    end: new Date(Math.min(Math.max(now, kickoff + MATCH_DURATION_MS), contextEnd)).toISOString(),
   };
 }
 
@@ -214,11 +209,14 @@ async function fetchTimelineSyndication(screenName, limit = 40) {
       const id = (e.entry_id || "").replace(/^tweet-/, "") || tweet.id_str || tweet.id;
       const text = tweet.text || tweet.full_text || "";
       if (!id) return null;
+      const metrics = tweet.public_metrics || {};
       return {
         id: String(id),
         text,
         created_at: tweet.created_at || tweet.date || null,
-        public_metrics: tweet.public_metrics || tweet.favorite_count != null
+        syndication_media: tweet.mediaDetails || tweet.entities?.media || [],
+        user: tweet.user || null,
+        public_metrics: metrics || tweet.favorite_count != null
           ? { like_count: tweet.favorite_count || 0, retweet_count: tweet.retweet_count || 0 }
           : {},
       };
@@ -251,8 +249,25 @@ async function fetchUserTweetsInRange(token, userId, startTime, endTime, usernam
   });
 }
 
+function mediaFromSyndication(items) {
+  return (items || []).map((m) => {
+    const previewUrl = m.media_url_https || m.media_url || m.preview_image_url || "";
+    const type = m.type === "video" ? "video" : m.type === "animated_gif" ? "animated_gif" : "photo";
+    let url = previewUrl;
+    if ((type === "video" || type === "animated_gif") && m.video_info?.variants) {
+      const mp4 = m.video_info.variants
+        .filter((v) => v.content_type === "video/mp4" && v.url)
+        .sort((a, b) => (b.bitrate || 0) - (a.bitrate || 0));
+      url = mp4[0]?.url || previewUrl;
+    }
+    if (!previewUrl && !url) return null;
+    return { type, previewUrl: previewUrl || url, url: url || previewUrl };
+  }).filter(Boolean);
+}
+
 function toMemeEntry(tweet, username) {
   const metrics = tweet.public_metrics || {};
+  const user = tweet.user || {};
   return {
     type: "tweet",
     url: `https://x.com/${username}/status/${tweet.id}`,
@@ -263,6 +278,8 @@ function toMemeEntry(tweet, username) {
     retweets: metrics.retweet_count || 0,
     engagement: Math.round(engagementScore(metrics)),
     postedAt: tweet.created_at || null,
+    avatarUrl: user.profile_image_url_https || user.profile_image_url || null,
+    media: mediaFromSyndication(tweet.syndication_media || []),
   };
 }
 
@@ -276,7 +293,7 @@ async function discoverMatchMemes(home, away, opts = {}) {
   const accounts = token ? await resolveMemeUserIds(token) : loadCachedUserIds().accounts || {};
   const results = [];
 
-  for (const src of MEME_SOURCES) {
+  for (const src of memeSources()) {
     const acct = accounts[src.key] || { id: null, username: src.username };
     let tweets;
     try {
@@ -288,7 +305,7 @@ async function discoverMatchMemes(home, away, opts = {}) {
       .filter((t) => captionMentionsMatch(t.text, home, away, match))
       .map((t) => ({ tweet: t, engagement: engagementScore(t.public_metrics) }))
       .sort((a, b) => b.engagement - a.engagement)
-      .slice(0, TOP_PER_ACCOUNT)
+      .slice(0, topPerAccount())
       .map(({ tweet }) => toMemeEntry(tweet, acct.username));
     results.push(...hits);
   }
@@ -330,7 +347,7 @@ async function discoverAllMatchMemes(matches, opts = {}) {
     const endTime = new Date(rangeEnd).toISOString();
 
     await Promise.all(
-      MEME_SOURCES.map(async (src) => {
+      memeSources().map(async (src) => {
         const acct = accounts[src.key];
         if (!acct || !acct.id) return;
         const cacheKey = `${src.key}:${day}`;
@@ -352,7 +369,7 @@ async function discoverAllMatchMemes(matches, opts = {}) {
     const day = String(m.kickoffUtc).slice(0, 10);
     const memes = [];
 
-    for (const src of MEME_SOURCES) {
+    for (const src of memeSources()) {
       const cacheKey = `${src.key}:${day}`;
       const bucket = tweetsByAccountDay.get(cacheKey);
       if (!bucket) continue;
@@ -361,7 +378,7 @@ async function discoverAllMatchMemes(matches, opts = {}) {
         .filter((t) => captionMentionsMatch(t.text, m.home, m.away, m))
         .map((t) => ({ tweet: t, engagement: engagementScore(t.public_metrics) }))
         .sort((a, b) => b.engagement - a.engagement)
-        .slice(0, TOP_PER_ACCOUNT)
+        .slice(0, topPerAccount())
         .map(({ tweet }) => toMemeEntry(tweet, bucket.username));
       memes.push(...hits);
     }
@@ -371,15 +388,15 @@ async function discoverAllMatchMemes(matches, opts = {}) {
 }
 
 /**
- * Low-credit path: only the latest N ended matches that already have a ملخص
- * and no pinned memes yet. At most 3 X API calls per match (one per account).
+ * Low-credit path: latest N ended matches that already have a ملخص and no
+ * pinned memes yet. Uses X API when a bearer token exists, otherwise falls
+ * back to syndication timelines.
  */
 async function discoverLatestHighlightMemes(matches, opts = {}) {
   const token = normalizeBearer(opts.bearerToken || process.env.TWITTER_BEARER_TOKEN);
-  if (!token) return {};
 
   const pinned = opts.pinnedMemes || {};
-  const maxMatches = opts.maxMatches ?? 1;
+  const maxMatches = opts.maxMatches ?? 6;
   const candidates = matches
     .filter((m) => m.status === "ended" && m.highlight?.videoUrl && m.kickoffUtc)
     .filter((m) => !(pinned[m.key] || []).length)
@@ -393,7 +410,7 @@ async function discoverLatestHighlightMemes(matches, opts = {}) {
 
   const out = {};
   for (const m of candidates) {
-    console.log(`Twitter API: discovering memes for ${m.home} vs ${m.away} only (≤9 calls)`);
+    console.log(`Twitter: discovering memes for ${m.home} vs ${m.away}`);
     try {
       const hits = await discoverMatchMemes(m.home, m.away, {
         match: m,
@@ -410,8 +427,8 @@ async function discoverLatestHighlightMemes(matches, opts = {}) {
 }
 
 module.exports = {
-  MEME_SOURCES,
-  TOP_PER_ACCOUNT,
+  memeSources,
+  topPerAccount,
   resolveMemeUserIds,
   discoverMatchMemes,
   discoverAllMatchMemes,

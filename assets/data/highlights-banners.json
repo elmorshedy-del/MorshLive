@@ -1,6 +1,20 @@
 {
-  "updatedAt": "2026-07-06T03:32:36.480Z",
+  "updatedAt": "2026-07-06T09:38:28.820Z",
   "days": [
+    {
+      "date": "2026-07-06",
+      "matches": [
+        {
+          "key": "england~mexico",
+          "home": "Mexico",
+          "away": "England",
+          "score": "2 - 3",
+          "kickoffUtc": "2026-07-06T01:00Z",
+          "poster": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=dEVYcWNwN1RaUzZWeitRK0o1NUd6MjNOcDRkVDVZdit2RU40MW9lT2JKVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkyODAxMzkyNzg1NDY=&amp;keypair=eDU5MVlvbmFyVXlXYzI3bHRpREQ5dFJVUUxvNjRGOU1Uc1MySXpLbzk2OD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MjgwMTM5Mjc4NTQ2",
+          "stage": ""
+        }
+      ]
+    },
     {
       "date": "2026-07-05",
       "matches": [
@@ -10,31 +24,8 @@
           "away": "Norway",
           "score": "1 - 2",
           "kickoffUtc": "2026-07-05T20:00Z",
-          "poster": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=NWU5RWRSNTdyNGJqRkdkVnk1RXROTGJWekRLYm03c1JOVUJwdk1PWFVTOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MDU0MjY1ODAyMzYx&keypair=RE9JbHh1WU9RcUhJeDVUN2RNcWtXVGxnWTRFdXVIb3Y1dktSVTluNUlxbz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTA1NDI2NTgwMjM2MQ==",
-          "stage": "round-of-16"
-        }
-      ]
-    },
-    {
-      "date": "2026-07-04",
-      "matches": [
-        {
-          "key": "france~paraguay",
-          "home": "Paraguay",
-          "away": "France",
-          "score": "0 - 1",
-          "kickoffUtc": "2026-07-04T21:00Z",
-          "poster": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318190/poster/0.png?token=MU8vbGlpUUZ4bG51aHRmT1RmL3F0ZWNpcVlUY0JGR0RxNmR1bnZBTVBIMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MDU0Mjc4NjE1Mjgz&keypair=MEM5cENwNmNBaDlNeFIrLzl5a0NheEtqYzF3RFRWOTNWazBaMUJRN3h0QT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTA1NDI3ODYxNTI4Mw==",
-          "stage": "round-of-16"
-        },
-        {
-          "key": "canada~morocco",
-          "home": "Canada",
-          "away": "Morocco",
-          "score": "0 - 3",
-          "kickoffUtc": "2026-07-04T17:00Z",
-          "poster": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318186/poster/0.png?token=aGhBRWttUmlvbC8vOFhmdUJVRnR1UUwwNjlwNTVZRFUwdmNraGFkM0N1ND06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MDU0Mjc1MDIxNDEw&keypair=SFpRcW9GK1hjb2FXVmROZlVFdHFObEdubEw3aC9jTlc3ZkFmYTBEZlRXYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTA1NDI3NTAyMTQxMA==",
-          "stage": "round-of-16"
+          "poster": "",
+          "stage": ""
         }
       ]
     }

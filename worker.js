@@ -1,3 +1,5 @@
+import { FiltersEngine, Request as AdblockRequest } from "@ghostery/adblocker";
+
 /**
  * morshlive worker — static site + worldkoora vip proxy without preroll ads.
  *
@@ -2456,11 +2458,54 @@ async function handlePoll(request, pollId, env) {
  * Fallback: YouTube Data API when YOUTUBE_API_KEY is set.
  * GET /api/highlight?home=&away=&kickoff= */
 const HIGHLIGHT_API_RE = /^\/api\/highlight\/?$/i;
+const REPLAY_EMBED_RE = /^\/replay\/embed\/([A-Za-z0-9]+)\/?$/i;
+const REPLAY_ASSET_RE = /^\/replay\/asset\/?$/i;
 const VORTEX_HOST = "nvtboo.vortexvisionworks.com";
 const VORTEX_EMBED_BASE = `https://${VORTEX_HOST}/embed`;
+const VORTEX_BASE = `https://${VORTEX_HOST}`;
 const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
 const HIGHLIGHT_ARABIC_RE = /[؀-ۿ]/;
 const YOUTUBE_ID_RE = /^[\w-]{11}$/;
+const REPLAY_ADBLOCK_FILTERS = `
+||doubleclick.net^
+||googlesyndication.com^
+||googletagmanager.com^
+||google-analytics.com^
+||adservice.google.com^
+||imasdk.googleapis.com^
+||cloudflareinsights.com^
+`;
+
+let _replayAdblockEngine = null;
+
+function replayAdblockEngine() {
+  if (!_replayAdblockEngine) _replayAdblockEngine = FiltersEngine.parse(REPLAY_ADBLOCK_FILTERS);
+  return _replayAdblockEngine;
+}
+
+function replayResourceType(url, fallback = "other") {
+  let path = "";
+  try { path = new URL(url, VORTEX_BASE).pathname.toLowerCase(); } catch { /* noop */ }
+  if (/\.(?:js|mjs)$/.test(path)) return "script";
+  if (/\.css$/.test(path)) return "stylesheet";
+  if (/\.(?:png|jpe?g|webp|gif|svg)$/.test(path)) return "image";
+  if (/\.(?:m3u8|mp4|ts|m4s)$/.test(path)) return "media";
+  return fallback;
+}
+
+function replayAdblockMatches(rawUrl, type = "other") {
+  try {
+    const target = new URL(rawUrl, VORTEX_BASE);
+    const { match } = replayAdblockEngine().match(AdblockRequest.fromRawDetails({
+      url: target.href,
+      type,
+      sourceUrl: VORTEX_EMBED_BASE,
+    }));
+    return !!match;
+  } catch {
+    return false;
+  }
+}
 
 let _teamArCache = null;
 let _knownVortexCache = null;
@@ -2719,11 +2764,114 @@ async function proxyHighlightApi(request, env) {
   }
 }
 
+function absoluteReplayUrl(raw, base = VORTEX_BASE) {
+  try { return new URL(raw, base).href; } catch { return ""; }
+}
+
+function replayAssetProxyUrl(raw, type, origin, base = VORTEX_BASE) {
+  const abs = absoluteReplayUrl(raw, base);
+  if (!abs) return raw;
+  return `${origin}/replay/asset?type=${encodeURIComponent(type || replayResourceType(abs))}&u=${encodeURIComponent(abs)}`;
+}
+
+function sanitizeReplayEmbedHtml(html, id, origin) {
+  const base = `${VORTEX_EMBED_BASE}/${id}`;
+  let out = String(html || "");
+  out = out
+    .replace(/<script[^>]+src=["'][^"']*(?:googletagmanager|cloudflareinsights|google-analytics|doubleclick|googlesyndication|imasdk)[^"']*["'][^>]*>\s*<\/script>/gi, "")
+    .replace(/<script\b[^>]*>[\s\S]*?(?:gtag\(|google-analytics|googletagmanager|cloudflareinsights)[\s\S]*?<\/script>/gi, "")
+    .replace(/ads\s*:\s*true/gi, "ads:false")
+    .replace(/adSchedule\s*:\s*\{[\s\S]*?\}\s*,\s*adBlockerDetectedPreventPlayback/gi, "adSchedule:{},adBlockerDetectedPreventPlayback")
+    .replace(/adBlockerDetectedPreventPlayback\s*:\s*true/gi, "adBlockerDetectedPreventPlayback:false")
+    .replace(/adBlockerDetection\s*:\s*true/gi, "adBlockerDetection:false")
+    .replace(/adForceImaInWebView\s*:\s*true/gi, "adForceImaInWebView:false")
+    .replace(/https:\/\/pubads\.g\.doubleclick\.net\/gampad\/ads\?[^"'\\\]\s<)]+/gi, "");
+
+  out = out.replace(/(<script[^>]+src=["'])([^"']+)(["'][^>]*>)/gi, (all, pre, src, post) => {
+    const abs = absoluteReplayUrl(src, base);
+    if (!abs || replayAdblockMatches(abs, "script")) return "";
+    return `${pre}${replayAssetProxyUrl(abs, "script", origin, base)}${post}`;
+  });
+  out = out.replace(/(<link[^>]+href=["'])([^"']+)(["'][^>]*>)/gi, (all, pre, href, post) => {
+    const abs = absoluteReplayUrl(href, base);
+    if (!abs || replayAdblockMatches(abs, "stylesheet")) return "";
+    return `${pre}${replayAssetProxyUrl(abs, replayResourceType(abs, "stylesheet"), origin, base)}${post}`;
+  });
+  out = out.replace(/(<img[^>]+src=["'])([^"']+)(["'][^>]*>)/gi, (all, pre, src, post) =>
+    `${pre}${replayAssetProxyUrl(src, "image", origin, base)}${post}`
+  );
+  out = out.replace(/(["'])\/\/(hls[^"']+flashframenetwork\.com[^"']+)(["'])/gi, (all, q1, rest, q2) =>
+    `${q1}${replayAssetProxyUrl(`https://${rest}`, replayResourceType(`https://${rest}`, "media"), origin, base)}${q2}`
+  );
+  out = out.replace(/(["'])https:\/\/(hls[^"']+flashframenetwork\.com[^"']+)(["'])/gi, (all, q1, rest, q2) =>
+    `${q1}${replayAssetProxyUrl(`https://${rest}`, replayResourceType(`https://${rest}`, "media"), origin, base)}${q2}`
+  );
+  out = out.replace(/<\/head>/i, `<base href="${VORTEX_BASE}/" /></head>`);
+  return out;
+}
+
+async function proxyReplayEmbed(request, id) {
+  const origin = new URL(request.url).origin;
+  const upstream = await fetch(`${VORTEX_EMBED_BASE}/${id}`, {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; KoraZero/1.0)", Accept: "text/html,*/*" },
+    redirect: "follow",
+  });
+  if (!upstream.ok) return new Response("Replay unavailable", { status: upstream.status });
+  const html = sanitizeReplayEmbedHtml(await upstream.text(), id, origin);
+  return new Response(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=900",
+      "X-KZ-Proxy": "replay-embed",
+      "Content-Security-Policy": "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https://nvtboo.vortexvisionworks.com https://ajax.googleapis.com; style-src 'self' 'unsafe-inline' https://nvtboo.vortexvisionworks.com; img-src 'self' https: data: blob:; media-src 'self' https: blob:; connect-src 'self' https:; frame-src 'none';",
+    },
+  });
+}
+
+async function proxyReplayAsset(request) {
+  const url = new URL(request.url);
+  const target = absoluteReplayUrl(url.searchParams.get("u") || "");
+  const type = url.searchParams.get("type") || replayResourceType(target);
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+    "Access-Control-Allow-Headers": "Range, Content-Type",
+    "Access-Control-Expose-Headers": "Content-Length, Content-Range, Accept-Ranges",
+    "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+    "X-KZ-Proxy": "replay-asset",
+  };
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers });
+  if (!target || replayAdblockMatches(target, type)) {
+    return new Response("", { status: 204, headers });
+  }
+  const upstreamHeaders = {
+    "User-Agent": "Mozilla/5.0 (compatible; KoraZero/1.0)",
+    Accept: request.headers.get("Accept") || "*/*",
+    Referer: VORTEX_EMBED_BASE + "/",
+  };
+  const range = request.headers.get("Range");
+  if (range) upstreamHeaders.Range = range;
+  const upstream = await fetch(target, {
+    method: request.method === "HEAD" ? "HEAD" : "GET",
+    headers: upstreamHeaders,
+    redirect: "follow",
+    cf: { cacheEverything: true, cacheTtl: 86400 },
+  });
+  const out = new Headers(headers);
+  for (const h of ["Content-Type", "Content-Length", "Content-Range", "Accept-Ranges", "Last-Modified", "ETag"]) {
+    const v = upstream.headers.get(h);
+    if (v) out.set(h, v);
+  }
+  return new Response(request.method === "HEAD" ? null : upstream.body, { status: upstream.status, headers: out });
+}
+
 /* ----------------------------------------------- viral X memes — 3 curated accounts
  * @TrollFootball @Contxtfootball @memesvsfootball
  * GET /api/match-memes?home=&away=&kickoff= */
 const MEMES_API_RE = /^\/api\/match-memes\/?$/i;
 const RECENT_MEMES_API_RE = /^\/api\/recent-memes\/?$/i;
+const X_MEDIA_API_RE = /^\/api\/x-media\/?$/i;
 const EDGE_API_RE = /^\/api\/edge\/?$/i;
 const TWITCH_API_RE = /^\/api\/twitch\/?$/i;
 const STREAMS_LAB_RE = /^\/api\/streams-lab\/?$/i;
@@ -2732,39 +2880,55 @@ const SIIR_MATCH_EMBED_RE = /^\/siir\/m\/(\d+)\/?$/i;
 const SIIR_BASE = "https://www.siir-tv.live";
 const SIIR_FETCH_UA = "Mozilla/5.0 (compatible; KoraZero/1.0)";
 const RECENT_MEMES_MS = 24 * 60 * 60 * 1000;
+const RECENT_MATCH_MEME_CONTEXT_MS = 72 * 60 * 60 * 1000;
 const RECENT_MEMES_LIMIT = 48;
+const RECENT_MEMES_SCAN_CACHE_MS = 10 * 60 * 1000;
 const TWITTER_API_BASE = "https://api.twitter.com/2";
-const MEME_SOURCE_ACCOUNTS = [
-  { key: "TrollFootball", username: "TrollFootball", id: "571964518" },
-  { key: "Contxtfootball", username: "Contxtfootball", id: "1944187286301614082" },
-  { key: "memesvsfootball", username: "memesvsfootball", id: "1597531205657772033" },
-];
-const MEME_TOP_PER_ACCOUNT = 3;
 const MEME_MATCH_MS = 105 * 60 * 1000;
-const MEME_WINDOW_START_MS = 15 * 60 * 1000;
-const MEME_WINDOW_END_MS = 120 * 60 * 1000;
-const MEME_TEAM_ALIASES = {
-  France: ["Mbappé", "Mbappe", "Les Bleus", "Deschamps"],
-  Paraguay: ["Albirroja", "Alfaro"],
-  Morocco: ["Atlas Lions", "Hakimi", "Ziyech"],
-  Canada: ["CanMNT", "David"],
-  Brazil: ["Seleção", "Selecao", "Vinicius"],
-  Germany: ["Die Mannschaft", "Musiala"],
-  Argentina: ["Messi", "Albiceleste"],
-  England: ["Three Lions", "Kane", "Bellingham"],
-  Portugal: ["Ronaldo"],
-  "United States": ["USA", "USMNT"],
-};
+const MEME_LOOKBACK_BEFORE_KICKOFF_MS = 15 * 60 * 1000;
 
-function memeTeamTerms(name) {
-  const aliases = MEME_TEAM_ALIASES[name] || [];
-  return [name, ...aliases].filter(Boolean);
+function memePlayerTerms(match) {
+  const names = [];
+  const push = (n) => {
+    const s = String(n || "").trim();
+    if (s.length > 2 && !names.includes(s)) names.push(s);
+  };
+  for (const side of ["home", "away"]) {
+    const lineup = match && match.lineups && match.lineups[side];
+    if (!lineup) continue;
+    for (const band of ["starters", "subs", "bench"]) {
+      for (const p of lineup[band] || []) push(p.name);
+    }
+  }
+  return names;
 }
 
-function memeCaptionHits(text, home, away) {
+function memeCaptionHits(text, home, away, match) {
+  return memeCaptionScore(text, home, away, match) > 0;
+}
+
+function memeCaptionScore(text, home, away, match) {
   const t = String(text || "").toLowerCase();
-  return [...memeTeamTerms(home), ...memeTeamTerms(away)]
-    .some((n) => t.includes(n.toLowerCase()));
+  return [home, away, ...memePlayerTerms(match)]
+    .filter(Boolean)
+    .reduce((score, n) => score + (t.includes(n.toLowerCase()) ? 1 : 0), 0);
+}
+
+function memeUniversalHits(text, memeConfig) {
+  const t = String(text || "").toLowerCase();
+  const terms = Array.isArray(memeConfig?.universalTerms) ? memeConfig.universalTerms : [];
+  return terms.some((term) => t.includes(String(term).toLowerCase()));
+}
+
+function bestMemeMatchKey(text, matches) {
+  let best = null;
+  for (const m of matches || []) {
+    const score = memeCaptionScore(text, m.home, m.away, m);
+    if (score > 0 && (!best || score > best.score)) {
+      best = { key: highlightPairKeyMemes(m.home, m.away), score };
+    }
+  }
+  return best?.key || null;
 }
 
 function memeEngagement(m) {
@@ -2775,10 +2939,11 @@ function memeEngagement(m) {
 function memePostWindow(kickoffUtc) {
   const kickoff = Date.parse(kickoffUtc || "");
   if (isNaN(kickoff)) return null;
-  const end = kickoff + MEME_MATCH_MS;
+  const now = Date.now();
+  const contextEnd = kickoff + RECENT_MATCH_MEME_CONTEXT_MS;
   return {
-    start: new Date(end + MEME_WINDOW_START_MS).toISOString(),
-    end: new Date(end + MEME_WINDOW_END_MS).toISOString(),
+    start: new Date(kickoff - MEME_LOOKBACK_BEFORE_KICKOFF_MS).toISOString(),
+    end: new Date(Math.min(Math.max(now, kickoff + MEME_MATCH_MS), contextEnd)).toISOString(),
   };
 }
 
@@ -2920,6 +3085,64 @@ function filterMemesWithMedia(memes) {
   return (memes || []).filter(memeHasMedia);
 }
 
+function allowedXMediaUrl(raw) {
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:") return null;
+    const host = url.hostname.toLowerCase();
+    if (host === "pbs.twimg.com" || host === "video.twimg.com") return url;
+  } catch { /* invalid */ }
+  return null;
+}
+
+async function proxyXMedia(request) {
+  const reqUrl = new URL(request.url);
+  const target = allowedXMediaUrl(reqUrl.searchParams.get("u") || "");
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+    "Access-Control-Allow-Headers": "Range, Content-Type",
+    "Access-Control-Expose-Headers": "Content-Length, Content-Range, Accept-Ranges",
+    "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+    "X-KZ-Proxy": "x-media",
+  };
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers });
+  if (!target) {
+    return new Response("bad media url", { status: 400, headers });
+  }
+  const upstreamHeaders = {
+    "User-Agent": "Mozilla/5.0 (compatible; KoraZero/1.0)",
+    Accept: request.headers.get("Accept") || "*/*",
+  };
+  const range = request.headers.get("Range");
+  if (range) upstreamHeaders.Range = range;
+  const upstream = await fetch(target.href, {
+    method: request.method === "HEAD" ? "HEAD" : "GET",
+    headers: upstreamHeaders,
+    cf: { cacheEverything: true, cacheTtl: 86400 },
+  });
+  const out = new Headers(headers);
+  for (const h of ["Content-Type", "Content-Length", "Content-Range", "Accept-Ranges", "Last-Modified", "ETag"]) {
+    const v = upstream.headers.get(h);
+    if (v) out.set(h, v);
+  }
+  return new Response(request.method === "HEAD" ? null : upstream.body, {
+    status: upstream.status,
+    headers: out,
+  });
+}
+
+function mergeMemeLists(base, extra) {
+  const byId = new Map();
+  for (const meme of [...(base || []), ...(extra || [])]) {
+    const id = String(meme?.tweetId || meme?.url || "");
+    if (!id) continue;
+    const prev = byId.get(id);
+    if (!prev || (meme.engagement || 0) > (prev.engagement || 0)) byId.set(id, meme);
+  }
+  return [...byId.values()].sort((a, b) => (b.engagement || 0) - (a.engagement || 0));
+}
+
 function pickTopMediaMemes(entries, limit) {
   return filterMemesWithMedia(entries)
     .sort((a, b) => (b.engagement || 0) - (a.engagement || 0))
@@ -3013,30 +3236,64 @@ async function enrichMemesMedia(memes, bearer) {
   });
 }
 
-async function searchCuratedMemesSyndication(home, away, kickoffUtc) {
+async function searchCuratedMemesSyndication(home, away, kickoffUtc, match, memeConfig, timelineCache, seenIds) {
   const window = memePostWindow(kickoffUtc);
   if (!window) return [];
   const out = [];
-  for (const acct of MEME_SOURCE_ACCOUNTS) {
+  const config = memeConfig || { accounts: [], topPerAccount: 3 };
+  for (const acct of config.accounts || []) {
     let tweets;
     try {
-      tweets = await fetchSyndicationTimeline(acct.username, 100);
+      if (timelineCache && timelineCache.has(acct.username)) {
+        tweets = timelineCache.get(acct.username);
+      } else {
+        tweets = await fetchSyndicationTimeline(acct.username, 100);
+        if (timelineCache) timelineCache.set(acct.username, tweets);
+      }
     } catch {
       continue;
     }
     const hits = tweets
-      .filter((t) => memeInWindow(t.created_at, window) && memeCaptionHits(t.text, home, away))
+      .filter((t) => !seenIds || !seenIds.has(String(t.id)))
+      .filter((t) => memeInWindow(t.created_at, window) && memeCaptionHits(t.text, home, away, match))
       .map((t) => memeToEntry(t, acct.username, {}));
-    out.push(...pickTopMediaMemes(hits, MEME_TOP_PER_ACCOUNT));
+    out.push(...pickTopMediaMemes(hits, config.topPerAccount || 3));
   }
   return out;
 }
 
-async function searchCuratedMemes(bearer, home, away, kickoffUtc) {
+async function searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache, sinceMs, seenIds) {
+  const out = [];
+  const config = memeConfig || { accounts: [], topPerAccount: 3, universalTerms: [] };
+  for (const acct of config.accounts || []) {
+    let tweets;
+    try {
+      if (timelineCache && timelineCache.has(acct.username)) {
+        tweets = timelineCache.get(acct.username);
+      } else {
+        tweets = await fetchSyndicationTimeline(acct.username, 100);
+        if (timelineCache) timelineCache.set(acct.username, tweets);
+      }
+    } catch {
+      continue;
+    }
+    const hits = tweets
+      .filter((t) => !seenIds || !seenIds.has(String(t.id)))
+      .filter((t) => tweetPostedRecently(t.created_at, sinceMs))
+      .filter((t) => memeUniversalHits(t.text, config))
+      .map((t) => memeToEntry(t, acct.username, {}));
+    out.push(...pickTopMediaMemes(hits, config.topPerAccount || 3));
+  }
+  return out;
+}
+
+async function searchCuratedMemes(bearer, home, away, kickoffUtc, match, memeConfig) {
   const window = memePostWindow(kickoffUtc);
   if (!window) return [];
   const out = [];
-  for (const acct of MEME_SOURCE_ACCOUNTS) {
+  const config = memeConfig || { accounts: [], topPerAccount: 3 };
+  for (const acct of config.accounts || []) {
+    if (!acct.id) continue;
     let tweets;
     let includes = {};
     try {
@@ -3047,15 +3304,64 @@ async function searchCuratedMemes(bearer, home, away, kickoffUtc) {
       continue;
     }
     const hits = tweets
-      .filter((t) => memeInWindow(t.created_at, window) && memeCaptionHits(t.text, home, away))
+      .filter((t) => memeInWindow(t.created_at, window) && memeCaptionHits(t.text, home, away, match))
       .map((t) => memeToEntry(t, acct.username, includes));
-    out.push(...pickTopMediaMemes(hits, MEME_TOP_PER_ACCOUNT));
+    out.push(...pickTopMediaMemes(hits, config.topPerAccount || 3));
   }
   return out;
 }
 
 let _memesIdxCache = null;
 let _pinnedMemesCache = null;
+let _memeSourcesCache = null;
+let _recentMemesRuntimeCache = {
+  at: 0,
+  memes: [],
+  seenIds: new Set(),
+};
+
+async function loadMemeSources(env, origin) {
+  if (_memeSourcesCache) return _memeSourcesCache;
+  try {
+    const res = await env.ASSETS.fetch(`${origin}/assets/data/meme-sources.json`);
+    const json = res.ok ? await res.json() : {};
+    _memeSourcesCache = {
+      accounts: Array.isArray(json.accounts) ? json.accounts.filter((a) => a?.key && a?.username) : [],
+      topPerAccount: Number(json.topPerAccount) || 3,
+      universalTerms: Array.isArray(json.universalTerms) ? json.universalTerms.filter(Boolean) : [],
+    };
+  } catch {
+    _memeSourcesCache = { accounts: [], topPerAccount: 3, universalTerms: [] };
+  }
+  return _memeSourcesCache;
+}
+
+function pruneRecentMemesRuntimeCache(sinceMs) {
+  const kept = (_recentMemesRuntimeCache.memes || [])
+    .filter((m) => tweetPostedRecently(m.postedAt, sinceMs));
+  _recentMemesRuntimeCache.memes = kept;
+  _recentMemesRuntimeCache.seenIds = new Set(
+    kept.map((m) => String(m.tweetId || m.url || "")).filter(Boolean)
+  );
+}
+
+function recentMemesRuntimeFresh(sinceMs) {
+  pruneRecentMemesRuntimeCache(sinceMs);
+  return _recentMemesRuntimeCache.memes.length &&
+    Date.now() - _recentMemesRuntimeCache.at < RECENT_MEMES_SCAN_CACHE_MS;
+}
+
+function updateRecentMemesRuntimeCache(memes, sinceMs) {
+  const merged = mergeMemeLists(_recentMemesRuntimeCache.memes, memes)
+    .filter((m) => tweetPostedRecently(m.postedAt, sinceMs))
+    .slice(0, RECENT_MEMES_LIMIT);
+  _recentMemesRuntimeCache = {
+    at: Date.now(),
+    memes: merged,
+    seenIds: new Set(merged.map((m) => String(m.tweetId || m.url || "")).filter(Boolean)),
+  };
+  return merged;
+}
 
 async function loadMemesIndex(env, origin) {
   if (_memesIdxCache) return _memesIdxCache;
@@ -3104,23 +3410,24 @@ async function proxyMatchMemesApi(request, env) {
     return new Response(JSON.stringify({ error: "home and away required" }), { status: 400, headers });
   }
   const key = highlightPairKeyMemes(home, away);
-  const [idx, pinned] = await Promise.all([
+  const [idx, pinned, todayMatches, memeConfig] = await Promise.all([
     loadMemesIndex(env, url.origin),
     loadPinnedMemes(env, url.origin),
+    loadTodayMatches(env, url.origin),
+    loadMemeSources(env, url.origin),
   ]);
+  const match = todayMatches.find((m) => highlightPairKeyMemes(m.home, m.away) === key) ||
+    { home, away, kickoffUtc: kickoff };
   let memes = idx[key] || pinned[key] || [];
   let source = memes.length ? (pinned[key]?.length && !idx[key]?.length ? "pinned" : "archive") : "none";
 
-  // Free syndication before any paid X API calls
-  if (!memes.length) {
-    try {
-      const synd = await searchCuratedMemesSyndication(home, away, kickoff);
-      if (synd.length) {
-        memes = synd;
-        source = "twitter-syndication";
-      }
-    } catch { /* pinned/archive */ }
-  }
+  try {
+    const synd = await searchCuratedMemesSyndication(home, away, kickoff, match, memeConfig);
+    if (synd.length) {
+      memes = mergeMemeLists(memes, synd);
+      source = source === "none" ? "twitter-syndication" : `${source}+twitter-syndication`;
+    }
+  } catch { /* pinned/archive */ }
 
   if (!memes.length && pinned[key]?.length) {
     memes = pinned[key];
@@ -3133,10 +3440,10 @@ async function proxyMatchMemesApi(request, env) {
   const bearer = env && env.TWITTER_BEARER_TOKEN;
   if (bearer && (forceLive || !memes.length)) {
     try {
-      const live = await searchCuratedMemes(bearer, home, away, kickoff);
+      const live = await searchCuratedMemes(bearer, home, away, kickoff, match, memeConfig);
       if (live.length) {
-        memes = live;
-        source = "twitter-curated";
+        memes = mergeMemeLists(memes, live);
+        source = source === "none" ? "twitter-curated" : `${source}+twitter-curated`;
       }
     } catch { /* static / syndication */ }
   }
@@ -3177,7 +3484,8 @@ function matchKickoffRecently(kickoffUtc, sinceMs) {
 }
 
 async function proxyRecentMemesApi(request, env) {
-  const origin = new URL(request.url).origin;
+  const url = new URL(request.url);
+  const origin = url.origin;
   const headers = {
     "Content-Type": "application/json; charset=utf-8",
     "Access-Control-Allow-Origin": "*",
@@ -3185,10 +3493,25 @@ async function proxyRecentMemesApi(request, env) {
     "X-KZ-Proxy": "recent-memes-api",
   };
   const sinceMs = Date.now() - RECENT_MEMES_MS;
-  const [idx, pinned, todayMatches] = await Promise.all([
+  const matchSinceMs = Date.now() - RECENT_MATCH_MEME_CONTEXT_MS;
+  const responseCacheKey = new Request(`${origin}/api/recent-memes/__response-cache`);
+  const seenCacheKey = new Request(`${origin}/api/recent-memes/__seen-cache`);
+  const forceLive = url.searchParams.get("live") === "1";
+  if (!forceLive) {
+    try {
+      const cached = await caches.default.match(responseCacheKey);
+      if (cached) {
+        const h = new Headers(cached.headers);
+        h.set("X-KZ-Meme-Source", "runtime-cache");
+        return new Response(cached.body, { status: 200, headers: h });
+      }
+    } catch { /* cache optional */ }
+  }
+  const [idx, pinned, todayMatches, memeConfig] = await Promise.all([
     loadMemesIndex(env, origin),
     loadPinnedMemes(env, origin),
     loadTodayMatches(env, origin),
+    loadMemeSources(env, origin),
   ]);
 
   const matchByKey = new Map();
@@ -3197,10 +3520,36 @@ async function proxyRecentMemesApi(request, env) {
     if (!m.home || !m.away) continue;
     const key = highlightPairKeyMemes(m.home, m.away);
     matchByKey.set(key, m);
-    if (matchKickoffRecently(m.kickoffUtc, sinceMs)) recentMatchKeys.add(key);
+    if (matchKickoffRecently(m.kickoffUtc, matchSinceMs)) recentMatchKeys.add(key);
+  }
+
+  if (recentMemesRuntimeFresh(sinceMs)) {
+    const cachedMemes = filterMemesWithMedia(_recentMemesRuntimeCache.memes)
+      .slice(0, RECENT_MEMES_LIMIT);
+    return new Response(JSON.stringify({
+      memes: cachedMemes,
+      count: cachedMemes.length,
+      windowHours: 24,
+      matchCount: recentMatchKeys.size,
+      cached: true,
+    }), {
+      status: 200,
+      headers: { ...headers, "X-KZ-Meme-Source": "runtime-cache" },
+    });
   }
 
   const byTweetId = new Map();
+  const hasMemeForKey = (matchKey) => [...byTweetId.values()].some((m) => m.matchKey === matchKey);
+  const scannerSeenIds = new Set(_recentMemesRuntimeCache.seenIds || []);
+  let cacheSeedMemes = [];
+  try {
+    const seenCached = await caches.default.match(seenCacheKey);
+    if (seenCached) {
+      const seenJson = await seenCached.json();
+      for (const id of seenJson.seenIds || []) scannerSeenIds.add(String(id));
+      cacheSeedMemes = Array.isArray(seenJson.memes) ? seenJson.memes : [];
+    }
+  } catch { /* cache optional */ }
   const ingest = (matchKey, meme) => {
     if (!meme || meme.type !== "tweet") return;
     const meta = matchByKey.get(matchKey);
@@ -3209,6 +3558,7 @@ async function proxyRecentMemesApi(request, env) {
     if (!postedOk && !matchOk) return;
     const id = String(meme.tweetId || meme.url || "");
     if (!id) return;
+    scannerSeenIds.add(id);
     const row = {
       ...meme,
       matchKey,
@@ -3221,6 +3571,12 @@ async function proxyRecentMemesApi(request, env) {
     if (!prev || (row.engagement || 0) > (prev.engagement || 0)) byTweetId.set(id, row);
   };
 
+  for (const meme of cacheSeedMemes) {
+    ingest(meme.matchKey || "worldcup", meme);
+  }
+  for (const meme of _recentMemesRuntimeCache.memes || []) {
+    ingest(meme.matchKey || "worldcup", meme);
+  }
   for (const [key, list] of Object.entries(idx)) {
     for (const meme of list || []) ingest(key, meme);
   }
@@ -3228,27 +3584,76 @@ async function proxyRecentMemesApi(request, env) {
     for (const meme of list || []) ingest(key, meme);
   }
 
+  const timelineCache = new Map();
+  try {
+    const universal = await searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache, sinceMs, scannerSeenIds);
+    for (const meme of universal) {
+      const matchKey = bestMemeMatchKey(meme.text, [...matchByKey.values()]);
+      ingest(matchKey || "worldcup", {
+        ...meme,
+        scope: matchKey ? "match" : "worldcup",
+      });
+    }
+  } catch { /* universal timeline optional */ }
+
+  const syndicateCandidates = [...recentMatchKeys]
+    .map((key) => ({ key, m: matchByKey.get(key) }))
+    .filter((x) => x.m)
+    .sort((a, b) => Date.parse(b.m.kickoffUtc) - Date.parse(a.m.kickoffUtc));
+  for (const { key, m } of syndicateCandidates) {
+    try {
+      const hits = await searchCuratedMemesSyndication(m.home, m.away, m.kickoffUtc, m, memeConfig, timelineCache, scannerSeenIds);
+      for (const meme of hits) ingest(key, meme);
+    } catch { /* syndication optional */ }
+  }
+
+  const bearer = env && env.TWITTER_BEARER_TOKEN;
+  if (bearer) {
+    for (const { key, m } of syndicateCandidates) {
+      if (hasMemeForKey(key)) continue;
+      try {
+        const hits = await searchCuratedMemes(bearer, m.home, m.away, m.kickoffUtc, m, memeConfig);
+        for (const meme of hits) ingest(key, meme);
+      } catch { /* live API optional */ }
+    }
+  }
+
   let memes = [...byTweetId.values()]
     .sort((a, b) => (b.engagement || 0) - (a.engagement || 0))
     .slice(0, RECENT_MEMES_LIMIT);
 
-  const bearer = env && env.TWITTER_BEARER_TOKEN;
   if (memes.length) {
     try {
       memes = await enrichMemesMedia(memes, bearer);
     } catch { /* static */ }
     memes = filterMemesWithMedia(memes);
   }
+  memes = updateRecentMemesRuntimeCache(memes, sinceMs);
 
-  return new Response(JSON.stringify({
+  const body = JSON.stringify({
     memes,
     count: memes.length,
     windowHours: 24,
     matchCount: recentMatchKeys.size,
-  }), {
+  });
+  const response = new Response(body, {
     status: 200,
     headers,
   });
+  try {
+    await caches.default.put(responseCacheKey, response.clone());
+    await caches.default.put(seenCacheKey, new Response(JSON.stringify({
+      at: Date.now(),
+      seenIds: [...scannerSeenIds],
+      memes,
+    }), {
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Cache-Control": "public, max-age=21600",
+      },
+    }));
+  } catch { /* cache optional */ }
+  return response;
 }
 
 
@@ -3765,11 +4170,21 @@ export default {
     if (HIGHLIGHT_API_RE.test(url.pathname) && method === "GET") {
       return withEdgeCache(request, 3600, () => proxyHighlightApi(request, env));
     }
+    const replayEmbed = url.pathname.match(REPLAY_EMBED_RE);
+    if (replayEmbed && (method === "GET" || method === "HEAD")) {
+      return withEdgeCache(request, 300, () => proxyReplayEmbed(request, replayEmbed[1]));
+    }
+    if (REPLAY_ASSET_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
+      return proxyReplayAsset(request);
+    }
     if (MEMES_API_RE.test(url.pathname) && method === "GET") {
       return withEdgeCache(request, 1800, () => proxyMatchMemesApi(request, env));
     }
     if (RECENT_MEMES_API_RE.test(url.pathname) && method === "GET") {
       return withEdgeCache(request, 600, () => proxyRecentMemesApi(request, env));
+    }
+    if (X_MEDIA_API_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
+      return proxyXMedia(request);
     }
     if (EDGE_API_RE.test(url.pathname) && method === "GET") {
       return proxyEdgeApi(request);
