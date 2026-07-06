@@ -55,6 +55,16 @@
     return scoped.filter((c) => c.live).length;
   }
 
+  function updateLiveUi() {
+    const channels = catalog.channels || [];
+    const liveCount = channels.filter((c) => c.live).length;
+    if (liveCountEl) liveCountEl.textContent = String(liveCount);
+    if (totalCountEl) totalCountEl.textContent = String(channels.length);
+    updateRegionStats();
+    renderGroups();
+    renderGrid();
+  }
+
   function updateRegionStats() {
     REGION_STATS.forEach((gid) => {
       const el = document.getElementById("stat-" + gid);
@@ -142,27 +152,85 @@
     return best;
   }
 
+  async function mapPool(items, limit, fn) {
+    const out = new Array(items.length);
+    let i = 0;
+    async function worker() {
+      while (i < items.length) {
+        const idx = i++;
+        out[idx] = await fn(items[idx], idx);
+      }
+    }
+    await Promise.all(Array.from({ length: Math.min(limit, items.length) }, () => worker()));
+    return out;
+  }
+
+  async function probeEmbed(route) {
+    try {
+      const r = await fetch(route, { cache: "no-store", signal: AbortSignal.timeout(16_000) });
+      const t = await r.text();
+      return r.ok && (/\/dl\/hls\?/.test(t) || /\/sir\/hls\?/.test(t));
+    } catch {
+      return false;
+    }
+  }
+
+  async function probeDlhdChannel(ch) {
+    const mirrors = ch.mirrors || [];
+    if (await probeEmbed(ch.route)) {
+      return { ...ch, live: true, route: ch.route, mirror: null };
+    }
+    for (const mirror of mirrors) {
+      if (await probeEmbed(mirror)) {
+        return { ...ch, live: true, route: mirror, mirror };
+      }
+    }
+    return { ...ch, live: false, route: ch.route, mirror: null };
+  }
+
   async function refreshStatus() {
     setStatus("جارٍ فحص المصادر…");
     try {
-      const res = await fetch("/api/streams-lab", { cache: "no-store" });
-      const data = await res.json();
-      if (!data.ok) throw new Error(data.error || "probe failed");
-      catalog = data;
+      if (!(catalog.channels || []).length) {
+        const res = await fetch("/assets/data/streams-lab.json", { cache: "no-store" });
+        const data = await res.json();
+        catalog = { ...data, channels: (data.channels || []).map((c) => ({ ...c, live: null })) };
+        catalog.external = data.external || [];
+        catalog.groups = data.groups || [];
+      }
+
+      const apiRes = await fetch("/api/streams-lab", { cache: "no-store" });
+      const apiData = await apiRes.json();
+      if (!apiData.ok) throw new Error(apiData.error || "probe failed");
+
+      const sirMap = new Map((apiData.channels || []).filter((c) => c.source === "sir").map((c) => [c.id, c]));
+
+      const dlhd = (catalog.channels || []).filter((c) => c.source === "dlhd");
+      const sir = (catalog.channels || []).filter((c) => c.source === "sir");
+
+      const probedDlhd = await mapPool(dlhd, 5, probeDlhdChannel);
+      const probedSir = sir.map((ch) => {
+        const fromApi = sirMap.get(ch.id);
+        const live = fromApi ? !!fromApi.live : false;
+        return { ...ch, live, route: ch.route, mirror: null };
+      });
+
+      catalog.channels = [...probedDlhd, ...probedSir].sort((a, b) => (a.priority || 99) - (b.priority || 99));
+      catalog.groups = apiData.groups || catalog.groups;
+      catalog.external = apiData.external || catalog.external;
       probed = true;
-      if (liveCountEl) liveCountEl.textContent = String(data.liveCount || 0);
-      if (totalCountEl) totalCountEl.textContent = String(data.total || 0);
-      updateRegionStats();
-      renderGroups();
-      renderGrid();
+
+      const liveCount = catalog.channels.filter((c) => c.live).length;
+      updateLiveUi();
       renderExternal();
-      setStatus(
-        `آخر فحص: ${new Date(data.updatedAt).toLocaleTimeString("ar-SA")} — ${data.liveCount}/${data.total} بثّ متاح`
-      );
-      if (!currentRoute || !(catalog.channels || []).find((c) => c.route === currentRoute && c.live)) {
+
+      const ts = new Date().toLocaleTimeString("ar-SA");
+      setStatus(`آخر فحص: ${ts} — ${liveCount}/${catalog.channels.length} بثّ متاح`);
+
+      if (!currentRoute || !catalog.channels.find((c) => c.route === currentRoute && c.live)) {
         pickBest(true);
       }
-      return data;
+      return catalog;
     } catch (e) {
       setStatus("تعذّر فحص المصادر: " + (e.message || e));
       return null;

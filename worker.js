@@ -3291,26 +3291,20 @@ async function loadStreamsLabCatalog(env, origin) {
   }
 }
 
-async function probeStreamsLabDl(id) {
-  const headers = { "User-Agent": "Mozilla/5.0", Referer: `${DLHD_BASE}/` };
+async function loadStreamsLabCatalog(env, origin) {
   try {
-    const sTxt = await (await fetchWithTimeout(`${DLHD_BASE}/stream/stream-${id}.php`, { headers }, 3500)).text();
-    return /<iframe[^>]+src="[^"]+\/premiumtv\//i.test(sTxt);
+    const res = await env.ASSETS.fetch(new URL("/assets/data/streams-lab.json", origin));
+    if (!res.ok) return null;
+    return res.json();
   } catch {
-    return false;
+    return null;
   }
 }
 
 async function probeStreamsLabEntry(ch) {
   if (ch.dlhdId) {
-    const live = await probeStreamsLabDl(ch.dlhdId);
-    if (live) return { live: true, route: ch.route, mirror: null };
-    for (const mirror of ch.mirrors || []) {
-      const m = String(mirror).match(/\/dl\/(\d+)/i);
-      if (!m) continue;
-      if (await probeStreamsLabDl(m[1])) return { live: true, route: mirror, mirror };
-    }
-    return { live: false, route: ch.route, mirror: null };
+    // Live status is verified client-side via /dl/{id} (same-origin embed).
+    return { live: null, route: ch.route, mirror: null };
   }
   if (ch.sirSlug) {
     const master = await resolveSirMaster(ch.sirSlug);
@@ -3357,7 +3351,7 @@ async function proxyStreamsLabApi(request, env) {
     });
   }
 
-  const channels = await mapPool(catalog.channels, 5, async (ch) => {
+  const channels = await mapPool(catalog.channels, 4, async (ch) => {
     const probe = await probeStreamsLabEntry(ch);
     return {
       id: ch.id,
@@ -3373,8 +3367,8 @@ async function proxyStreamsLabApi(request, env) {
     };
   });
 
-  const liveCount = channels.filter((c) => c.live).length;
-  const best = channels.filter((c) => c.live).sort((a, b) => a.priority - b.priority)[0] || null;
+  const liveCount = channels.filter((c) => c.live === true).length;
+  const best = channels.filter((c) => c.live === true).sort((a, b) => a.priority - b.priority)[0] || null;
 
   const payload = {
     ok: true,
