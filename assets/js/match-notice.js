@@ -70,10 +70,10 @@
   }
 
   function buildNotice(cfg) {
-    const variant = cfg.variant === "beta" ? "beta" : "alert";
+    const variant = cfg.variant === "beta" ? "beta" : cfg.variant === "resolved" ? "resolved" : "alert";
     const el = document.createElement("aside");
     el.className = `kz-match-notice kz-match-notice--${variant}`;
-    el.setAttribute("dir", "rtl");
+    el.setAttribute("dir", lang() === "en" ? "ltr" : "rtl");
     el.setAttribute("role", "status");
     el.setAttribute("aria-live", "polite");
     el.dataset.noticeId = cfg.id;
@@ -90,7 +90,7 @@
     const icon = document.createElement("span");
     icon.className = "kz-match-notice__icon";
     icon.setAttribute("aria-hidden", "true");
-    icon.textContent = variant === "beta" ? "◆" : "⚠️";
+    icon.textContent = variant === "beta" ? "◆" : variant === "resolved" ? "✓" : "⚠️";
 
     const text = document.createElement("p");
     text.className = "kz-match-notice__text";

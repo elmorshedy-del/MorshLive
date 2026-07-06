@@ -33,6 +33,9 @@ const WORLDKOORA = "https://mysportv.live";
 const WESHAN = "https://zenvixw.site/wordpress/albaplayer/weshan/";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
+const SIRTV_CH1_PLAYER = "https://we.shootsync.site/albaplayer/sniaer/";
+const SIRTV_CH1_REFERER = "https://s.sirtv.space/2026/02/ch1.html?m=1";
+const SIRTV_RE = /^\/wk\/albaplayer\/sirtv\/?$/i;
 const POLL_RE = /^\/api\/poll\/([a-z0-9.-]+)\/?$/i;
 const POLL_STORE = "https://kz-poll.internal/";
 const POLL_TEAMS = {
@@ -1192,7 +1195,7 @@ function kzAttachHls(v,src,onFatal){
   hls.on(Hls.Events.ERROR,function(_e,d){
     if(!d||!d.fatal) return;
     if(d.type==='networkError'){
-      setTimeout(function(){ try{ hls.startLoad(); }catch(e){ onFatal(); } }, 1000);
+      setTimeout(function(){ try{ hls.startLoad(-1); }catch(e){ onFatal(); } }, 1000);
       return;
     }
     if(d.type==='mediaError'){
@@ -1202,16 +1205,27 @@ function kzAttachHls(v,src,onFatal){
   });
   return hls;
 }
+function kzSoftRecover(v,hls){
+  if(!hls) return;
+  try{ hls.startLoad(-1); }catch(e){}
+  var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+}
 function kzWatchStall(v,hls,onStall){
-  var lastCt=0, stallMs=0;
-  setInterval(function(){
-    if(v.paused||v.readyState<2){ stallMs=0; lastCt=v.currentTime; return; }
-    if(v.currentTime>0&&v.currentTime===lastCt){
+  var lastCt=0, stallMs=0, softTried=false;
+  var iv=setInterval(function(){
+    if(v.paused||v.readyState<2){ stallMs=0; softTried=false; lastCt=v.currentTime; return; }
+    if(v.currentTime>0&&Math.abs(v.currentTime-lastCt)<0.05){
       stallMs+=3000;
-      if(stallMs>=12000){ stallMs=0; onStall(); }
-    } else stallMs=0;
+      if(!softTried&&stallMs>=6000){
+        softTried=true;
+        kzSoftRecover(v,hls);
+      } else if(stallMs>=12000){
+        stallMs=0; softTried=false; onStall();
+      }
+    } else { stallMs=0; softTried=false; }
     lastCt=v.currentTime;
   }, 3000);
+  return function(){ clearInterval(iv); };
 }`;
 
 function cleanHlsPlayerHtml(sources, title) {
@@ -1226,8 +1240,8 @@ function cleanHlsPlayerHtml(sources, title) {
 <script>
 ${HLS_BOOT_FN}
 (function(){
-  var v=document.getElementById('v'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0;
-  function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
+  var v=document.getElementById('v'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0, stopStall=null;
+  function destroy(){ if(stopStall){ stopStall(); stopStall=null; } if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
   function next(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*6){ setTimeout(load, 400); } }
   function load(){
     var src=sources[i]; if(!src) return;
@@ -1236,9 +1250,13 @@ ${HLS_BOOT_FN}
       v.src=src; v.addEventListener('error', next, {once:true});
     } else if(window.Hls&&window.Hls.isSupported()){
       hls=kzAttachHls(v, src, next);
-      kzWatchStall(v, hls, next);
+      stopStall=kzWatchStall(v, hls, next);
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+  }
+  if(!v.dataset.kzWait){
+    v.dataset.kzWait='1';
+    v.addEventListener('waiting', function(){ kzSoftRecover(v, hls); });
   }
   load();
 })();
@@ -1296,7 +1314,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
 <script>
 ${HLS_BOOT_FN}
 (function(){
-  var sources=${JSON.stringify(list)}, i=0, hls=null, tries=0, v=document.getElementById('v');
+  var sources=${JSON.stringify(list)}, i=0, hls=null, tries=0, v=document.getElementById('v'), stopStall=null;
   var shell=document.getElementById('kz-shell');
   shell.querySelectorAll('.kz-tab').forEach(function(btn){
     btn.addEventListener('click', function(){
@@ -1305,7 +1323,7 @@ ${HLS_BOOT_FN}
       shell.className='kz-shell view-'+btn.dataset.view;
     });
   });
-  function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
+  function destroy(){ if(stopStall){ stopStall(); stopStall=null; } if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
   function nextHls(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*6) setTimeout(loadHls,400); }
   function loadHls(){
     var src=sources[i]; if(!src) return;
@@ -1313,9 +1331,13 @@ ${HLS_BOOT_FN}
     if(v.canPlayType('application/vnd.apple.mpegurl')){ v.src=src; v.addEventListener('error',nextHls,{once:true}); }
     else if(window.Hls&&window.Hls.isSupported()){
       hls=kzAttachHls(v, src, nextHls);
-      kzWatchStall(v, hls, nextHls);
+      stopStall=kzWatchStall(v, hls, nextHls);
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+  }
+  if(!v.dataset.kzWait){
+    v.dataset.kzWait='1';
+    v.addEventListener('waiting', function(){ kzSoftRecover(v, hls); });
   }
   loadHls();
 })();
@@ -1691,6 +1713,60 @@ function amineServerOrder(requestedServ) {
   if (Number.isFinite(raw) && raw >= 0 && raw <= 3) order.push(raw);
   for (let s = 0; s <= 3; s++) if (!order.includes(s)) order.push(s);
   return order;
+}
+
+// TEMP: Sir TV ch1 (s.sirtv.space) — Portugal vs Spain direct stream.
+async function fetchSirTvCh1Html(request) {
+  try {
+    const res = await fetchWithTimeout(SIRTV_CH1_PLAYER, {
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "text/html,application/xhtml+xml",
+        Referer: SIRTV_CH1_REFERER,
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    return res.text();
+  } catch {
+    return null;
+  }
+}
+
+async function proxySirTv(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "sirtv-ch1",
+  };
+  if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
+
+  try {
+    const html = await fetchSirTvCh1Html(request);
+    if (!html) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    const candidates = extractHlsCandidates(html);
+    const seenSources = new Set();
+    const pool = [];
+    for (const c of candidates) {
+      if (!c.source || seenSources.has(c.source)) continue;
+      const probe = await streamProbe(c.source, "plain", request);
+      if (!probe.ok) continue;
+      seenSources.add(c.source);
+      const sig = await signTarget(c.source, secret);
+      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: probe.score });
+    }
+    pool.sort((a, b) => a.score - b.score);
+    const proxied = pool.map((m) => m.url);
+    if (!proxied.length) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    return new Response(cleanHlsPlayerHtml(proxied, "بث مباشر"), { status: 200, headers: htmlHeaders });
+  } catch {
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  }
 }
 
 async function proxyAmine(request, env) {
@@ -4110,6 +4186,9 @@ export default {
     }
     if (WESHAN_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyWeshan(request, env);
+    }
+    if (SIRTV_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxySirTv(request, env);
     }
     if (AMINE_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyAmine(request, env);
