@@ -6,8 +6,8 @@
 import { createHash } from "node:crypto";
 
 const SIR_PLAYERS = [
+  { id: "siir-tv-live", url: "https://912acsss8af382.shootny.com/playerv5.php", key: "9f39972b67d6ce22189507d008acwc26", referer: "https://www.siir-tv.live/" },
   { id: "shootny-primary", url: "https://912acsss8af382.shootny.com/playerv5.php", key: "9f39972b67d6ce22189507d008acwc26", referer: "https://912acsss8af382.shootny.com/" },
-  { id: "shootny-siiir", url: "https://912acsss8af382.shootny.com/playerv5.php", key: "9f39972b67d6ce22189507d008acwc26", referer: "https://siiiiiiir.tv/" },
   { id: "sir-tv-new", url: "https://912acsss8af382.shootny.com/playerv5.php", key: "9f39972b67d6ce22189507d008acwc26", referer: "https://sir-tv-new.me/" },
 ];
 const SIR_XOR = "k9f2m7x1";

@@ -1906,6 +1906,13 @@ const SIR_PLAYER = "https://912acsss8af382.shootny.com/playerv5.php";
 const SIR_KEY = "9f39972b67d6ce22189507d008acwc26"; // pragma: allowlist secret
 const SIR_REFERER = "https://912acsss8af382.shootny.com/";
 const SIR_ORIGIN = "https://912acsss8af382.shootny.com";
+// Ordered referers for shootny playerv5 — siir-tv.live is the current Sir TV front-end.
+const SIR_REFERRERS = [
+  "https://www.siir-tv.live/",
+  "https://sir-tv-new.me/",
+  "https://siiiiiiir.tv/",
+  SIR_REFERER,
+];
 const SIR_XOR = "k9f2m7x1";
 const SIR_PROBE_MATCH = "4748109"; // arbitrary — config is global to all matches
 const SIR_EMBED_RE = /^\/sir\/(ar1|ar2|fr|en)\/?$/i;
@@ -2010,17 +2017,26 @@ function sirDecodeConfig(html) {
   }
 }
 
+// Fetch shootny player page; rotate referers (siir-tv.live first).
+async function fetchSirPlayerHtml() {
+  for (const referer of SIR_REFERRERS) {
+    try {
+      const res = await fetch(`${SIR_PLAYER}?match=${SIR_PROBE_MATCH}&key=${SIR_KEY}`, {
+        headers: { "User-Agent": "Mozilla/5.0", Accept: "text/html", Referer: referer },
+        redirect: "follow",
+      });
+      if (!res.ok) continue;
+      const html = await res.text();
+      if (sirDecodeConfig(html)) return html;
+    } catch { /* try next referer */ }
+  }
+  return null;
+}
+
 // Resolve a channel slug to a freshly-signed foozlive master playlist URL.
 async function resolveSirMaster(slug) {
-  let html;
-  try {
-    const res = await fetch(`${SIR_PLAYER}?match=${SIR_PROBE_MATCH}&key=${SIR_KEY}`, {
-      headers: { "User-Agent": "Mozilla/5.0", Accept: "text/html", Referer: "https://siiiiiiir.tv/" },
-      redirect: "follow",
-    });
-    if (!res.ok) return null;
-    html = await res.text();
-  } catch { return null; }
+  const html = await fetchSirPlayerHtml();
+  if (!html) return null;
   const decoded = sirDecodeConfig(html);
   if (!decoded || !decoded.cfg || !Array.isArray(decoded.cfg.tabs)) return null;
   const key = SIR_TAB_KEY[slug];

@@ -142,7 +142,9 @@
   function renderExternal() {
     if (!externalLinks) return;
     externalLinks.innerHTML = "";
-    (catalog.external || []).forEach((ex) => {
+      (catalog.external || [])
+        .sort((a, b) => (a.priority || 99) - (b.priority || 99))
+        .forEach((ex) => {
       const a = document.createElement("a");
       a.className = "lab-ext";
       a.href = ex.url;

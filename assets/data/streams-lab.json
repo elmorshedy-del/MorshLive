@@ -54,20 +54,31 @@
   ],
   "external": [
     {
+      "id": "siir-tv-live-today",
+      "name": "مباريات اليوم — سير تيفي",
+      "sub": "siir-tv.live · عربي",
+      "group": "match",
+      "url": "https://www.siir-tv.live/todays-matches/",
+      "source": "siir-tv-live",
+      "priority": 1
+    },
+    {
+      "id": "siir-tv-live-home",
+      "name": "الرئيسية — Sir TV",
+      "sub": "siir-tv.live",
+      "group": "match",
+      "url": "https://www.siir-tv.live/",
+      "source": "siir-tv-live",
+      "priority": 2
+    },
+    {
       "id": "sir-tv-today",
-      "name": "جدول مباريات اليوم — Sir TV",
+      "name": "مباريات اليوم — نسخة بديلة",
       "sub": "sir-tv-new.me",
       "group": "match",
       "url": "https://sir-tv-new.me/matches-today/",
-      "source": "sir-tv-new"
-    },
-    {
-      "id": "sir-tv-home",
-      "name": "الرئيسية — Sir TV new",
-      "sub": "بث مباشر",
-      "group": "match",
-      "url": "https://sir-tv-new.me/",
-      "source": "sir-tv-new"
+      "source": "sir-tv-new",
+      "priority": 3
     }
   ]
 }
