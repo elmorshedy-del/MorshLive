@@ -417,6 +417,20 @@ async function loadCommentaryIndex() {
   return _commentaryIdx;
 }
 
+function applyTodayChannelIds(matches, todayMatches) {
+  if (!Array.isArray(todayMatches) || !todayMatches.length) return matches;
+  const byId = new Map(
+    todayMatches.filter((m) => m.id && m.channelId).map((m) => [m.id, m])
+  );
+  return matches.map((m) => {
+    const src = byId.get(m.id);
+    if (!src || !src.channelId) return m;
+    const out = { ...m, channelId: src.channelId };
+    if (src.channel) out.channel = src.channel;
+    return out;
+  });
+}
+
 function applyCommentary(matches, idx) {
   if (!idx) return matches;
   return matches.map((m) => {
@@ -988,7 +1002,8 @@ window.getMatches = async function getMatches({ force } = {}) {
         const didx = {};
         (data.matchDetailIndex || []).forEach((d) => { didx[d.key] = d; });
         const withCommentary = applyCommentary(live.matches, idx);
-        const withHighlights = applyHighlights(withCommentary, hidx);
+        const withChannels = applyTodayChannelIds(withCommentary, data.matches);
+        const withHighlights = applyHighlights(withChannels, hidx);
         const withStaticDetail = applyMatchDetail(withHighlights, didx);
         const withLiveDetail = await enrichLiveMatchDetails(withStaticDetail, { force });
         scheduleHighlightEnrich(withLiveDetail);

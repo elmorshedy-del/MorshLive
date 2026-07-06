@@ -18,6 +18,7 @@
   let channel = CHANNELS[0];
   let match = null;
   let directStream = null;
+  let matchesReady = false;
   const STREAM_SOURCES = [
     { key: "vip1", servs: [1, 2, 3, 4] },
     { key: "vip2", servs: [1, 2, 3, 4] },
@@ -500,28 +501,39 @@
     fillInfo();
     const channelChanged = channel.id !== previousChannelId;
     const matchChanged = (match && match.id) !== previousMatchId;
-    if (channelChanged) renderChannels();
-    if (channelChanged || matchChanged) {
+    if (!matchesReady) {
+      renderChannels();
       renderServers({ rebind: true });
-      reloadPlayer();
-      if (matchChanged) {
-        const pollSlot = document.getElementById("match-poll-slot");
-        if (pollSlot) delete pollSlot.dataset.pollReady;
+      loadPlayer();
+      matchesReady = true;
+    } else {
+      if (channelChanged) renderChannels();
+      if (channelChanged || matchChanged) {
+        renderServers({ rebind: true });
+        reloadPlayer();
+        if (matchChanged) {
+          const pollSlot = document.getElementById("match-poll-slot");
+          if (pollSlot) delete pollSlot.dataset.pollReady;
+        }
       }
     }
     renderSidebar();
   }
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     initNav();
-    resolveSelection();
-    fillInfo();
-    renderChannels();
-    renderServers();
-    renderSidebar();
-    loadPlayer();
     initReloadButton();
-    refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
+    try {
+      await refreshMatches({ force: false });
+    } catch (e) {
+      console.warn("Initial match refresh failed:", e.message);
+      resolveSelection();
+      fillInfo();
+      renderChannels();
+      renderServers();
+      renderSidebar();
+      loadPlayer();
+    }
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(() => refreshMatchDetail().catch((e) => console.warn("Detail refresh failed:", e.message)), 60 * 1000);
     setInterval(() => {
