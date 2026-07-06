@@ -1,7 +1,7 @@
 /* Auto-synced from assets/data/channel-bindings.json by fetch-matches.js */
 window.KZ_CHANNEL_BINDINGS = {
-  "version": 10,
-  "updatedAt": "2026-07-05T20:15:00.000Z",
+  "version": 11,
+  "updatedAt": "2026-07-06T19:10:00.000Z",
   "embedBinding": {
     "bein-max-1": "vip1",
     "bein-max-2": "amine",
@@ -11,6 +11,21 @@ window.KZ_CHANNEL_BINDINGS = {
     "bein-sports-2": "vip1"
   },
   "calibration": [
+    {
+      "date": "2026-07-06T19:10:00.000Z",
+      "issue": "Portugal vs Spain (beIN MAX 1) — home showed VS with no minute when today.json lagged behind kickoff.",
+      "rootCause": "Cached today.json stayed upcoming until refresh; cache fallback refined status to live but kept stale score/minute when browser live API failed.",
+      "fix": "Supplement cache-path matches from ESPN live scoreboard; refresh today.json/live-snapshot; keep bein-max-1 on vip1.",
+      "liveAtTime": [
+        {
+          "match": "Portugal vs Spain",
+          "channelId": "bein-max-1",
+          "channel": "beIN MAX 1",
+          "embedKey": "vip1"
+        }
+      ],
+      "userReport": "Portugal not working"
+    },
     {
       "date": "2026-07-05T20:15:00.000Z",
       "issue": "Brazil vs Norway (beIN MAX 1) — all channels appeared dead; no channel picker on watch page.",

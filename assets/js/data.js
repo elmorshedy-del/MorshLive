@@ -848,12 +848,16 @@ window.getMatches = async function getMatches({ force } = {}) {
     const data = await loadTodayData();
     const didx = await loadMatchDetailIndex();
     const raw = Array.isArray(data.matches) ? data.matches : [];
-    const matches = sortDisplayMatches(
+    let matches = sortDisplayMatches(
       applyMatchDetail(
         raw.map((m) => ({ ...m, status: refineStatus(m, data.date) })).filter(keepDisplayMatch),
         didx
       )
     );
+    if (window.MatchesAPI && window.MatchesAPI.supplementEspnLiveScores) {
+      matches = await window.MatchesAPI.supplementEspnLiveScores(matches);
+      matches = sortDisplayMatches(matches.filter(keepDisplayMatch));
+    }
     scheduleHighlightEnrich(matches);
     const withLiveDetail = await enrichLiveMatchDetails(matches, { force });
     return {

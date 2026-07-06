@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-07-06T09:54:20.867Z",
-  "bindingVersion": 10,
+  "updatedAt": "2026-07-06T19:13:43.988Z",
+  "bindingVersion": 11,
   "embedBinding": {
     "bein-max-1": "vip1",
     "bein-max-2": "amine",
@@ -9,8 +9,22 @@
     "bein-sports-1": "vip1",
     "bein-sports-2": "vip1"
   },
-  "liveCount": 0,
-  "routes": [],
+  "liveCount": 1,
+  "routes": [
+    {
+      "id": "espn-fifa.world-760506",
+      "home": "Portugal",
+      "away": "Spain",
+      "score": "0 - 0",
+      "minute": "13'",
+      "channelId": "bein-max-1",
+      "channel": "beIN MAX 1",
+      "commentator": "عصام الشوالي",
+      "embedKey": "vip1",
+      "embedUrl": "https://vip.worldkoora.com/albaplayer/vip1/",
+      "kickoffUtc": "2026-07-06T19:00Z"
+    }
+  ],
   "conflicts": [],
   "ok": true,
   "warning": null
