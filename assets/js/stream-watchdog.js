@@ -1,14 +1,17 @@
-/* Auto-captures stream/player incidents — logs locally and POSTs to /api/stream-log. */
+/* Backend stream watchdog — auto-ingests watch/player telemetry to /api/stream-log.
+ * When user reports an incident time, query: GET /api/stream-log?at=ISO&window=120 */
 (function (global) {
   "use strict";
 
   const LOG_KEY = "kz_stream_incidents";
   const VOTER_KEY = "kz_voter_id";
-  const MAX_LOCAL = 80;
+  const SESSION_KEY = "kz_watch_session";
+  const MAX_LOCAL = 120;
   const API = "/api/stream-log";
+  const HEARTBEAT_MS = 30 * 1000;
   const pending = [];
   let flushTimer = null;
-  let lastSentKey = "";
+  let heartbeatTimer = null;
 
   function voterId() {
     try {
@@ -22,6 +25,21 @@
       return id;
     } catch {
       return "anon";
+    }
+  }
+
+  function sessionId() {
+    try {
+      let id = sessionStorage.getItem(SESSION_KEY);
+      if (!id) {
+        id = global.crypto && global.crypto.randomUUID
+          ? global.crypto.randomUUID()
+          : "s-" + Math.random().toString(36).slice(2) + Date.now().toString(36);
+        sessionStorage.setItem(SESSION_KEY, id);
+      }
+      return id;
+    } catch {
+      return "sess-anon";
     }
   }
 
@@ -39,17 +57,6 @@
     } catch {
       /* noop */
     }
-  }
-
-  function entryKey(entry) {
-    return [
-      entry.event,
-      entry.iframeSrc,
-      entry.embedKey,
-      entry.serv,
-      entry.channel,
-      entry.match,
-    ].join("|");
   }
 
   function sendToServer(events) {
@@ -79,18 +86,19 @@
   }
 
   function queueRemote(entry) {
-    const key = entryKey(entry);
-    if (key === lastSentKey) return;
-    lastSentKey = key;
     pending.push(entry);
-    if (!flushTimer) flushTimer = setTimeout(flushPending, 400);
+    if (!flushTimer) flushTimer = setTimeout(flushPending, 300);
   }
 
   function log(event, detail) {
+    const now = Date.now();
     const entry = {
-      t: new Date().toISOString(),
+      t: new Date(now).toISOString(),
+      ts: now,
       event,
+      sessionId: sessionId(),
       voter: voterId(),
+      source: "watch_page",
       url: global.location && global.location.href,
       ...(detail || {}),
     };
@@ -129,7 +137,20 @@
       });
     }
 
+    function heartbeat() {
+      const m = meta() || {};
+      const iframe = shell.querySelector("iframe");
+      log("heartbeat", {
+        iframeSrc: iframe && iframe.src,
+        embedKey: m.embedKey,
+        serv: m.serv,
+        channel: m.channelId,
+        match: m.matchId,
+      });
+    }
+
     snapshot("watchdog_start");
+    heartbeatTimer = setInterval(heartbeat, HEARTBEAT_MS);
 
     let mutateTimer = null;
     const mo = new MutationObserver(() => {
@@ -137,13 +158,18 @@
       mutateTimer = setTimeout(() => {
         mutateTimer = null;
         snapshot("iframe_mutated");
+        heartbeat();
       }, 600);
     });
     mo.observe(shell, { childList: true, subtree: true, attributes: true, attributeFilter: ["src"] });
 
     global.addEventListener("visibilitychange", () => {
-      if (global.document.visibilityState === "visible") snapshot("tab_visible");
-      else flushPending();
+      if (global.document.visibilityState === "visible") {
+        snapshot("tab_visible");
+        heartbeat();
+      } else {
+        flushPending();
+      }
     });
 
     global.addEventListener("blur", () => {
@@ -154,19 +180,26 @@
     global.addEventListener("pagehide", () => flushPending());
   }
 
-  global.StreamWatchdog = { log, export: exportLog, clear: clearLog, watch: watchPlayerShell, read: readLog };
+  global.StreamWatchdog = {
+    log,
+    export: exportLog,
+    clear: clearLog,
+    watch: watchPlayerShell,
+    read: readLog,
+    sessionId,
+  };
 
   global.addEventListener("message", (e) => {
     const data = e.data;
     if (!data || data.type !== "kz-stream-event") return;
     log(data.event || "player_event", {
+      source: "player_iframe",
       mirrorIndex: data.mirrorIndex,
       hlsSrc: data.hlsSrc,
       videoTime: data.videoTime,
       stallSec: data.stallSec,
       paused: data.paused,
       readyState: data.readyState,
-      from: "player_iframe",
     });
   });
 })(window);

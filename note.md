@@ -171,18 +171,26 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 
 ---
 
-## Kooracity 30s pause — investigation (no auto-switch)
+## Backend stream watchdog (incident replay)
 
-**What users see:** Full stream **pauses** ~30s with kooracity «go to original site» message; may loop before match resumes. **Not** a CSS watermark — do not mask or auto-switch mirrors until root cause is known.
+**Purpose:** Ingest watch-page + player telemetry server-side so when you report an incident time we can replay what was active — **no guessing, no auto-fixes**.
 
-**Observe-only logging (deployed):**
-- HLS player logs `playback_stall`, `buffering`, `time_rewind` with **UTC timestamp**, **mirror index**, **hlsSrc**, **videoTime**
-- Watch page auto-POSTs to `/api/stream-log` (no console needed)
-- Operator: `curl -s https://korazero.com/api/stream-log | jq .`
+**Auto-ingest (no console):**
+- Watch page: `player_load`, `heartbeat` every 30s, server/embed changes, iframe mutations
+- HLS player iframe: `playback_stall`, `buffering`, `time_rewind` + `mirrorIndex` / `hlsSrc`
+- Stored on worker: last **2000** events with UTC `t` + `ts` (ms), `sessionId`, `embedKey`, `serv`, `channel`, `match`
 
-**When you have a screen recording:** Tell us the **wall-clock time** (or match minute) the pause started. We match it to log `t` field + `embedKey`/`serv`/`mirrorIndex`/`hlsSrc` to find which upstream mirror injects the pause.
+**When you have a recording — tell us the wall-clock time**, e.g. `2026-07-05T23:14:30Z`. We query ±2 minutes:
 
-**Reverted:** PR #80 auto-switch / live-edge jump — user asked to find root cause first.
+```bash
+node scripts/query-stream-log.mjs "2026-07-05T23:14:30Z" 120
+# or
+curl -s "https://korazero.com/api/stream-log?at=2026-07-05T23:14:30Z&window=120" | jq .
+```
+
+Response shows which `embedKey`, `serv`, `iframeSrc`, `mirrorIndex`, `hlsSrc` were active at that moment.
+
+**We do not claim root cause until this data matches your recording.**
 
 ---
 
@@ -193,7 +201,7 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 | Dead MAX mirror | `worker.js` `DLHD_CHANNEL_MIRROR_IDS` | Add fallback ids 91–95; bump `channel-bindings.json` |
 | New AlbaPlayer host | `worker.js` | Proxy at `/wk/albaplayer/{slug}/`, extract HLS, serve `cleanHlsPlayerHtml` — never raw iframe |
 | Spam «مباشر» menu | Upstream AlbaPlayer | Hide `.aplr-menu`; block `AplrPopUp`; sandbox without `allow-popups` |
-| Kooracity 30s pause | dlhd/worldkoora HLS | Log via `/api/stream-log` + recording timestamp — **no auto-switch** until root cause found |
+| Kooracity 30s pause | Unknown until replay | Backend watchdog `/api/stream-log?at=ISO&window=120` — **no auto-fix** until evidence |
 | Video reloads alone | `watch.js` | Don't rebuild servers on stats refresh; only switch if active `srv-down` |
 | Lineups missing | `data.js` `getMatches()` | Ensure `applyMatchDetail()` runs on cached `today.json` path |
 | Pin live match routing | `today.json` + bindings | Set `embedKey`, `channelId`; calibrate in `channel-bindings.json` |

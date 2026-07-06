@@ -27,7 +27,7 @@ const POLL_RE = /^\/api\/poll\/([a-z0-9-]+)\/?$/i;
 const POLL_STORE = "https://kz-poll.internal/";
 const STREAM_LOG_RE = /^\/api\/stream-log\/?$/i;
 const STREAM_LOG_STORE = "https://kz-stream-log.internal/";
-const STREAM_LOG_MAX = 250;
+const STREAM_LOG_MAX = 2000;
 const POLL_TEAMS = {
   "brazil-norway-20260705": ["brazil", "norway"],
 };
@@ -123,8 +123,12 @@ function kzInstallObserve(v, getMeta){
     };
     if(extra) for(var k in extra) payload[k]=extra[k];
     try{
-      fetch('/api/stream-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),keepalive:true}).catch(function(){});
-      if(window.parent&&window.parent!==window) window.parent.postMessage({type:'kz-stream-event',...payload},'*');
+      var body={t:new Date().toISOString(),ts:Date.now(),event:event,source:'player_iframe',
+        mirrorIndex:meta.mirrorIndex,hlsSrc:meta.hlsSrc||'',videoTime:v.currentTime,
+        paused:v.paused,readyState:v.readyState};
+      if(extra) for(var k in extra) body[k]=extra[k];
+      fetch('/api/stream-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),keepalive:true}).catch(function(){});
+      if(window.parent&&window.parent!==window) window.parent.postMessage({type:'kz-stream-event',...body},'*');
     }catch(e){}
   }
   v.addEventListener('pause',function(){ if(!v.seeking) userPaused=true; });
@@ -1981,7 +1985,11 @@ async function writeStreamLogList(arr) {
 }
 
 function streamLogDedupKey(entry) {
+  if (entry.event === "heartbeat") {
+    return [entry.sessionId || "", entry.event, Math.floor((entry.ts || 0) / 30000)].join("|");
+  }
   return [
+    entry.sessionId || "",
     entry.t && entry.t.slice(0, 19),
     entry.event || "",
     entry.mirrorIndex == null ? "" : String(entry.mirrorIndex),
@@ -1990,17 +1998,81 @@ function streamLogDedupKey(entry) {
   ].join("|");
 }
 
+function normalizeStreamLogEntry(raw, ua) {
+  const t = raw.t || new Date().toISOString();
+  const ts = raw.ts != null ? Number(raw.ts) : Date.parse(t);
+  return {
+    t,
+    ts: Number.isFinite(ts) ? ts : Date.now(),
+    event: String(raw.event || "incident").slice(0, 64),
+    sessionId: String(raw.sessionId || "").slice(0, 64),
+    voter: String(raw.voter || "").slice(0, 64),
+    source: String(raw.source || raw.from || "").slice(0, 32),
+    url: String(raw.url || "").slice(0, 512),
+    iframeSrc: String(raw.iframeSrc || "").slice(0, 512),
+    embedKey: String(raw.embedKey || "").slice(0, 32),
+    serv: raw.serv == null ? "" : String(raw.serv).slice(0, 8),
+    channel: String(raw.channel || "").slice(0, 64),
+    match: String(raw.match || "").slice(0, 64),
+    mirrorIndex: raw.mirrorIndex == null ? null : Number(raw.mirrorIndex),
+    hlsSrc: String(raw.hlsSrc || "").slice(0, 512),
+    videoTime: raw.videoTime == null ? null : Number(raw.videoTime),
+    stallSec: raw.stallSec == null ? null : Number(raw.stallSec),
+    paused: raw.paused == null ? null : !!raw.paused,
+    readyState: raw.readyState == null ? null : Number(raw.readyState),
+    ua: String(raw.ua || ua || "").slice(0, 160),
+  };
+}
+
+function filterStreamLog(list, params) {
+  const at = params.get("at");
+  const windowSec = Math.min(Math.max(Number(params.get("window") || 120), 10), 3600);
+  const from = params.get("from");
+  const to = params.get("to");
+  const session = params.get("session");
+  const limit = Math.min(Math.max(Number(params.get("limit") || 100), 1), 500);
+
+  let filtered = list;
+  if (at) {
+    const center = Date.parse(at);
+    if (!Number.isNaN(center)) {
+      const win = windowSec * 1000;
+      filtered = list.filter((e) => e.ts >= center - win && e.ts <= center + win);
+    }
+  } else if (from || to) {
+    const f = from ? Date.parse(from) : 0;
+    const t = to ? Date.parse(to) : Infinity;
+    filtered = list.filter((e) => e.ts >= f && e.ts <= t);
+  }
+  if (session) filtered = filtered.filter((e) => e.sessionId === session);
+
+  return {
+    query: {
+      at: at || null,
+      window: at ? windowSec : null,
+      from: from || null,
+      to: to || null,
+      session: session || null,
+      limit,
+    },
+    incidents: filtered.slice(-limit),
+    count: filtered.length,
+  };
+}
+
 async function handleStreamLog(request) {
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 204, headers: streamLogJsonHeaders() });
   }
 
   if (request.method === "GET") {
+    const url = new URL(request.url);
     const list = await readStreamLogList();
-    return new Response(JSON.stringify({ ok: true, count: list.length, incidents: list.slice(-50) }), {
-      status: 200,
-      headers: streamLogJsonHeaders(),
-    });
+    const result = filterStreamLog(list, url.searchParams);
+    return new Response(
+      JSON.stringify({ ok: true, totalStored: list.length, ...result }),
+      { status: 200, headers: streamLogJsonHeaders() }
+    );
   }
 
   if (request.method !== "POST") {
@@ -2016,29 +2088,13 @@ async function handleStreamLog(request) {
 
   const events = Array.isArray(body && body.events) ? body.events : [body];
   const list = await readStreamLogList();
-  const seen = new Set(list.slice(-60).map(streamLogDedupKey));
+  const seen = new Set(list.slice(-120).map(streamLogDedupKey));
   let added = 0;
+  const ua = request.headers.get("User-Agent") || "";
 
   for (const raw of events) {
     if (!raw || typeof raw !== "object") continue;
-    const entry = {
-      t: raw.t || new Date().toISOString(),
-      event: String(raw.event || "incident").slice(0, 64),
-      voter: String(raw.voter || "").slice(0, 64),
-      url: String(raw.url || "").slice(0, 512),
-      iframeSrc: String(raw.iframeSrc || "").slice(0, 512),
-      embedKey: String(raw.embedKey || "").slice(0, 32),
-      serv: raw.serv == null ? "" : String(raw.serv).slice(0, 8),
-      channel: String(raw.channel || "").slice(0, 64),
-      match: String(raw.match || "").slice(0, 64),
-      mirrorIndex: raw.mirrorIndex == null ? null : Number(raw.mirrorIndex),
-      hlsSrc: String(raw.hlsSrc || "").slice(0, 512),
-      videoTime: raw.videoTime == null ? null : Number(raw.videoTime),
-      stallSec: raw.stallSec == null ? null : Number(raw.stallSec),
-      paused: raw.paused == null ? null : !!raw.paused,
-      readyState: raw.readyState == null ? null : Number(raw.readyState),
-      ua: (request.headers.get("User-Agent") || "").slice(0, 160),
-    };
+    const entry = normalizeStreamLogEntry(raw, ua);
     const key = streamLogDedupKey(entry);
     if (seen.has(key)) continue;
     seen.add(key);
