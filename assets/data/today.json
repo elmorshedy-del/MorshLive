@@ -1,6 +1,6 @@
 {
   "date": "2026-07-06",
-  "updatedAt": "2026-07-06T09:54:20.868Z",
+  "updatedAt": "2026-07-06T19:14:26.633Z",
   "source": "espn",
   "sourceLabel": "ESPN",
   "commentarySource": "almaghrebsport",
@@ -339,7 +339,8 @@
       "embedId": "mA5amQonpFi8V",
       "btolatId": "93932",
       "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=dHRhVnBBdllURmptdFgxSEtEdTRRTW92amY5RXg0Vzk0bE5RM0RVdVFBOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjA2MzMyOTk5&keypair=a05pY3ZPRzRveWFwd2ZNMkVnWkdIUWFuTjMzZEF1N29Pd2Jlby9hL2Vodz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDYwNjMzMjk5OQ==",
-      "kind": "full"
+      "kind": "full",
+      "clip": "full"
     },
     {
       "key": "england~mexico",
@@ -350,7 +351,7 @@
       "source": "vortex",
       "embedId": "WAOCAqgXRSoPe",
       "btolatId": "93943",
-      "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=LzUwTDVvc3RVWWVzeUJZSnoyQWJDUlFBODk0ckhFUm9Id3hNam1MVDJYWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTgxMDE5NzA5&keypair=VCtodjF1ZEpUR0VOUmREMEVFZzl3OGNqNDhLWElIdks4WENOTlJUZkpsMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDU4MTAxOTcwOQ==",
+      "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=ajk5VTk4VXhYYVRkRkRwRGIzTzN0MmxNVzVzY0FwR0s0bGUxNk1mL09MYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5NjU2NjM3MTUxNTEz&keypair=ZmRBVlA0OElsbWFCSVJuVjJsbEo1b0JJb09tSFdVRk9uZEVmcFhpdmVycz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTY1NjYzNzE1MTUxMw==",
       "kind": "full"
     },
     {
@@ -362,7 +363,7 @@
       "source": "vortex",
       "embedId": "b1dy0L8gi2Kbt",
       "btolatId": "93935",
-      "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318218/poster/0.png?token=YTNubG9UOERDQVdTRE1oMHU5RzFmK2R0Vk5NKzFFMnlnYkZJdmxVY0RwYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkzMjA1OTM4MzI2MTk=&keypair=cXpaQkticEpudjZuZnMyRFVXZmdQM1lseTZTeVpQNlRyZFAvV2pzYzZ2WT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTkzODMyNjE5",
+      "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318218/poster/0.png?token=Nk5jNXhJeGN1YWZRcG92UVF5VEJzbDZaZHl4TmEwbTUxOXV6eU1SN21COD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODk2NTY2NTE2ODM1OTA=&keypair=Q1BiUzAwUEd2OEIxMlNzVWdJWmo3cVRoQTY2aGNjVFg4T3MySjVJT0NkND06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5NjU2NjUxNjgzNTkw",
       "kind": "goals",
       "clip": "goals"
     },
@@ -375,25 +376,640 @@
       "source": "vortex",
       "embedId": "WAOCAqgXRSoPe",
       "btolatId": "93943",
-      "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=LzUwTDVvc3RVWWVzeUJZSnoyQWJDUlFBODk0ckhFUm9Id3hNam1MVDJYWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTgxMDE5NzA5&keypair=VCtodjF1ZEpUR0VOUmREMEVFZzl3OGNqNDhLWElIdks4WENOTlJUZkpsMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDU4MTAxOTcwOQ==",
-      "kind": "full",
-      "clip": "full"
-    },
-    {
-      "key": "brazil~norway",
-      "home": "Brazil",
-      "away": "Norway",
-      "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/mA5amQonpFi8V",
-      "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
-      "source": "vortex",
-      "embedId": "mA5amQonpFi8V",
-      "btolatId": "93932",
-      "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=dHRhVnBBdllURmptdFgxSEtEdTRRTW92amY5RXg0Vzk0bE5RM0RVdVFBOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjA2MzMyOTk5&keypair=a05pY3ZPRzRveWFwd2ZNMkVnWkdIUWFuTjMzZEF1N29Pd2Jlby9hL2Vodz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDYwNjMzMjk5OQ==",
+      "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=ajk5VTk4VXhYYVRkRkRwRGIzTzN0MmxNVzVzY0FwR0s0bGUxNk1mL09MYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5NjU2NjM3MTUxNTEz&keypair=ZmRBVlA0OElsbWFCSVJuVjJsbEo1b0JJb09tSFdVRk9uZEVmcFhpdmVycz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTY1NjYzNzE1MTUxMw==",
       "kind": "full",
       "clip": "full"
     }
   ],
   "matchDetailIndex": [
+    {
+      "key": "portugal~spain",
+      "lineups": {
+        "home": {
+          "formation": "4-2-3-1",
+          "starters": [
+            {
+              "id": "238903",
+              "jersey": "1",
+              "name": "D. Costa",
+              "band": "gk",
+              "pos": "G",
+              "formationPlace": 1,
+              "position": "Goalkeeper",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "337011",
+              "jersey": "13",
+              "name": "R. Veiga",
+              "band": "def",
+              "pos": "CD-L",
+              "formationPlace": 6,
+              "position": "Center Left Defender",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "234878",
+              "jersey": "3",
+              "name": "R. Dias",
+              "band": "def",
+              "pos": "CD-R",
+              "formationPlace": 5,
+              "position": "Center Right Defender",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "290591",
+              "jersey": "25",
+              "name": "N. Mendes",
+              "band": "def",
+              "pos": "LB",
+              "formationPlace": 3,
+              "position": "Left Back",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "176399",
+              "jersey": "20",
+              "name": "J. Cancelo",
+              "band": "def",
+              "pos": "RB",
+              "formationPlace": 2,
+              "position": "Right Back",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "124091",
+              "jersey": "8",
+              "name": "B. Fernandes",
+              "band": "mid",
+              "pos": "AM",
+              "formationPlace": 10,
+              "position": "Attacking Midfielder",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "355061",
+              "jersey": "15",
+              "name": "J. Neves",
+              "band": "mid",
+              "pos": "LM",
+              "formationPlace": 4,
+              "position": "Left Midfielder",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "288897",
+              "jersey": "23",
+              "name": "Vitinha",
+              "band": "mid",
+              "pos": "RM",
+              "formationPlace": 8,
+              "position": "Right Midfielder",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "22774",
+              "jersey": "7",
+              "name": "C. Ronaldo",
+              "band": "fwd",
+              "pos": "F",
+              "formationPlace": 9,
+              "position": "Forward",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "276350",
+              "jersey": "11",
+              "name": "J. Félix",
+              "band": "mid",
+              "pos": "AM-L",
+              "formationPlace": 11,
+              "position": "Attacking Midfielder Left",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "256115",
+              "jersey": "18",
+              "name": "P. Neto",
+              "band": "mid",
+              "pos": "AM-R",
+              "formationPlace": 7,
+              "position": "Attacking Midfielder Right",
+              "yellowCards": 0,
+              "redCards": 0
+            }
+          ],
+          "subs": [
+            {
+              "id": "304106",
+              "jersey": "14",
+              "name": "G. Inácio",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "213141",
+              "jersey": "19",
+              "name": "G. Guedes",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "303785",
+              "jersey": "6",
+              "name": "M. Nunes",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "238902",
+              "jersey": "5",
+              "name": "D. Dalot",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "181278",
+              "jersey": "12",
+              "name": "J. Sá",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "199833",
+              "jersey": "10",
+              "name": "B. Silva",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "222670",
+              "jersey": "2",
+              "name": "N. Semedo",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "312659",
+              "jersey": "26",
+              "name": "F. Conceição",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "288896",
+              "jersey": "9",
+              "name": "G. Ramos",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "258917",
+              "jersey": "17",
+              "name": "R. Leão",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "177898",
+              "jersey": "22",
+              "name": "R. Silva",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "329691",
+              "jersey": "4",
+              "name": "T. Araújo",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "183466",
+              "jersey": "24",
+              "name": "S. Costa",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "274159",
+              "jersey": "16",
+              "name": "F. Trincão",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "208128",
+              "jersey": "21",
+              "name": "R. Neves",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            }
+          ]
+        },
+        "away": {
+          "formation": "4-2-3-1",
+          "starters": [
+            {
+              "id": "222375",
+              "jersey": "23",
+              "name": "U. Simón",
+              "band": "gk",
+              "pos": "G",
+              "formationPlace": 1,
+              "position": "Goalkeeper",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "159317",
+              "jersey": "14",
+              "name": "A. Laporte",
+              "band": "def",
+              "pos": "CD-L",
+              "formationPlace": 6,
+              "position": "Center Left Defender",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "368992",
+              "jersey": "22",
+              "name": "P. Cubarsí",
+              "band": "def",
+              "pos": "CD-R",
+              "formationPlace": 5,
+              "position": "Center Right Defender",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "259910",
+              "jersey": "24",
+              "name": "M. Cucurella",
+              "band": "def",
+              "pos": "LB",
+              "formationPlace": 3,
+              "position": "Left Back",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "268533",
+              "jersey": "12",
+              "name": "P. Porro",
+              "band": "def",
+              "pos": "RB",
+              "formationPlace": 2,
+              "position": "Right Back",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "227765",
+              "jersey": "10",
+              "name": "D. Olmo",
+              "band": "mid",
+              "pos": "AM",
+              "formationPlace": 10,
+              "position": "Attacking Midfielder",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "250465",
+              "jersey": "20",
+              "name": "Pedri",
+              "band": "mid",
+              "pos": "LM",
+              "formationPlace": 4,
+              "position": "Left Midfielder",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "231828",
+              "jersey": "16",
+              "name": "Rodri",
+              "band": "mid",
+              "pos": "RM",
+              "formationPlace": 8,
+              "position": "Right Midfielder",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "229018",
+              "jersey": "21",
+              "name": "M. Oyarzabal",
+              "band": "fwd",
+              "pos": "F",
+              "formationPlace": 9,
+              "position": "Forward",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "297373",
+              "jersey": "15",
+              "name": "Á. Baena",
+              "band": "mid",
+              "pos": "AM-L",
+              "formationPlace": 11,
+              "position": "Attacking Midfielder Left",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "362150",
+              "jersey": "19",
+              "name": "L. Yamal",
+              "band": "mid",
+              "pos": "AM-R",
+              "formationPlace": 7,
+              "position": "Attacking Midfielder Right",
+              "yellowCards": 0,
+              "redCards": 0
+            }
+          ],
+          "subs": [
+            {
+              "id": "209581",
+              "jersey": "6",
+              "name": "M. Merino",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "128714",
+              "jersey": "4",
+              "name": "E. García",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "214995",
+              "jersey": "26",
+              "name": "B. Iglesias",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "196176",
+              "jersey": "1",
+              "name": "D. Raya",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "312146",
+              "jersey": "17",
+              "name": "N. Williams",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "287266",
+              "jersey": "18",
+              "name": "M. Zubimendi",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "332613",
+              "jersey": "2",
+              "name": "M. Pubill",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "265869",
+              "jersey": "7",
+              "name": "F. Torres",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "206474",
+              "jersey": "5",
+              "name": "M. Llorente",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "166396",
+              "jersey": "3",
+              "name": "A. Grimaldo",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "397545",
+              "jersey": "25",
+              "name": "V. Muñoz",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "323702",
+              "jersey": "9",
+              "name": "Gavi",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "297370",
+              "jersey": "11",
+              "name": "Y. Pino",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "297362",
+              "jersey": "13",
+              "name": "J. García",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "214596",
+              "jersey": "8",
+              "name": "F. Ruiz",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            }
+          ]
+        }
+      },
+      "stats": {
+        "home": {
+          "foulsCommitted": 1,
+          "yellowCards": 0,
+          "redCards": 0,
+          "offsides": 0,
+          "wonCorners": 2,
+          "saves": 1,
+          "possessionPct": 43.6,
+          "totalShots": 3,
+          "shotsOnTarget": 1,
+          "totalPasses": 69,
+          "passPct": 80,
+          "totalCrosses": 2,
+          "totalTackles": 2,
+          "interceptions": 0,
+          "totalClearance": 1
+        },
+        "away": {
+          "foulsCommitted": 1,
+          "yellowCards": 0,
+          "redCards": 0,
+          "offsides": 0,
+          "wonCorners": 0,
+          "saves": 1,
+          "possessionPct": 56.4,
+          "totalShots": 3,
+          "shotsOnTarget": 1,
+          "totalPasses": 93,
+          "passPct": 80,
+          "totalCrosses": 0,
+          "totalTackles": 3,
+          "interceptions": 1,
+          "totalClearance": 4
+        }
+      },
+      "goals": null
+    },
     {
       "key": "england~mexico",
       "lineups": {
@@ -405,6 +1021,8 @@
               "jersey": "1",
               "name": "R. Rangel",
               "band": "gk",
+              "pos": "G",
+              "formationPlace": 1,
               "position": "Goalkeeper",
               "yellowCards": 0,
               "redCards": 0
@@ -414,6 +1032,8 @@
               "jersey": "5",
               "name": "J. Vásquez",
               "band": "def",
+              "pos": "CD-L",
+              "formationPlace": 6,
               "position": "Center Left Defender",
               "yellowCards": 1,
               "redCards": 0
@@ -423,6 +1043,8 @@
               "jersey": "4",
               "name": "E. Álvarez",
               "band": "def",
+              "pos": "CD-R",
+              "formationPlace": 5,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -434,6 +1056,8 @@
               "jersey": "23",
               "name": "J. Gallardo",
               "band": "def",
+              "pos": "LB",
+              "formationPlace": 3,
               "position": "Left Back",
               "yellowCards": 0,
               "redCards": 0
@@ -443,6 +1067,8 @@
               "jersey": "8",
               "name": "Á. Fidalgo",
               "band": "def",
+              "pos": "RB",
+              "formationPlace": 2,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -454,6 +1080,8 @@
               "jersey": "6",
               "name": "É. Lira",
               "band": "mid",
+              "pos": "CM",
+              "formationPlace": 4,
               "position": "Center Midfielder",
               "yellowCards": 0,
               "redCards": 0
@@ -463,6 +1091,8 @@
               "jersey": "26",
               "name": "B. Gutiérrez",
               "band": "mid",
+              "pos": "LM",
+              "formationPlace": 8,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -474,6 +1104,8 @@
               "jersey": "11",
               "name": "S. Gimenez",
               "band": "mid",
+              "pos": "RM",
+              "formationPlace": 7,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -485,6 +1117,8 @@
               "jersey": "9",
               "name": "R. Jiménez",
               "band": "fwd",
+              "pos": "F",
+              "formationPlace": 9,
               "position": "Forward",
               "yellowCards": 0,
               "redCards": 0
@@ -494,6 +1128,8 @@
               "jersey": "22",
               "name": "G. Martínez",
               "band": "fwd",
+              "pos": "LF",
+              "formationPlace": 11,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -505,6 +1141,8 @@
               "jersey": "25",
               "name": "R. Alvarado",
               "band": "fwd",
+              "pos": "RF",
+              "formationPlace": 10,
               "position": "Right Forward",
               "yellowCards": 0,
               "redCards": 0
@@ -516,6 +1154,8 @@
               "jersey": "13",
               "name": "G. Ochoa",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -525,6 +1165,8 @@
               "jersey": "20",
               "name": "M. Chávez",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -534,6 +1176,8 @@
               "jersey": "14",
               "name": "A. González",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -543,6 +1187,8 @@
               "jersey": "8",
               "name": "Á. Fidalgo",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -552,6 +1198,8 @@
               "jersey": "12",
               "name": "C. Acevedo",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -561,6 +1209,8 @@
               "jersey": "18",
               "name": "O. Vargas",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -570,6 +1220,8 @@
               "jersey": "21",
               "name": "C. Huerta",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -579,6 +1231,8 @@
               "jersey": "10",
               "name": "A. Vega",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -588,6 +1242,8 @@
               "jersey": "15",
               "name": "I. Reyes",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -597,6 +1253,8 @@
               "jersey": "11",
               "name": "S. Gimenez",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -606,6 +1264,8 @@
               "jersey": "26",
               "name": "B. Gutiérrez",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -615,6 +1275,8 @@
               "jersey": "4",
               "name": "E. Álvarez",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -624,6 +1286,8 @@
               "jersey": "17",
               "name": "O. Pineda",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -633,6 +1297,8 @@
               "jersey": "22",
               "name": "G. Martínez",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -642,6 +1308,8 @@
               "jersey": "24",
               "name": "L. Chávez",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -656,6 +1324,8 @@
               "jersey": "1",
               "name": "J. Pickford",
               "band": "gk",
+              "pos": "G",
+              "formationPlace": 1,
               "position": "Goalkeeper",
               "yellowCards": 0,
               "redCards": 0
@@ -665,6 +1335,8 @@
               "jersey": "6",
               "name": "M. Guéhi",
               "band": "def",
+              "pos": "CD-L",
+              "formationPlace": 6,
               "position": "Center Left Defender",
               "yellowCards": 1,
               "redCards": 0
@@ -674,6 +1346,8 @@
               "jersey": "2",
               "name": "E. Konsa",
               "band": "def",
+              "pos": "CD-R",
+              "formationPlace": 5,
               "position": "Center Right Defender",
               "yellowCards": 0,
               "redCards": 0
@@ -683,6 +1357,8 @@
               "jersey": "25",
               "name": "D. Spence",
               "band": "def",
+              "pos": "LB",
+              "formationPlace": 3,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -694,6 +1370,8 @@
               "jersey": "26",
               "name": "J. Quansah",
               "band": "def",
+              "pos": "RB",
+              "formationPlace": 2,
               "position": "Right Back",
               "yellowCards": 0,
               "redCards": 1
@@ -703,6 +1381,8 @@
               "jersey": "10",
               "name": "J. Bellingham",
               "band": "mid",
+              "pos": "AM",
+              "formationPlace": 10,
               "position": "Attacking Midfielder",
               "yellowCards": 0,
               "redCards": 0
@@ -712,6 +1392,8 @@
               "jersey": "15",
               "name": "D. Burn",
               "band": "mid",
+              "pos": "LM",
+              "formationPlace": 4,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -723,6 +1405,8 @@
               "jersey": "4",
               "name": "D. Rice",
               "band": "mid",
+              "pos": "RM",
+              "formationPlace": 8,
               "position": "Right Midfielder",
               "yellowCards": 1,
               "redCards": 0
@@ -732,6 +1416,8 @@
               "jersey": "17",
               "name": "M. Rogers",
               "band": "fwd",
+              "pos": "F",
+              "formationPlace": 9,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -743,6 +1429,8 @@
               "jersey": "18",
               "name": "A. Gordon",
               "band": "mid",
+              "pos": "AM-L",
+              "formationPlace": 11,
               "position": "Attacking Midfielder Left",
               "yellowCards": 0,
               "redCards": 0
@@ -752,6 +1440,8 @@
               "jersey": "5",
               "name": "J. Stones",
               "band": "mid",
+              "pos": "AM-R",
+              "formationPlace": 7,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -765,6 +1455,8 @@
               "jersey": "5",
               "name": "J. Stones",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -774,6 +1466,8 @@
               "jersey": "19",
               "name": "O. Watkins",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -783,6 +1477,8 @@
               "jersey": "14",
               "name": "J. Henderson",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 1,
               "redCards": 0
@@ -792,6 +1488,8 @@
               "jersey": "20",
               "name": "N. Madueke",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -801,6 +1499,8 @@
               "jersey": "15",
               "name": "D. Burn",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -810,6 +1510,8 @@
               "jersey": "12",
               "name": "T. Chalobah",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -819,6 +1521,8 @@
               "jersey": "16",
               "name": "K. Mainoo",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -828,6 +1532,8 @@
               "jersey": "23",
               "name": "J. Trafford",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -837,6 +1543,8 @@
               "jersey": "11",
               "name": "M. Rashford",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -846,6 +1554,8 @@
               "jersey": "25",
               "name": "D. Spence",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -855,6 +1565,8 @@
               "jersey": "21",
               "name": "E. Eze",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -864,6 +1576,8 @@
               "jersey": "17",
               "name": "M. Rogers",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -873,6 +1587,8 @@
               "jersey": "24",
               "name": "R. James",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -882,6 +1598,8 @@
               "jersey": "13",
               "name": "D. Henderson",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -891,6 +1609,8 @@
               "jersey": "22",
               "name": "I. Toney",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -933,542 +1653,58 @@
           "interceptions": 4,
           "totalClearance": 49
         }
-      }
-    },
-    {
-      "key": "brazil~norway",
-      "lineups": {
-        "home": {
-          "formation": "4-4-2",
-          "starters": [
-            {
-              "id": "196876",
-              "jersey": "1",
-              "name": "A. Becker",
-              "band": "gk",
-              "position": "Goalkeeper",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "236322",
-              "jersey": "3",
-              "name": "G. Magalhães",
-              "band": "def",
-              "position": "Center Left Defender",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "159047",
-              "jersey": "4",
-              "name": "Marquinhos",
-              "band": "def",
-              "position": "Center Right Defender",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "186575",
-              "jersey": "16",
-              "name": "D. Santos",
-              "band": "def",
-              "position": "Left Back",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "170369",
-              "jersey": "13",
-              "name": "Danilo",
-              "band": "def",
-              "position": "Right Back",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "173666",
-              "jersey": "5",
-              "name": "Casemiro",
-              "band": "mid",
-              "position": "Center Left Midfielder",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "278210",
-              "jersey": "2",
-              "name": "Éderson",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "B. Guimarães",
-              "subMinute": "79'"
-            },
-            {
-              "id": "132948",
-              "jersey": "10",
-              "name": "Neymar",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 1,
-              "redCards": 0,
-              "subFor": "G. Martinelli",
-              "subMinute": "67'"
-            },
-            {
-              "id": "306764",
-              "jersey": "18",
-              "name": "D. Santos",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "Rayan",
-              "subMinute": "67'"
-            },
-            {
-              "id": "252107",
-              "jersey": "7",
-              "name": "Vinícius Júnior",
-              "band": "mid",
-              "position": "Center Left Forward",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "346612",
-              "jersey": "19",
-              "name": "Endrick",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "M. Cunha",
-              "subMinute": "58'"
-            }
-          ],
-          "subs": [
-            {
-              "id": "306764",
-              "jersey": "18",
-              "name": "D. Santos",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "198983",
-              "jersey": "12",
-              "name": "Weverton",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "176948",
-              "jersey": "23",
-              "name": "Ederson",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "259835",
-              "jersey": "24",
-              "name": "R. Ibañez",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "231050",
-              "jersey": "11",
-              "name": "Raphinha",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "258307",
-              "jersey": "14",
-              "name": "Bremer",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "278210",
-              "jersey": "2",
-              "name": "Éderson",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "132948",
-              "jersey": "10",
-              "name": "Neymar",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 1,
-              "redCards": 0
-            },
-            {
-              "id": "304215",
-              "jersey": "21",
-              "name": "L. Henrique",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "301894",
-              "jersey": "25",
-              "name": "I. Thiago",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "346612",
-              "jersey": "19",
-              "name": "Endrick",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "125514",
-              "jersey": "6",
-              "name": "Alex Sandro",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "145405",
-              "jersey": "15",
-              "name": "L. Pereira",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "176287",
-              "jersey": "17",
-              "name": "Fabinho",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            }
-          ]
-        },
-        "away": {
-          "formation": "4-3-3",
-          "starters": [
-            {
-              "id": "193610",
-              "jersey": "1",
-              "name": "Ø. Nyland",
-              "band": "gk",
-              "position": "Goalkeeper",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "272867",
-              "jersey": "17",
-              "name": "T. Heggem",
-              "band": "def",
-              "position": "Center Left Defender",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "206173",
-              "jersey": "3",
-              "name": "K. Ajer",
-              "band": "def",
-              "position": "Center Right Defender",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "281736",
-              "jersey": "4",
-              "name": "L. Østigard",
-              "band": "def",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "D. Møller Wolfe",
-              "subMinute": "90'+5'"
-            },
-            {
-              "id": "212900",
-              "jersey": "14",
-              "name": "F. Aursnes",
-              "band": "def",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "J. Ryerson",
-              "subMinute": "63'"
-            },
-            {
-              "id": "218998",
-              "jersey": "8",
-              "name": "S. Berge",
-              "band": "mid",
-              "position": "Center Midfielder",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "205924",
-              "jersey": "6",
-              "name": "P. Berg",
-              "band": "mid",
-              "position": "Left Midfielder",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "203669",
-              "jersey": "10",
-              "name": "M. Ødegaard",
-              "band": "mid",
-              "position": "Right Midfielder",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "253989",
-              "jersey": "9",
-              "name": "E. Haaland",
-              "band": "fwd",
-              "position": "Forward",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "313415",
-              "jersey": "21",
-              "name": "A. Schjelderup",
-              "band": "fwd",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "A. Nusa",
-              "subMinute": "45'"
-            },
-            {
-              "id": "307111",
-              "jersey": "22",
-              "name": "O. Bobb",
-              "band": "fwd",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "A. Sørloth",
-              "subMinute": "45'"
-            }
-          ],
-          "subs": [
-            {
-              "id": "307111",
-              "jersey": "22",
-              "name": "O. Bobb",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "252747",
-              "jersey": "11",
-              "name": "J. Larsen",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "303281",
-              "jersey": "25",
-              "name": "H. Falchener",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "284212",
-              "jersey": "18",
-              "name": "K. Thorstvedt",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "235789",
-              "jersey": "23",
-              "name": "J. Hauge",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "366455",
-              "jersey": "24",
-              "name": "S. Langas",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "313415",
-              "jersey": "21",
-              "name": "A. Schjelderup",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "307477",
-              "jersey": "19",
-              "name": "T. Aasgaard",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "304258",
-              "jersey": "12",
-              "name": "S. Tangvik",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "212900",
-              "jersey": "14",
-              "name": "F. Aursnes",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "202686",
-              "jersey": "2",
-              "name": "M. Thorsby",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "286433",
-              "jersey": "13",
-              "name": "E. Selvik",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "281736",
-              "jersey": "4",
-              "name": "L. Østigard",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "238088",
-              "jersey": "15",
-              "name": "F. Bjørkan",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            }
-          ]
-        }
       },
-      "stats": {
-        "home": {
-          "foulsCommitted": 7,
-          "yellowCards": 1,
-          "redCards": 0,
-          "offsides": 1,
-          "wonCorners": 5,
-          "saves": 3,
-          "possessionPct": 33.6,
-          "totalShots": 14,
-          "shotsOnTarget": 4,
-          "totalPasses": 331,
-          "passPct": 80,
-          "totalCrosses": 16,
-          "totalTackles": 23,
-          "interceptions": 11,
-          "totalClearance": 21
+      "goals": [
+        {
+          "side": "away",
+          "scorer": "J. Bellingham",
+          "minute": "36'",
+          "penalty": false,
+          "own": false
         },
-        "away": {
-          "foulsCommitted": 6,
-          "yellowCards": 0,
-          "redCards": 0,
-          "offsides": 1,
-          "wonCorners": 5,
-          "saves": 4,
-          "possessionPct": 66.4,
-          "totalShots": 9,
-          "shotsOnTarget": 5,
-          "totalPasses": 681,
-          "passPct": 90,
-          "totalCrosses": 13,
-          "totalTackles": 14,
-          "interceptions": 6,
-          "totalClearance": 18
+        {
+          "side": "away",
+          "scorer": "J. Bellingham",
+          "minute": "38'",
+          "penalty": false,
+          "own": false
+        },
+        {
+          "side": "home",
+          "scorer": "J. Quiñones",
+          "minute": "42'",
+          "penalty": false,
+          "own": false
+        },
+        {
+          "side": "away",
+          "scorer": "H. Kane",
+          "minute": "60'",
+          "penalty": true,
+          "own": false
+        },
+        {
+          "side": "home",
+          "scorer": "R. Jiménez",
+          "minute": "69'",
+          "penalty": true,
+          "own": false
         }
-      }
+      ]
     }
   ],
   "matches": [
     {
       "id": "espn-fifa.world-760506",
-      "status": "upcoming",
-      "minute": "",
+      "status": "live",
+      "minute": "14'",
       "home": "Portugal",
       "away": "Spain",
       "homeAbbr": "POR",
       "awayAbbr": "ESP",
       "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/por.png",
       "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/esp.png",
-      "score": "VS",
+      "score": "0 - 0",
       "time": "19:00",
       "kickoffUtc": "2026-07-06T19:00Z",
       "league": "FIFA World Cup",
@@ -1482,7 +1718,631 @@
           "name": "عصام الشوالي",
           "channel": "beIN MAX 1"
         }
-      ]
+      ],
+      "lineups": {
+        "home": {
+          "formation": "4-2-3-1",
+          "starters": [
+            {
+              "id": "238903",
+              "jersey": "1",
+              "name": "D. Costa",
+              "band": "gk",
+              "pos": "G",
+              "formationPlace": 1,
+              "position": "Goalkeeper",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "337011",
+              "jersey": "13",
+              "name": "R. Veiga",
+              "band": "def",
+              "pos": "CD-L",
+              "formationPlace": 6,
+              "position": "Center Left Defender",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "234878",
+              "jersey": "3",
+              "name": "R. Dias",
+              "band": "def",
+              "pos": "CD-R",
+              "formationPlace": 5,
+              "position": "Center Right Defender",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "290591",
+              "jersey": "25",
+              "name": "N. Mendes",
+              "band": "def",
+              "pos": "LB",
+              "formationPlace": 3,
+              "position": "Left Back",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "176399",
+              "jersey": "20",
+              "name": "J. Cancelo",
+              "band": "def",
+              "pos": "RB",
+              "formationPlace": 2,
+              "position": "Right Back",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "124091",
+              "jersey": "8",
+              "name": "B. Fernandes",
+              "band": "mid",
+              "pos": "AM",
+              "formationPlace": 10,
+              "position": "Attacking Midfielder",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "355061",
+              "jersey": "15",
+              "name": "J. Neves",
+              "band": "mid",
+              "pos": "LM",
+              "formationPlace": 4,
+              "position": "Left Midfielder",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "288897",
+              "jersey": "23",
+              "name": "Vitinha",
+              "band": "mid",
+              "pos": "RM",
+              "formationPlace": 8,
+              "position": "Right Midfielder",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "22774",
+              "jersey": "7",
+              "name": "C. Ronaldo",
+              "band": "fwd",
+              "pos": "F",
+              "formationPlace": 9,
+              "position": "Forward",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "276350",
+              "jersey": "11",
+              "name": "J. Félix",
+              "band": "mid",
+              "pos": "AM-L",
+              "formationPlace": 11,
+              "position": "Attacking Midfielder Left",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "256115",
+              "jersey": "18",
+              "name": "P. Neto",
+              "band": "mid",
+              "pos": "AM-R",
+              "formationPlace": 7,
+              "position": "Attacking Midfielder Right",
+              "yellowCards": 0,
+              "redCards": 0
+            }
+          ],
+          "subs": [
+            {
+              "id": "304106",
+              "jersey": "14",
+              "name": "G. Inácio",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "213141",
+              "jersey": "19",
+              "name": "G. Guedes",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "303785",
+              "jersey": "6",
+              "name": "M. Nunes",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "238902",
+              "jersey": "5",
+              "name": "D. Dalot",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "181278",
+              "jersey": "12",
+              "name": "J. Sá",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "199833",
+              "jersey": "10",
+              "name": "B. Silva",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "222670",
+              "jersey": "2",
+              "name": "N. Semedo",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "312659",
+              "jersey": "26",
+              "name": "F. Conceição",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "288896",
+              "jersey": "9",
+              "name": "G. Ramos",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "258917",
+              "jersey": "17",
+              "name": "R. Leão",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "177898",
+              "jersey": "22",
+              "name": "R. Silva",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "329691",
+              "jersey": "4",
+              "name": "T. Araújo",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "183466",
+              "jersey": "24",
+              "name": "S. Costa",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "274159",
+              "jersey": "16",
+              "name": "F. Trincão",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "208128",
+              "jersey": "21",
+              "name": "R. Neves",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            }
+          ]
+        },
+        "away": {
+          "formation": "4-2-3-1",
+          "starters": [
+            {
+              "id": "222375",
+              "jersey": "23",
+              "name": "U. Simón",
+              "band": "gk",
+              "pos": "G",
+              "formationPlace": 1,
+              "position": "Goalkeeper",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "159317",
+              "jersey": "14",
+              "name": "A. Laporte",
+              "band": "def",
+              "pos": "CD-L",
+              "formationPlace": 6,
+              "position": "Center Left Defender",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "368992",
+              "jersey": "22",
+              "name": "P. Cubarsí",
+              "band": "def",
+              "pos": "CD-R",
+              "formationPlace": 5,
+              "position": "Center Right Defender",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "259910",
+              "jersey": "24",
+              "name": "M. Cucurella",
+              "band": "def",
+              "pos": "LB",
+              "formationPlace": 3,
+              "position": "Left Back",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "268533",
+              "jersey": "12",
+              "name": "P. Porro",
+              "band": "def",
+              "pos": "RB",
+              "formationPlace": 2,
+              "position": "Right Back",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "227765",
+              "jersey": "10",
+              "name": "D. Olmo",
+              "band": "mid",
+              "pos": "AM",
+              "formationPlace": 10,
+              "position": "Attacking Midfielder",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "250465",
+              "jersey": "20",
+              "name": "Pedri",
+              "band": "mid",
+              "pos": "LM",
+              "formationPlace": 4,
+              "position": "Left Midfielder",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "231828",
+              "jersey": "16",
+              "name": "Rodri",
+              "band": "mid",
+              "pos": "RM",
+              "formationPlace": 8,
+              "position": "Right Midfielder",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "229018",
+              "jersey": "21",
+              "name": "M. Oyarzabal",
+              "band": "fwd",
+              "pos": "F",
+              "formationPlace": 9,
+              "position": "Forward",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "297373",
+              "jersey": "15",
+              "name": "Á. Baena",
+              "band": "mid",
+              "pos": "AM-L",
+              "formationPlace": 11,
+              "position": "Attacking Midfielder Left",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "362150",
+              "jersey": "19",
+              "name": "L. Yamal",
+              "band": "mid",
+              "pos": "AM-R",
+              "formationPlace": 7,
+              "position": "Attacking Midfielder Right",
+              "yellowCards": 0,
+              "redCards": 0
+            }
+          ],
+          "subs": [
+            {
+              "id": "209581",
+              "jersey": "6",
+              "name": "M. Merino",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "128714",
+              "jersey": "4",
+              "name": "E. García",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "214995",
+              "jersey": "26",
+              "name": "B. Iglesias",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "196176",
+              "jersey": "1",
+              "name": "D. Raya",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "312146",
+              "jersey": "17",
+              "name": "N. Williams",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "287266",
+              "jersey": "18",
+              "name": "M. Zubimendi",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "332613",
+              "jersey": "2",
+              "name": "M. Pubill",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "265869",
+              "jersey": "7",
+              "name": "F. Torres",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "206474",
+              "jersey": "5",
+              "name": "M. Llorente",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "166396",
+              "jersey": "3",
+              "name": "A. Grimaldo",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "397545",
+              "jersey": "25",
+              "name": "V. Muñoz",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "323702",
+              "jersey": "9",
+              "name": "Gavi",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "297370",
+              "jersey": "11",
+              "name": "Y. Pino",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "297362",
+              "jersey": "13",
+              "name": "J. García",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            },
+            {
+              "id": "214596",
+              "jersey": "8",
+              "name": "F. Ruiz",
+              "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
+              "position": "Substitute",
+              "yellowCards": 0,
+              "redCards": 0
+            }
+          ]
+        }
+      },
+      "stats": {
+        "home": {
+          "foulsCommitted": 1,
+          "yellowCards": 0,
+          "redCards": 0,
+          "offsides": 0,
+          "wonCorners": 2,
+          "saves": 1,
+          "possessionPct": 43.6,
+          "totalShots": 3,
+          "shotsOnTarget": 1,
+          "totalPasses": 69,
+          "passPct": 80,
+          "totalCrosses": 2,
+          "totalTackles": 2,
+          "interceptions": 0,
+          "totalClearance": 1
+        },
+        "away": {
+          "foulsCommitted": 1,
+          "yellowCards": 0,
+          "redCards": 0,
+          "offsides": 0,
+          "wonCorners": 0,
+          "saves": 1,
+          "possessionPct": 56.4,
+          "totalShots": 3,
+          "shotsOnTarget": 1,
+          "totalPasses": 93,
+          "passPct": 80,
+          "totalCrosses": 0,
+          "totalTackles": 3,
+          "interceptions": 1,
+          "totalClearance": 4
+        }
+      }
     },
     {
       "id": "espn-fifa.world-760507",
@@ -1583,7 +2443,7 @@
           "source": "vortex",
           "embedId": "b1dy0L8gi2Kbt",
           "btolatId": "93935",
-          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318218/poster/0.png?token=YTNubG9UOERDQVdTRE1oMHU5RzFmK2R0Vk5NKzFFMnlnYkZJdmxVY0RwYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODkzMjA1OTM4MzI2MTk=&keypair=cXpaQkticEpudjZuZnMyRFVXZmdQM1lseTZTeVpQNlRyZFAvV2pzYzZ2WT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTkzODMyNjE5",
+          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318218/poster/0.png?token=Nk5jNXhJeGN1YWZRcG92UVF5VEJzbDZaZHl4TmEwbTUxOXV6eU1SN21COD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODk2NTY2NTE2ODM1OTA=&keypair=Q1BiUzAwUEd2OEIxMlNzVWdJWmo3cVRoQTY2aGNjVFg4T3MySjVJT0NkND06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5NjU2NjUxNjgzNTkw",
           "kind": "goals"
         },
         "full": {
@@ -1592,7 +2452,7 @@
           "source": "vortex",
           "embedId": "WAOCAqgXRSoPe",
           "btolatId": "93943",
-          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=LzUwTDVvc3RVWWVzeUJZSnoyQWJDUlFBODk0ckhFUm9Id3hNam1MVDJYWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTgxMDE5NzA5&keypair=VCtodjF1ZEpUR0VOUmREMEVFZzl3OGNqNDhLWElIdks4WENOTlJUZkpsMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDU4MTAxOTcwOQ==",
+          "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=ajk5VTk4VXhYYVRkRkRwRGIzTzN0MmxNVzVzY0FwR0s0bGUxNk1mL09MYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5NjU2NjM3MTUxNTEz&keypair=ZmRBVlA0OElsbWFCSVJuVjJsbEo1b0JJb09tSFdVRk9uZEVmcFhpdmVycz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTY1NjYzNzE1MTUxMw==",
           "kind": "full"
         }
       },
@@ -1603,7 +2463,7 @@
           "source": "vortex",
           "embedId": "DPKuBX5PpQ0Ae",
           "btolatId": "93939",
-          "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318216/poster/0.png?token=NUFyQlc3eVB4TmhhREMrTmVkcXJJNkZ0b0daQTdBSVdoc05XdGxSQUloVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxNi8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTg3MTEzNjU1&keypair=d0hOT21HL3RRbFNwZiszWUdLdUxvTEpXSDF5UTBRWlJtdXo1azFCUUhmYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxNi86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDU4NzExMzY1NQ==",
+          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318216/poster/0.png?token=b1JFLzk0ZWJtT2p5aGdKSWo4cDAwY0N5RlhabzlsVFdXQ05DMnE1WERUZz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxNi8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkxODk2NTY2NDUxMjA1MDQ=&keypair=R3l2R1d4M29wOGpXcU92WGZhelhBTWFsQzZ4cERTck4zYTlRSk1JejBDMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxNi86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5NjU2NjQ1MTIwNTA0",
           "kind": "save"
         },
         {
@@ -1612,7 +2472,7 @@
           "source": "vortex",
           "embedId": "PETLTQAhSAuCO",
           "btolatId": "93934",
-          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318211/poster/0.png?token=dmdrTjdBVEdRcHZFejlpd0gvbWE4a2JwMStnQVZlVWVLSUZLSkRBVUorOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxMS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTk4ODMyNzk5&keypair=TGhQNGI5RXBWOS9vcFVqcU9wRktVQ0F1dEd1a0RRSEZwQ1RSTzdqdWpjaz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxMS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDU5ODgzMjc5OQ==",
+          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318211/poster/0.png?token=dytMWHpzL1JDZVVadUVobVoxUFJjeGg4SzBQYTNRWC9mTDY2RXFlanpWbz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxMS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5NjU2NjU2NjgzNzMw&keypair=L29MT3ZIa2RnYzkzaUszM2VyU0dDd1h2MjhlUE5JWFNiZmlFaU9wRWFOWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxMS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTY1NjY1NjY4MzczMA==",
           "kind": "chance"
         }
       ],
@@ -1622,7 +2482,7 @@
         "source": "vortex",
         "embedId": "WAOCAqgXRSoPe",
         "btolatId": "93943",
-        "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=LzUwTDVvc3RVWWVzeUJZSnoyQWJDUlFBODk0ckhFUm9Id3hNam1MVDJYWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNTgxMDE5NzA5&keypair=VCtodjF1ZEpUR0VOUmREMEVFZzl3OGNqNDhLWElIdks4WENOTlJUZkpsMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDU4MTAxOTcwOQ==",
+        "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=ajk5VTk4VXhYYVRkRkRwRGIzTzN0MmxNVzVzY0FwR0s0bGUxNk1mL09MYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5NjU2NjM3MTUxNTEz&keypair=ZmRBVlA0OElsbWFCSVJuVjJsbEo1b0JJb09tSFdVRk9uZEVmcFhpdmVycz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTY1NjYzNzE1MTUxMw==",
         "kind": "full"
       },
       "lineups": {
@@ -1634,6 +2494,8 @@
               "jersey": "1",
               "name": "R. Rangel",
               "band": "gk",
+              "pos": "G",
+              "formationPlace": 1,
               "position": "Goalkeeper",
               "yellowCards": 0,
               "redCards": 0
@@ -1643,6 +2505,8 @@
               "jersey": "5",
               "name": "J. Vásquez",
               "band": "def",
+              "pos": "CD-L",
+              "formationPlace": 6,
               "position": "Center Left Defender",
               "yellowCards": 1,
               "redCards": 0
@@ -1652,6 +2516,8 @@
               "jersey": "4",
               "name": "E. Álvarez",
               "band": "def",
+              "pos": "CD-R",
+              "formationPlace": 5,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -1663,6 +2529,8 @@
               "jersey": "23",
               "name": "J. Gallardo",
               "band": "def",
+              "pos": "LB",
+              "formationPlace": 3,
               "position": "Left Back",
               "yellowCards": 0,
               "redCards": 0
@@ -1672,6 +2540,8 @@
               "jersey": "8",
               "name": "Á. Fidalgo",
               "band": "def",
+              "pos": "RB",
+              "formationPlace": 2,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -1683,6 +2553,8 @@
               "jersey": "6",
               "name": "É. Lira",
               "band": "mid",
+              "pos": "CM",
+              "formationPlace": 4,
               "position": "Center Midfielder",
               "yellowCards": 0,
               "redCards": 0
@@ -1692,6 +2564,8 @@
               "jersey": "26",
               "name": "B. Gutiérrez",
               "band": "mid",
+              "pos": "LM",
+              "formationPlace": 8,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -1703,6 +2577,8 @@
               "jersey": "11",
               "name": "S. Gimenez",
               "band": "mid",
+              "pos": "RM",
+              "formationPlace": 7,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -1714,6 +2590,8 @@
               "jersey": "9",
               "name": "R. Jiménez",
               "band": "fwd",
+              "pos": "F",
+              "formationPlace": 9,
               "position": "Forward",
               "yellowCards": 0,
               "redCards": 0
@@ -1723,6 +2601,8 @@
               "jersey": "22",
               "name": "G. Martínez",
               "band": "fwd",
+              "pos": "LF",
+              "formationPlace": 11,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -1734,6 +2614,8 @@
               "jersey": "25",
               "name": "R. Alvarado",
               "band": "fwd",
+              "pos": "RF",
+              "formationPlace": 10,
               "position": "Right Forward",
               "yellowCards": 0,
               "redCards": 0
@@ -1745,6 +2627,8 @@
               "jersey": "13",
               "name": "G. Ochoa",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1754,6 +2638,8 @@
               "jersey": "20",
               "name": "M. Chávez",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1763,6 +2649,8 @@
               "jersey": "14",
               "name": "A. González",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1772,6 +2660,8 @@
               "jersey": "8",
               "name": "Á. Fidalgo",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1781,6 +2671,8 @@
               "jersey": "12",
               "name": "C. Acevedo",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1790,6 +2682,8 @@
               "jersey": "18",
               "name": "O. Vargas",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1799,6 +2693,8 @@
               "jersey": "21",
               "name": "C. Huerta",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1808,6 +2704,8 @@
               "jersey": "10",
               "name": "A. Vega",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1817,6 +2715,8 @@
               "jersey": "15",
               "name": "I. Reyes",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1826,6 +2726,8 @@
               "jersey": "11",
               "name": "S. Gimenez",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1835,6 +2737,8 @@
               "jersey": "26",
               "name": "B. Gutiérrez",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1844,6 +2748,8 @@
               "jersey": "4",
               "name": "E. Álvarez",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1853,6 +2759,8 @@
               "jersey": "17",
               "name": "O. Pineda",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1862,6 +2770,8 @@
               "jersey": "22",
               "name": "G. Martínez",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1871,6 +2781,8 @@
               "jersey": "24",
               "name": "L. Chávez",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -1885,6 +2797,8 @@
               "jersey": "1",
               "name": "J. Pickford",
               "band": "gk",
+              "pos": "G",
+              "formationPlace": 1,
               "position": "Goalkeeper",
               "yellowCards": 0,
               "redCards": 0
@@ -1894,6 +2808,8 @@
               "jersey": "6",
               "name": "M. Guéhi",
               "band": "def",
+              "pos": "CD-L",
+              "formationPlace": 6,
               "position": "Center Left Defender",
               "yellowCards": 1,
               "redCards": 0
@@ -1903,6 +2819,8 @@
               "jersey": "2",
               "name": "E. Konsa",
               "band": "def",
+              "pos": "CD-R",
+              "formationPlace": 5,
               "position": "Center Right Defender",
               "yellowCards": 0,
               "redCards": 0
@@ -1912,6 +2830,8 @@
               "jersey": "25",
               "name": "D. Spence",
               "band": "def",
+              "pos": "LB",
+              "formationPlace": 3,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -1923,6 +2843,8 @@
               "jersey": "26",
               "name": "J. Quansah",
               "band": "def",
+              "pos": "RB",
+              "formationPlace": 2,
               "position": "Right Back",
               "yellowCards": 0,
               "redCards": 1
@@ -1932,6 +2854,8 @@
               "jersey": "10",
               "name": "J. Bellingham",
               "band": "mid",
+              "pos": "AM",
+              "formationPlace": 10,
               "position": "Attacking Midfielder",
               "yellowCards": 0,
               "redCards": 0
@@ -1941,6 +2865,8 @@
               "jersey": "15",
               "name": "D. Burn",
               "band": "mid",
+              "pos": "LM",
+              "formationPlace": 4,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -1952,6 +2878,8 @@
               "jersey": "4",
               "name": "D. Rice",
               "band": "mid",
+              "pos": "RM",
+              "formationPlace": 8,
               "position": "Right Midfielder",
               "yellowCards": 1,
               "redCards": 0
@@ -1961,6 +2889,8 @@
               "jersey": "17",
               "name": "M. Rogers",
               "band": "fwd",
+              "pos": "F",
+              "formationPlace": 9,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -1972,6 +2902,8 @@
               "jersey": "18",
               "name": "A. Gordon",
               "band": "mid",
+              "pos": "AM-L",
+              "formationPlace": 11,
               "position": "Attacking Midfielder Left",
               "yellowCards": 0,
               "redCards": 0
@@ -1981,6 +2913,8 @@
               "jersey": "5",
               "name": "J. Stones",
               "band": "mid",
+              "pos": "AM-R",
+              "formationPlace": 7,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0,
@@ -1994,6 +2928,8 @@
               "jersey": "5",
               "name": "J. Stones",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2003,6 +2939,8 @@
               "jersey": "19",
               "name": "O. Watkins",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2012,6 +2950,8 @@
               "jersey": "14",
               "name": "J. Henderson",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 1,
               "redCards": 0
@@ -2021,6 +2961,8 @@
               "jersey": "20",
               "name": "N. Madueke",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2030,6 +2972,8 @@
               "jersey": "15",
               "name": "D. Burn",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2039,6 +2983,8 @@
               "jersey": "12",
               "name": "T. Chalobah",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2048,6 +2994,8 @@
               "jersey": "16",
               "name": "K. Mainoo",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2057,6 +3005,8 @@
               "jersey": "23",
               "name": "J. Trafford",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2066,6 +3016,8 @@
               "jersey": "11",
               "name": "M. Rashford",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2075,6 +3027,8 @@
               "jersey": "25",
               "name": "D. Spence",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2084,6 +3038,8 @@
               "jersey": "21",
               "name": "E. Eze",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2093,6 +3049,8 @@
               "jersey": "17",
               "name": "M. Rogers",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2102,6 +3060,8 @@
               "jersey": "24",
               "name": "R. James",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2111,6 +3071,8 @@
               "jersey": "13",
               "name": "D. Henderson",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2120,6 +3082,8 @@
               "jersey": "22",
               "name": "I. Toney",
               "band": "mid",
+              "pos": "SUB",
+              "formationPlace": 0,
               "position": "Substitute",
               "yellowCards": 0,
               "redCards": 0
@@ -2162,572 +3126,44 @@
           "interceptions": 4,
           "totalClearance": 49
         }
-      }
-    },
-    {
-      "id": "espn-fifa.world-760504",
-      "status": "ended",
-      "minute": "",
-      "home": "Brazil",
-      "away": "Norway",
-      "homeAbbr": "BRA",
-      "awayAbbr": "NOR",
-      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/bra.png",
-      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/nor.png",
-      "score": "1 - 2",
-      "time": "20:00",
-      "kickoffUtc": "2026-07-05T20:00Z",
-      "league": "FIFA World Cup",
-      "venue": "MetLife Stadium · East Rutherford, New Jersey · USA",
-      "channel": "beIN MAX 1",
-      "channelId": "bein-max-1",
-      "commentator": "علي الكعبي",
-      "source": "espn",
-      "commentators": [
+      },
+      "goals": [
         {
-          "name": "علي الكعبي",
-          "channel": "beIN MAX 1"
-        }
-      ],
-      "summaryAr": "انتهت المباراة بفوز النرويج على البرازيل بنتيجة 2-1 ضمن FIFA World Cup على ملعب MetLife Stadium · East Rutherford, New Jersey · USA. تعليق: علي الكعبي.",
-      "highlights": {
-        "full": {
-          "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/mA5amQonpFi8V",
-          "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
-          "source": "vortex",
-          "embedId": "mA5amQonpFi8V",
-          "btolatId": "93932",
-          "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=dHRhVnBBdllURmptdFgxSEtEdTRRTW92amY5RXg0Vzk0bE5RM0RVdVFBOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjA2MzMyOTk5&keypair=a05pY3ZPRzRveWFwd2ZNMkVnWkdIUWFuTjMzZEF1N29Pd2Jlby9hL2Vodz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDYwNjMzMjk5OQ==",
-          "kind": "full"
-        }
-      },
-      "highlight": {
-        "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/mA5amQonpFi8V",
-        "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
-        "source": "vortex",
-        "embedId": "mA5amQonpFi8V",
-        "btolatId": "93932",
-        "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318208/poster/0.png?token=dHRhVnBBdllURmptdFgxSEtEdTRRTW92amY5RXg0Vzk0bE5RM0RVdVFBOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MzIwNjA2MzMyOTk5&keypair=a05pY3ZPRzRveWFwd2ZNMkVnWkdIUWFuTjMzZEF1N29Pd2Jlby9hL2Vodz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIwOC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTMyMDYwNjMzMjk5OQ==",
-        "kind": "full"
-      },
-      "lineups": {
-        "home": {
-          "formation": "4-4-2",
-          "starters": [
-            {
-              "id": "196876",
-              "jersey": "1",
-              "name": "A. Becker",
-              "band": "gk",
-              "position": "Goalkeeper",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "236322",
-              "jersey": "3",
-              "name": "G. Magalhães",
-              "band": "def",
-              "position": "Center Left Defender",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "159047",
-              "jersey": "4",
-              "name": "Marquinhos",
-              "band": "def",
-              "position": "Center Right Defender",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "186575",
-              "jersey": "16",
-              "name": "D. Santos",
-              "band": "def",
-              "position": "Left Back",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "170369",
-              "jersey": "13",
-              "name": "Danilo",
-              "band": "def",
-              "position": "Right Back",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "173666",
-              "jersey": "5",
-              "name": "Casemiro",
-              "band": "mid",
-              "position": "Center Left Midfielder",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "278210",
-              "jersey": "2",
-              "name": "Éderson",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "B. Guimarães",
-              "subMinute": "79'"
-            },
-            {
-              "id": "132948",
-              "jersey": "10",
-              "name": "Neymar",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 1,
-              "redCards": 0,
-              "subFor": "G. Martinelli",
-              "subMinute": "67'"
-            },
-            {
-              "id": "306764",
-              "jersey": "18",
-              "name": "D. Santos",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "Rayan",
-              "subMinute": "67'"
-            },
-            {
-              "id": "252107",
-              "jersey": "7",
-              "name": "Vinícius Júnior",
-              "band": "mid",
-              "position": "Center Left Forward",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "346612",
-              "jersey": "19",
-              "name": "Endrick",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "M. Cunha",
-              "subMinute": "58'"
-            }
-          ],
-          "subs": [
-            {
-              "id": "306764",
-              "jersey": "18",
-              "name": "D. Santos",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "198983",
-              "jersey": "12",
-              "name": "Weverton",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "176948",
-              "jersey": "23",
-              "name": "Ederson",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "259835",
-              "jersey": "24",
-              "name": "R. Ibañez",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "231050",
-              "jersey": "11",
-              "name": "Raphinha",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "258307",
-              "jersey": "14",
-              "name": "Bremer",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "278210",
-              "jersey": "2",
-              "name": "Éderson",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "132948",
-              "jersey": "10",
-              "name": "Neymar",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 1,
-              "redCards": 0
-            },
-            {
-              "id": "304215",
-              "jersey": "21",
-              "name": "L. Henrique",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "301894",
-              "jersey": "25",
-              "name": "I. Thiago",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "346612",
-              "jersey": "19",
-              "name": "Endrick",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "125514",
-              "jersey": "6",
-              "name": "Alex Sandro",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "145405",
-              "jersey": "15",
-              "name": "L. Pereira",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "176287",
-              "jersey": "17",
-              "name": "Fabinho",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            }
-          ]
+          "side": "away",
+          "scorer": "J. Bellingham",
+          "minute": "36'",
+          "penalty": false,
+          "own": false
         },
-        "away": {
-          "formation": "4-3-3",
-          "starters": [
-            {
-              "id": "193610",
-              "jersey": "1",
-              "name": "Ø. Nyland",
-              "band": "gk",
-              "position": "Goalkeeper",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "272867",
-              "jersey": "17",
-              "name": "T. Heggem",
-              "band": "def",
-              "position": "Center Left Defender",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "206173",
-              "jersey": "3",
-              "name": "K. Ajer",
-              "band": "def",
-              "position": "Center Right Defender",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "281736",
-              "jersey": "4",
-              "name": "L. Østigard",
-              "band": "def",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "D. Møller Wolfe",
-              "subMinute": "90'+5'"
-            },
-            {
-              "id": "212900",
-              "jersey": "14",
-              "name": "F. Aursnes",
-              "band": "def",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "J. Ryerson",
-              "subMinute": "63'"
-            },
-            {
-              "id": "218998",
-              "jersey": "8",
-              "name": "S. Berge",
-              "band": "mid",
-              "position": "Center Midfielder",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "205924",
-              "jersey": "6",
-              "name": "P. Berg",
-              "band": "mid",
-              "position": "Left Midfielder",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "203669",
-              "jersey": "10",
-              "name": "M. Ødegaard",
-              "band": "mid",
-              "position": "Right Midfielder",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "253989",
-              "jersey": "9",
-              "name": "E. Haaland",
-              "band": "fwd",
-              "position": "Forward",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "313415",
-              "jersey": "21",
-              "name": "A. Schjelderup",
-              "band": "fwd",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "A. Nusa",
-              "subMinute": "45'"
-            },
-            {
-              "id": "307111",
-              "jersey": "22",
-              "name": "O. Bobb",
-              "band": "fwd",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0,
-              "subFor": "A. Sørloth",
-              "subMinute": "45'"
-            }
-          ],
-          "subs": [
-            {
-              "id": "307111",
-              "jersey": "22",
-              "name": "O. Bobb",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "252747",
-              "jersey": "11",
-              "name": "J. Larsen",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "303281",
-              "jersey": "25",
-              "name": "H. Falchener",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "284212",
-              "jersey": "18",
-              "name": "K. Thorstvedt",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "235789",
-              "jersey": "23",
-              "name": "J. Hauge",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "366455",
-              "jersey": "24",
-              "name": "S. Langas",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "313415",
-              "jersey": "21",
-              "name": "A. Schjelderup",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "307477",
-              "jersey": "19",
-              "name": "T. Aasgaard",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "304258",
-              "jersey": "12",
-              "name": "S. Tangvik",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "212900",
-              "jersey": "14",
-              "name": "F. Aursnes",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "202686",
-              "jersey": "2",
-              "name": "M. Thorsby",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "286433",
-              "jersey": "13",
-              "name": "E. Selvik",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "281736",
-              "jersey": "4",
-              "name": "L. Østigard",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            },
-            {
-              "id": "238088",
-              "jersey": "15",
-              "name": "F. Bjørkan",
-              "band": "mid",
-              "position": "Substitute",
-              "yellowCards": 0,
-              "redCards": 0
-            }
-          ]
-        }
-      },
-      "stats": {
-        "home": {
-          "foulsCommitted": 7,
-          "yellowCards": 1,
-          "redCards": 0,
-          "offsides": 1,
-          "wonCorners": 5,
-          "saves": 3,
-          "possessionPct": 33.6,
-          "totalShots": 14,
-          "shotsOnTarget": 4,
-          "totalPasses": 331,
-          "passPct": 80,
-          "totalCrosses": 16,
-          "totalTackles": 23,
-          "interceptions": 11,
-          "totalClearance": 21
+        {
+          "side": "away",
+          "scorer": "J. Bellingham",
+          "minute": "38'",
+          "penalty": false,
+          "own": false
         },
-        "away": {
-          "foulsCommitted": 6,
-          "yellowCards": 0,
-          "redCards": 0,
-          "offsides": 1,
-          "wonCorners": 5,
-          "saves": 4,
-          "possessionPct": 66.4,
-          "totalShots": 9,
-          "shotsOnTarget": 5,
-          "totalPasses": 681,
-          "passPct": 90,
-          "totalCrosses": 13,
-          "totalTackles": 14,
-          "interceptions": 6,
-          "totalClearance": 18
+        {
+          "side": "home",
+          "scorer": "J. Quiñones",
+          "minute": "42'",
+          "penalty": false,
+          "own": false
+        },
+        {
+          "side": "away",
+          "scorer": "H. Kane",
+          "minute": "60'",
+          "penalty": true,
+          "own": false
+        },
+        {
+          "side": "home",
+          "scorer": "R. Jiménez",
+          "minute": "69'",
+          "penalty": true,
+          "own": false
         }
-      }
+      ]
     }
   ]
 }

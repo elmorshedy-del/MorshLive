@@ -313,5 +313,40 @@
     return payload;
   }
 
-  global.MatchesAPI = { fetchLiveSoccer, normalizeEvent, normalizeEspnEvent, datesToFetch };
+  function pairKey(home, away) {
+    return [canonical(home), canonical(away)].sort().join("~");
+  }
+
+  /** Merge live score/minute from ESPN when cached today.json is stale. */
+  async function supplementEspnLiveScores(matches) {
+    if (!Array.isArray(matches) || !matches.length) return matches;
+    try {
+      const espnResults = await Promise.allSettled(
+        ESPN_LEAGUES.map((slug) => fetchEspnLeague(slug, espnDateRange()))
+      );
+      const espnMatches = espnResults.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+      if (!espnMatches.length) return matches;
+      const byKey = new Map(espnMatches.map((m) => [pairKey(m.home, m.away), m]));
+      return matches.map((m) => {
+        const hit = byKey.get(pairKey(m.home, m.away));
+        if (!hit) return m;
+        const out = { ...m };
+        if (hit.status === "live" || hit.status === "ended") out.status = hit.status;
+        if (hit.score && hit.score !== "VS" && hit.score !== "—") out.score = hit.score;
+        if (hit.minute) out.minute = hit.minute;
+        if (hit.kickoffUtc) out.kickoffUtc = hit.kickoffUtc;
+        return out;
+      });
+    } catch {
+      return matches;
+    }
+  }
+
+  global.MatchesAPI = {
+    fetchLiveSoccer,
+    supplementEspnLiveScores,
+    normalizeEvent,
+    normalizeEspnEvent,
+    datesToFetch,
+  };
 })(window);
