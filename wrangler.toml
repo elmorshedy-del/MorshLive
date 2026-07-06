@@ -23,7 +23,7 @@ directory = "."
 binding = "ASSETS"
 # Static HTML/JS/CSS is served without invoking the Worker (saves daily request quota).
 # Only stream proxy paths run worker.js. Error 1027 = free-tier 100k/day exceeded.
-run_worker_first = ["/wk/*", "/dl/*", "/lab/*", "/sir/*", "/api/*"]
+run_worker_first = ["/wk/*", "/dl/*", "/lab/*", "/sir/*", "/api/*", "/replay/*"]
 not_found_handling = "404-page"
 
 # If visitors see Error 1027 (100k/day free limit), either upgrade Workers Paid ($5/mo)

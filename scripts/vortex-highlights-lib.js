@@ -133,8 +133,26 @@ function parseOgTitle(html) {
 }
 
 function parseOgImage(html) {
-  const m = (html || "").match(/<meta property="og:image" content="([^"]+)"/i);
-  return m ? m[1] : "";
+  const text = html || "";
+  const patterns = [
+    /<meta\s+(?:property|name)=["']og:image["']\s+content=["']([^"']+)["']/i,
+    /<meta\s+content=["']([^"']+)["']\s+(?:property|name)=["']og:image["']/i,
+    /<meta\s+(?:property|name)=["']twitter:image["']\s+content=["']([^"']+)["']/i,
+    /<meta\s+content=["']([^"']+)["']\s+(?:property|name)=["']twitter:image["']/i,
+    /["'](?:poster|thumbnail|thumbnailUrl|preview_image_url)["']\s*:\s*["']([^"']+)["']/i,
+    /\b(?:poster|thumbnail|thumbnailUrl)\s*[:=]\s*["']([^"']+)["']/i,
+    /(https?:\\?\/\\?\/[^"'\\\s<>]+\/poster\/0\.png[^"'\\\s<>]*)/i,
+  ];
+  for (const re of patterns) {
+    const m = text.match(re);
+    if (m && m[1]) {
+      return m[1]
+        .replace(/\\\//g, "/")
+        .replace(/&amp;/g, "&")
+        .trim();
+    }
+  }
+  return "";
 }
 
 function teamNamesForMatch(name, arabicFor) {
@@ -169,20 +187,20 @@ async function searchDdgEmbedIds(query) {
   return extractEmbedIds(html);
 }
 
-async function fetchVortexEmbedMeta(id) {
+async function fetchVortexEmbedMeta(id, opts = {}) {
   const html = await fetchText(`${VORTEX_EMBED_BASE}/${id}`);
   if (!html) return null;
   const title = parseOgTitle(html);
   if (!title) return null;
   const kind = classifyHighlightTitle(title);
-  if (!kind) return null;
+  if (!kind && !opts.allowAnyTitle) return null;
   return {
     videoUrl: `${VORTEX_EMBED_BASE}/${id}`,
     title,
     thumbnail: parseOgImage(html) || "",
     source: "vortex",
     embedId: id,
-    kind,
+    kind: kind || opts.kind || "clip",
   };
 }
 

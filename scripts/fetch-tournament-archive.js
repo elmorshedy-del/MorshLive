@@ -89,7 +89,7 @@ async function main() {
       const away = arToEn(b) || b;
       return pairKey(home, away);
     },
-    (id) => fetchVortexEmbedMeta(id),
+    (id) => fetchVortexEmbedMeta(id, { allowAnyTitle: true }),
     { matches, arabicTeam }
   );
   const dualCount = [...btolatMap.values()].filter((b) => b.goals && b.full).length;

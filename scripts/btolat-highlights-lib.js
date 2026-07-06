@@ -32,12 +32,24 @@ function parseBtolatVideos(html) {
   }));
 }
 
-/** goals = أهداف only clip; full = ملخص highlights clip */
+/** goals = أهداف reel; full = ملخص; notable clips exclude single-goal clips. */
 function classifyBtolatTitle(title) {
   const t = String(title || "").replace(/\s+/g, " ").trim();
   if (/^(?:اهداف|أهداف)\s+مباراة/i.test(t)) return "goals";
   if (/^ملخص\s+مباراة/i.test(t)) return "full";
+  // User-facing archive should not be flooded with individual goal clips; the
+  // goals reel already covers them.
+  if (/^(?:هدف|هدفا|هدفي|هدفى)\s+/i.test(t)) return null;
+  if (/تصدي|تصد[ىي]|ينقذ|انقاذ|إنقاذ|يحرم/i.test(t)) return "save";
+  if (/طرد|بطاقة\s+حمراء|كارت\s+احمر|كارت\s+أحمر|حمراء/i.test(t)) return "card";
+  if (/ركلة\s+جزاء|ضربة\s+جزاء|ركلات\s+الترجيح|يهدر|اهدر|أهدر|اضاع|أضاع/i.test(t)) return "penalty";
+  if (/فرصة|كاد|محاولة|عارضة|القائم|المرمى|المرمي/i.test(t)) return "chance";
+  if (/اصابة|إصابة/i.test(t)) return "injury";
   return null;
+}
+
+function isPrimaryKind(kind) {
+  return kind === "goals" || kind === "full";
 }
 
 function titleTeams(title) {
@@ -100,6 +112,38 @@ function buildContextualPairKey(teams, opts) {
   return best && best.score >= 1.45 ? best.key : null;
 }
 
+function buildContextualPairKeyFromTitle(title, opts) {
+  const matches = Array.isArray(opts?.matches) ? opts.matches : [];
+  if (!matches.length || !opts?.pairKeyFn) return null;
+  const normTitle = normalizeArabic(title);
+  if (!normTitle) return null;
+
+  let best = null;
+  for (const m of matches) {
+    if (!m?.home || !m?.away) continue;
+    const homeScore = Math.max(
+      0,
+      ...teamArabicCandidates(m, "home", opts.arabicTeam)
+        .map((n) => normalizeArabic(n))
+        .filter(Boolean)
+        .map((n) => (normTitle.includes(n) ? Math.min(1, n.length / 4) : 0))
+    );
+    const awayScore = Math.max(
+      0,
+      ...teamArabicCandidates(m, "away", opts.arabicTeam)
+        .map((n) => normalizeArabic(n))
+        .filter(Boolean)
+        .map((n) => (normTitle.includes(n) ? Math.min(1, n.length / 4) : 0))
+    );
+    const score = homeScore + awayScore;
+    if (score > 0 && (!best || score > best.score)) {
+      best = { score, key: m.key || opts.pairKeyFn(m.home, m.away) };
+    }
+  }
+
+  return best && best.score >= 0.9 ? best.key : null;
+}
+
 async function fetchBtolatEmbedId(btolatId) {
   const html = await fetchText(`https://www.btolat.com/video/${btolatId}`);
   const m = (html || "").match(/vortexvisionworks\.com\/embed\/([A-Za-z0-9]+)/i);
@@ -139,8 +183,10 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
   const out = new Map();
   for (const v of candidates) {
     const teams = titleTeams(v.title);
-    if (!teams) continue;
-    const key = buildContextualPairKey(teams, { ...opts, pairKeyFn }) || pairKeyFn(teams.a, teams.b);
+    const key = teams
+      ? buildContextualPairKey(teams, { ...opts, pairKeyFn }) || pairKeyFn(teams.a, teams.b)
+      : buildContextualPairKeyFromTitle(v.title, { ...opts, pairKeyFn });
+    if (!key) continue;
     const embedId = await fetchBtolatEmbedId(v.btolatId);
     if (!embedId) continue;
 
@@ -161,21 +207,33 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
 
     if (!out.has(key)) out.set(key, {});
     const bucket = out.get(key);
-    if (!bucket[v.kind]) bucket[v.kind] = clip;
+    if (isPrimaryKind(v.kind)) {
+      if (!bucket[v.kind]) bucket[v.kind] = clip;
+    } else {
+      if (!Array.isArray(bucket.clips)) bucket.clips = [];
+      if (!bucket.clips.some((c) => c.btolatId === clip.btolatId || c.videoUrl === clip.videoUrl)) {
+        bucket.clips.push(clip);
+      }
+    }
   }
   return out;
 }
 
 /** Attach highlights.goals + highlights.full; primary = true ملخص reel or أهداف reel. */
 function applyBtolatHighlights(match, bucket, normalizeBucket) {
-  if (!bucket || (!bucket.goals && !bucket.full)) return false;
-  const cleaned = normalizeBucket ? normalizeBucket({ ...bucket }) : bucket;
-  if (!cleaned || (!cleaned.goals && !cleaned.full)) return false;
+  if (!bucket || (!bucket.goals && !bucket.full && !bucket.clips?.length)) return false;
+  const cleaned = normalizeBucket ? normalizeBucket({ goals: bucket.goals, full: bucket.full }) : bucket;
+  if (!cleaned && !bucket.clips?.length) return false;
   match.highlights = {};
-  if (cleaned.goals) match.highlights.goals = { ...cleaned.goals, kind: "goals" };
-  if (cleaned.full) match.highlights.full = { ...cleaned.full, kind: "full" };
-  match.highlight = pickPrimaryFromBucket(match.highlights) || match.highlights.full || match.highlights.goals;
-  return !!match.highlight;
+  if (cleaned?.goals) match.highlights.goals = { ...cleaned.goals, kind: "goals" };
+  if (cleaned?.full) match.highlights.full = { ...cleaned.full, kind: "full" };
+  if (bucket.clips?.length) {
+    match.clips = bucket.clips
+      .filter((c) => c && c.videoUrl && !isPrimaryKind(c.kind))
+      .map((c) => ({ ...c, kind: c.kind || "clip" }));
+  }
+  match.highlight = pickPrimaryFromBucket(match.highlights) || match.highlights.full || match.highlights.goals || null;
+  return !!(match.highlight || match.clips?.length);
 }
 
 function pickPrimaryFromBucket(highlights) {
@@ -191,5 +249,6 @@ module.exports = {
   pickPrimaryFromBucket,
   parseBtolatVideos,
   classifyBtolatTitle,
+  buildContextualPairKeyFromTitle,
   titleTeams,
 };

@@ -218,7 +218,7 @@ async function fetchYouTubeHighlight(match) {
   try {
     btolatMap = await scrapeBtolatHighlights(
       (a, b) => pairKey(arToEn(a), arToEn(b)),
-      (id) => fetchVortexEmbedMeta(id),
+      (id) => fetchVortexEmbedMeta(id, { allowAnyTitle: true }),
       { matches, arabicTeam }
     );
     const dualCount = [...btolatMap.values()].filter((b) => b.goals && b.full).length;

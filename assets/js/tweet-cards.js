@@ -19,6 +19,18 @@
     return String(url || "").replace(/&amp;/g, "&").trim();
   }
 
+  function mediaProxyUrl(url) {
+    const raw = rawUrl(url);
+    try {
+      const parsed = new URL(raw, location.href);
+      const host = parsed.hostname.toLowerCase();
+      if (host === "pbs.twimg.com" || host === "video.twimg.com") {
+        return `/api/x-media?u=${encodeURIComponent(parsed.href)}`;
+      }
+    } catch { /* direct fallback */ }
+    return raw;
+  }
+
   function formatCount(n) {
     const v = Number(n) || 0;
     if (v >= 1000000) return (v / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
@@ -64,11 +76,12 @@
 
   function mediaHtml(item) {
     const isVideo = item.type === "video" || item.type === "animated_gif";
-    const src = item.url || item.previewUrl;
+    const src = mediaProxyUrl(item.url || item.previewUrl);
+    const poster = mediaProxyUrl(item.previewUrl || item.url);
     if (isVideo && item.url) {
       return `
-        <div class="kz-tweet__media kz-tweet__media--video" data-video-url="${assetUrl(item.url)}">
-          <img class="kz-tweet__poster" src="${assetUrl(item.previewUrl || item.url)}" alt="" loading="lazy" />
+        <div class="kz-tweet__media kz-tweet__media--video" data-video-url="${assetUrl(mediaProxyUrl(item.url))}">
+          <img class="kz-tweet__poster" src="${assetUrl(poster)}" alt="" loading="lazy" />
           <button type="button" class="kz-tweet__play" aria-label="${escapeHtml(t("tournament.playVideo"))}">▶</button>
         </div>`;
     }
@@ -124,11 +137,11 @@
     if (btn) btn.remove();
     const video = document.createElement("video");
     video.className = "kz-tweet__video";
-    video.src = url;
     video.controls = true;
     video.playsInline = true;
     video.setAttribute("referrerpolicy", "no-referrer");
     video.setAttribute("preload", "metadata");
+    video.src = url;
     mediaEl.appendChild(video);
     video.play().catch(() => { /* tap play in controls */ });
   }

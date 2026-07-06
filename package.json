@@ -33,6 +33,7 @@
   },
   "homepage": "https://github.com/elmorshedy-del/MorshLive#readme",
   "dependencies": {
+    "@ghostery/adblocker": "^2.18.1",
     "playwright-core": "^1.61.1"
   },
   "devDependencies": {

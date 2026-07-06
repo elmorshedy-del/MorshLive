@@ -1,3 +1,5 @@
+import { FiltersEngine, Request as AdblockRequest } from "@ghostery/adblocker";
+
 /**
  * morshlive worker — static site + worldkoora vip proxy without preroll ads.
  *
@@ -2456,11 +2458,54 @@ async function handlePoll(request, pollId, env) {
  * Fallback: YouTube Data API when YOUTUBE_API_KEY is set.
  * GET /api/highlight?home=&away=&kickoff= */
 const HIGHLIGHT_API_RE = /^\/api\/highlight\/?$/i;
+const REPLAY_EMBED_RE = /^\/replay\/embed\/([A-Za-z0-9]+)\/?$/i;
+const REPLAY_ASSET_RE = /^\/replay\/asset\/?$/i;
 const VORTEX_HOST = "nvtboo.vortexvisionworks.com";
 const VORTEX_EMBED_BASE = `https://${VORTEX_HOST}/embed`;
+const VORTEX_BASE = `https://${VORTEX_HOST}`;
 const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
 const HIGHLIGHT_ARABIC_RE = /[؀-ۿ]/;
 const YOUTUBE_ID_RE = /^[\w-]{11}$/;
+const REPLAY_ADBLOCK_FILTERS = `
+||doubleclick.net^
+||googlesyndication.com^
+||googletagmanager.com^
+||google-analytics.com^
+||adservice.google.com^
+||imasdk.googleapis.com^
+||cloudflareinsights.com^
+`;
+
+let _replayAdblockEngine = null;
+
+function replayAdblockEngine() {
+  if (!_replayAdblockEngine) _replayAdblockEngine = FiltersEngine.parse(REPLAY_ADBLOCK_FILTERS);
+  return _replayAdblockEngine;
+}
+
+function replayResourceType(url, fallback = "other") {
+  let path = "";
+  try { path = new URL(url, VORTEX_BASE).pathname.toLowerCase(); } catch { /* noop */ }
+  if (/\.(?:js|mjs)$/.test(path)) return "script";
+  if (/\.css$/.test(path)) return "stylesheet";
+  if (/\.(?:png|jpe?g|webp|gif|svg)$/.test(path)) return "image";
+  if (/\.(?:m3u8|mp4|ts|m4s)$/.test(path)) return "media";
+  return fallback;
+}
+
+function replayAdblockMatches(rawUrl, type = "other") {
+  try {
+    const target = new URL(rawUrl, VORTEX_BASE);
+    const { match } = replayAdblockEngine().match(AdblockRequest.fromRawDetails({
+      url: target.href,
+      type,
+      sourceUrl: VORTEX_EMBED_BASE,
+    }));
+    return !!match;
+  } catch {
+    return false;
+  }
+}
 
 let _teamArCache = null;
 let _knownVortexCache = null;
@@ -2719,11 +2764,114 @@ async function proxyHighlightApi(request, env) {
   }
 }
 
+function absoluteReplayUrl(raw, base = VORTEX_BASE) {
+  try { return new URL(raw, base).href; } catch { return ""; }
+}
+
+function replayAssetProxyUrl(raw, type, origin, base = VORTEX_BASE) {
+  const abs = absoluteReplayUrl(raw, base);
+  if (!abs) return raw;
+  return `${origin}/replay/asset?type=${encodeURIComponent(type || replayResourceType(abs))}&u=${encodeURIComponent(abs)}`;
+}
+
+function sanitizeReplayEmbedHtml(html, id, origin) {
+  const base = `${VORTEX_EMBED_BASE}/${id}`;
+  let out = String(html || "");
+  out = out
+    .replace(/<script[^>]+src=["'][^"']*(?:googletagmanager|cloudflareinsights|google-analytics|doubleclick|googlesyndication|imasdk)[^"']*["'][^>]*>\s*<\/script>/gi, "")
+    .replace(/<script\b[^>]*>[\s\S]*?(?:gtag\(|google-analytics|googletagmanager|cloudflareinsights)[\s\S]*?<\/script>/gi, "")
+    .replace(/ads\s*:\s*true/gi, "ads:false")
+    .replace(/adSchedule\s*:\s*\{[\s\S]*?\}\s*,\s*adBlockerDetectedPreventPlayback/gi, "adSchedule:{},adBlockerDetectedPreventPlayback")
+    .replace(/adBlockerDetectedPreventPlayback\s*:\s*true/gi, "adBlockerDetectedPreventPlayback:false")
+    .replace(/adBlockerDetection\s*:\s*true/gi, "adBlockerDetection:false")
+    .replace(/adForceImaInWebView\s*:\s*true/gi, "adForceImaInWebView:false")
+    .replace(/https:\/\/pubads\.g\.doubleclick\.net\/gampad\/ads\?[^"'\\\]\s<)]+/gi, "");
+
+  out = out.replace(/(<script[^>]+src=["'])([^"']+)(["'][^>]*>)/gi, (all, pre, src, post) => {
+    const abs = absoluteReplayUrl(src, base);
+    if (!abs || replayAdblockMatches(abs, "script")) return "";
+    return `${pre}${replayAssetProxyUrl(abs, "script", origin, base)}${post}`;
+  });
+  out = out.replace(/(<link[^>]+href=["'])([^"']+)(["'][^>]*>)/gi, (all, pre, href, post) => {
+    const abs = absoluteReplayUrl(href, base);
+    if (!abs || replayAdblockMatches(abs, "stylesheet")) return "";
+    return `${pre}${replayAssetProxyUrl(abs, replayResourceType(abs, "stylesheet"), origin, base)}${post}`;
+  });
+  out = out.replace(/(<img[^>]+src=["'])([^"']+)(["'][^>]*>)/gi, (all, pre, src, post) =>
+    `${pre}${replayAssetProxyUrl(src, "image", origin, base)}${post}`
+  );
+  out = out.replace(/(["'])\/\/(hls[^"']+flashframenetwork\.com[^"']+)(["'])/gi, (all, q1, rest, q2) =>
+    `${q1}${replayAssetProxyUrl(`https://${rest}`, replayResourceType(`https://${rest}`, "media"), origin, base)}${q2}`
+  );
+  out = out.replace(/(["'])https:\/\/(hls[^"']+flashframenetwork\.com[^"']+)(["'])/gi, (all, q1, rest, q2) =>
+    `${q1}${replayAssetProxyUrl(`https://${rest}`, replayResourceType(`https://${rest}`, "media"), origin, base)}${q2}`
+  );
+  out = out.replace(/<\/head>/i, `<base href="${VORTEX_BASE}/" /></head>`);
+  return out;
+}
+
+async function proxyReplayEmbed(request, id) {
+  const origin = new URL(request.url).origin;
+  const upstream = await fetch(`${VORTEX_EMBED_BASE}/${id}`, {
+    headers: { "User-Agent": "Mozilla/5.0 (compatible; KoraZero/1.0)", Accept: "text/html,*/*" },
+    redirect: "follow",
+  });
+  if (!upstream.ok) return new Response("Replay unavailable", { status: upstream.status });
+  const html = sanitizeReplayEmbedHtml(await upstream.text(), id, origin);
+  return new Response(html, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html; charset=utf-8",
+      "Cache-Control": "public, max-age=300, stale-while-revalidate=900",
+      "X-KZ-Proxy": "replay-embed",
+      "Content-Security-Policy": "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' https://nvtboo.vortexvisionworks.com https://ajax.googleapis.com; style-src 'self' 'unsafe-inline' https://nvtboo.vortexvisionworks.com; img-src 'self' https: data: blob:; media-src 'self' https: blob:; connect-src 'self' https:; frame-src 'none';",
+    },
+  });
+}
+
+async function proxyReplayAsset(request) {
+  const url = new URL(request.url);
+  const target = absoluteReplayUrl(url.searchParams.get("u") || "");
+  const type = url.searchParams.get("type") || replayResourceType(target);
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+    "Access-Control-Allow-Headers": "Range, Content-Type",
+    "Access-Control-Expose-Headers": "Content-Length, Content-Range, Accept-Ranges",
+    "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+    "X-KZ-Proxy": "replay-asset",
+  };
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers });
+  if (!target || replayAdblockMatches(target, type)) {
+    return new Response("", { status: 204, headers });
+  }
+  const upstreamHeaders = {
+    "User-Agent": "Mozilla/5.0 (compatible; KoraZero/1.0)",
+    Accept: request.headers.get("Accept") || "*/*",
+    Referer: VORTEX_EMBED_BASE + "/",
+  };
+  const range = request.headers.get("Range");
+  if (range) upstreamHeaders.Range = range;
+  const upstream = await fetch(target, {
+    method: request.method === "HEAD" ? "HEAD" : "GET",
+    headers: upstreamHeaders,
+    redirect: "follow",
+    cf: { cacheEverything: true, cacheTtl: 86400 },
+  });
+  const out = new Headers(headers);
+  for (const h of ["Content-Type", "Content-Length", "Content-Range", "Accept-Ranges", "Last-Modified", "ETag"]) {
+    const v = upstream.headers.get(h);
+    if (v) out.set(h, v);
+  }
+  return new Response(request.method === "HEAD" ? null : upstream.body, { status: upstream.status, headers: out });
+}
+
 /* ----------------------------------------------- viral X memes — 3 curated accounts
  * @TrollFootball @Contxtfootball @memesvsfootball
  * GET /api/match-memes?home=&away=&kickoff= */
 const MEMES_API_RE = /^\/api\/match-memes\/?$/i;
 const RECENT_MEMES_API_RE = /^\/api\/recent-memes\/?$/i;
+const X_MEDIA_API_RE = /^\/api\/x-media\/?$/i;
 const EDGE_API_RE = /^\/api\/edge\/?$/i;
 const TWITCH_API_RE = /^\/api\/twitch\/?$/i;
 const STREAMS_LAB_RE = /^\/api\/streams-lab\/?$/i;
@@ -2935,6 +3083,53 @@ function memeHasMedia(meme) {
 
 function filterMemesWithMedia(memes) {
   return (memes || []).filter(memeHasMedia);
+}
+
+function allowedXMediaUrl(raw) {
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:") return null;
+    const host = url.hostname.toLowerCase();
+    if (host === "pbs.twimg.com" || host === "video.twimg.com") return url;
+  } catch { /* invalid */ }
+  return null;
+}
+
+async function proxyXMedia(request) {
+  const reqUrl = new URL(request.url);
+  const target = allowedXMediaUrl(reqUrl.searchParams.get("u") || "");
+  const headers = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+    "Access-Control-Allow-Headers": "Range, Content-Type",
+    "Access-Control-Expose-Headers": "Content-Length, Content-Range, Accept-Ranges",
+    "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
+    "X-KZ-Proxy": "x-media",
+  };
+  if (request.method === "OPTIONS") return new Response(null, { status: 204, headers });
+  if (!target) {
+    return new Response("bad media url", { status: 400, headers });
+  }
+  const upstreamHeaders = {
+    "User-Agent": "Mozilla/5.0 (compatible; KoraZero/1.0)",
+    Accept: request.headers.get("Accept") || "*/*",
+  };
+  const range = request.headers.get("Range");
+  if (range) upstreamHeaders.Range = range;
+  const upstream = await fetch(target.href, {
+    method: request.method === "HEAD" ? "HEAD" : "GET",
+    headers: upstreamHeaders,
+    cf: { cacheEverything: true, cacheTtl: 86400 },
+  });
+  const out = new Headers(headers);
+  for (const h of ["Content-Type", "Content-Length", "Content-Range", "Accept-Ranges", "Last-Modified", "ETag"]) {
+    const v = upstream.headers.get(h);
+    if (v) out.set(h, v);
+  }
+  return new Response(request.method === "HEAD" ? null : upstream.body, {
+    status: upstream.status,
+    headers: out,
+  });
 }
 
 function mergeMemeLists(base, extra) {
@@ -3975,11 +4170,21 @@ export default {
     if (HIGHLIGHT_API_RE.test(url.pathname) && method === "GET") {
       return withEdgeCache(request, 3600, () => proxyHighlightApi(request, env));
     }
+    const replayEmbed = url.pathname.match(REPLAY_EMBED_RE);
+    if (replayEmbed && (method === "GET" || method === "HEAD")) {
+      return withEdgeCache(request, 300, () => proxyReplayEmbed(request, replayEmbed[1]));
+    }
+    if (REPLAY_ASSET_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
+      return proxyReplayAsset(request);
+    }
     if (MEMES_API_RE.test(url.pathname) && method === "GET") {
       return withEdgeCache(request, 1800, () => proxyMatchMemesApi(request, env));
     }
     if (RECENT_MEMES_API_RE.test(url.pathname) && method === "GET") {
       return withEdgeCache(request, 600, () => proxyRecentMemesApi(request, env));
+    }
+    if (X_MEDIA_API_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
+      return proxyXMedia(request);
     }
     if (EDGE_API_RE.test(url.pathname) && method === "GET") {
       return proxyEdgeApi(request);
