@@ -110,10 +110,6 @@ function buildArToEn() {
     out.set(ar, en);
     out.set(ar.replace(/\s+/g, ""), en);
   }
-  out.set("باراجواي", "Paraguay");
-  out.set("الولايات المتحدة", "United States");
-  out.set("كوريا الجنوبية", "South Korea");
-  out.set("ساحل العاج", "Ivory Coast");
   return (ar) =>
     arabicTeamToEnglish(ar) || out.get(ar) || out.get(String(ar).replace(/\s+/g, "")) || ar;
 }
