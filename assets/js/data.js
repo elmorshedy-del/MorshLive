@@ -43,9 +43,10 @@ const ALT_STREAM_DEFS = {
   ntv: { key: "ntv", path: "/wk/albaplayer/ntv/", labelKey: "watch.altNtv" },
 };
 
-// Show Sir TV + NTV backup panel for every match on the watch page (for now).
+// Show Sir TV + NTV backup panel for every live/upcoming match (not Portugal-only).
 function altStreamsForMatch(m) {
   if (!m) return null;
+  if (m.status !== "live" && m.status !== "upcoming") return null;
   return {
     sirTv: ALT_STREAM_DEFS.sirTv,
     ntv: ALT_STREAM_DEFS.ntv,
