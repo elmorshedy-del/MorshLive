@@ -21,7 +21,15 @@ import { FiltersEngine, Request as AdblockRequest } from "@ghostery/adblocker";
  * rotation (the very bug this design removes):
  *   npx wrangler secret put STREAM_SIGNING_SECRET
  */
-const WORLDKOORA = "https://vip.worldkoora.com";
+// worldkoora's public host. It rebrands/rotates periodically (the whole
+// front-end domain, not just the CDN): vip.worldkoora.com -> mysportv.live
+// (confirmed via a 301 on 2026-07-06). Every Referer/Origin the worker sends
+// to the player page AND to the CDN derives from this constant, so the new
+// host's own-referer gating is satisfied by updating just this line. If live
+// MAX matches stop resolving (all /wk/albaplayer/vip* return 502), check
+// `curl -sI https://vip.worldkoora.com/albaplayer/vip1/` for a fresh 301
+// target and update here.
+const WORLDKOORA = "https://mysportv.live";
 const WESHAN = "https://zenvixw.site/wordpress/albaplayer/weshan/";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
