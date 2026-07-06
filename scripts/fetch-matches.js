@@ -24,9 +24,8 @@ const {
   pinEndedChannels,
 } = require("./commentators-lib");
 const { attachSummaries, buildHighlightQueries, pickArabicVideo, arabicTeam } = require("./highlights-lib");
-const { findVortexHighlight } = require("./vortex-highlights-lib");
+const { findVortexHighlight, fetchVortexEmbedMeta, normalizeHighlightBucket, enrichHighlightMeta, pickPrimaryHighlight } = require("./vortex-highlights-lib");
 const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-highlights-lib");
-const { fetchVortexEmbedMeta } = require("./vortex-highlights-lib");
 const { parseEspnMatchId, extractLineups, extractMatchStats } = require("./match-detail-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 const { writePollConfig } = require("./match-poll-lib");
@@ -37,6 +36,7 @@ const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
 const KEY = process.env.SPORTSDB_KEY || "3";
 const centerDate = process.argv[2] || new Date().toISOString().slice(0, 10);
 const OUT = path.join(__dirname, "..", "assets", "data", "today.json");
+const BANNERS_OUT = path.join(__dirname, "..", "assets", "data", "highlights-banners.json");
 const TEAM_AR = path.join(__dirname, "..", "assets", "data", "team-names-ar.json");
 // World Cup only for now.
 const ESPN_LEAGUES = ["fifa.world"];
@@ -232,19 +232,22 @@ async function fetchYouTubeHighlight(match) {
     const key = pairKey(m.home, m.away);
     const pinned = highlightsByKey.get(key);
     if (pinned && pinned.source === "vortex") {
-      m.highlight = {
+      const meta = await enrichHighlightMeta({
         videoUrl: pinned.videoUrl,
         title: pinned.title,
         channelTitle: pinned.channelTitle,
         thumbnail: pinned.thumbnail,
         source: pinned.source,
         embedId: pinned.embedId,
-      };
-      highlightsMatched++;
+      });
+      if (meta) {
+        m.highlight = meta;
+        highlightsMatched++;
+      }
       continue;
     }
     const bt = btolatMap.get(key);
-    if (bt && applyBtolatHighlights(m, bt)) {
+    if (bt && await applyBtolatHighlights(m, bt, normalizeHighlightBucket)) {
       const primary = m.highlight;
       highlightsByKey.set(key, { key, home: m.home, away: m.away, ...primary });
       if (m.highlights?.goals) {
@@ -258,9 +261,10 @@ async function fetchYouTubeHighlight(match) {
     }
     try {
       const vortex = await findVortexHighlight(m, arabicTeam);
-      if (vortex) {
-        m.highlight = vortex;
-        highlightsByKey.set(key, { key, home: m.home, away: m.away, ...vortex });
+      const meta = await enrichHighlightMeta(vortex);
+      if (meta) {
+        m.highlight = meta;
+        highlightsByKey.set(key, { key, home: m.home, away: m.away, ...meta });
         highlightsMatched++;
         continue;
       }
@@ -291,6 +295,37 @@ async function fetchYouTubeHighlight(match) {
     }
   }
   const highlightsIndex = Array.from(highlightsByKey.values());
+
+  function buildHighlightsBanners(endedMatches) {
+    const daysMap = new Map();
+    for (const m of endedMatches) {
+      if (m.status !== "ended") continue;
+      const primary = pickPrimaryHighlight(m.highlights) || m.highlight;
+      if (!primary || !primary.videoUrl) continue;
+      const day = String(m.kickoffUtc || "").slice(0, 10);
+      if (!day) continue;
+      if (!daysMap.has(day)) daysMap.set(day, []);
+      daysMap.get(day).push({
+        key: pairKey(m.home, m.away),
+        home: m.home,
+        away: m.away,
+        score: m.score || "",
+        kickoffUtc: m.kickoffUtc,
+        poster: primary.thumbnail || "",
+        stage: m.stage || "",
+      });
+    }
+    const days = [...daysMap.entries()]
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .slice(0, 21)
+      .map(([date, dayMatches]) => ({
+        date,
+        matches: dayMatches.sort((a, b) => Date.parse(b.kickoffUtc) - Date.parse(a.kickoffUtc)),
+      }));
+    return { updatedAt: new Date().toISOString(), days };
+  }
+
+  const highlightsBanners = buildHighlightsBanners(matches);
 
   // Pre-match lineups + advanced live stats — same ESPN source already used
   // for scores, so coverage is limited to matches ESPN itself carries (an
@@ -328,6 +363,7 @@ async function fetchYouTubeHighlight(match) {
   writeBindingsJs();
   const snapshot = writeLiveSnapshot(matches);
   const pollDoc = writePollConfig(matches);
+  fs.writeFileSync(BANNERS_OUT, JSON.stringify(highlightsBanners, null, 2));
   fs.writeFileSync(
     OUT,
     JSON.stringify(

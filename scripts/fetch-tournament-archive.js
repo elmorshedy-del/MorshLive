@@ -12,7 +12,7 @@ const { normalizeEspnEvent, parseKickoffMs } = require("./matches-lib");
 const { pairKey } = require("./commentators-lib");
 const { attachSummaries } = require("./highlights-lib");
 const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-highlights-lib");
-const { findKnownVortexHighlight, findKnownVortexHighlights, fetchVortexEmbedMeta } = require("./vortex-highlights-lib");
+const { findKnownVortexHighlight, findKnownVortexHighlights, fetchVortexEmbedMeta, normalizeHighlightBucket, enrichHighlightMeta, pickPrimaryHighlight } = require("./vortex-highlights-lib");
 const { arabicTeam } = require("./highlights-lib");
 const { discoverLatestHighlightMemes, discoverAllMatchMemes } = require("./twitter-memes-lib");
 
@@ -108,24 +108,29 @@ async function main() {
   for (const m of matches) {
     const bt = btolatMap.get(m.key);
     const pinned = todayHighlights.get(m.key);
-    if (bt && applyBtolatHighlights(m, bt)) {
+    if (bt && await applyBtolatHighlights(m, bt, normalizeHighlightBucket)) {
       continue;
     }
     if (pinned?.videoUrl) {
-      m.highlight = {
+      const meta = await enrichHighlightMeta({
         videoUrl: pinned.videoUrl,
         title: pinned.title,
         source: pinned.source,
         embedId: pinned.embedId,
         thumbnail: pinned.thumbnail || "",
-      };
+      });
+      if (meta) m.highlight = meta;
     } else if (knownVortex[m.key]) {
       const known = await findKnownVortexHighlights(m);
-      if (known.goals || known.full) {
+      const bucket = await normalizeHighlightBucket({
+        goals: known.goals || null,
+        full: known.full || null,
+      });
+      if (bucket && (bucket.goals || bucket.full)) {
         m.highlights = {};
-        if (known.goals) m.highlights.goals = known.goals;
-        if (known.full) m.highlights.full = known.full;
-        m.highlight = m.highlights.full || m.highlights.goals;
+        if (bucket.goals) m.highlights.goals = bucket.goals;
+        if (bucket.full) m.highlights.full = bucket.full;
+        m.highlight = pickPrimaryHighlight(m.highlights) || m.highlights.full || m.highlights.goals;
       }
     }
   }

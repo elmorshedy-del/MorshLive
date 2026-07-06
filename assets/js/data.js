@@ -347,11 +347,26 @@ function commentaryKey(home, away) {
 
 let _commentaryIdx = null;
 let _commentaryAt = 0;
+let _todayData = null;
+let _todayAt = 0;
+
+async function loadTodayData() {
+  if (_todayData && Date.now() - _todayAt < 5 * 60 * 1000) return _todayData;
+  try {
+    const res = await fetch("assets/data/today.json", { cache: "default" });
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    _todayData = await res.json();
+    _todayAt = Date.now();
+  } catch (e) {
+    _todayData = _todayData || { commentaryIndex: [], highlightsIndex: [], matchDetailIndex: [], matches: [] };
+  }
+  return _todayData;
+}
+
 async function loadCommentaryIndex() {
   if (_commentaryIdx && Date.now() - _commentaryAt < 5 * 60 * 1000) return _commentaryIdx;
   try {
-    const res = await fetch("assets/data/today.json", { cache: "no-store" });
-    const data = await res.json();
+    const data = await loadTodayData();
     const idx = {};
     (data.commentaryIndex || []).forEach((c) => { idx[c.key] = c; });
     _commentaryIdx = idx;
@@ -428,8 +443,7 @@ let _highlightsAt = 0;
 async function loadHighlightsIndex() {
   if (_highlightsIdx && Date.now() - _highlightsAt < 5 * 60 * 1000) return _highlightsIdx;
   try {
-    const res = await fetch("assets/data/today.json", { cache: "no-store" });
-    const data = await res.json();
+    const data = await loadTodayData();
     const idx = {};
     (data.highlightsIndex || []).forEach((h) => { idx[h.key] = h; });
     _highlightsIdx = idx;
@@ -752,8 +766,7 @@ let _matchDetailAt = 0;
 async function loadMatchDetailIndex() {
   if (_matchDetailIdx && Date.now() - _matchDetailAt < 60 * 1000) return _matchDetailIdx;
   try {
-    const res = await fetch("assets/data/today.json", { cache: "no-store" });
-    const data = await res.json();
+    const data = await loadTodayData();
     const idx = {};
     (data.matchDetailIndex || []).forEach((d) => { idx[d.key] = d; });
     _matchDetailIdx = idx;
@@ -790,20 +803,32 @@ window.buildStatsHtml = buildStatsHtml;
 window.buildLineupsHtml = buildLineupsHtml;
 window.activateStatBars = activateStatBars;
 
+function scheduleHighlightEnrich(matches) {
+  const needsApi = matches.some((m) => m.status === "ended" && !m.highlight);
+  if (!needsApi) return;
+  ensureHighlightsFromApi(matches).then((enriched) => {
+    if (typeof window.__kzOnMatchesUpdated === "function") window.__kzOnMatchesUpdated(enriched);
+  }).catch(() => {});
+}
+
 window.getMatches = async function getMatches({ force } = {}) {
   // 1) Live fetch from TheSportsDB in the browser (best — real statuses, auto-refresh)
   if (window.MatchesAPI) {
     try {
       const live = await window.MatchesAPI.fetchLiveSoccer({ force });
       if (live.matches && live.matches.length) {
-        const idx = await loadCommentaryIndex();
-        const hidx = await loadHighlightsIndex();
-        const didx = await loadMatchDetailIndex();
+        const data = await loadTodayData();
+        const idx = {};
+        (data.commentaryIndex || []).forEach((c) => { idx[c.key] = c; });
+        const hidx = {};
+        (data.highlightsIndex || []).forEach((h) => { hidx[h.key] = h; });
+        const didx = {};
+        (data.matchDetailIndex || []).forEach((d) => { didx[d.key] = d; });
         const withCommentary = applyCommentary(live.matches, idx);
         const withHighlights = applyHighlights(withCommentary, hidx);
-        const withReplays = await ensureHighlightsFromApi(withHighlights);
-        const withStaticDetail = applyMatchDetail(withReplays, didx);
+        const withStaticDetail = applyMatchDetail(withHighlights, didx);
         const withLiveDetail = await enrichLiveMatchDetails(withStaticDetail, { force });
+        scheduleHighlightEnrich(withLiveDetail);
         return { ...live, matches: withLiveDetail };
       }
     } catch (e) {
@@ -813,9 +838,7 @@ window.getMatches = async function getMatches({ force } = {}) {
 
   // 2) Cached JSON (GitHub Action / offline fallback)
   try {
-    const res = await fetch("assets/data/today.json", { cache: "no-store" });
-    if (!res.ok) throw new Error("HTTP " + res.status);
-    const data = await res.json();
+    const data = await loadTodayData();
     const didx = await loadMatchDetailIndex();
     const raw = Array.isArray(data.matches) ? data.matches : [];
     const matches = sortDisplayMatches(
@@ -824,8 +847,8 @@ window.getMatches = async function getMatches({ force } = {}) {
         didx
       )
     );
-    const withReplays = await ensureHighlightsFromApi(matches);
-    const withLiveDetail = await enrichLiveMatchDetails(withReplays, { force });
+    scheduleHighlightEnrich(matches);
+    const withLiveDetail = await enrichLiveMatchDetails(matches, { force });
     return {
       matches: withLiveDetail,
       updatedAt: data.updatedAt,

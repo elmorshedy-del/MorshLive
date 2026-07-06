@@ -431,9 +431,17 @@
     renderLiveDetail();
     renderMatches(activeFilter);
     renderSaved();
-    if (window.loadRecentTweets) window.loadRecentTweets().catch(() => {});
+    const defer = window.requestIdleCallback || ((cb) => setTimeout(cb, 150));
+    defer(() => { if (window.loadRecentTweets) window.loadRecentTweets().catch(() => {}); });
     return meta;
   }
+
+  window.__kzOnMatchesUpdated = (matches) => {
+    MATCHES = matches;
+    renderFeaturedLive();
+    renderLiveDetail();
+    renderMatches(activeFilter);
+  };
 
   document.addEventListener("DOMContentLoaded", async () => {
     initFilters();
@@ -443,7 +451,10 @@
     renderSaved();
     await loadMatches();
     setInterval(() => loadMatches({ force: true }), 90 * 1000);
-    setInterval(() => { if (window.loadRecentTweets) window.loadRecentTweets().catch(() => {}); }, 10 * 60 * 1000);
+    setInterval(() => {
+      const defer = window.requestIdleCallback || ((cb) => setTimeout(cb, 0));
+      defer(() => { if (window.loadRecentTweets) window.loadRecentTweets().catch(() => {}); });
+    }, 10 * 60 * 1000);
     setInterval(() => refreshLiveMatchPanels().catch(() => {}), 60 * 1000);
   });
 })();

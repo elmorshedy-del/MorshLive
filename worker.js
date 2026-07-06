@@ -2335,6 +2335,7 @@ async function proxyHighlightApi(request, env) {
  * GET /api/match-memes?home=&away=&kickoff= */
 const MEMES_API_RE = /^\/api\/match-memes\/?$/i;
 const RECENT_MEMES_API_RE = /^\/api\/recent-memes\/?$/i;
+const EDGE_API_RE = /^\/api\/edge\/?$/i;
 const RECENT_MEMES_MS = 24 * 60 * 60 * 1000;
 const RECENT_MEMES_LIMIT = 48;
 const TWITTER_API_BASE = "https://api.twitter.com/2";
@@ -2856,6 +2857,28 @@ async function proxyRecentMemesApi(request, env) {
 }
 
 
+function proxyEdgeApi(request) {
+  const cf = request.cf || {};
+  const headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "no-store",
+    "X-KZ-Proxy": "edge-api",
+  };
+  return new Response(JSON.stringify({
+    country: cf.country || null,
+    colo: cf.colo || null,
+    city: cf.city || null,
+    timezone: cf.timezone || null,
+    region: cf.region || null,
+    regionCode: cf.regionCode || null,
+    continent: cf.continent || null,
+    tcpRttMs: cf.clientTcpRtt || null,
+    ok: true,
+  }), { status: 200, headers });
+}
+
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -2935,6 +2958,15 @@ export default {
     }
     if (RECENT_MEMES_API_RE.test(url.pathname) && method === "GET") {
       return withEdgeCache(request, 600, () => proxyRecentMemesApi(request, env));
+    }
+    if (EDGE_API_RE.test(url.pathname) && method === "GET") {
+      return proxyEdgeApi(request);
+    }
+    if (method === "GET" && url.pathname.startsWith("/assets/data/") && /\.json$/i.test(url.pathname)) {
+      const res = await env.ASSETS.fetch(request);
+      const headers = new Headers(res.headers);
+      headers.set("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
+      return new Response(res.body, { status: res.status, headers });
     }
     return env.ASSETS.fetch(request);
   },

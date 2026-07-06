@@ -115,20 +115,40 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta) {
   return out;
 }
 
-/** Attach highlights.goals + highlights.full; keep highlight as full (or goals fallback). */
-function applyBtolatHighlights(match, bucket) {
+const MAX_CLIP_SECONDS = 20 * 60;
+
+function clipTooLong(clip) {
+  const d = clip && clip.durationSeconds;
+  return typeof d === "number" && d > MAX_CLIP_SECONDS;
+}
+
+function pickPrimaryFromBucket(highlights) {
+  const goals = highlights?.goals;
+  const full = highlights?.full;
+  if (full && !clipTooLong(full)) return full;
+  if (goals && !clipTooLong(goals)) return goals;
+  if (goals) return goals;
+  if (full) return full;
+  return null;
+}
+
+/** Attach highlights.goals + highlights.full; keep highlight as best clip ≤20m. */
+async function applyBtolatHighlights(match, bucket, normalizeBucket) {
   if (!bucket || (!bucket.goals && !bucket.full)) return false;
+  const cleaned = normalizeBucket ? await normalizeBucket({ ...bucket }) : bucket;
+  if (!cleaned || (!cleaned.goals && !cleaned.full)) return false;
   match.highlights = {};
-  if (bucket.goals) match.highlights.goals = { ...bucket.goals };
-  if (bucket.full) match.highlights.full = { ...bucket.full };
-  match.highlight = match.highlights.full || match.highlights.goals;
-  return true;
+  if (cleaned.goals) match.highlights.goals = { ...cleaned.goals };
+  if (cleaned.full) match.highlights.full = { ...cleaned.full };
+  match.highlight = pickPrimaryFromBucket(match.highlights) || match.highlights.full || match.highlights.goals;
+  return !!match.highlight;
 }
 
 module.exports = {
   BTOLAT_VIDEO_FEEDS,
   scrapeBtolatHighlights,
   applyBtolatHighlights,
+  pickPrimaryFromBucket,
   parseBtolatVideos,
   classifyBtolatTitle,
   titleTeams,

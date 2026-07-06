@@ -56,13 +56,27 @@
       </div>`;
   }
 
+  const MAX_CLIP_SECONDS = 20 * 60;
+
+  function clipTooLong(clip) {
+    const d = clip && clip.durationSeconds;
+    return typeof d === "number" && d > MAX_CLIP_SECONDS;
+  }
+
+  function clipUsable(clip) {
+    return !!(clip && clip.videoUrl && !clipTooLong(clip));
+  }
+
   function matchClips(m) {
     const h = m.highlights || {};
-    const goals = h.goals?.videoUrl ? h.goals : null;
-    let full = h.full?.videoUrl ? h.full : null;
-    if (!full && m.highlight?.videoUrl) {
+    let goals = clipUsable(h.goals) ? h.goals : null;
+    let full = clipUsable(h.full) ? h.full : null;
+    if (!full && clipUsable(m.highlight)) {
       const sameAsGoals = goals && m.highlight.videoUrl === goals.videoUrl;
       if (!sameAsGoals) full = m.highlight;
+    }
+    if (!goals && clipUsable(m.highlight) && (!full || m.highlight.videoUrl !== full.videoUrl)) {
+      goals = m.highlight;
     }
     return { goals, full };
   }
@@ -309,13 +323,36 @@
   }
 
   async function loadArchive() {
-    const res = await fetch("/assets/data/tournament-archive.json", { cache: "no-store" });
+    const res = await fetch("/assets/data/tournament-archive.json", { cache: "default" });
     if (!res.ok) throw new Error("archive load failed");
     archive = await res.json();
     archive.matches = Array.isArray(archive.matches) ? archive.matches : [];
     renderFeatured();
     renderTabs();
     renderGrid();
+    openMatchFromQuery();
+  }
+
+  function openMatchFromQuery() {
+    const key = new URLSearchParams(location.search).get("match");
+    if (!key || !archive) return;
+    const m = archive.matches.find((x) => x.key === key);
+    if (!m) return;
+
+    const latest = latestHighlightMatch();
+    if (latest && latest.key === key) {
+      const featured = document.getElementById("tournament-featured");
+      if (featured) {
+        featured.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+    }
+
+    const card = document.querySelector(`.tournament-match-card[data-match-key="${CSS.escape(key)}"]`);
+    if (!card) return;
+    const panel = card.querySelector("details.tournament-panel");
+    if (panel) panel.open = true;
+    card.scrollIntoView({ behavior: "smooth", block: "center" });
   }
 
   document.addEventListener("DOMContentLoaded", () => {
