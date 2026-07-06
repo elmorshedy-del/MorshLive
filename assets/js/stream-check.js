@@ -147,7 +147,7 @@
         // expose status and should not mark 403/500 pages as playable.
         if (res && res.type !== "opaque" && typeof res.ok === "boolean") {
           if (!res.ok) return done(false);
-          if (/\/wk\/albaplayer\/vip[12]\/?$/i.test(path)) {
+          if (/\/wk\/albaplayer\/(?:vip[12]|amine|weshan)\/?$/i.test(path)) {
             const html = await res.text();
             return done(htmlHasPlayableEmbed(html));
           }
