@@ -700,7 +700,8 @@ img { max-width: 100%; display: block; }
   display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap;
 }
 .player-toolbar {
-  display: flex; justify-content: flex-end; margin-bottom: 10px;
+  display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
+  gap: 10px; margin-bottom: 10px;
 }
 
 /* Match-scoped ops notice (apology / incident banner) */
@@ -1015,7 +1016,7 @@ img { max-width: 100%; display: block; }
   .nav-links { position: fixed; inset: 64px 0 auto 0; flex-direction: column; background: var(--bg-2);
     border-bottom: 1px solid var(--border); padding: 14px; margin: 0; display: none; }
   .nav-links.open { display: flex; }
-  .nav-links a { width: 100%; }
+  .nav-links a { width: 100%; text-align: start; line-height: 1.45; white-space: normal; }
   .nav-toggle { display: block; margin-inline-start: auto; }
 }
 
@@ -1269,6 +1270,11 @@ img { max-width: 100%; display: block; }
   font-weight: 600;
   letter-spacing: .04em;
 }
+.wc-archive-link {
+  display: inline-block; margin-top: 10px; color: var(--gold); font-size: .82rem;
+  font-weight: 700; text-decoration: none; opacity: .95;
+}
+.wc-archive-link:hover { text-decoration: underline; opacity: 1; }
 
 /* Spinning ball column */
 .wc-ball-col {
@@ -1629,4 +1635,47 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
   font-weight: 700; font-size: .98rem; padding: 12px 22px;
   border-radius: 10px; background: var(--grad);
 }
+
+/* ------------------------------------------------- Tournament archive (أرشيف المونديال) */
+.tournament-page { min-height: 60vh; padding-bottom: 48px; }
+.tournament-lede { color: var(--muted); margin: -6px 0 18px; max-width: 720px; line-height: 1.65; }
+.tournament-featured {
+  margin: 0 0 28px; padding: 18px; border-radius: 16px;
+  border: 1px solid rgba(24,226,154,.28); background: rgba(24,226,154,.06);
+}
+.tournament-featured-title {
+  font-size: 1rem; font-weight: 800; margin: 0 0 14px; color: var(--gold);
+}
+.tournament-match-card--featured { border-color: rgba(24,226,154,.35); }
+.tournament-tabs { margin-bottom: 24px; }
+.tournament-tab-count {
+  display: inline-block; margin-inline-start: 4px; font-size: .78rem; opacity: .85;
+  background: rgba(255,255,255,.12); border-radius: 999px; padding: 1px 7px;
+}
+.tournament-grid { display: grid; gap: 18px; }
+@media (min-width: 700px) { .tournament-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .tournament-grid { grid-template-columns: repeat(3, 1fr); } }
+.tournament-match-card { display: flex; flex-direction: column; gap: 0; }
+.tournament-badges { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.tournament-badge {
+  font-size: .72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+  border: 1px solid var(--border);
+}
+.tournament-badge--hl { color: var(--accent); border-color: rgba(24,226,154,.35); background: rgba(24,226,154,.1); }
+.tournament-badge--meme { color: #1da1f2; border-color: rgba(29,161,242,.35); background: rgba(29,161,242,.1); }
+.tournament-panel { margin-top: 12px; }
+.tournament-detail { display: flex; flex-direction: column; gap: 16px; }
+.tournament-highlight h4, .tournament-memes h4 {
+  font-size: .88rem; font-weight: 800; margin-bottom: 10px; color: var(--gold);
+}
+.tournament-novideo, .tournament-nomemes { color: var(--muted); font-size: .88rem; margin: 0; }
+.tournament-empty { color: var(--muted); text-align: center; padding: 32px 0; }
+.meme-grid { display: grid; gap: 14px; }
+.meme-card {
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px; overflow: hidden;
+}
+.meme-card--tweet { min-height: 120px; }
+.meme-meta { font-size: .75rem; color: var(--muted); margin-top: 8px; }
+.meme-card .twitter-tweet { margin: 0 !important; }
 .search-submit:hover { filter: brightness(1.07); }

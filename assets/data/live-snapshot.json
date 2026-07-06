@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-05T20:13:19.353Z",
+  "updatedAt": "2026-07-06T01:14:20.849Z",
   "bindingVersion": 10,
   "embedBinding": {
     "bein-max-1": "vip1",
@@ -12,17 +12,17 @@
   "liveCount": 1,
   "routes": [
     {
-      "id": "espn-fifa.world-760504",
-      "home": "Brazil",
-      "away": "Norway",
+      "id": "espn-fifa.world-760505",
+      "home": "Mexico",
+      "away": "England",
       "score": "0 - 0",
-      "minute": "13'",
-      "channelId": "bein-max-1",
-      "channel": "beIN MAX 1",
-      "commentator": "علي الكعبي",
-      "embedKey": "vip1",
-      "embedUrl": "https://vip.worldkoora.com/albaplayer/vip1/",
-      "kickoffUtc": "2026-07-05T20:00Z"
+      "minute": "14'",
+      "channelId": "bein-max-2",
+      "channel": "beIN MAX 2",
+      "commentator": "حفيظ دراجي",
+      "embedKey": "vip2",
+      "embedUrl": "https://vip.worldkoora.com/albaplayer/vip2/",
+      "kickoffUtc": "2026-07-06T01:00Z"
     }
   ],
   "conflicts": [],

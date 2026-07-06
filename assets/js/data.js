@@ -41,8 +41,114 @@ function embedUrlFor(embed, serv) {
   const u = new URL(embed.url, base);
   if (embed.channelId) u.searchParams.set("ch", embed.channelId);
   if (serv != null && serv !== "") u.searchParams.set("serv", String(serv));
-  u.searchParams.set("_kz", "8");
+  u.searchParams.set("_kz", "9");
   return u.toString();
+}
+
+// dlhd 24/7 ids for the watch-page source picker (mirrors worker.js DLHD_CHANNEL_MIRROR_IDS).
+const DLHD_STREAM_IDS = {
+  "bein-sports-1": { backup: 91, labelKey: "watch.optDlhdSports1" },
+  "bein-sports-2": { backup: 92, labelKey: "watch.optDlhdSports2" },
+  "bein-max-1": { maxAr: 597, sportsAr: 91 },
+  "bein-max-2": { maxAr: 597, sportsAr: 92 },
+  "bein-max-3": { maxAr: 597, sportsAr: 94 },
+  "bein-max-4": { maxAr: 597, sportsAr: 95 },
+};
+
+function streamOptionUrl(opt, channelId, matchId) {
+  const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
+  if (opt.path) {
+    const u = new URL(opt.path, base);
+    u.searchParams.set("ch", channelId);
+    if (matchId) u.searchParams.set("match", matchId);
+    u.searchParams.set("_kz", "12");
+    return u.toString();
+  }
+  const embed = { ...embedForKey(opt.embedKey), channelId };
+  return embedUrlFor(embed, { mode: opt.mode || "dual", matchId });
+}
+
+// Labeled stream sources for the watch page — honest about MAX vs Sports Arabic fallbacks.
+function streamOptionsFor(channelId, match, embedKey) {
+  const primaryKey = embedKey || embedKeyFor(channelId);
+  const altKey = primaryKey === "vip1" ? "vip2" : "vip1";
+  const isMax = /^bein-max-/.test(channelId || "");
+  const dlhd = DLHD_STREAM_IDS[channelId] || null;
+
+  const opts = [
+    {
+      id: "auto",
+      labelKey: "watch.optAuto",
+      hintKey: "watch.optAutoHint",
+      embedKey: primaryKey,
+      mode: "dual",
+      kind: "reachable",
+      recommended: true,
+    },
+    {
+      id: `vip-${altKey}`,
+      labelKey: "watch.optAltVip",
+      hintKey: "watch.optAltVipHint",
+      labelVars: { slot: altKey.toUpperCase() },
+      embedKey: altKey,
+      mode: "dual",
+      kind: "reachable",
+    },
+    {
+      id: "hls",
+      labelKey: "watch.optHls",
+      hintKey: "watch.optHlsHint",
+      embedKey: primaryKey,
+      mode: "hls",
+      kind: "reachable",
+    },
+    {
+      id: "twitch",
+      labelKey: "watch.optTwitch",
+      hintKey: "watch.optTwitchHint",
+      embedKey: primaryKey,
+      mode: "twitch",
+      kind: "reachable",
+    },
+  ];
+
+  if (isMax && dlhd) {
+    if (dlhd.maxAr) {
+      opts.push({
+        id: "dlhd-max",
+        labelKey: "watch.optMaxAr",
+        hintKey: "watch.optMaxArHint",
+        path: `/dl/${dlhd.maxAr}/`,
+        kind: "reachable",
+        fallback: true,
+      });
+    }
+    if (dlhd.sportsAr) {
+      opts.push({
+        id: "dlhd-sports",
+        labelKey: "watch.optSportsAr",
+        hintKey: "watch.optSportsArHint",
+        path: `/dl/${dlhd.sportsAr}/`,
+        kind: "reachable",
+        fallback: true,
+        sportsOnly: true,
+      });
+    }
+  } else if (dlhd && dlhd.backup) {
+    opts.push({
+      id: "dlhd-backup",
+      labelKey: dlhd.labelKey || "watch.optDlhdBackup",
+      hintKey: "watch.optDlhdBackupHint",
+      path: `/dl/${dlhd.backup}/`,
+      kind: "reachable",
+      fallback: true,
+    });
+  }
+
+  return opts.map((o) => ({
+    ...o,
+    url: streamOptionUrl(o, channelId, match && match.id),
+  }));
 }
 
 function servIndexFromParam(embed, raw) {
@@ -126,7 +232,10 @@ function resolveWatchSelection(matches, channels, searchParams) {
 }
 
 // Expose for non-module scripts.
-window.SITE_DATA = { CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor, servIndexFromParam, EMBED_BINDING };
+window.SITE_DATA = {
+  CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor,
+  servIndexFromParam, EMBED_BINDING, streamOptionsFor, streamOptionUrl,
+};
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;
 window.keepDisplayMatch = keepDisplayMatch;
@@ -337,10 +446,54 @@ function applyHighlights(matches, idx) {
       highlight: {
         videoUrl: entry.videoUrl,
         title: entry.title,
-        competition: entry.competition,
+        channelTitle: entry.channelTitle,
         thumbnail: entry.thumbnail,
         source: entry.source,
       },
+    };
+  });
+}
+
+const _highlightFetchCache = new Map();
+
+async function fetchHighlightFromApi(m) {
+  const key = commentaryKey(m.home, m.away);
+  if (_highlightFetchCache.has(key)) return _highlightFetchCache.get(key);
+  const promise = (async () => {
+    try {
+      const params = new URLSearchParams({ home: m.home, away: m.away });
+      if (m.kickoffUtc) params.set("kickoff", m.kickoffUtc);
+      const res = await fetch(`/api/highlight?${params.toString()}`);
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data && data.videoUrl ? data : null;
+    } catch {
+      return null;
+    }
+  })();
+  _highlightFetchCache.set(key, promise);
+  return promise;
+}
+
+/** Fill missing replay clips for ended matches via /api/highlight (YouTube, server-side). */
+async function ensureHighlightsFromApi(matches) {
+  const pending = matches.filter((m) => m.status === "ended" && !m.highlight);
+  if (!pending.length) return matches;
+  const results = await Promise.all(
+    pending.map(async (m) => {
+      const h = await fetchHighlightFromApi(m);
+      return h ? { key: commentaryKey(m.home, m.away), highlight: h } : null;
+    })
+  );
+  const byKey = new Map(results.filter(Boolean).map((r) => [r.key, r.highlight]));
+  if (!byKey.size) return matches;
+  return matches.map((m) => {
+    const h = byKey.get(commentaryKey(m.home, m.away));
+    if (!h) return m;
+    return {
+      ...m,
+      summaryAr: m.summaryAr || buildArabicSummary(m),
+      highlight: h,
     };
   });
 }
@@ -591,7 +744,7 @@ function buildLineupsHtml(m) {
 let _matchDetailIdx = null;
 let _matchDetailAt = 0;
 async function loadMatchDetailIndex() {
-  if (_matchDetailIdx && Date.now() - _matchDetailAt < 5 * 60 * 1000) return _matchDetailIdx;
+  if (_matchDetailIdx && Date.now() - _matchDetailAt < 60 * 1000) return _matchDetailIdx;
   try {
     const res = await fetch("assets/data/today.json", { cache: "no-store" });
     const data = await res.json();
@@ -608,14 +761,23 @@ async function loadMatchDetailIndex() {
 function applyMatchDetail(matches, idx) {
   if (!idx) return matches;
   return matches.map((m) => {
-    if (m.lineups && m.stats) return m;
     const entry = idx[commentaryKey(m.home, m.away)];
     if (!entry) return m;
     const out = { ...m };
-    if (!out.lineups && entry.lineups) out.lineups = entry.lineups;
-    if (!out.stats && entry.stats) out.stats = entry.stats;
+    if (entry.lineups) out.lineups = entry.lineups;
+    if (entry.stats) out.stats = entry.stats;
     return out;
   });
+}
+
+async function enrichLiveMatchDetails(matches, { force } = {}) {
+  if (!window.MatchDetailAPI || !window.MatchDetailAPI.enrichMatches) return matches;
+  try {
+    return await window.MatchDetailAPI.enrichMatches(matches, { force });
+  } catch (e) {
+    console.warn("Live match detail fetch failed:", e.message);
+    return matches;
+  }
 }
 
 window.buildStatsHtml = buildStatsHtml;
@@ -633,7 +795,10 @@ window.getMatches = async function getMatches({ force } = {}) {
         const didx = await loadMatchDetailIndex();
         const withCommentary = applyCommentary(live.matches, idx);
         const withHighlights = applyHighlights(withCommentary, hidx);
-        return { ...live, matches: applyMatchDetail(withHighlights, didx) };
+        const withReplays = await ensureHighlightsFromApi(withHighlights);
+        const withStaticDetail = applyMatchDetail(withReplays, didx);
+        const withLiveDetail = await enrichLiveMatchDetails(withStaticDetail, { force });
+        return { ...live, matches: withLiveDetail };
       }
     } catch (e) {
       console.warn("Live API fetch failed, using cache:", e.message);
@@ -653,8 +818,10 @@ window.getMatches = async function getMatches({ force } = {}) {
         didx
       )
     );
+    const withReplays = await ensureHighlightsFromApi(matches);
+    const withLiveDetail = await enrichLiveMatchDetails(withReplays, { force });
     return {
-      matches,
+      matches: withLiveDetail,
       updatedAt: data.updatedAt,
       date: data.date,
       live: true,

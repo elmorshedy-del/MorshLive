@@ -23,7 +23,8 @@ const {
   pairKey,
   pinEndedChannels,
 } = require("./commentators-lib");
-const { attachSummaries, buildHighlightQuery, pickArabicVideo } = require("./highlights-lib");
+const { attachSummaries, buildHighlightQueries, pickArabicVideo, arabicTeam } = require("./highlights-lib");
+const { findVortexHighlight } = require("./vortex-highlights-lib");
 const { parseEspnMatchId, extractLineups, extractMatchStats } = require("./match-detail-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 
@@ -99,22 +100,27 @@ async function fetchEspnSummary(leagueSlug, eventId) {
 
 /** Search YouTube for an Arabic-commentary highlights video for one match. */
 async function fetchYouTubeHighlight(match) {
-  const params = new URLSearchParams({
-    part: "snippet",
-    type: "video",
-    maxResults: "5",
-    order: "relevance",
-    relevanceLanguage: "ar",
-    videoEmbeddable: "true",
-    safeSearch: "strict",
-    q: buildHighlightQuery(match),
-    key: process.env.YOUTUBE_API_KEY,
-  });
-  const kickoffMs = Date.parse(match.kickoffUtc || "");
-  if (!isNaN(kickoffMs)) params.set("publishedAfter", new Date(kickoffMs).toISOString());
-  const json = await get(`${YOUTUBE_SEARCH_URL}?${params.toString()}`);
-  if (json.error) throw new Error(json.error.message || "YouTube API error");
-  return pickArabicVideo(json.items);
+  const queries = buildHighlightQueries(match, arabicTeam);
+  for (const q of queries) {
+    const params = new URLSearchParams({
+      part: "snippet",
+      type: "video",
+      maxResults: "5",
+      order: "relevance",
+      relevanceLanguage: "ar",
+      videoEmbeddable: "true",
+      safeSearch: "strict",
+      q,
+      key: process.env.YOUTUBE_API_KEY,
+    });
+    const kickoffMs = Date.parse(match.kickoffUtc || "");
+    if (!isNaN(kickoffMs)) params.set("publishedAfter", new Date(kickoffMs).toISOString());
+    const json = await get(`${YOUTUBE_SEARCH_URL}?${params.toString()}`);
+    if (json.error) throw new Error(json.error.message || "YouTube API error");
+    const found = pickArabicVideo(json.items);
+    if (found) return found;
+  }
+  return null;
 }
 
 (async () => {
@@ -183,10 +189,9 @@ async function fetchYouTubeHighlight(match) {
   }
 
   // ملخص المباريات: Arabic text summary for every ended match (always, no
-  // network needed) plus an Arabic-commentary highlight video from YouTube
-  // (https://developers.google.com/youtube/v3) when a free YOUTUBE_API_KEY is
-  // configured. Once a match has a pinned clip we never re-query for it, so a
-  // day of World Cup fixtures stays well inside YouTube's free search quota.
+  // network needed) plus an Arabic-commentary highlight clip — vortexvisionworks
+  // embeds first (btolat/kawkabnews source), then YouTube when YOUTUBE_API_KEY
+  // is set. Vortex pins are kept; YouTube pins are upgraded when vortex is found.
   attachSummaries(matches);
   const highlightsByKey = new Map(
     ((previousPayload && previousPayload.highlightsIndex) || []).map((h) => [h.key, h])
@@ -196,6 +201,29 @@ async function fetchYouTubeHighlight(match) {
     if (m.status !== "ended") continue;
     const key = pairKey(m.home, m.away);
     const pinned = highlightsByKey.get(key);
+    if (pinned && pinned.source === "vortex") {
+      m.highlight = {
+        videoUrl: pinned.videoUrl,
+        title: pinned.title,
+        channelTitle: pinned.channelTitle,
+        thumbnail: pinned.thumbnail,
+        source: pinned.source,
+        embedId: pinned.embedId,
+      };
+      highlightsMatched++;
+      continue;
+    }
+    try {
+      const vortex = await findVortexHighlight(m, arabicTeam);
+      if (vortex) {
+        m.highlight = vortex;
+        highlightsByKey.set(key, { key, home: m.home, away: m.away, ...vortex });
+        highlightsMatched++;
+        continue;
+      }
+    } catch (err) {
+      console.warn(`vortex highlight search failed for ${m.home} vs ${m.away}:`, err.message);
+    }
     if (pinned) {
       m.highlight = {
         videoUrl: pinned.videoUrl,
