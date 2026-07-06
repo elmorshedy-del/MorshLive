@@ -113,7 +113,7 @@
             <span class="alt-stream-name">${escapeHtml(t(cfg.sirTv.labelKey))}</span>
             <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
           </div>
-          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("sirTv"))}</div>
+          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("sirTv"), "sirTv")}</div>
         </div>`
       );
     }
@@ -124,7 +124,7 @@
             <span class="alt-stream-name">${escapeHtml(t(cfg.ntv.labelKey))}</span>
             <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
           </div>
-          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("ntv"))}</div>
+          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("ntv"), "ntv")}</div>
         </div>`
       );
     }
