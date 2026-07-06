@@ -213,9 +213,13 @@
         kickoff: m.kickoffUtc || "",
       });
       try {
-        const res = await fetch(`/api/match-memes?${q}`);
+        let res = await fetch(`/api/match-memes?${q}`);
         if (!res.ok) return;
-        const data = await res.json();
+        let data = await res.json();
+        if (!data.memes?.length) {
+          res = await fetch(`/api/match-memes?${q}&live=1`);
+          if (res.ok) data = await res.json();
+        }
         if (data.memes?.length) archive.memes[m.key] = data.memes;
       } catch { /* static archive */ }
     }));
