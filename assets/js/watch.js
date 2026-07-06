@@ -213,6 +213,7 @@
       : channel.quality;
 
     document.getElementById("info-quality").textContent = channel.quality;
+    document.getElementById("info-group").textContent = channel.group;
     const infoRoute = document.getElementById("info-route");
     if (infoRoute) {
       const key = window.SITE_DATA && window.SITE_DATA.embedKeyFor
@@ -222,11 +223,8 @@
         ? `${key} ← ${match && match.channel ? match.channel : channel.name}`
         : "—";
     }
-    const infoGroup = document.getElementById("info-group");
-    if (infoGroup) infoGroup.textContent = channel.group;
-    const infoLeague = document.getElementById("info-league");
-    if (infoLeague) infoLeague.textContent = (match && match.league) || "—";
     document.getElementById("info-commentator").innerHTML = commentatorHtml(match);
+    document.getElementById("info-league").textContent = (match && match.league) || "—";
     const infoTimes = document.getElementById("info-times");
     if (infoTimes) infoTimes.innerHTML = timeZoneHtml(match);
     renderMatchDetail();
