@@ -171,6 +171,29 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 
 ---
 
+## Backend stream watchdog (incident replay)
+
+**Purpose:** Ingest watch-page + player telemetry server-side so when you report an incident time we can replay what was active — **no guessing, no auto-fixes**.
+
+**Auto-ingest (no console):**
+- Watch page: `player_load`, `heartbeat` every 30s, server/embed changes, iframe mutations
+- HLS player iframe: `playback_stall`, `buffering`, `time_rewind` + `mirrorIndex` / `hlsSrc`
+- Stored on worker: last **2000** events with UTC `t` + `ts` (ms), `sessionId`, `embedKey`, `serv`, `channel`, `match`
+
+**When you have a recording — tell us the wall-clock time**, e.g. `2026-07-05T23:14:30Z`. We query ±2 minutes:
+
+```bash
+node scripts/query-stream-log.mjs "2026-07-05T23:14:30Z" 120
+# or
+curl -s "https://korazero.com/api/stream-log?at=2026-07-05T23:14:30Z&window=120" | jq .
+```
+
+Response shows which `embedKey`, `serv`, `iframeSrc`, `mirrorIndex`, `hlsSrc` were active at that moment.
+
+**We do not claim root cause until this data matches your recording.**
+
+---
+
 ## Platform patterns (reuse on next incident)
 
 | Pattern | Where | What to do |
@@ -178,6 +201,7 @@ Commits on `main` during Brazil vs Norway (Round of 16). PR #76 branch merged.
 | Dead MAX mirror | `worker.js` `DLHD_CHANNEL_MIRROR_IDS` | Add fallback ids 91–95; bump `channel-bindings.json` |
 | New AlbaPlayer host | `worker.js` | Proxy at `/wk/albaplayer/{slug}/`, extract HLS, serve `cleanHlsPlayerHtml` — never raw iframe |
 | Spam «مباشر» menu | Upstream AlbaPlayer | Hide `.aplr-menu`; block `AplrPopUp`; sandbox without `allow-popups` |
+| Kooracity 30s pause | Unknown until replay | Backend watchdog `/api/stream-log?at=ISO&window=120` — **no auto-fix** until evidence |
 | Video reloads alone | `watch.js` | Don't rebuild servers on stats refresh; only switch if active `srv-down` |
 | Lineups missing | `data.js` `getMatches()` | Ensure `applyMatchDetail()` runs on cached `today.json` path |
 | Pin live match routing | `today.json` + bindings | Set `embedKey`, `channelId`; calibrate in `channel-bindings.json` |

@@ -25,6 +25,9 @@ const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
 const POLL_RE = /^\/api\/poll\/([a-z0-9-]+)\/?$/i;
 const POLL_STORE = "https://kz-poll.internal/";
+const STREAM_LOG_RE = /^\/api\/stream-log\/?$/i;
+const STREAM_LOG_STORE = "https://kz-stream-log.internal/";
+const STREAM_LOG_MAX = 2000;
 const POLL_TEAMS = {
   "brazil-norway-20260705": ["brazil", "norway"],
 };
@@ -107,6 +110,39 @@ const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
 .aplr-ad,.aplr-preroll,.video-ad,.vjs-ad,.ima-ad-container,
 .aplr-embed-holder,.aplr-embed-visible,.aplr-site-name{display:none!important;visibility:hidden!important;pointer-events:none!important}
 </style>`;
+
+// Observe-only: log playback stalls / kooracity pauses for root-cause review (no auto-switch).
+const KZ_HLS_OBSERVE_JS = `
+function kzInstallObserve(v, getMeta){
+  var lastT=-1, lastMove=Date.now(), userPaused=false, lastStallLog=0;
+  function emit(event, extra){
+    var meta=getMeta()||{}, payload={
+      t:new Date().toISOString(), event:event,
+      mirrorIndex:meta.mirrorIndex, hlsSrc:meta.hlsSrc||'',
+      videoTime:v.currentTime, paused:v.paused, readyState:v.readyState
+    };
+    if(extra) for(var k in extra) payload[k]=extra[k];
+    try{
+      var body={t:new Date().toISOString(),ts:Date.now(),event:event,source:'player_iframe',
+        mirrorIndex:meta.mirrorIndex,hlsSrc:meta.hlsSrc||'',videoTime:v.currentTime,
+        paused:v.paused,readyState:v.readyState};
+      if(extra) for(var k in extra) body[k]=extra[k];
+      fetch('/api/stream-log',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body),keepalive:true}).catch(function(){});
+      if(window.parent&&window.parent!==window) window.parent.postMessage({type:'kz-stream-event',...body},'*');
+    }catch(e){}
+  }
+  v.addEventListener('pause',function(){ if(!v.seeking) userPaused=true; });
+  v.addEventListener('playing',function(){ userPaused=false; lastMove=Date.now(); lastT=v.currentTime; });
+  setInterval(function(){
+    if(userPaused||v.paused||document.hidden) return;
+    var t=v.currentTime;
+    if(lastT>=0&&t<lastT-0.5&&!v.seeking){ emit('time_rewind',{from:lastT,to:t}); lastT=t; lastMove=Date.now(); return; }
+    if(t!==lastT){ lastT=t; lastMove=Date.now(); return; }
+    var stallSec=Math.round((Date.now()-lastMove)/1000);
+    if(stallSec>=5&&Date.now()-lastStallLog>8000){ lastStallLog=Date.now(); emit('playback_stall',{stallSec:stallSec}); }
+  },2000);
+  v.addEventListener('waiting',function(){ emit('buffering'); });
+}`;
 
 const EMBED_SHIM = `<script id="kz-embed-shim">
 (function(){
@@ -827,8 +863,10 @@ function cleanHlsPlayerHtml(sources, title) {
 </head><body>
 <video id="v" controls autoplay muted playsinline data-kz-src=${JSON.stringify(list[0] || "")}></video>
 <script>
+${KZ_HLS_OBSERVE_JS}
 (function(){
   var v=document.getElementById('v'), sources=${JSON.stringify(list)}, i=0, hls=null, tries=0;
+  function meta(){ return { mirrorIndex:i, hlsSrc:sources[i]||'' }; }
   function destroy(){ if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
   function next(){ i=(i+1)%sources.length; tries++; if(tries<=sources.length*3){ setTimeout(load, 800); } }
   function load(){
@@ -842,12 +880,12 @@ function cleanHlsPlayerHtml(sources, title) {
       hls.on(Hls.Events.ERROR,function(_e,d){
         if(!d||!d.fatal) return;
         if(d.type==='mediaError'){ try{hls.recoverMediaError();return;}catch(e){} }
-        // network/other fatal: this mirror is down — advance to the next live one.
         next();
       });
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
   }
+  kzInstallObserve(v, meta);
   load();
 })();
 </script>
@@ -908,8 +946,10 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
   <button type="button" id="kz-unmute"><span class="ico">🔊</span><span>اضغط لتشغيل الصوت</span></button>
 </div>
 <script>
+${KZ_HLS_OBSERVE_JS}
 (function(){
   var sources=${JSON.stringify(list)}, i=0, hls=null, tries=0, v=document.getElementById('v');
+  function hlsMeta(){ return { mirrorIndex:i, hlsSrc:sources[i]||'' }; }
   var shell=document.getElementById('kz-shell'), soundBtn=document.getElementById('kz-sound'), unmute=document.getElementById('kz-unmute');
   var userMuted=false;
   function syncSoundUi(){
@@ -948,6 +988,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
     syncSoundUi();
   }
+  kzInstallObserve(v, hlsMeta);
   loadHls();
   var channel=${JSON.stringify(ch)}, parents=${JSON.stringify(parents)}, bar=document.getElementById('kz-quality'), player;
   player=new Twitch.Player('kz-twitch',{width:'100%',height:'100%',channel:channel,parent:parents,muted:true,autoplay:true});
@@ -1908,6 +1949,167 @@ async function handlePoll(request, pollId) {
   return new Response("Method not allowed", { status: 405, headers: pollJsonHeaders() });
 }
 
+function streamLogJsonHeaders(extra) {
+  return {
+    "Content-Type": "application/json; charset=utf-8",
+    "Cache-Control": "no-store",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type",
+    ...(extra || {}),
+  };
+}
+
+function streamLogListKey() {
+  return new Request(`${STREAM_LOG_STORE}recent`);
+}
+
+async function readStreamLogList() {
+  const hit = await caches.default.match(streamLogListKey());
+  if (!hit) return [];
+  try {
+    const arr = await hit.json();
+    return Array.isArray(arr) ? arr : [];
+  } catch {
+    return [];
+  }
+}
+
+async function writeStreamLogList(arr) {
+  await caches.default.put(
+    streamLogListKey(),
+    new Response(JSON.stringify(arr.slice(-STREAM_LOG_MAX)), {
+      headers: { "Cache-Control": "no-store" },
+    })
+  );
+}
+
+function streamLogDedupKey(entry) {
+  if (entry.event === "heartbeat") {
+    return [entry.sessionId || "", entry.event, Math.floor((entry.ts || 0) / 30000)].join("|");
+  }
+  return [
+    entry.sessionId || "",
+    entry.t && entry.t.slice(0, 19),
+    entry.event || "",
+    entry.mirrorIndex == null ? "" : String(entry.mirrorIndex),
+    entry.stallSec == null ? "" : String(entry.stallSec),
+    entry.hlsSrc || "",
+  ].join("|");
+}
+
+function normalizeStreamLogEntry(raw, ua) {
+  const t = raw.t || new Date().toISOString();
+  const ts = raw.ts != null ? Number(raw.ts) : Date.parse(t);
+  return {
+    t,
+    ts: Number.isFinite(ts) ? ts : Date.now(),
+    event: String(raw.event || "incident").slice(0, 64),
+    sessionId: String(raw.sessionId || "").slice(0, 64),
+    voter: String(raw.voter || "").slice(0, 64),
+    source: String(raw.source || raw.from || "").slice(0, 32),
+    url: String(raw.url || "").slice(0, 512),
+    iframeSrc: String(raw.iframeSrc || "").slice(0, 512),
+    embedKey: String(raw.embedKey || "").slice(0, 32),
+    serv: raw.serv == null ? "" : String(raw.serv).slice(0, 8),
+    channel: String(raw.channel || "").slice(0, 64),
+    match: String(raw.match || "").slice(0, 64),
+    mirrorIndex: raw.mirrorIndex == null ? null : Number(raw.mirrorIndex),
+    hlsSrc: String(raw.hlsSrc || "").slice(0, 512),
+    videoTime: raw.videoTime == null ? null : Number(raw.videoTime),
+    stallSec: raw.stallSec == null ? null : Number(raw.stallSec),
+    paused: raw.paused == null ? null : !!raw.paused,
+    readyState: raw.readyState == null ? null : Number(raw.readyState),
+    ua: String(raw.ua || ua || "").slice(0, 160),
+  };
+}
+
+function filterStreamLog(list, params) {
+  const at = params.get("at");
+  const windowSec = Math.min(Math.max(Number(params.get("window") || 120), 10), 3600);
+  const from = params.get("from");
+  const to = params.get("to");
+  const session = params.get("session");
+  const limit = Math.min(Math.max(Number(params.get("limit") || 100), 1), 500);
+
+  let filtered = list;
+  if (at) {
+    const center = Date.parse(at);
+    if (!Number.isNaN(center)) {
+      const win = windowSec * 1000;
+      filtered = list.filter((e) => e.ts >= center - win && e.ts <= center + win);
+    }
+  } else if (from || to) {
+    const f = from ? Date.parse(from) : 0;
+    const t = to ? Date.parse(to) : Infinity;
+    filtered = list.filter((e) => e.ts >= f && e.ts <= t);
+  }
+  if (session) filtered = filtered.filter((e) => e.sessionId === session);
+
+  return {
+    query: {
+      at: at || null,
+      window: at ? windowSec : null,
+      from: from || null,
+      to: to || null,
+      session: session || null,
+      limit,
+    },
+    incidents: filtered.slice(-limit),
+    count: filtered.length,
+  };
+}
+
+async function handleStreamLog(request) {
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: streamLogJsonHeaders() });
+  }
+
+  if (request.method === "GET") {
+    const url = new URL(request.url);
+    const list = await readStreamLogList();
+    const result = filterStreamLog(list, url.searchParams);
+    return new Response(
+      JSON.stringify({ ok: true, totalStored: list.length, ...result }),
+      { status: 200, headers: streamLogJsonHeaders() }
+    );
+  }
+
+  if (request.method !== "POST") {
+    return new Response("Method not allowed", { status: 405, headers: streamLogJsonHeaders() });
+  }
+
+  let body;
+  try {
+    body = await request.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "bad_json" }), { status: 400, headers: streamLogJsonHeaders() });
+  }
+
+  const events = Array.isArray(body && body.events) ? body.events : [body];
+  const list = await readStreamLogList();
+  const seen = new Set(list.slice(-120).map(streamLogDedupKey));
+  let added = 0;
+  const ua = request.headers.get("User-Agent") || "";
+
+  for (const raw of events) {
+    if (!raw || typeof raw !== "object") continue;
+    const entry = normalizeStreamLogEntry(raw, ua);
+    const key = streamLogDedupKey(entry);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    list.push(entry);
+    added++;
+  }
+
+  if (added) await writeStreamLogList(list);
+
+  return new Response(JSON.stringify({ ok: true, added }), {
+    status: 200,
+    headers: streamLogJsonHeaders(),
+  });
+}
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -1972,6 +2174,9 @@ export default {
     const poll = url.pathname.match(POLL_RE);
     if (poll) {
       return handlePoll(request, poll[1].toLowerCase());
+    }
+    if (STREAM_LOG_RE.test(url.pathname)) {
+      return handleStreamLog(request);
     }
     return env.ASSETS.fetch(request);
   },
