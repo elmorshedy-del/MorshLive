@@ -13,11 +13,20 @@
 
 // Capability flags — what the current feed can actually ground.
 const CAP = {
-  XY_EVENTS: 'xy_events', // per-event pitch coordinates (StatsBomb, Opta)
   XG: 'xg', // per-shot expected goals
+  SHOT_XY: 'shot_xy', // shot-level coordinates (free live: BALLDONTLIE shot maps)
+  XY_EVENTS: 'xy_events', // FULL per-event coordinates incl. passes (StatsBomb, Opta)
   PRESSURE: 'pressure_index', // team pressure timeline (SportMonks add-on)
   TRACKING: 'tracking', // continuous all-22 positions (SkillCorner, PFF)
 };
+
+// xy_events (full event coords) implies shot_xy (shot coords). Adapters can
+// declare just xy_events; call this to get the effective capability set.
+function withImplied(caps) {
+  const s = new Set(caps);
+  if (s.has(CAP.XY_EVENTS)) s.add(CAP.SHOT_XY);
+  return s;
+}
 
 // Pitch is normalised to the StatsBomb frame: x 0..120 (own goal → opp goal),
 // y 0..80 (left touchline → right touchline from the attacking team's view).
