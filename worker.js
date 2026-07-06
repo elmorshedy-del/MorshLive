@@ -3433,6 +3433,8 @@ async function probeSiirMatchDetail(block) {
   };
 }
 
+const SIIR_MATCHES_DETAIL_LIMIT = 16;
+
 async function proxySiirMatchesApi(request, env) {
   const now = Date.now();
   if (_siirMatchesCache.data && now - _siirMatchesCache.at < SIIR_MATCHES_CACHE_MS) {
@@ -3448,20 +3450,21 @@ async function proxySiirMatchesApi(request, env) {
     });
   }
 
-  const homeHtml = await fetchSiirHtml("/");
-  const todayHtml = await fetchSiirHtml("/todays-matches/");
+  const [homeHtml, todayHtml] = await Promise.all([fetchSiirHtml("/"), fetchSiirHtml("/todays-matches/")]);
   const rawBlocks = [
     ...parseSiirMatchBlocks(homeHtml || ""),
     ...parseSiirMatchBlocks(todayHtml || ""),
   ];
   const seen = new Set();
-  const blocks = rawBlocks.filter((b) => {
-    if (seen.has(b.href)) return false;
-    seen.add(b.href);
-    return true;
-  });
+  const blocks = rawBlocks
+    .filter((b) => {
+      if (seen.has(b.href)) return false;
+      seen.add(b.href);
+      return true;
+    })
+    .slice(0, SIIR_MATCHES_DETAIL_LIMIT);
 
-  const matches = await mapPool(blocks, 3, probeSiirMatchDetail);
+  const matches = await mapPool(blocks, 4, probeSiirMatchDetail);
 
   const sir247 = await mapPool(
     [
@@ -3529,10 +3532,17 @@ async function proxySiirMatchEmbed(request, postId, env) {
   return new Response(frame, { status: 200, headers: htmlHeaders });
 }
 
-async function probeStreamsLabEntry(ch) {
+async function probeStreamsLabEntry(ch, origin, secret, request) {
   if (ch.dlhdId) {
-    // Live status is verified client-side via /dl/{id} (same-origin embed).
-    return { live: null, route: ch.route, mirror: null };
+    const primary = await resolveDlMirror(ch.dlhdId, origin, secret, request);
+    if (primary) return { live: true, route: ch.route, mirror: null };
+    for (const mirrorRoute of ch.mirrors || []) {
+      const mid = parseInt(String(mirrorRoute).replace(/.*\//, ""), 10);
+      if (!mid) continue;
+      const mirror = await resolveDlMirror(mid, origin, secret, request);
+      if (mirror) return { live: true, route: mirrorRoute, mirror: mirrorRoute };
+    }
+    return { live: false, route: ch.route, mirror: null };
   }
   if (ch.sirSlug) {
     const master = await resolveSirMaster(ch.sirSlug);
@@ -3579,8 +3589,9 @@ async function proxyStreamsLabApi(request, env) {
     });
   }
 
+  const secret = env && env.STREAM_SIGNING_SECRET;
   const channels = await mapPool(catalog.channels, 4, async (ch) => {
-    const probe = await probeStreamsLabEntry(ch);
+    const probe = await probeStreamsLabEntry(ch, origin, secret, request);
     return {
       id: ch.id,
       name: ch.name,

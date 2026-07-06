@@ -1,5 +1,5 @@
 /**
- * Streams Lab — 24/7 beIN hub (dlhd + SIR + sir-tv-new links).
+ * Streams Lab — 24/7 beIN hub (dlhd + SIR + siir-tv.live).
  * Does not touch main watch page STREAM_SOURCES.
  */
 (function () {
@@ -21,13 +21,17 @@
   const PRIMARY_GROUPS = ["ar", "max", "sir"];
   const GROUP_PICK_ORDER = { ar: 1, max: 2, sir: 3, other: 99 };
   const REGION_STATS = ["ar", "max", "sir"];
+  const PROBE_TIMEOUT_MS = 10_000;
 
   let catalog = { channels: [], groups: [], external: [], defaultGroup: "ar" };
+  let apiBest = null;
   let sir247 = [];
   let siirMatches = [];
   let currentRoute = null;
   let currentGroup = "ar";
   let probed = false;
+  let refreshInFlight = null;
+  let bgProbeGen = 0;
 
   function setStatus(msg) {
     if (statusLine) statusLine.textContent = msg;
@@ -48,6 +52,10 @@
     if (ch.sub) t += " — " + ch.sub;
     if (ch.mirror) t += " (مرآة)";
     return t;
+  }
+
+  function channelById(id) {
+    return (catalog.channels || []).find((c) => c.id === id) || null;
   }
 
   function filteredChannels() {
@@ -75,7 +83,7 @@
     const liveCount = channels.filter((c) => c.live).length;
     const arLive = channels.filter((c) => c.live && isPrimaryChannel(c)).length;
     if (liveCountEl) liveCountEl.textContent = arLive ? String(arLive) + " عربي" : String(liveCount);
-    if (totalCountEl) totalCountEl.textContent = String(channels.length);
+    if (totalCountEl) totalCountEl.textContent = String(channels.filter(isPrimaryChannel).length || channels.length);
     updateRegionStats();
     renderGroups();
     renderGrid();
@@ -232,7 +240,14 @@
 
   async function refreshSiirMatches() {
     try {
-      const res = await fetch("/api/siir-matches", { cache: "no-store" });
+      const ctrl = typeof AbortController !== "undefined" ? new AbortController() : null;
+      const timer = ctrl ? setTimeout(() => ctrl.abort(), 22_000) : null;
+      const res = await fetch("/api/siir-matches", {
+        cache: "no-store",
+        signal: ctrl ? ctrl.signal : undefined,
+      });
+      if (timer) clearTimeout(timer);
+      if (!res.ok) throw new Error("HTTP " + res.status);
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || "siir-matches failed");
       siirMatches = data.matches || [];
@@ -252,7 +267,7 @@
       }
       renderSiirMatches();
       return data;
-    } catch (e) {
+    } catch {
       if (siirMatchesStatus) siirMatchesStatus.textContent = "تعذّر تحميل مباريات siir-tv.live";
       return null;
     }
@@ -260,20 +275,35 @@
 
   function pickBest(autoPlay) {
     const live = (catalog.channels || []).filter((c) => c.live);
-    if (!live.length) {
-      setStatus("لا يوجد بث عربي متاح حالياً — جارٍ إعادة الفحص…");
-      return null;
+    if (live.length) {
+      const primary = live.filter(isPrimaryChannel);
+      const pool = primary.length ? primary : live;
+      pool.sort((a, b) => {
+        const g = groupPickRank(a) - groupPickRank(b);
+        if (g !== 0) return g;
+        return (a.priority || 99) - (b.priority || 99);
+      });
+      const best = pool[0];
+      if (autoPlay) loadRoute(best.route, channelLabel(best));
+      return best;
     }
-    const primary = live.filter(isPrimaryChannel);
-    const pool = primary.length ? primary : live;
-    pool.sort((a, b) => {
-      const g = groupPickRank(a) - groupPickRank(b);
-      if (g !== 0) return g;
-      return (a.priority || 99) - (b.priority || 99);
-    });
-    const best = pool[0];
-    if (autoPlay) loadRoute(best.route, channelLabel(best));
-    return best;
+
+    if (apiBest?.route && autoPlay) {
+      const ch = channelById(apiBest.id) || apiBest;
+      loadRoute(apiBest.route, channelLabel(ch));
+      return apiBest;
+    }
+
+    const fallback = (catalog.channels || [])
+      .filter(isPrimaryChannel)
+      .sort((a, b) => (a.priority || 99) - (b.priority || 99))[0];
+    if (fallback?.route && autoPlay) {
+      loadRoute(fallback.route, channelLabel(fallback));
+      return fallback;
+    }
+
+    if (autoPlay) setStatus("لا يوجد بث عربي متاح حالياً — جرّب قناة يدوياً أو أعد الفحص");
+    return null;
   }
 
   async function mapPool(items, limit, fn) {
@@ -289,9 +319,18 @@
     return out;
   }
 
+  function probeSignal() {
+    if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
+      return AbortSignal.timeout(PROBE_TIMEOUT_MS);
+    }
+    const ctrl = new AbortController();
+    setTimeout(() => ctrl.abort(), PROBE_TIMEOUT_MS);
+    return ctrl.signal;
+  }
+
   async function probeEmbed(route) {
     try {
-      const r = await fetch(route, { cache: "no-store", signal: AbortSignal.timeout(16_000) });
+      const r = await fetch(route, { cache: "no-store", signal: probeSignal() });
       const t = await r.text();
       return r.ok && (/\/dl\/hls\?/.test(t) || /\/sir\/hls\?/.test(t) || /playerv5\.php|shootny/i.test(t));
     } catch {
@@ -312,67 +351,102 @@
     return { ...ch, live: false, route: ch.route, mirror: null };
   }
 
+  function mergeApiChannels(apiData) {
+    const apiMap = new Map((apiData.channels || []).map((c) => [c.id, c]));
+    const merged = (catalog.channels || []).map((ch) => {
+      const fromApi = apiMap.get(ch.id);
+      if (!fromApi) return ch;
+      const live = fromApi.live === true ? true : fromApi.live === false ? false : ch.live;
+      return {
+        ...ch,
+        live,
+        route: fromApi.route || ch.route,
+        mirror: fromApi.mirror || null,
+      };
+    });
+    catalog.channels = merged.sort((a, b) => (a.priority || 99) - (b.priority || 99));
+    apiBest = apiData.best || null;
+    catalog.external = apiData.external || catalog.external;
+    probed = true;
+    updateLiveUi();
+    renderExternal();
+    renderSir247();
+  }
+
+  async function probeDlhdBackground(gen) {
+    const dlhd = (catalog.channels || [])
+      .filter((c) => c.source === "dlhd")
+      .sort((a, b) => groupPickRank(a) - groupPickRank(b) || (a.priority || 99) - (b.priority || 99));
+    if (!dlhd.length) return;
+
+    const primaryDlhd = dlhd.filter(isPrimaryChannel);
+    const otherDlhd = dlhd.filter((c) => !isPrimaryChannel(c));
+    const probedPrimary = await mapPool(primaryDlhd, 6, probeDlhdChannel);
+    if (gen !== bgProbeGen) return;
+    const probedOther = await mapPool(otherDlhd, 5, probeDlhdChannel);
+    if (gen !== bgProbeGen) return;
+
+    const probedMap = new Map([...probedPrimary, ...probedOther].map((c) => [c.id, c]));
+    catalog.channels = (catalog.channels || []).map((ch) => {
+      const p = probedMap.get(ch.id);
+      return p || ch;
+    });
+    updateLiveUi();
+
+    const liveCount = catalog.channels.filter((c) => c.live).length;
+    const arLive = catalog.channels.filter((c) => c.live && isPrimaryChannel(c)).length;
+    const ts = new Date().toLocaleTimeString("ar-SA");
+    setStatus(`آخر فحص: ${ts} — ${arLive} عربي · ${liveCount} إجمالي`);
+
+    const keepCurrent =
+      currentRoute &&
+      (catalog.channels.some((c) => c.route === currentRoute && c.live) ||
+        sir247.some((c) => c.route === currentRoute && c.live) ||
+        siirMatches.some((m) => m.route === currentRoute && m.live));
+    if (!keepCurrent && !currentRoute) pickBest(true);
+  }
+
   async function refreshStatus() {
-    setStatus("جارٍ فحص المصادر…");
-    try {
-      if (!(catalog.channels || []).length) {
-        const res = await fetch("/assets/data/streams-lab.json", { cache: "no-store" });
-        const data = await res.json();
-        catalog = { ...data, channels: (data.channels || []).map((c) => ({ ...c, live: null })) };
-        catalog.external = data.external || [];
-        catalog.groups = data.groups || [];
+    if (refreshInFlight) return refreshInFlight;
+
+    refreshInFlight = (async () => {
+      setStatus("جارٍ فحص المصادر…");
+      try {
+        if (!(catalog.channels || []).length) {
+          const res = await fetch("/assets/data/streams-lab.json", { cache: "no-store" });
+          const data = await res.json();
+          catalog = { ...data, channels: (data.channels || []).map((c) => ({ ...c, live: null })) };
+          catalog.external = data.external || [];
+          catalog.groups = data.groups || [];
+        }
+
+        refreshSiirMatches();
+
+        const apiRes = await fetch("/api/streams-lab", { cache: "no-store" });
+        const apiData = await apiRes.json();
+        if (!apiData.ok) throw new Error(apiData.error || "probe failed");
+
+        mergeApiChannels(apiData);
+
+        const hadRoute = !!currentRoute;
+        if (!hadRoute) pickBest(true);
+        else setStatus("جارٍ التحقق من القنوات في الخلفية…");
+
+        bgProbeGen += 1;
+        const gen = bgProbeGen;
+        probeDlhdBackground(gen).catch(() => {});
+
+        return catalog;
+      } catch (e) {
+        setStatus("تعذّر فحص المصادر: " + (e.message || e));
+        if (!currentRoute) pickBest(true);
+        return null;
+      } finally {
+        refreshInFlight = null;
       }
+    })();
 
-      const apiRes = await fetch("/api/streams-lab", { cache: "no-store" });
-      const apiData = await apiRes.json();
-      if (!apiData.ok) throw new Error(apiData.error || "probe failed");
-
-      const sirMap = new Map((apiData.channels || []).filter((c) => c.source === "sir").map((c) => [c.id, c]));
-
-      const dlhd = (catalog.channels || [])
-        .filter((c) => c.source === "dlhd")
-        .sort((a, b) => groupPickRank(a) - groupPickRank(b) || (a.priority || 99) - (b.priority || 99));
-      const sir = (catalog.channels || []).filter((c) => c.source === "sir");
-
-      setStatus("جارٍ فحص القنوات العربية…");
-      const primaryDlhd = dlhd.filter(isPrimaryChannel);
-      const otherDlhd = dlhd.filter((c) => !isPrimaryChannel(c));
-      const probedPrimary = await mapPool(primaryDlhd, 5, probeDlhdChannel);
-      setStatus("جارٍ فحص القنوات الأخرى…");
-      const probedOther = await mapPool(otherDlhd, 4, probeDlhdChannel);
-      const probedDlhd = [...probedPrimary, ...probedOther];
-      const probedSir = sir.map((ch) => {
-        const fromApi = sirMap.get(ch.id);
-        const live = fromApi ? !!fromApi.live : false;
-        return { ...ch, live, route: ch.route, mirror: null };
-      });
-
-      catalog.channels = [...probedDlhd, ...probedSir].sort((a, b) => (a.priority || 99) - (b.priority || 99));
-      catalog.groups = apiData.groups || catalog.groups;
-      catalog.external = apiData.external || catalog.external;
-      probed = true;
-
-      const liveCount = catalog.channels.filter((c) => c.live).length;
-      const arLive = catalog.channels.filter((c) => c.live && isPrimaryChannel(c)).length;
-      updateLiveUi();
-      renderExternal();
-      renderSir247();
-      await refreshSiirMatches();
-
-      const ts = new Date().toLocaleTimeString("ar-SA");
-      setStatus(`آخر فحص: ${ts} — ${arLive} عربي · ${liveCount} إجمالي`);
-
-      const keepCurrent =
-        currentRoute &&
-        (catalog.channels.some((c) => c.route === currentRoute && c.live) ||
-          sir247.some((c) => c.route === currentRoute && c.live) ||
-          siirMatches.some((m) => m.route === currentRoute && m.live));
-      if (!keepCurrent) pickBest(true);
-      return catalog;
-    } catch (e) {
-      setStatus("تعذّر فحص المصادر: " + (e.message || e));
-      return null;
-    }
+    return refreshInFlight;
   }
 
   if (reloadBtn) {
@@ -396,7 +470,7 @@
       renderExternal();
       renderSir247();
     })
-    .catch(() => {})
+    .catch(() => setStatus("تعذّر تحميل القائمة"))
     .finally(() => refreshStatus());
 
   setInterval(() => refreshStatus(), 90_000);
