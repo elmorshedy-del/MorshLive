@@ -5,6 +5,7 @@
 (function () {
   const iframe = document.getElementById("player");
   const video = document.getElementById("lab-video");
+  const clapprEl = document.getElementById("lab-clappr");
   const grid = document.getElementById("channel-grid");
   const groupTabs = document.getElementById("group-tabs");
   const nowLabel = document.getElementById("now-label");
@@ -33,6 +34,7 @@
   let refreshInFlight = null;
   let hlsInstance = null;
   let stallTimer = null;
+  let clapprPlayer = null;
   let sourceIndex = 0;
   let currentSources = [];
   let loadGen = 0;
@@ -125,6 +127,18 @@
     }, 3000);
   }
 
+  function destroyClappr() {
+    if (clapprPlayer) {
+      try {
+        clapprPlayer.destroy();
+      } catch {
+        /* ignore */
+      }
+      clapprPlayer = null;
+    }
+    if (clapprEl) clapprEl.innerHTML = "";
+  }
+
   function destroyHls() {
     if (stallTimer) {
       clearInterval(stallTimer);
@@ -151,6 +165,7 @@
   }
 
   function showPlayer(mode) {
+    if (clapprEl) clapprEl.classList.toggle("is-hidden", mode !== "clappr");
     if (video) video.classList.toggle("is-hidden", mode !== "video");
     if (iframe) iframe.classList.toggle("is-hidden", mode !== "iframe");
   }
@@ -209,19 +224,72 @@
     tryPlayVideo();
   }
 
+  async function playLabClappr(m3u8, id, label, route) {
+    if (!clapprEl || !window.Clappr) return false;
+    destroyClappr();
+    destroyHls();
+    showPlayer("clappr");
+    if (iframe) iframe.src = "about:blank";
+
+    const p2pConfig = {
+      live: true,
+      token: "greek",
+      channelId: String(id),
+      announce: "https://ann.cdn-lab.shop/v1",
+      showSlogan: false,
+      sharePlaylist: false,
+      startFromSegmentOffset: 0,
+      trickleICE: true,
+    };
+
+    if (window.P2PEngineHls) {
+      try {
+        await P2PEngineHls.tryRegisterServiceWorker(p2pConfig);
+      } catch {
+        /* P2P optional */
+      }
+    }
+
+    clapprPlayer = new Clappr.Player({
+      source: m3u8,
+      parent: clapprEl,
+      mimeType: "application/x-mpegURL",
+      width: "100%",
+      height: "100%",
+      autoPlay: true,
+      mute: true,
+      playback: {
+        playInline: true,
+        hlsjsConfig: {
+          maxBufferLength: 5,
+          liveSyncDurationCount: 3,
+        },
+      },
+    });
+
+    if (window.P2PEngineHls) {
+      try {
+        p2pConfig.hlsjsInstance = clapprPlayer.core.getCurrentPlayback()?._hls;
+        new P2PEngineHls(p2pConfig);
+      } catch {
+        /* fall back to plain hls.js inside Clappr */
+      }
+    }
+
+    setStatus("البث: " + (label || route));
+    return true;
+  }
+
   async function playLabDlhd(route, label) {
     const id = dlhdIdFromRoute(route);
-    if (!id || !video) return false;
-
-    showPlayer("video");
-    if (iframe) iframe.src = "about:blank";
-    destroyHls();
+    if (!id) return false;
 
     const gen = ++loadGen;
     sourceIndex = 0;
     sourceTries = 0;
     currentSources = [];
 
+    currentRoute = route;
     if (nowLabel) nowLabel.textContent = label || route;
     document.querySelectorAll(".lab-card").forEach((el) => {
       el.classList.toggle("active", el.dataset.route === route);
@@ -229,26 +297,38 @@
 
     setStatus("جارٍ تشغيل البث…");
 
+    let m3u8 = null;
     try {
       const res = await fetch("/api/lab-stream/" + id, { cache: "no-store" });
       const data = await res.json();
       if (gen !== loadGen) return true;
-      if (data.ok && Array.isArray(data.sources) && data.sources.length) {
-        currentSources = data.sources.filter(Boolean);
+      if (data.ok) {
+        m3u8 = data.m3u8 || null;
+        if (Array.isArray(data.sources) && data.sources.length) {
+          currentSources = data.sources.filter(Boolean);
+        }
       }
     } catch {
-      /* fall through to iframe */
+      /* fall through */
     }
 
     if (gen !== loadGen) return true;
 
-    if (currentSources.length) {
+    if (m3u8 && (await playLabClappr(m3u8, id, label, route))) {
+      return true;
+    }
+
+    if (currentSources.length && video) {
+      showPlayer("video");
+      if (iframe) iframe.src = "about:blank";
       playCurrentSource(gen);
-      setStatus("البث: " + (label || route));
+      setStatus("البث (احتياطي): " + (label || route));
       return true;
     }
 
     showPlayer("iframe");
+    destroyClappr();
+    destroyHls();
     if (iframe) iframe.src = route;
     setStatus("تشغيل عبر صفحة مضمّنة — " + (label || route));
     return true;
@@ -260,6 +340,7 @@
 
     if (routeUsesIframe(route)) {
       loadGen++;
+      destroyClappr();
       destroyHls();
       showPlayer("iframe");
       if (iframe) iframe.src = route;
@@ -601,6 +682,7 @@
       const keep = currentRoute;
       const lbl = nowLabel ? nowLabel.textContent : keep;
       loadGen++;
+      destroyClappr();
       destroyHls();
       if (iframe) iframe.src = "about:blank";
       setTimeout(() => loadRoute(keep, lbl), 120);
