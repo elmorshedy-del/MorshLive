@@ -1,13 +1,13 @@
 {
   "enabled": true,
-  "pollId": "brazil-norway-20260705",
-  "matchIds": ["espn-fifa.world-760504"],
+  "pollId": "mexico-england-20260706",
+  "matchIds": ["espn-fifa.world-760505"],
   "titleAr": "تتوقع من؟",
   "titleEn": "Who do you think wins?",
-  "homeKey": "brazil",
-  "awayKey": "norway",
+  "homeKey": "mexico",
+  "awayKey": "england",
   "teams": {
-    "brazil": { "nameAr": "البرازيل", "nameEn": "Brazil" },
-    "norway": { "nameAr": "النرويج", "nameEn": "Norway" }
+    "mexico": { "nameAr": "المكسيك", "nameEn": "Mexico" },
+    "england": { "nameAr": "إنجلترا", "nameEn": "England" }
   }
 }

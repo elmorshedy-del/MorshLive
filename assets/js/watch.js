@@ -452,18 +452,26 @@
       }
     }
     renderSidebar();
+    renderMatchPoll();
+    if (match && (match.status === "live" || match.status === "upcoming")) {
+      refreshMatchDetail().catch(() => {});
+    }
   }
 
   document.addEventListener("DOMContentLoaded", () => {
     initNav();
     resolveSelection();
-    fillInfo();
     renderChannels();
     renderServers();
     renderSidebar();
     loadPlayer();
     initReloadButton();
-    refreshMatches({ force: false }).catch((e) => console.warn("Initial match refresh failed:", e.message));
+    refreshMatches({ force: false })
+      .then(() => {
+        fillInfo();
+        renderMatchPoll();
+      })
+      .catch((e) => console.warn("Initial match refresh failed:", e.message));
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(() => refreshMatchDetail().catch((e) => console.warn("Detail refresh failed:", e.message)), 60 * 1000);
     setInterval(() => {

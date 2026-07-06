@@ -750,6 +750,17 @@ async function loadMatchDetailIndex() {
     const data = await res.json();
     const idx = {};
     (data.matchDetailIndex || []).forEach((d) => { idx[d.key] = d; });
+    (data.matches || []).forEach((m) => {
+      if (m.id && (m.lineups || m.stats)) {
+        idx[`id:${m.id}`] = { lineups: m.lineups, stats: m.stats };
+      }
+      if (!m.lineups && !m.stats) return;
+      const key = commentaryKey(m.home, m.away);
+      const entry = idx[key] || { key };
+      if (m.lineups) entry.lineups = m.lineups;
+      if (m.stats) entry.stats = m.stats;
+      idx[key] = entry;
+    });
     _matchDetailIdx = idx;
     _matchDetailAt = Date.now();
   } catch (e) {
@@ -761,7 +772,7 @@ async function loadMatchDetailIndex() {
 function applyMatchDetail(matches, idx) {
   if (!idx) return matches;
   return matches.map((m) => {
-    const entry = idx[commentaryKey(m.home, m.away)];
+    const entry = idx[`id:${m.id}`] || idx[commentaryKey(m.home, m.away)];
     if (!entry) return m;
     const out = { ...m };
     if (entry.lineups) out.lineups = entry.lineups;
