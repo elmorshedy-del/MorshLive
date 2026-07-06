@@ -103,7 +103,7 @@
       </button>`;
     const inline = `
       <div class="tournament-video-frame tournament-video-frame--active">
-        <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
+        <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="eager"
           allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
           sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
       </div>`;
@@ -257,12 +257,33 @@
     document.body.classList.remove("tournament-video-modal-open");
   }
 
+  const warmedEmbeds = new Set();
+  function warmEmbed(embed) {
+    if (!embed || warmedEmbeds.has(embed)) return;
+    warmedEmbeds.add(embed);
+    let url;
+    try { url = new URL(embed, location.href); } catch { return; }
+    const origin = url.origin;
+    for (const [rel, href] of [["dns-prefetch", origin], ["preconnect", origin], ["prefetch", url.href]]) {
+      const exists = [...document.head.querySelectorAll(`link[rel="${rel}"]`)]
+        .some((link) => link.href === href);
+      if (exists) continue;
+      const link = document.createElement("link");
+      link.rel = rel;
+      link.href = href;
+      if (rel === "preconnect") link.crossOrigin = "";
+      if (rel === "prefetch") link.as = "document";
+      document.head.appendChild(link);
+    }
+  }
+
   function openVideoModal(embed) {
     if (!embed) return;
+    warmEmbed(embed);
     const modal = ensureVideoModal();
     const frame = modal.querySelector(".tournament-video-modal__frame");
     frame.innerHTML = `
-      <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
+      <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="eager"
         allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
         sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`;
     modal.hidden = false;
@@ -272,9 +293,13 @@
   function bindVideoLaunch(root) {
     if (!root) return;
     root.querySelectorAll(".tournament-video-launch").forEach((btn) => {
+      const embedForBtn = () => btn.dataset.embed || btn.closest(".tournament-video-stage")?.dataset.embed;
+      const warm = () => warmEmbed(embedForBtn());
+      btn.addEventListener("pointerenter", warm, { once: true });
+      btn.addEventListener("focus", warm, { once: true });
+      btn.addEventListener("touchstart", warm, { once: true, passive: true });
       btn.addEventListener("click", () => {
-        const embed = btn.dataset.embed || btn.closest(".tournament-video-stage")?.dataset.embed;
-        openVideoModal(embed);
+        openVideoModal(embedForBtn());
       });
     });
   }

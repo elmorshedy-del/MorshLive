@@ -36,11 +36,11 @@
     return _cache;
   }
 
-  function bannerCard(m) {
+  function bannerCard(m, eager) {
     const label = `${teamLabel(m.home)} ${m.score ? m.score : "vs"} ${teamLabel(m.away)}`;
     const href = `tournament.html?match=${encodeURIComponent(m.key)}`;
     const poster = m.poster
-      ? `<img class="kz-hl-banner__poster" src="${escapeHtml(m.poster.replace(/&amp;/g, "&"))}" alt="" loading="lazy" />`
+      ? `<img class="kz-hl-banner__poster" src="${escapeHtml(m.poster.replace(/&amp;/g, "&"))}" alt="" loading="${eager ? "eager" : "lazy"}"${eager ? ' fetchpriority="high"' : ""} />`
       : `<span class="kz-hl-banner__poster kz-hl-banner__poster--fallback" aria-hidden="true">▶</span>`;
     return `
       <a class="kz-hl-banner" href="${href}">
@@ -71,7 +71,7 @@
           <h3 class="kz-hl-day__title">${escapeHtml(formatDay(day.date))}</h3>
           <span class="kz-hl-day__count">${t("home.highlightBannerDayCount", { n: day.matches.length })}</span>
         </div>
-        <div class="kz-hl-day__rail">${day.matches.map(bannerCard).join("")}</div>
+        <div class="kz-hl-day__rail">${day.matches.map((m, i) => bannerCard(m, i === 0 && day === recent[0])).join("")}</div>
       </div>`).join("");
   }
 
