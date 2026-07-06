@@ -126,7 +126,7 @@ const LAST_KNOWN_VIP_STREAMS = {
 // Upstream promo/rehearsal slates — never serve these even if the manifest parses.
 const BLOCKED_STREAM_PATTERNS = [/egcity1\.m3u8/i];
 
-// Verified-live Twitch cache per VIP slot (updated only after Helix liveness check).
+// Verified-live Twitch cache — keyed by slot + beIN channel (or match id).
 const LAST_KNOWN_TWITCH_CHANNELS = {};
 
 const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
@@ -814,6 +814,141 @@ async function twitchHelixLiveMap(logins, env) {
   }
 }
 
+async function twitchHelixGet(path, env) {
+  const token = await twitchHelixAppToken(env);
+  const clientId = env && env.TWITCH_CLIENT_ID;
+  if (!token || !clientId) return null;
+  try {
+    const res = await fetchWithTimeout(`https://api.twitch.tv/helix/${path}`, {
+      headers: { "Client-ID": clientId, Authorization: `Bearer ${token}` },
+    }, 6000);
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
+}
+
+async function twitchHelixLiveStreams(logins, env) {
+  const uniq = [];
+  for (const raw of logins) {
+    const ch = sanitizeTwitchLogin(raw);
+    if (ch && !uniq.includes(ch)) uniq.push(ch);
+  }
+  if (!uniq.length) return [];
+  const q = uniq.map((l) => `user_login=${encodeURIComponent(l)}`).join("&");
+  const data = await twitchHelixGet(`streams?${q}`, env);
+  return (data && data.data) || [];
+}
+
+function twitchCacheKey(slot, channelId, match) {
+  if (match && match.id) return `${slot}:${match.id}`;
+  if (channelId) return `${slot}:${channelId}`;
+  return slot;
+}
+
+function scoreStreamTitleForMatch(title, match) {
+  if (!match || !title) return 0;
+  const t = String(title).toLowerCase();
+  let score = 0;
+  const terms = [
+    match.home,
+    match.away,
+    match.homeAbbr,
+    match.awayAbbr,
+    match.channel,
+    match.league,
+  ].filter(Boolean);
+  for (const term of terms) {
+    const s = String(term).toLowerCase().trim();
+    if (s.length >= 3 && t.includes(s)) score += 10;
+    else if (s.length >= 2 && t.includes(s)) score += 5;
+  }
+  if (/bein|بين|max|كأس|world\s*cup|fifa/i.test(t)) score += 3;
+  return score;
+}
+
+async function resolveMatchForTwitch(request, env, channelId) {
+  const incoming = new URL(request.url);
+  const matchId = incoming.searchParams.get("match");
+  const origin = incoming.origin;
+  const matches = await loadTodayMatches(env, origin);
+  if (matchId) {
+    const hit = matches.find((m) => m.id === matchId);
+    if (hit) return hit;
+  }
+  if (channelId) {
+    const liveOnCh = matches.find((m) => m.channelId === channelId && m.status === "live");
+    if (liveOnCh) return liveOnCh;
+  }
+  return null;
+}
+
+async function discoverTwitchSearchLogins(match, seedLogins, env) {
+  const out = new Set();
+  for (const raw of seedLogins) {
+    const ch = sanitizeTwitchLogin(raw);
+    if (ch) out.add(ch);
+  }
+  if (!match) return [...out];
+  const queries = [
+    `${match.home} ${match.away}`,
+    `${match.homeAbbr || ""} ${match.awayAbbr || ""}`.trim(),
+    match.channel || "",
+    "beIN MAX Arabic",
+  ].filter((q) => q && q.length >= 3);
+  for (const q of queries) {
+    const data = await twitchHelixGet(`search/channels?query=${encodeURIComponent(q)}&first=12`, env);
+    for (const row of (data && data.data) || []) {
+      const login = sanitizeTwitchLogin(row.broadcaster_login);
+      if (login) out.add(login);
+    }
+  }
+  return [...out];
+}
+
+async function pickLiveTwitchForMatch(match, upstreamFirst, configCandidates, env) {
+  const helixReady = !!(env && env.TWITCH_CLIENT_ID && env.TWITCH_CLIENT_SECRET);
+  if (!helixReady) return upstreamFirst[0] || null;
+
+  const seeds = [];
+  const push = (ch) => {
+    const s = sanitizeTwitchLogin(ch);
+    if (s && !seeds.includes(s)) seeds.push(s);
+  };
+  for (const ch of upstreamFirst) push(ch);
+  for (const ch of configCandidates) push(ch);
+
+  const searchLogins = await discoverTwitchSearchLogins(match, seeds, env);
+  const streams = await twitchHelixLiveStreams(searchLogins, env);
+  if (!streams.length) return null;
+
+  let bestLogin = null;
+  let bestScore = -1;
+  for (const s of streams) {
+    const login = sanitizeTwitchLogin(s.user_login);
+    if (!login) continue;
+    const titleScore = match ? scoreStreamTitleForMatch(s.title, match) : 0;
+    const upstreamBonus = upstreamFirst.includes(login) ? 25 : 0;
+    const viewersBonus = Math.min(10, Math.floor((Number(s.viewer_count) || 0) / 500));
+    const total = titleScore + upstreamBonus + viewersBonus;
+    if (total > bestScore) {
+      bestScore = total;
+      bestLogin = login;
+    }
+  }
+
+  const minScore = match ? 8 : 0;
+  if (bestScore < minScore) {
+    const upstreamLive = streams
+      .map((s) => sanitizeTwitchLogin(s.user_login))
+      .filter((login) => login && upstreamFirst.includes(login));
+    if (upstreamLive.length === 1) return upstreamLive[0];
+    return null;
+  }
+  return bestLogin;
+}
+
 async function pickLiveTwitchChannel(candidates, env) {
   const uniq = [];
   for (const raw of candidates) {
@@ -848,12 +983,17 @@ async function scrapeTwitchUpstream(request, slot, htmlHints) {
   return discovered;
 }
 
-// Canonical Twitch resolver: scrape upstream → config fallbacks → Helix LIVE check.
-// Without TWITCH_CLIENT_ID/SECRET, only freshly scraped upstream channels are used.
-async function resolveTwitchChannel(request, slot, htmlHints, env) {
+// Canonical Twitch resolver: upstream scrape → Helix title match per game → config fallbacks.
+async function resolveTwitchChannel(request, slot, htmlHints, env, channelId) {
   const config = await loadTwitchConfig(env);
   const slotCfg = (config.slots && config.slots[slot]) || {};
   const upstreamFirst = await scrapeTwitchUpstream(request, slot, htmlHints);
+  const match = await resolveMatchForTwitch(request, env, channelId);
+  const configCandidates = [
+    ...(slotCfg.candidates || []),
+    ...(config.globalCandidates || []),
+  ];
+  const cacheKey = twitchCacheKey(slot, channelId, match);
   const helixReady = !!(env && env.TWITCH_CLIENT_ID && env.TWITCH_CLIENT_SECRET);
 
   const candidates = [];
@@ -862,19 +1002,19 @@ async function resolveTwitchChannel(request, slot, htmlHints, env) {
     if (s && !candidates.includes(s)) candidates.push(s);
   };
   for (const ch of upstreamFirst) push(ch);
-  for (const ch of slotCfg.candidates || []) push(ch);
-  for (const ch of config.globalCandidates || []) push(ch);
-  if (helixReady) push(LAST_KNOWN_TWITCH_CHANNELS[slot]);
+  for (const ch of configCandidates) push(ch);
+  if (helixReady) push(LAST_KNOWN_TWITCH_CHANNELS[cacheKey]);
 
   let live = null;
   if (helixReady) {
-    live = await pickLiveTwitchChannel(candidates, env);
+    live = await pickLiveTwitchForMatch(match, upstreamFirst, configCandidates, env);
+    if (!live) live = await pickLiveTwitchChannel(candidates, env);
   } else if (upstreamFirst.length) {
     live = upstreamFirst[0];
   }
 
-  if (live) LAST_KNOWN_TWITCH_CHANNELS[slot] = live;
-  else delete LAST_KNOWN_TWITCH_CHANNELS[slot];
+  if (live) LAST_KNOWN_TWITCH_CHANNELS[cacheKey] = live;
+  else delete LAST_KNOWN_TWITCH_CHANNELS[cacheKey];
   return live;
 }
 
@@ -1223,6 +1363,8 @@ async function fetchVipServerHtml(request, slot, serv) {
   upstream.searchParams.set("serv", String(serv));
   const ch = incoming.searchParams.get("ch");
   if (ch) upstream.searchParams.set("ch", ch);
+  const matchId = incoming.searchParams.get("match");
+  if (matchId) upstream.searchParams.set("match", matchId);
   try {
     const res = await fetchWithTimeout(upstream.toString(), {
       method: "GET",
@@ -1557,7 +1699,7 @@ async function proxyVip(request, slot, env) {
 
   try {
     const { candidates, firstHtml } = await resolveVipSlotStream(request, slot);
-    const twitchChannel = await resolveTwitchChannel(request, slot, firstHtml, env);
+    const twitchChannel = await resolveTwitchChannel(request, slot, firstHtml, env, channelId);
 
     const pool = [];
     for (const c of candidates || []) {
@@ -3019,48 +3161,51 @@ function proxyEdgeApi(request) {
 async function proxyTwitchApi(request, env) {
   const url = new URL(request.url);
   const slot = (url.searchParams.get("slot") || "vip1").toLowerCase();
+  const channelId = url.searchParams.get("ch") || "";
+  const match = await resolveMatchForTwitch(request, env, channelId);
   const upstream = await scrapeTwitchUpstream(request, slot, []);
   const config = await loadTwitchConfig(env);
   const slotCfg = (config.slots && config.slots[slot]) || {};
-  const candidates = [];
-  const push = (ch) => {
-    const s = sanitizeTwitchLogin(ch);
-    if (s && !candidates.includes(s)) candidates.push(s);
-  };
-  for (const ch of upstream) push(ch);
-  for (const ch of slotCfg.candidates || []) push(ch);
-  for (const ch of config.globalCandidates || []) push(ch);
-  push(LAST_KNOWN_TWITCH_CHANNELS[slot]);
-
+  const configCandidates = [
+    ...(slotCfg.candidates || []),
+    ...(config.globalCandidates || []),
+  ];
+  const cacheKey = twitchCacheKey(slot, channelId, match);
+  const searchLogins = await discoverTwitchSearchLogins(match, [...upstream, ...configCandidates], env);
+  const streams = await twitchHelixLiveStreams(searchLogins, env);
   const helixReady = !!(env && env.TWITCH_CLIENT_ID && env.TWITCH_CLIENT_SECRET);
-  let statuses = [];
+
+  const statuses = searchLogins.map((login) => {
+    const stream = streams.find((s) => String(s.user_login).toLowerCase() === login.toLowerCase());
+    return {
+      login,
+      live: !!stream,
+      title: stream ? stream.title : null,
+      viewers: stream ? stream.viewer_count : 0,
+      titleScore: stream && match ? scoreStreamTitleForMatch(stream.title, match) : 0,
+      source: upstream.includes(login) ? "upstream" : "search",
+    };
+  }).sort((a, b) => b.titleScore - a.titleScore || b.viewers - a.viewers);
+
   let resolved = null;
-  if (helixReady && candidates.length) {
-    const map = await twitchHelixLiveMap(candidates, env);
-    statuses = candidates.map((ch) => ({
-      login: ch,
-      live: !!(map && map.get(ch)),
-      source: upstream.includes(ch) ? "upstream" : "fallback",
-    }));
-    resolved = await pickLiveTwitchChannel(candidates, env);
+  if (helixReady) {
+    resolved = await pickLiveTwitchForMatch(match, upstream, configCandidates, env);
+    if (!resolved) resolved = await pickLiveTwitchChannel(searchLogins, env);
   } else {
     resolved = upstream[0] || null;
-    statuses = candidates.map((ch) => ({
-      login: ch,
-      live: ch === resolved,
-      source: upstream.includes(ch) ? "upstream" : "fallback",
-    }));
   }
 
   return new Response(JSON.stringify({
     ok: true,
     slot,
+    channelId: channelId || null,
+    match: match ? { id: match.id, home: match.home, away: match.away, channel: match.channel } : null,
     resolved,
     helix: helixReady,
     upstream,
-    candidates,
+    searchLogins,
     statuses,
-    cache: LAST_KNOWN_TWITCH_CHANNELS[slot] || null,
+    cache: LAST_KNOWN_TWITCH_CHANNELS[cacheKey] || null,
   }, null, 2), {
     status: 200,
     headers: {

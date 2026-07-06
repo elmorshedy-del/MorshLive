@@ -1,7 +1,7 @@
 {
   "version": 1,
   "updatedAt": "2026-07-06T04:00:00.000Z",
-  "notes": "Upstream scrape runs first. Candidates here are fallbacks — only embedded when Helix confirms LIVE (set TWITCH_CLIENT_ID + TWITCH_CLIENT_SECRET on the worker). Without Helix, only channels scraped from worldkoora this request are used.",
+  "notes": "Per-game Twitch: worker reads ?match= from watch URL, loads teams from today.json, then Helix-search live streams whose titles match (e.g. Brazil vs Norway). Upstream scrape + slot candidates are preferred when titles match. Requires TWITCH_CLIENT_ID + TWITCH_CLIENT_SECRET on the worker.",
   "globalCandidates": [],
   "slots": {
     "vip1": {

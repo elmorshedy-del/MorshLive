@@ -29,10 +29,16 @@
   const shell = document.getElementById("player-shell");
   let loadedUrl = "";
 
+  function embedQuery(serv) {
+    return { serv, matchId: match && match.id ? match.id : null };
+  }
+
   function channelEmbedUrl(chId, embedKey, serv) {
     const key = embedKey || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(chId)) || "vip1";
     const embed = { ...(window.SITE_DATA.embedForKey(key)), channelId: chId };
-    return embedUrlFor(embed, serv);
+    const q = typeof serv === "object" ? serv : embedQuery(serv);
+    if (q.serv == null) q.serv = serv;
+    return embedUrlFor(embed, q);
   }
 
   function currentEmbed() {
@@ -42,7 +48,7 @@
 
   function loadPlayer() {
     if (!shell) return;
-    const url = embedUrlFor(currentEmbed(), activeServ);
+    const url = embedUrlFor(currentEmbed(), embedQuery(activeServ));
     if (!url || loadedUrl === url) return;
     loadedUrl = url;
     shell.innerHTML =

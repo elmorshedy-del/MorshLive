@@ -46,7 +46,14 @@ function embedUrlFor(embed, serv) {
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(embed.url, base);
   if (embed.channelId) u.searchParams.set("ch", embed.channelId);
-  if (serv != null && serv !== "") u.searchParams.set("serv", String(serv));
+  let servNum = serv;
+  let matchId = null;
+  if (serv && typeof serv === "object") {
+    servNum = serv.serv != null ? serv.serv : (serv.mode ? embed.defaultServer : serv);
+    matchId = serv.matchId || null;
+  }
+  if (servNum != null && servNum !== "") u.searchParams.set("serv", String(servNum));
+  if (matchId) u.searchParams.set("match", matchId);
   u.searchParams.set("_kz", "9");
   return u.toString();
 }
