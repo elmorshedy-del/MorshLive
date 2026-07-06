@@ -3931,65 +3931,6 @@ function directFallbackUrls(channelId, slot, serv = 3) {
   return urls;
 }
 
-function geoDirectFallbackHtml(fallbacks, egress, channelLabel) {
-  const primary = fallbacks[0]?.url || "";
-  const egressTxt = egress.country
-    ? `${egress.country}${egress.colo ? ` · ${egress.colo}` : ""}`
-    : "Cloudflare edge";
-  const links = fallbacks
-    .map((f) => `<a href="${f.url}" target="_blank" rel="noopener noreferrer">${f.label}</a>`)
-    .join("");
-  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${channelLabel || "بث"} — direct</title>
-<style>
-html,body{margin:0;height:100%;background:#000;color:#fff;font-family:Tajawal,sans-serif}
-.kz-geo-bar{background:#1a1208;border-bottom:1px solid rgba(255,180,0,.35);padding:8px 12px;font-size:12px;line-height:1.55}
-.kz-geo-bar b{color:#ffb400}
-.kz-geo-links{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
-.kz-geo-links a{color:#18e29a;font-size:11px;text-decoration:none;border:1px solid rgba(24,226,154,.35);padding:4px 8px;border-radius:6px}
-iframe{display:block;width:100%;height:calc(100% - 78px);border:0;background:#000}
-</style></head><body>
-<div class="kz-geo-bar">
-<b>Direct mode</b> — Proxy geo-blocked from ${egressTxt}. Playing upstream with <b>your</b> connection (often works in MENA). Channel: ${channelLabel || "live"}.
-<div class="kz-geo-links">${links}</div>
-</div>
-<iframe src="${primary}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
-</body></html>`;
-}
-
-async function workerGeoBlockedNoProxy(channelId, slot, request) {
-  let geoCount = 0;
-  let playableCount = 0;
-  const dlIds = [...new Set([...(DLHD_CHANNEL_MIRROR_IDS[channelId] || []), ...GLOBAL_DLHD_FALLBACK_IDS])].slice(0, 5);
-  for (const id of dlIds) {
-    const m3u8 = await resolveDlStream(id);
-    if (!m3u8) continue;
-    const chain = await probeHlsChain(m3u8, "dl", request);
-    if (chain.ok) playableCount++;
-    else if (chain.geoSuspect) geoCount++;
-  }
-  try {
-    const { candidates } = await resolveVipSlotStreamQuick(request, slot);
-    for (const c of (candidates || []).slice(0, 3)) {
-      const chain = await probeHlsChain(c.source, "wk", request);
-      if (chain.ok) playableCount++;
-      else if (chain.geoSuspect) geoCount++;
-    }
-  } catch { /* optional */ }
-  return geoCount > 0 && playableCount === 0;
-}
-
-function geoFallbackHeaders(htmlHeaders, egress, verdict) {
-  return {
-    ...htmlHeaders,
-    "X-KZ-Stream-Verdict": verdict || "likely_geo_block",
-    "X-KZ-Stream-Mode": "direct-fallback",
-    "X-KZ-Stream-Geo-Suspect": "1",
-    "X-KZ-Worker-Country": egress.country || "",
-    "X-KZ-Worker-Colo": egress.colo || "",
-  };
-}
-
 function workerEgressMeta(request) {
   const cf = request.cf || {};
   return {
