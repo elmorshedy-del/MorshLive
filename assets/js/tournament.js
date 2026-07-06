@@ -17,9 +17,12 @@
     if (!kickoffUtc) return "";
     try {
       const d = new Date(kickoffUtc);
-      return d.toLocaleDateString(document.documentElement.lang === "en" ? "en-GB" : "ar-SA", {
-        day: "numeric", month: "short", year: "numeric",
-      });
+      const lang = document.documentElement.lang === "en" ? "en-GB" : "ar";
+      try {
+        return d.toLocaleDateString(lang, { day: "numeric", month: "short", year: "numeric" });
+      } catch {
+        return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+      }
     } catch { return ""; }
   }
 
@@ -178,7 +181,7 @@
     }
     wrap.hidden = false;
     card.innerHTML = featuredMatchCard(latest);
-    if ((archive.memes[latest.key] || []).length) loadTwitterWidgets();
+    if ((archive.memes && archive.memes[latest.key] || []).length) loadTwitterWidgets();
   }
 
   function renderGrid() {
@@ -222,13 +225,17 @@
   }
 
   async function loadArchive() {
-    const res = await fetch("assets/data/tournament-archive.json", { cache: "no-store" });
+    const res = await fetch("/assets/data/tournament-archive.json", { cache: "no-store" });
     if (!res.ok) throw new Error("archive load failed");
     archive = await res.json();
-    await enrichMemesFromApi();
+    archive.memes = archive.memes || {};
+    archive.matches = Array.isArray(archive.matches) ? archive.matches : [];
     renderFeatured();
     renderTabs();
     renderGrid();
+    enrichMemesFromApi()
+      .then(() => { renderFeatured(); renderGrid(); })
+      .catch(() => { /* static archive is enough */ });
   }
 
   document.addEventListener("DOMContentLoaded", () => {
