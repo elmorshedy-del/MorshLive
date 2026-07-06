@@ -27,6 +27,12 @@ jobs:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }} # optional; enables Arabic highlight clips
         run: node scripts/fetch-matches.js
 
+      - name: Refresh tournament archive (ملخصات + memes index)
+        env:
+          TWITTER_BEARER_TOKEN: ${{ secrets.TWITTER_BEARER_TOKEN }}
+          TWITTER_FETCH_LATEST: "1"
+        run: node scripts/fetch-tournament-archive.js
+
       - name: Verify live channel routing
         run: node scripts/verify-channel-bindings.js
 
@@ -34,9 +40,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet -- assets/data/today.json assets/data/live-snapshot.json assets/js/channel-bindings.js; then
-            git add assets/data/today.json assets/data/live-snapshot.json assets/js/channel-bindings.js
-            git commit -m "chore: refresh today's matches and live channel snapshot"
+          if ! git diff --quiet -- assets/data/today.json assets/data/live-snapshot.json assets/js/channel-bindings.js assets/data/match-poll.json assets/data/tournament-archive.json assets/data/match-memes.json; then
+            git add assets/data/today.json assets/data/live-snapshot.json assets/js/channel-bindings.js assets/data/match-poll.json assets/data/tournament-archive.json assets/data/match-memes.json
+            git commit -m "chore: refresh matches, polls, and tournament ملخصات archive"
             git push
           else
             echo "No changes."

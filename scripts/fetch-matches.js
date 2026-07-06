@@ -25,6 +25,7 @@ const {
 } = require("./commentators-lib");
 const { attachSummaries, buildHighlightQueries, pickArabicVideo, arabicTeam } = require("./highlights-lib");
 const { findVortexHighlight } = require("./vortex-highlights-lib");
+const { scrapeBtolatHighlights } = require("./btolat-highlights-lib");
 const { parseEspnMatchId, extractLineups, extractMatchStats } = require("./match-detail-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 const { writePollConfig } = require("./match-poll-lib");
@@ -35,6 +36,7 @@ const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
 const KEY = process.env.SPORTSDB_KEY || "3";
 const centerDate = process.argv[2] || new Date().toISOString().slice(0, 10);
 const OUT = path.join(__dirname, "..", "assets", "data", "today.json");
+const TEAM_AR = path.join(__dirname, "..", "assets", "data", "team-names-ar.json");
 // World Cup only for now.
 const ESPN_LEAGUES = ["fifa.world"];
 
@@ -97,6 +99,20 @@ async function fetchEspnLeague(slug, dateRange) {
 async function fetchEspnSummary(leagueSlug, eventId) {
   const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueSlug}/summary?event=${eventId}`;
   return get(url);
+}
+
+function buildArToEn() {
+  const map = JSON.parse(fs.readFileSync(TEAM_AR, "utf8"));
+  const out = new Map();
+  for (const [en, ar] of Object.entries(map)) {
+    out.set(ar, en);
+    out.set(ar.replace(/\s+/g, ""), en);
+  }
+  out.set("باراجواي", "Paraguay");
+  out.set("الولايات المتحدة", "United States");
+  out.set("كوريا الجنوبية", "South Korea");
+  out.set("ساحل العاج", "Ivory Coast");
+  return (ar) => out.get(ar) || out.get(String(ar).replace(/\s+/g, "")) || ar;
 }
 
 /** Search YouTube for an Arabic-commentary highlights video for one match. */
@@ -198,6 +214,14 @@ async function fetchYouTubeHighlight(match) {
     ((previousPayload && previousPayload.highlightsIndex) || []).map((h) => [h.key, h])
   );
   let highlightsMatched = 0;
+  const arToEn = buildArToEn();
+  let btolatMap = new Map();
+  try {
+    btolatMap = await scrapeBtolatHighlights((a, b) => pairKey(arToEn(a), arToEn(b)));
+    console.log(`btolat highlights: ${btolatMap.size}`);
+  } catch (err) {
+    console.warn("btolat highlights scrape failed:", err.message);
+  }
   for (const m of matches) {
     if (m.status !== "ended") continue;
     const key = pairKey(m.home, m.away);
@@ -211,6 +235,18 @@ async function fetchYouTubeHighlight(match) {
         source: pinned.source,
         embedId: pinned.embedId,
       };
+      highlightsMatched++;
+      continue;
+    }
+    const bt = btolatMap.get(key);
+    if (bt) {
+      m.highlight = {
+        videoUrl: bt.videoUrl,
+        title: bt.title,
+        source: bt.source,
+        embedId: bt.embedId,
+      };
+      highlightsByKey.set(key, { key, home: m.home, away: m.away, ...m.highlight });
       highlightsMatched++;
       continue;
     }

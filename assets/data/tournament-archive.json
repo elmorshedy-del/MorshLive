@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-05T18:27:54.230Z",
+  "updatedAt": "2026-07-06T01:51:10.229Z",
   "tournament": "FIFA World Cup 2026",
   "stages": [
     {
@@ -18,11 +18,11 @@
       "id": "round-of-16",
       "labelAr": "دور الـ16",
       "labelEn": "Round of 16",
-      "matchCount": 2
+      "matchCount": 3
     }
   ],
-  "matchCount": 90,
-  "memeMatchCount": 55,
+  "matchCount": 91,
+  "memeMatchCount": 56,
   "matches": [
     {
       "id": "espn-fifa.world-760415",
@@ -2161,7 +2161,8 @@
       "summaryAr": "انتهت المباراة بفوز المغرب على كندا بنتيجة 3-0 ضمن FIFA World Cup على ملعب NRG Stadium · Houston, Texas · USA.",
       "highlight": {
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/BD8ZRSAEM1XiE",
-        "title": "ملخص مباراة المغرب وكندا (3-0) كأس العالم",
+        "title": "ملخص مباراة المغرب وكندا 3 0 كأس العالم",
+        "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318186/poster/0.png?token=ZGZvYTZESzU4bHhSK2Z6ZlpNMzgxZkVmVmVKNlM4bW1XMWo3QjlpekVBcz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MDMwNjk2MzE5MTMz&amp;keypair=U0MrOWhBWFJvaWFxZDh1WGdPWTBldUF6SzJOSmlXVFNJT25ZL0J3eGRubz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy80LzMxODE4Ni86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTAzMDY5NjMxOTEzMw==",
         "source": "vortex",
         "embedId": "BD8ZRSAEM1XiE"
       }
@@ -2192,8 +2193,39 @@
       "highlight": {
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/4Duh6QTRDC3M6",
         "title": "ملخص مباراة فرنسا وباراجواي 1 0 كأس العالم",
+        "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318190/poster/0.png?token=bisyMXJrSDVPOXpaaEFZUzhaVk5aREJ3N1doUGtNcWVRZUJlQm5BdDRDcz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5MDMwNzAwODUwNTA5&amp;keypair=akM4UDNHc3hXZklZamNpWVppem1PUHVFQlI5a3F3U0E5cTk2R0gxWkp6WT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy81LzMxODE5MC86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTAzMDcwMDg1MDUwOQ==",
         "source": "vortex",
         "embedId": "4Duh6QTRDC3M6"
+      }
+    },
+    {
+      "id": "espn-fifa.world-760504",
+      "status": "ended",
+      "minute": "",
+      "home": "Brazil",
+      "away": "Norway",
+      "homeAbbr": "BRA",
+      "awayAbbr": "NOR",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/bra.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/nor.png",
+      "score": "1 - 2",
+      "time": "20:00",
+      "kickoffUtc": "2026-07-05T20:00Z",
+      "league": "FIFA World Cup",
+      "venue": "MetLife Stadium · East Rutherford, New Jersey · USA",
+      "channel": null,
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn",
+      "stage": "round-of-16",
+      "key": "brazil~norway",
+      "eventId": "760504",
+      "summaryAr": "انتهت المباراة بفوز النرويج على البرازيل بنتيجة 2-1 ضمن FIFA World Cup على ملعب MetLife Stadium · East Rutherford, New Jersey · USA.",
+      "highlight": {
+        "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/mA5amQonpFi8V",
+        "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
+        "source": "vortex",
+        "embedId": "mA5amQonpFi8V"
       }
     }
   ],

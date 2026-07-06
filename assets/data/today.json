@@ -1,6 +1,6 @@
 {
   "date": "2026-07-06",
-  "updatedAt": "2026-07-06T01:45:32.721Z",
+  "updatedAt": "2026-07-06T01:51:08.300Z",
   "source": "espn",
   "sourceLabel": "ESPN",
   "commentarySource": "almaghrebsport",
@@ -328,7 +328,17 @@
       "locked": false
     }
   ],
-  "highlightsIndex": [],
+  "highlightsIndex": [
+    {
+      "key": "brazil~norway",
+      "home": "Brazil",
+      "away": "Norway",
+      "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/mA5amQonpFi8V",
+      "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
+      "source": "vortex",
+      "embedId": "mA5amQonpFi8V"
+    }
+  ],
   "matchDetailIndex": [
     {
       "key": "england~mexico",
@@ -818,21 +828,21 @@
       },
       "stats": {
         "home": {
-          "foulsCommitted": 7,
+          "foulsCommitted": 8,
           "yellowCards": 0,
           "redCards": 0,
           "offsides": 0,
-          "wonCorners": 2,
+          "wonCorners": 4,
           "saves": 1,
-          "possessionPct": 60.8,
-          "totalShots": 5,
-          "shotsOnTarget": 2,
-          "totalPasses": 215,
+          "possessionPct": 62.7,
+          "totalShots": 7,
+          "shotsOnTarget": 3,
+          "totalPasses": 245,
           "passPct": 90,
-          "totalCrosses": 8,
-          "totalTackles": 10,
-          "interceptions": 4,
-          "totalClearance": 3
+          "totalCrosses": 12,
+          "totalTackles": 9,
+          "interceptions": 5,
+          "totalClearance": 4
         },
         "away": {
           "foulsCommitted": 3,
@@ -840,16 +850,16 @@
           "redCards": 0,
           "offsides": 0,
           "wonCorners": 2,
-          "saves": 1,
-          "possessionPct": 39.2,
+          "saves": 2,
+          "possessionPct": 37.3,
           "totalShots": 3,
           "shotsOnTarget": 3,
-          "totalPasses": 139,
+          "totalPasses": 148,
           "passPct": 90,
           "totalCrosses": 3,
-          "totalTackles": 10,
+          "totalTackles": 14,
           "interceptions": 1,
-          "totalClearance": 7
+          "totalClearance": 12
         }
       }
     },
@@ -1379,7 +1389,7 @@
     {
       "id": "espn-fifa.world-760505",
       "status": "live",
-      "minute": "45'",
+      "minute": "45'+6'",
       "home": "Mexico",
       "away": "England",
       "homeAbbr": "MEX",
@@ -1887,21 +1897,21 @@
       },
       "stats": {
         "home": {
-          "foulsCommitted": 7,
+          "foulsCommitted": 8,
           "yellowCards": 0,
           "redCards": 0,
           "offsides": 0,
-          "wonCorners": 2,
+          "wonCorners": 4,
           "saves": 1,
-          "possessionPct": 60.8,
-          "totalShots": 5,
-          "shotsOnTarget": 2,
-          "totalPasses": 215,
+          "possessionPct": 62.7,
+          "totalShots": 7,
+          "shotsOnTarget": 3,
+          "totalPasses": 245,
           "passPct": 90,
-          "totalCrosses": 8,
-          "totalTackles": 10,
-          "interceptions": 4,
-          "totalClearance": 3
+          "totalCrosses": 12,
+          "totalTackles": 9,
+          "interceptions": 5,
+          "totalClearance": 4
         },
         "away": {
           "foulsCommitted": 3,
@@ -1909,16 +1919,16 @@
           "redCards": 0,
           "offsides": 0,
           "wonCorners": 2,
-          "saves": 1,
-          "possessionPct": 39.2,
+          "saves": 2,
+          "possessionPct": 37.3,
           "totalShots": 3,
           "shotsOnTarget": 3,
-          "totalPasses": 139,
+          "totalPasses": 148,
           "passPct": 90,
           "totalCrosses": 3,
-          "totalTackles": 10,
+          "totalTackles": 14,
           "interceptions": 1,
-          "totalClearance": 7
+          "totalClearance": 12
         }
       }
     },
@@ -2040,6 +2050,12 @@
         }
       ],
       "summaryAr": "انتهت المباراة بفوز النرويج على البرازيل بنتيجة 2-1 ضمن FIFA World Cup على ملعب MetLife Stadium · East Rutherford, New Jersey · USA. تعليق: علي الكعبي.",
+      "highlight": {
+        "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/mA5amQonpFi8V",
+        "title": "ملخص مباراة النرويج والبرازيل (2-1) كأس العالم",
+        "source": "vortex",
+        "embedId": "mA5amQonpFi8V"
+      },
       "lineups": {
         "home": {
           "formation": "4-4-2",
