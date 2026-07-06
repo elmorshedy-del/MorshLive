@@ -9,6 +9,7 @@
   "scripts": {
     "browsers:install": "playwright install chromium",
     "crawl:twitch-dev": "node scripts/twitch-dev-console-crawl.mjs",
+    "signup:twitch": "node scripts/twitch-signup.mjs",
     "twitch:secrets": "node scripts/setup-twitch-secrets.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
