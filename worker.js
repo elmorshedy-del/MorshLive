@@ -2689,6 +2689,10 @@ const RECENT_MEMES_API_RE = /^\/api\/recent-memes\/?$/i;
 const EDGE_API_RE = /^\/api\/edge\/?$/i;
 const TWITCH_API_RE = /^\/api\/twitch\/?$/i;
 const STREAMS_LAB_RE = /^\/api\/streams-lab\/?$/i;
+const SIIR_MATCHES_RE = /^\/api\/siir-matches\/?$/i;
+const SIIR_MATCH_EMBED_RE = /^\/siir\/m\/(\d+)\/?$/i;
+const SIIR_BASE = "https://www.siir-tv.live";
+const SIIR_FETCH_UA = "Mozilla/5.0 (compatible; KoraZero/1.0)";
 const RECENT_MEMES_MS = 24 * 60 * 60 * 1000;
 const RECENT_MEMES_LIMIT = 48;
 const TWITTER_API_BASE = "https://api.twitter.com/2";
@@ -3296,6 +3300,8 @@ async function proxyTwitchApi(request, env) {
 
 let _streamsLabCache = { at: 0, data: null };
 const STREAMS_LAB_CACHE_MS = 45_000;
+let _siirMatchesCache = { at: 0, data: null };
+const SIIR_MATCHES_CACHE_MS = 60_000;
 
 async function loadStreamsLabCatalog(env, origin) {
   try {
@@ -3307,14 +3313,220 @@ async function loadStreamsLabCatalog(env, origin) {
   }
 }
 
-async function loadStreamsLabCatalog(env, origin) {
+async function fetchSiirHtml(pathOrUrl) {
+  const url = pathOrUrl.startsWith("http") ? pathOrUrl : `${SIIR_BASE}${pathOrUrl}`;
   try {
-    const res = await env.ASSETS.fetch(new URL("/assets/data/streams-lab.json", origin));
+    const res = await fetch(url, {
+      headers: { "User-Agent": SIIR_FETCH_UA, Accept: "text/html" },
+      redirect: "follow",
+    });
     if (!res.ok) return null;
-    return res.json();
+    return res.text();
   } catch {
     return null;
   }
+}
+
+function siirStatusFromClass(cls) {
+  const c = String(cls || "");
+  if (/\blive\b|started|gools/.test(c)) return "live";
+  if (/end|finished/.test(c)) return "ended";
+  if (/comming-soon|soon|not-start/.test(c)) return "soon";
+  return "unknown";
+}
+
+function parseSiirMatchBlocks(html) {
+  const blocks = [];
+  const parts = String(html || "").split(/<div class='match-container /);
+  for (let i = 1; i < parts.length; i++) {
+    const chunk = parts[i];
+    const statusClass = (chunk.match(/^([^']*)'/) || [])[1] || "";
+    const teams = [...chunk.matchAll(/class='team-name'>([^<]+)<\/div>/g)].map((m) => m[1].trim());
+    const href = (chunk.match(/<a class='ahmed'[^>]*href="([^"]+)"/) || [])[1];
+    const title = (chunk.match(/<a class='ahmed'[^>]*title='([^']*)'/) || [])[1];
+    const channel = (chunk.match(/<li><span>([^<]+)<\/span><\/li>/) || [])[1];
+    const time = (chunk.match(/class='match-time'>([^<]+)<\/div>/) || [])[1];
+    const score = (chunk.match(/class='result'>([^<]+)<\/div>/) || [])[1];
+    if (!href) continue;
+    blocks.push({
+      statusClass,
+      status: siirStatusFromClass(statusClass),
+      home: teams[0] || "",
+      away: teams[1] || "",
+      href,
+      title: title || `${teams[0] || ""} vs ${teams[1] || ""}`,
+      channel: channel || "",
+      time: time || "",
+      score: score || "",
+    });
+  }
+  return blocks;
+}
+
+function extractSiirEmbeds(html) {
+  const text = String(html || "");
+  const iframes = [...text.matchAll(/<iframe[^>]+src="([^"]+)"/gi)].map((m) => m[1]);
+  const shootny = [...text.matchAll(/https?:\/\/[^"'\s<>]*shootny[^"'\s<>]*/gi)].map((m) => m[0]);
+  const servers = [];
+  for (const block of text.matchAll(/<div class="video-serv"[^>]*>([\s\S]*?)<\/div>/gi)) {
+    for (const a of block[1].matchAll(/href="([^"]+)"/g)) servers.push(a[1]);
+    for (const s of block[1].matchAll(/data-url="([^"]+)"/g)) servers.push(s[1]);
+  }
+  return { iframes, shootny, servers };
+}
+
+function siirPostIdFromHtml(html) {
+  const m = String(html || "").match(/postid-(\d+)/);
+  return m ? parseInt(m[1], 10) : null;
+}
+
+async function fetchSirPlayerHtmlForMatch(matchId) {
+  const id = encodeURIComponent(String(matchId));
+  for (const referer of SIR_REFERRERS) {
+    try {
+      const res = await fetch(`${SIR_PLAYER}?match=${id}&key=${SIR_KEY}`, {
+        headers: { "User-Agent": "Mozilla/5.0", Accept: "text/html", Referer: referer },
+        redirect: "follow",
+      });
+      if (!res.ok) continue;
+      const html = await res.text();
+      if (sirDecodeConfig(html) || /shootny|playerv5/i.test(html)) return html;
+    } catch { /* try next referer */ }
+  }
+  return null;
+}
+
+async function resolveSirMasterFromHtml(html) {
+  const decoded = sirDecodeConfig(html);
+  if (!decoded?.cfg?.tabs?.length) return null;
+  const tab = decoded.cfg.tabs.find((t) => t.type === "regular" && t.path) || decoded.cfg.tabs.find((t) => t.path);
+  if (!tab?.path) return null;
+  const domains = decoded.cfg.activeDomains?.length
+    ? decoded.cfg.activeDomains
+    : ["https://1rxolmirvosixpyfy.foozlive.co/"];
+  const domain = domains[Math.floor(Math.random() * domains.length)];
+  const cleanDomain = domain.endsWith("/") ? domain : domain + "/";
+  return sirSign(cleanDomain, sirRewritePath(tab.path), decoded.secret);
+}
+
+async function probeSiirMatchDetail(block) {
+  const pageHtml = await fetchSiirHtml(block.href);
+  const postId = pageHtml ? siirPostIdFromHtml(pageHtml) : null;
+  const embeds = pageHtml ? extractSiirEmbeds(pageHtml) : { iframes: [], shootny: [], servers: [] };
+  const hasEmbed = !!(embeds.iframes.length || embeds.shootny.length || embeds.servers.length);
+  const status = hasEmbed && block.status !== "ended" ? "live" : block.status;
+  const id = postId ? String(postId) : null;
+  return {
+    id: id || block.href,
+    postId,
+    title: block.title,
+    home: block.home,
+    away: block.away,
+    status,
+    channel: block.channel,
+    time: block.time,
+    score: block.score,
+    url: block.href,
+    route: id ? `/siir/m/${id}` : null,
+    live: status === "live",
+    embed: hasEmbed ? { iframes: embeds.iframes.slice(0, 3), shootny: embeds.shootny.slice(0, 3) } : null,
+  };
+}
+
+async function proxySiirMatchesApi(request, env) {
+  const now = Date.now();
+  if (_siirMatchesCache.data && now - _siirMatchesCache.at < SIIR_MATCHES_CACHE_MS) {
+    return new Response(JSON.stringify(_siirMatchesCache.data), {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json; charset=utf-8",
+        "Access-Control-Allow-Origin": "*",
+        "Cache-Control": "public, max-age=30, stale-while-revalidate=60",
+        "X-KZ-Proxy": "siir-matches",
+        "X-KZ-Cache": "hit",
+      },
+    });
+  }
+
+  const homeHtml = await fetchSiirHtml("/");
+  const todayHtml = await fetchSiirHtml("/todays-matches/");
+  const rawBlocks = [
+    ...parseSiirMatchBlocks(homeHtml || ""),
+    ...parseSiirMatchBlocks(todayHtml || ""),
+  ];
+  const seen = new Set();
+  const blocks = rawBlocks.filter((b) => {
+    if (seen.has(b.href)) return false;
+    seen.add(b.href);
+    return true;
+  });
+
+  const matches = await mapPool(blocks, 3, probeSiirMatchDetail);
+
+  const sir247 = await mapPool(
+    [
+      { slug: "ar1", name: "SIR AR 1", route: "/sir/ar1" },
+      { slug: "ar2", name: "SIR AR 2", route: "/sir/ar2" },
+      { slug: "fr", name: "SIR FR", route: "/sir/fr" },
+      { slug: "en", name: "SIR EN", route: "/sir/en" },
+    ],
+    2,
+    async (ch) => {
+      const master = await resolveSirMaster(ch.slug);
+      return { ...ch, live: !!master, group: ch.slug.startsWith("ar") ? "sir" : "other" };
+    }
+  );
+
+  const payload = {
+    ok: true,
+    updatedAt: new Date().toISOString(),
+    source: SIIR_BASE,
+    matchCount: matches.length,
+    liveCount: matches.filter((m) => m.live).length,
+    matches,
+    sir247,
+  };
+
+  _siirMatchesCache = { at: now, data: payload };
+
+  return new Response(JSON.stringify(payload), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Access-Control-Allow-Origin": "*",
+      "Cache-Control": "public, max-age=30, stale-while-revalidate=60",
+      "X-KZ-Proxy": "siir-matches",
+      "X-KZ-Cache": "miss",
+    },
+  });
+}
+
+async function proxySiirMatchEmbed(request, postId, env) {
+  const origin = new URL(request.url).origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store",
+    "X-KZ-Proxy": "siir-match",
+  };
+
+  const playerHtml = await fetchSirPlayerHtmlForMatch(postId);
+  if (playerHtml) {
+    const master = await resolveSirMasterFromHtml(playerHtml);
+    if (master) {
+      const sig = await signTarget(master, secret);
+      const src = hlsProxyUrl(master, origin, sig, "/sir/hls");
+      return new Response(sirPlayerHtml(src, "ar1"), { status: 200, headers: htmlHeaders });
+    }
+  }
+
+  const playerUrl = `${SIR_PLAYER}?match=${encodeURIComponent(postId)}&key=${SIR_KEY}`;
+  const frame = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>siir-tv.live — مباراة ${postId}</title>
+<style>html,body{margin:0;height:100%;background:#000}iframe{width:100%;height:100%;border:0;display:block}</style>
+</head><body><iframe src="${playerUrl}" allow="autoplay;encrypted-media;fullscreen;picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe></body></html>`;
+  return new Response(frame, { status: 200, headers: htmlHeaders });
 }
 
 async function probeStreamsLabEntry(ch) {
@@ -3505,6 +3717,13 @@ export default {
     }
     if (STREAMS_LAB_RE.test(url.pathname) && method === "GET") {
       return proxyStreamsLabApi(request, env);
+    }
+    if (SIIR_MATCHES_RE.test(url.pathname) && method === "GET") {
+      return proxySiirMatchesApi(request, env);
+    }
+    const siirMatch = url.pathname.match(SIIR_MATCH_EMBED_RE);
+    if (siirMatch && (method === "GET" || method === "HEAD")) {
+      return proxySiirMatchEmbed(request, siirMatch[1], env);
     }
     if (method === "GET" && url.pathname.startsWith("/assets/data/") && /\.json$/i.test(url.pathname)) {
       const res = await env.ASSETS.fetch(request);

@@ -11,6 +11,9 @@
   const liveCountEl = document.getElementById("live-count");
   const totalCountEl = document.getElementById("total-count");
   const externalLinks = document.getElementById("external-links");
+  const sir247Grid = document.getElementById("sir-247-grid");
+  const siirMatchesGrid = document.getElementById("siir-matches-grid");
+  const siirMatchesStatus = document.getElementById("siir-matches-status");
   const reloadBtn = document.getElementById("reload");
   const bestBtn = document.getElementById("best-btn");
   const refreshBtn = document.getElementById("refresh-status");
@@ -20,6 +23,8 @@
   const REGION_STATS = ["ar", "max", "sir"];
 
   let catalog = { channels: [], groups: [], external: [], defaultGroup: "ar" };
+  let sir247 = [];
+  let siirMatches = [];
   let currentRoute = null;
   let currentGroup = "ar";
   let probed = false;
@@ -142,17 +147,115 @@
   function renderExternal() {
     if (!externalLinks) return;
     externalLinks.innerHTML = "";
-      (catalog.external || [])
-        .sort((a, b) => (a.priority || 99) - (b.priority || 99))
-        .forEach((ex) => {
-      const a = document.createElement("a");
-      a.className = "lab-ext";
-      a.href = ex.url;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      a.innerHTML = `<strong>${ex.name}</strong><small>${ex.sub}</small>`;
-      externalLinks.appendChild(a);
+    (catalog.external || [])
+      .sort((a, b) => (a.priority || 99) - (b.priority || 99))
+      .forEach((ex) => {
+        const a = document.createElement("a");
+        a.className = "lab-ext";
+        a.href = ex.url;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        a.innerHTML = `<strong>${ex.name}</strong><small>${ex.sub}</small>`;
+        externalLinks.appendChild(a);
+      });
+  }
+
+  function renderSir247() {
+    if (!sir247Grid) return;
+    sir247Grid.innerHTML = "";
+    const list = sir247.length
+      ? sir247
+      : (catalog.channels || []).filter((c) => c.source === "sir").map((c) => ({
+          slug: c.sirSlug,
+          name: c.name,
+          route: c.route,
+          live: c.live,
+          sub: c.sub,
+        }));
+    list.forEach((ch) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      const live = ch.live === true;
+      card.className = "lab-card" + (live ? " is-live" : ch.live === false ? " is-dead" : " is-unknown");
+      card.dataset.route = ch.route;
+      card.innerHTML =
+        `<span class="lab-dot" aria-hidden="true"></span>` +
+        `<span class="lab-card-name">${ch.name}</span>` +
+        `<span class="lab-card-sub">${ch.sub || "24/7"} · SIR</span>`;
+      card.addEventListener("click", () => loadRoute(ch.route, ch.name + " 24/7"));
+      sir247Grid.appendChild(card);
     });
+  }
+
+  function siirStatusLabel(status) {
+    if (status === "live") return "مباشر";
+    if (status === "soon") return "قريباً";
+    if (status === "ended") return "انتهت";
+    return "—";
+  }
+
+  function renderSiirMatches() {
+    if (!siirMatchesGrid) return;
+    siirMatchesGrid.innerHTML = "";
+    if (!siirMatches.length) {
+      if (siirMatchesStatus) siirMatchesStatus.textContent = "لا توجد مباريات في siir-tv.live حالياً";
+      return;
+    }
+    const liveN = siirMatches.filter((m) => m.live).length;
+    if (siirMatchesStatus) {
+      siirMatchesStatus.textContent = liveN
+        ? `${liveN} مباراة ببث متاح · ${siirMatches.length} إجمالي`
+        : `${siirMatches.length} مباراة — البث يظهر عند بدء المباراة`;
+    }
+    siirMatches.forEach((m) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      const cls =
+        m.status === "live" ? " match-live is-live" : m.status === "soon" ? " match-soon" : " match-ended is-dead";
+      card.className = "lab-card" + cls;
+      const label = m.home && m.away ? `${m.home} × ${m.away}` : m.title;
+      const sub = [m.channel, m.time, siirStatusLabel(m.status)].filter(Boolean).join(" · ");
+      card.innerHTML =
+        `<span class="lab-dot" aria-hidden="true"></span>` +
+        `<span class="lab-card-name">${label}</span>` +
+        `<span class="lab-card-sub">${sub}</span>`;
+      if (m.route && m.live) {
+        card.dataset.route = m.route;
+        card.addEventListener("click", () => loadRoute(m.route, label));
+      } else {
+        card.disabled = true;
+        card.style.cursor = "default";
+      }
+      siirMatchesGrid.appendChild(card);
+    });
+  }
+
+  async function refreshSiirMatches() {
+    try {
+      const res = await fetch("/api/siir-matches", { cache: "no-store" });
+      const data = await res.json();
+      if (!data.ok) throw new Error(data.error || "siir-matches failed");
+      siirMatches = data.matches || [];
+      if (data.sir247?.length) {
+        sir247 = data.sir247.map((ch) => ({
+          ...ch,
+          sub: ch.slug === "ar1" || ch.slug === "ar2" ? "عربي" : ch.slug === "fr" ? "Français" : "English",
+        }));
+        renderSir247();
+        const sirMap = new Map(sir247.map((c) => [c.slug, c.live]));
+        catalog.channels = (catalog.channels || []).map((ch) => {
+          if (ch.source !== "sir" || !ch.sirSlug) return ch;
+          const fromApi = sirMap.get(ch.sirSlug);
+          return fromApi === undefined ? ch : { ...ch, live: !!fromApi };
+        });
+        if (probed) updateLiveUi();
+      }
+      renderSiirMatches();
+      return data;
+    } catch (e) {
+      if (siirMatchesStatus) siirMatchesStatus.textContent = "تعذّر تحميل مباريات siir-tv.live";
+      return null;
+    }
   }
 
   function pickBest(autoPlay) {
@@ -190,7 +293,7 @@
     try {
       const r = await fetch(route, { cache: "no-store", signal: AbortSignal.timeout(16_000) });
       const t = await r.text();
-      return r.ok && (/\/dl\/hls\?/.test(t) || /\/sir\/hls\?/.test(t));
+      return r.ok && (/\/dl\/hls\?/.test(t) || /\/sir\/hls\?/.test(t) || /playerv5\.php|shootny/i.test(t));
     } catch {
       return false;
     }
@@ -253,13 +356,18 @@
       const arLive = catalog.channels.filter((c) => c.live && isPrimaryChannel(c)).length;
       updateLiveUi();
       renderExternal();
+      renderSir247();
+      await refreshSiirMatches();
 
       const ts = new Date().toLocaleTimeString("ar-SA");
       setStatus(`آخر فحص: ${ts} — ${arLive} عربي · ${liveCount} إجمالي`);
 
-      if (!currentRoute || !catalog.channels.find((c) => c.route === currentRoute && c.live)) {
-        pickBest(true);
-      }
+      const keepCurrent =
+        currentRoute &&
+        (catalog.channels.some((c) => c.route === currentRoute && c.live) ||
+          sir247.some((c) => c.route === currentRoute && c.live) ||
+          siirMatches.some((m) => m.route === currentRoute && m.live));
+      if (!keepCurrent) pickBest(true);
       return catalog;
     } catch (e) {
       setStatus("تعذّر فحص المصادر: " + (e.message || e));
@@ -286,9 +394,11 @@
       renderGroups();
       renderGrid();
       renderExternal();
+      renderSir247();
     })
     .catch(() => {})
     .finally(() => refreshStatus());
 
   setInterval(() => refreshStatus(), 90_000);
+  setInterval(() => refreshSiirMatches(), 90_000);
 })();

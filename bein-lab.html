@@ -85,6 +85,12 @@
     .lab-card-name { display: block; font-weight: 700; font-size: 0.86rem; margin-bottom: 4px; line-height: 1.35; }
     .lab-card-sub { display: block; font-size: 0.72rem; color: var(--muted); }
     .lab-section-title { font-size: 1rem; margin: 0 0 10px; font-weight: 800; }
+    .lab-section-sub { font-size: 0.82rem; color: var(--muted); margin: -6px 0 12px; }
+    .lab-grid-compact { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); margin-bottom: 28px; }
+    .lab-grid-matches { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); margin-bottom: 16px; }
+    .lab-card.match-live { border-color: var(--accent); }
+    .lab-card.match-soon { opacity: 0.75; }
+    .lab-card.match-ended { opacity: 0.45; }
     .lab-ext-wrap { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
     .lab-ext {
       flex: 1 1 220px; display: block; padding: 12px 14px; border-radius: 12px;
@@ -154,17 +160,23 @@
     <div class="lab-groups" id="group-tabs"></div>
     <div class="lab-grid" id="channel-grid"></div>
 
+    <h2 class="lab-section-title">SIR 24/7 — siir-tv.live</h2>
+    <p class="lab-section-sub">قنوات SIR العربية والدولية عبر shootny — تجريبي</p>
+    <div class="lab-grid lab-grid-compact" id="sir-247-grid"></div>
+
     <h2 class="lab-section-title">مباريات اليوم — siir-tv.live</h2>
+    <p class="lab-section-sub" id="siir-matches-status">جارٍ تحميل المباريات…</p>
+    <div class="lab-grid lab-grid-matches" id="siir-matches-grid"></div>
     <div class="lab-ext-wrap" id="external-links"></div>
 
     <p class="lab-note">
-      المصادر: <code>/dl/&lt;id&gt;</code> (dlhd 24/7 عربي) و <code>/sir/&lt;قناة&gt;</code> (SIR عبر siir-tv.live).
-      SIR قد يتوقف عند تدوير shootny — dlhd هو المصدر الأكثر استقراراً حالياً.
+      المصادر: <code>/dl/&lt;id&gt;</code> (dlhd 24/7 عربي)، <code>/sir/&lt;قناة&gt;</code> (SIR 24/7)،
+      و<code>/siir/m/&lt;id&gt;</code> (مباريات siir-tv.live عند البث الحي).
       &nbsp;·&nbsp; <a href="watch.html?ch=live">مباريات اليوم</a>
       &nbsp;·&nbsp; <a href="index.html">الرئيسية</a>
     </p>
   </main>
 
-  <script src="assets/js/streams-lab.js?v=20260706ar"></script>
+  <script src="assets/js/streams-lab.js?v=20260706siir"></script>
 </body>
 </html>
