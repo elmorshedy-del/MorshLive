@@ -8,9 +8,14 @@
   },
   "scripts": {
     "browsers:install": "playwright install chromium",
+    "browsers:stealth": "npx patchright install chrome",
     "crawl:twitch-dev": "node scripts/twitch-dev-console-crawl.mjs",
     "signup:twitch": "node scripts/twitch-signup.mjs",
+    "twitch:onboard": "node scripts/twitch-onboard.mjs",
     "twitch:secrets": "node scripts/setup-twitch-secrets.mjs",
+    "probe:streams-lab": "node scripts/probe-streams-lab.mjs",
+    "probe:dlhd-bein": "node scripts/probe-dlhd-bein.mjs",
+    "sync:streams-lab": "node scripts/sync-streams-lab-catalog.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -29,6 +34,7 @@
   },
   "devDependencies": {
     "crawlee": "^3.17.0",
+    "patchright": "^1.52.0",
     "playwright": "^1.61.1"
   }
 }

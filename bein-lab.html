@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>بث beIN Sports 24/7 | KoraZero</title>
+  <meta name="description" content="بث مباشر 24/7 لقنوات beIN Sports العربية و MAX — يختار أفضل بث عربي متاح تلقائياً." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20260706lab2" />
+  <style>
+    .lab-page { padding: 20px 0 56px; }
+    .lab-hero {
+      display: flex; flex-wrap: wrap; align-items: flex-start; gap: 14px 20px;
+      margin-bottom: 20px;
+    }
+    .lab-hero h1 { font-size: clamp(1.5rem, 3.5vw, 2rem); font-weight: 800; margin-bottom: 8px; }
+    .lab-hero p { color: var(--muted); font-size: 0.95rem; max-width: 68ch; line-height: 1.8; margin: 0; }
+    .lab-badges { display: flex; flex-wrap: wrap; gap: 8px; align-self: flex-start; }
+    .lab-badge {
+      font-size: 0.75rem; font-weight: 700; padding: 6px 13px; border-radius: 999px;
+      border: 1px solid var(--border); background: var(--surface);
+    }
+    .lab-badge.live { color: var(--accent); border-color: rgba(24,226,154,.35); background: rgba(24,226,154,.08); }
+    .lab-badge.brand { color: #fff; border-color: transparent; background: var(--grad); }
+    .lab-stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 10px; margin-bottom: 18px;
+    }
+    .lab-stat {
+      background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+      padding: 12px 14px; text-align: center;
+    }
+    .lab-stat b { display: block; font-size: 1.35rem; font-weight: 800; color: var(--accent); }
+    .lab-stat span { font-size: 0.78rem; color: var(--muted); font-weight: 600; }
+    .lab-player-wrap {
+      background: #000; border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow); aspect-ratio: 16/9; margin-bottom: 14px;
+      border: 1px solid var(--border);
+    }
+    .lab-player-wrap iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .lab-toolbar {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+      margin-bottom: 18px;
+    }
+    .lab-toolbar .now { flex: 1; color: var(--muted); font-size: 0.92rem; min-width: 180px; }
+    .lab-toolbar .now b { color: var(--text); }
+    .lab-btn {
+      cursor: pointer; border: 1px solid var(--border); background: var(--surface);
+      color: var(--text); font-weight: 700; font-size: 0.88rem; padding: 9px 14px;
+      border-radius: 12px; font-family: inherit; display: inline-flex; align-items: center; gap: 6px;
+    }
+    .lab-btn:hover { border-color: var(--brand); color: #fff; }
+    .lab-btn.primary { background: var(--grad); border-color: transparent; color: #fff; }
+    .lab-status { font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; }
+    .lab-groups { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .lab-group {
+      cursor: pointer; border: 1px solid var(--border); background: var(--surface);
+      color: var(--text); font-weight: 700; font-size: 0.85rem; padding: 8px 14px;
+      border-radius: 999px; font-family: inherit;
+    }
+    .lab-group.active { border-color: var(--brand); background: rgba(123,47,247,.15); }
+    .lab-group .cnt { font-size: 0.72rem; opacity: 0.75; margin-inline-start: 4px; }
+    .lab-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: 10px; margin-bottom: 28px;
+    }
+    .lab-card {
+      text-align: right; cursor: pointer; border: 1px solid var(--border);
+      background: var(--surface); border-radius: 12px; padding: 12px;
+      font-family: inherit; color: var(--text); position: relative;
+      transition: border-color .15s, transform .1s;
+    }
+    .lab-card:hover { transform: translateY(-1px); border-color: var(--brand); }
+    .lab-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px rgba(24,226,154,.3); }
+    .lab-card.is-dead { opacity: 0.5; }
+    .lab-card.is-unknown { opacity: 0.85; }
+    .lab-dot {
+      position: absolute; top: 10px; left: 10px; width: 8px; height: 8px;
+      border-radius: 50%; background: var(--muted);
+    }
+    .lab-card.is-live .lab-dot { background: var(--accent); box-shadow: 0 0 8px var(--accent); }
+    .lab-card.is-dead .lab-dot { background: var(--danger); }
+    .lab-card-name { display: block; font-weight: 700; font-size: 0.86rem; margin-bottom: 4px; line-height: 1.35; }
+    .lab-card-sub { display: block; font-size: 0.72rem; color: var(--muted); }
+    .lab-section-title { font-size: 1rem; margin: 0 0 10px; font-weight: 800; }
+    .lab-section-sub { font-size: 0.82rem; color: var(--muted); margin: -6px 0 12px; }
+    .lab-grid-compact { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); margin-bottom: 28px; }
+    .lab-grid-matches { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); margin-bottom: 16px; }
+    .lab-card.match-live { border-color: var(--accent); }
+    .lab-card.match-soon { opacity: 0.75; }
+    .lab-card.match-ended { opacity: 0.45; }
+    .lab-ext-wrap { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+    .lab-ext {
+      flex: 1 1 220px; display: block; padding: 12px 14px; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--surface-2); text-decoration: none; color: inherit;
+    }
+    .lab-ext:hover { border-color: var(--brand); }
+    .lab-ext strong { display: block; font-size: 0.9rem; margin-bottom: 4px; }
+    .lab-ext small { color: var(--muted); }
+    .lab-note {
+      font-size: 0.82rem; color: var(--muted); line-height: 1.8;
+      border-top: 1px solid var(--border); padding-top: 16px;
+    }
+    .lab-note a { color: var(--accent); font-weight: 700; }
+    @media (max-width: 640px) {
+      .lab-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container nav">
+      <a href="index.html" class="logo">Kora<b>Zero</b></a>
+      <nav style="margin-inline-start:auto;display:flex;gap:14px;font-weight:700;font-size:.9rem;flex-wrap:wrap">
+        <a href="index.html">الرئيسية</a>
+        <a href="watch.html?ch=live">مباريات اليوم</a>
+        <a href="bein-lab.html" style="color:var(--accent)">beIN 24/7</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container lab-page">
+    <div class="lab-hero">
+      <div style="flex:1">
+        <h1>بث beIN Sports 24/7 — عربي</h1>
+        <p>
+          مركز البث الدائم لقنوات beIN <strong>العربية</strong> — Sports 1–9، XTRA، MAX، وSIR عربي.
+          يفحص المصادر ويختار <strong>أفضل بث عربي حي</strong> تلقائياً. قنوات أخرى (إنجليزي، فرنسي…) في تبويب «أخرى».
+        </p>
+      </div>
+      <div class="lab-badges">
+        <span class="lab-badge brand">24/7</span>
+        <span class="lab-badge live"><span id="live-count">—</span></span>
+        <span class="lab-badge"><span id="total-count">—</span> قناة عربية</span>
+      </div>
+    </div>
+
+    <div class="lab-stats">
+      <div class="lab-stat"><b id="stat-ar">—</b><span>عربي</span></div>
+      <div class="lab-stat"><b id="stat-max">—</b><span>MAX</span></div>
+      <div class="lab-stat"><b id="stat-sir">—</b><span>SIR عربي</span></div>
+    </div>
+
+    <div class="lab-player-wrap">
+      <iframe id="player" title="مشغّل beIN 24/7"
+        allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+        allowfullscreen referrerpolicy="no-referrer" src="about:blank"></iframe>
+    </div>
+
+    <div class="lab-toolbar">
+      <div class="now">القناة: <b id="now-label">—</b></div>
+      <button type="button" class="lab-btn primary" id="best-btn">أفضل بث عربي</button>
+      <button type="button" class="lab-btn" id="reload">إعادة تحميل</button>
+      <button type="button" class="lab-btn" id="refresh-status">فحص المصادر</button>
+    </div>
+    <p class="lab-status" id="status-line">جارٍ التحميل…</p>
+
+    <div class="lab-groups" id="group-tabs"></div>
+    <div class="lab-grid" id="channel-grid"></div>
+
+    <h2 class="lab-section-title">SIR 24/7 — siir-tv.live</h2>
+    <p class="lab-section-sub">قنوات SIR العربية والدولية عبر shootny — تجريبي</p>
+    <div class="lab-grid lab-grid-compact" id="sir-247-grid"></div>
+
+    <h2 class="lab-section-title">مباريات اليوم — siir-tv.live</h2>
+    <p class="lab-section-sub" id="siir-matches-status">جارٍ تحميل المباريات…</p>
+    <div class="lab-grid lab-grid-matches" id="siir-matches-grid"></div>
+    <div class="lab-ext-wrap" id="external-links"></div>
+
+    <p class="lab-note">
+      المصادر: <code>/dl/&lt;id&gt;</code> (dlhd 24/7 عربي)، <code>/sir/&lt;قناة&gt;</code> (SIR 24/7)،
+      و<code>/siir/m/&lt;id&gt;</code> (مباريات siir-tv.live عند البث الحي).
+      &nbsp;·&nbsp; <a href="watch.html?ch=live">مباريات اليوم</a>
+      &nbsp;·&nbsp; <a href="index.html">الرئيسية</a>
+    </p>
+  </main>
+
+  <script src="assets/js/streams-lab.js?v=20260706fix"></script>
+</body>
+</html>
