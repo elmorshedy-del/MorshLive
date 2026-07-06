@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 /**
  * Backfill avatarUrl + media on match-memes.json using Twitter syndication (no API token).
+ * Keeps only tweets with photo/video/GIF previews.
  */
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
 
 const MEMES_PATH = path.join(__dirname, "..", "assets", "data", "match-memes.json");
+const PINNED_PATH = path.join(__dirname, "..", "assets", "data", "pinned-match-memes.json");
 const ARCHIVE_PATH = path.join(__dirname, "..", "assets", "data", "tournament-archive.json");
 const UA = "Mozilla/5.0 (compatible; KoraZero/1.0)";
 
@@ -20,6 +22,20 @@ function fetchJson(url) {
       });
     }).on("error", reject);
   });
+}
+
+function memeHasMedia(meme) {
+  const item = (meme?.media || [])[0];
+  return !!(item && (item.previewUrl || item.url));
+}
+
+function filterMediaOnly(memesByKey) {
+  const out = {};
+  for (const [key, list] of Object.entries(memesByKey || {})) {
+    const kept = (list || []).filter(memeHasMedia);
+    if (kept.length) out[key] = kept;
+  }
+  return out;
 }
 
 function mediaFromSyndication(items) {
@@ -57,8 +73,7 @@ async function enrichMeme(meme) {
 
 async function enrichMap(memesByKey) {
   const out = {};
-  const keys = Object.keys(memesByKey);
-  for (const key of keys) {
+  for (const key of Object.keys(memesByKey)) {
     const list = memesByKey[key] || [];
     const enriched = [];
     for (const meme of list) {
@@ -73,19 +88,24 @@ async function enrichMap(memesByKey) {
 (async () => {
   const memes = JSON.parse(fs.readFileSync(MEMES_PATH, "utf8"));
   console.log("Enriching match-memes.json …");
-  const enriched = await enrichMap(memes);
+  const enriched = filterMediaOnly(await enrichMap(memes));
   fs.writeFileSync(MEMES_PATH, JSON.stringify(enriched, null, 2) + "\n");
+
+  if (fs.existsSync(PINNED_PATH)) {
+    const pinned = filterMediaOnly(JSON.parse(fs.readFileSync(PINNED_PATH, "utf8")));
+    fs.writeFileSync(PINNED_PATH, JSON.stringify(pinned, null, 2) + "\n");
+    console.log("Updated pinned-match-memes.json (media-only)");
+  }
 
   if (fs.existsSync(ARCHIVE_PATH)) {
     const archive = JSON.parse(fs.readFileSync(ARCHIVE_PATH, "utf8"));
-    archive.memes = { ...(archive.memes || {}), ...enriched };
+    archive.memes = filterMediaOnly({ ...(archive.memes || {}), ...enriched });
     fs.writeFileSync(ARCHIVE_PATH, JSON.stringify(archive, null, 2) + "\n");
-    console.log("Updated tournament-archive.json memes");
+    console.log("Updated tournament-archive.json memes (media-only)");
   }
 
-  const withMedia = Object.values(enriched).flat().filter((m) => m.media?.length).length;
-  const total = Object.values(enriched).flat().length;
-  console.log(`Done: ${withMedia}/${total} tweets have media previews`);
+  const withMedia = Object.values(enriched).flat().length;
+  console.log(`Done: ${withMedia} media tweets kept`);
 })().catch((err) => {
   console.error(err);
   process.exit(1);

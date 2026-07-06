@@ -2512,6 +2512,21 @@ function memeFromSyndicationTweet(meme, synd) {
   };
 }
 
+function memeHasMedia(meme) {
+  const item = (meme?.media || [])[0];
+  return !!(item && (item.previewUrl || item.url));
+}
+
+function filterMemesWithMedia(memes) {
+  return (memes || []).filter(memeHasMedia);
+}
+
+function pickTopMediaMemes(entries, limit) {
+  return filterMemesWithMedia(entries)
+    .sort((a, b) => (b.engagement || 0) - (a.engagement || 0))
+    .slice(0, limit);
+}
+
 function memeToEntry(tweet, author, includes) {
   const engagement = memeEngagement(tweet.public_metrics);
   const users = includes?.users || [];
@@ -2612,11 +2627,8 @@ async function searchCuratedMemesSyndication(home, away, kickoffUtc) {
     }
     const hits = tweets
       .filter((t) => memeInWindow(t.created_at, window) && memeCaptionHits(t.text, home, away))
-      .map((t) => ({ tweet: t, engagement: memeEngagement(t.public_metrics) }))
-      .sort((a, b) => b.engagement - a.engagement)
-      .slice(0, MEME_TOP_PER_ACCOUNT)
-      .map(({ tweet }) => memeToEntry(tweet, acct.username, {}));
-    out.push(...hits);
+      .map((t) => memeToEntry(t, acct.username, {}));
+    out.push(...pickTopMediaMemes(hits, MEME_TOP_PER_ACCOUNT));
   }
   return out;
 }
@@ -2637,15 +2649,8 @@ async function searchCuratedMemes(bearer, home, away, kickoffUtc) {
     }
     const hits = tweets
       .filter((t) => memeInWindow(t.created_at, window) && memeCaptionHits(t.text, home, away))
-      .map((t) => ({
-        tweet: t,
-        engagement: memeEngagement(t.public_metrics),
-        author: acct.username,
-      }))
-      .sort((a, b) => b.engagement - a.engagement)
-      .slice(0, MEME_TOP_PER_ACCOUNT)
-      .map(({ tweet, author }) => memeToEntry(tweet, author, includes));
-    out.push(...hits);
+      .map((t) => memeToEntry(t, acct.username, includes));
+    out.push(...pickTopMediaMemes(hits, MEME_TOP_PER_ACCOUNT));
   }
   return out;
 }
@@ -2742,6 +2747,7 @@ async function proxyMatchMemesApi(request, env) {
       memes = await enrichMemesMedia(memes, bearer);
       if (source === "archive" || source === "pinned") source = "archive+media";
     } catch { /* text-only fallback */ }
+    memes = filterMemesWithMedia(memes);
   }
 
   return new Response(JSON.stringify({ key, memes }), {

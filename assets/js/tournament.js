@@ -62,10 +62,6 @@
     }
   }
 
-  function memesNeedMedia(memes) {
-    return (memes || []).some((m) => m.type === "tweet" && m.tweetId && !(m.media && m.media.length));
-  }
-
   function memeMediaHtml(meme) {
     const item = (meme.media || [])[0];
     if (!item || !item.previewUrl) return "";
@@ -78,7 +74,7 @@
   }
 
   function memeHtml(meme) {
-    if (!meme || meme.type !== "tweet" || !meme.url) return "";
+    if (!meme || meme.type !== "tweet" || !meme.url || !memeHasMedia(meme)) return "";
     const likes = meme.likes != null ? meme.likes : 0;
     const rts = meme.retweets != null ? meme.retweets : 0;
     const avatar = meme.avatarUrl
@@ -110,8 +106,17 @@
       </a>`;
   }
 
+  function memeHasMedia(meme) {
+    const item = (meme?.media || [])[0];
+    return !!(item && (item.previewUrl || item.url));
+  }
+
   function sortedMemes(memes) {
     return [...(memes || [])].sort((a, b) => (b.engagement || 0) - (a.engagement || 0));
+  }
+
+  function mediaMemes(memes) {
+    return sortedMemes(memes).filter(memeHasMedia);
   }
 
   function sectionHead(icon, iconMod, title, count) {
@@ -216,7 +221,7 @@
   }
 
   function featuredHeroHtml(m) {
-    const memes = sortedMemes((archive.memes && archive.memes[m.key]) || []);
+    const memes = mediaMemes((archive.memes && archive.memes[m.key]) || []);
     return `
       <article class="tournament-hero">
         ${scoreboardHtml(m)}
@@ -227,9 +232,9 @@
   }
 
   async function fetchMemesForMatch(m, force) {
-    const local = sortedMemes((archive.memes && archive.memes[m.key]) || []);
+    const local = mediaMemes((archive.memes && archive.memes[m.key]) || []);
     if (!m.home || !m.away) return local;
-    if (!force && local.length && !memesNeedMedia(local)) return local;
+    if (!force && local.length) return local;
     const q = new URLSearchParams({
       home: m.home,
       away: m.away,
@@ -241,7 +246,7 @@
       const data = await res.json();
       if (data.memes?.length) {
         archive.memes[m.key] = data.memes;
-        return sortedMemes(data.memes);
+        return mediaMemes(data.memes);
       }
     } catch { /* local */ }
     return local;
@@ -278,7 +283,7 @@
   }
 
   function matchDetailHtml(m) {
-    const memes = sortedMemes((archive.memes && archive.memes[m.key]) || []);
+    const memes = mediaMemes((archive.memes && archive.memes[m.key]) || []);
     return `
       <div class="tournament-detail">
         ${m.summaryAr ? `<div class="tournament-recap tournament-recap--compact"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
@@ -288,7 +293,7 @@
   }
 
   function matchCard(m) {
-    const memes = (archive.memes && archive.memes[m.key]) || [];
+    const memes = mediaMemes((archive.memes && archive.memes[m.key]) || []);
     const hasMemes = memes.length > 0;
     const hasHighlight = hasAnyHighlight(m);
     const clipCount = (matchClips(m).goals ? 1 : 0) + (matchClips(m).full ? 1 : 0);
@@ -454,7 +459,7 @@
     if (!archive) return;
     const needs = archive.matches.filter((m) => {
       const memes = archive.memes[m.key] || [];
-      return memes.length ? memesNeedMedia(memes) : !!(m.highlight?.videoUrl);
+      return !mediaMemes(memes).length && memes.length;
     });
     if (!needs.length) return;
     await Promise.all(needs.map((m) => fetchMemesForMatch(m, true)));
