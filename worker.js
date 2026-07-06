@@ -3600,12 +3600,12 @@ async function proxyRecentMemesApi(request, env) {
     .map((key) => ({ key, m: matchByKey.get(key) }))
     .filter((x) => x.m)
     .sort((a, b) => Date.parse(b.m.kickoffUtc) - Date.parse(a.m.kickoffUtc));
-  for (const { key, m } of syndicateCandidates) {
+  await Promise.all(syndicateCandidates.map(async ({ key, m }) => {
     try {
       const hits = await searchCuratedMemesSyndication(m.home, m.away, m.kickoffUtc, m, memeConfig, timelineCache, scannerSeenIds);
       for (const meme of hits) ingest(key, meme);
     } catch { /* syndication optional */ }
-  }
+  }));
 
   const bearer = env && env.TWITTER_BEARER_TOKEN;
   if (bearer) {
