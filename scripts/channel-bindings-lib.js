@@ -10,6 +10,7 @@ const EMBED_URLS = {
   vip1: "https://vip.worldkoora.com/albaplayer/vip1/",
   vip2: "https://vip.worldkoora.com/albaplayer/vip2/",
   amine: "https://yallashooot.tv/albaplayer/amine/",
+  sirtv: "https://s.sirtv.space/2026/02/ch1.html?m=1",
 };
 
 function loadBindings() {

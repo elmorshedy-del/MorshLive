@@ -768,6 +768,12 @@ img { max-width: 100%; display: block; }
   border-left: 3px solid var(--gold);
   box-shadow: 0 0 0 1px rgba(255, 201, 77, .1), 0 4px 16px rgba(255, 201, 77, .12);
 }
+.kz-match-notice--resolved {
+  background: rgba(24, 226, 154, .08);
+  border: 1px solid rgba(24, 226, 154, .22);
+  border-left: 3px solid var(--accent);
+  box-shadow: 0 0 0 1px rgba(24, 226, 154, .1), 0 4px 18px rgba(24, 226, 154, .12);
+}
 .kz-match-notice__dismiss {
   position: absolute;
   top: 6px;
@@ -802,6 +808,16 @@ img { max-width: 100%; display: block; }
   border-color: rgba(255, 201, 77, .5);
   background: rgba(255, 201, 77, .2);
 }
+.kz-match-notice--resolved .kz-match-notice__dismiss {
+  border: 1px solid rgba(24, 226, 154, .28);
+  background: rgba(24, 226, 154, .1);
+  color: #5eecc0;
+}
+.kz-match-notice--resolved .kz-match-notice__dismiss:hover {
+  color: #04120c;
+  border-color: rgba(24, 226, 154, .55);
+  background: rgba(24, 226, 154, .28);
+}
 .kz-match-notice__body {
   display: flex;
   align-items: flex-start;
@@ -825,6 +841,12 @@ img { max-width: 100%; display: block; }
   filter: drop-shadow(0 0 4px rgba(255, 201, 77, .65));
   animation: kz-notice-glow-beta 2.4s ease-in-out infinite;
 }
+.kz-match-notice--resolved .kz-match-notice__icon {
+  color: var(--accent);
+  font-weight: 800;
+  filter: drop-shadow(0 0 5px rgba(24, 226, 154, .65));
+  animation: kz-notice-glow-resolved 2.2s ease-in-out infinite;
+}
 .kz-match-notice__text {
   margin: 0;
   flex: 1;
@@ -846,7 +868,11 @@ img { max-width: 100%; display: block; }
   0%, 100% { opacity: 1; filter: drop-shadow(0 0 3px rgba(255, 201, 77, .5)); }
   50% { opacity: .9; filter: drop-shadow(0 0 8px rgba(255, 201, 77, .85)); }
 }
-#match-notice-home.match-notice-slot:not(:empty) { margin-top: 10px; }
+@keyframes kz-notice-glow-resolved {
+  0%, 100% { opacity: 1; filter: drop-shadow(0 0 4px rgba(24, 226, 154, .55)); }
+  50% { opacity: .92; filter: drop-shadow(0 0 9px rgba(24, 226, 154, .9)); }
+}
+#match-notice-home.match-notice-slot:not(:empty) { margin-top: 0; margin-bottom: 12px; }
 #stats-notice-slot.match-notice-slot:not(:empty),
 #live-stats-notice-slot.match-notice-slot:not(:empty) { margin-bottom: 10px; }
 

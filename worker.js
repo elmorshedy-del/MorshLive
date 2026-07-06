@@ -33,6 +33,9 @@ const WORLDKOORA = "https://mysportv.live";
 const WESHAN = "https://zenvixw.site/wordpress/albaplayer/weshan/";
 const VIP_RE = /^\/wk\/albaplayer\/(vip[12])\/?$/i;
 const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
+const SIRTV_CH1_PLAYER = "https://we.shootsync.site/albaplayer/sniaer/";
+const SIRTV_CH1_REFERER = "https://s.sirtv.space/2026/02/ch1.html?m=1";
+const SIRTV_RE = /^\/wk\/albaplayer\/sirtv\/?$/i;
 const POLL_RE = /^\/api\/poll\/([a-z0-9.-]+)\/?$/i;
 const POLL_STORE = "https://kz-poll.internal/";
 const POLL_TEAMS = {
@@ -1691,6 +1694,60 @@ function amineServerOrder(requestedServ) {
   if (Number.isFinite(raw) && raw >= 0 && raw <= 3) order.push(raw);
   for (let s = 0; s <= 3; s++) if (!order.includes(s)) order.push(s);
   return order;
+}
+
+// TEMP: Sir TV ch1 (s.sirtv.space) — Portugal vs Spain direct stream.
+async function fetchSirTvCh1Html(request) {
+  try {
+    const res = await fetchWithTimeout(SIRTV_CH1_PLAYER, {
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "text/html,application/xhtml+xml",
+        Referer: SIRTV_CH1_REFERER,
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    return res.text();
+  } catch {
+    return null;
+  }
+}
+
+async function proxySirTv(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "sirtv-ch1",
+  };
+  if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
+
+  try {
+    const html = await fetchSirTvCh1Html(request);
+    if (!html) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    const candidates = extractHlsCandidates(html);
+    const seenSources = new Set();
+    const pool = [];
+    for (const c of candidates) {
+      if (!c.source || seenSources.has(c.source)) continue;
+      const probe = await streamProbe(c.source, "plain", request);
+      if (!probe.ok) continue;
+      seenSources.add(c.source);
+      const sig = await signTarget(c.source, secret);
+      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: probe.score });
+    }
+    pool.sort((a, b) => a.score - b.score);
+    const proxied = pool.map((m) => m.url);
+    if (!proxied.length) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    return new Response(cleanHlsPlayerHtml(proxied, "بث مباشر"), { status: 200, headers: htmlHeaders });
+  } catch {
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  }
 }
 
 async function proxyAmine(request, env) {
@@ -4110,6 +4167,9 @@ export default {
     }
     if (WESHAN_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyWeshan(request, env);
+    }
+    if (SIRTV_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxySirTv(request, env);
     }
     if (AMINE_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyAmine(request, env);

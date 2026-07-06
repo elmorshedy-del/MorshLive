@@ -17,6 +17,7 @@
   let MATCHES = [];
   let channel = CHANNELS[0];
   let match = null;
+  let directStream = null;
   const STREAM_SOURCES = [
     { key: "vip1", servs: [1, 2, 3, 4] },
     { key: "vip2", servs: [1, 2, 3, 4] },
@@ -48,14 +49,20 @@
 
   function loadPlayer() {
     if (!shell) return;
-    const url = embedUrlFor(currentEmbed(), embedQuery(activeServ));
+    const embed = currentEmbed();
+    const url = embedUrlFor(embed, embedQuery(activeServ));
     if (!url || loadedUrl === url) return;
     loadedUrl = url;
     shell.innerHTML =
       `<iframe class="embed-frame" src="${url}" ` +
       `sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ` +
-      `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
+      `allow="autoplay *; encrypted-media *; fullscreen *; picture-in-picture *" allowfullscreen ` +
       `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
+  }
+
+  function setDirectStreamUi() {
+    const card = document.querySelector(".watch-sources-card");
+    if (card) card.hidden = !!(directStream && directStream.hidePickers);
   }
 
   function reloadPlayer() {
@@ -275,6 +282,10 @@
   function renderChannels() {
     const row = document.getElementById("channel-row");
     if (!row) return;
+    if (directStream && directStream.hidePickers) {
+      row.innerHTML = "";
+      return;
+    }
     const matchCh = match && match.channelId;
     row.innerHTML = CHANNELS.map((ch) => {
       const isActive = ch.id === channel.id;
@@ -302,6 +313,7 @@
   }
 
   function sourceLabel(key) {
+    if (key === "sirtv") return t("watch.sirtv");
     if (key === "weshan") return t("watch.weshan");
     if (key === "amine") return t("watch.amine");
     return key.toUpperCase();
@@ -310,6 +322,13 @@
   function renderServers({ rebind } = {}) {
     const row = document.getElementById("servers");
     if (!row) return;
+    if (directStream && directStream.hidePickers) {
+      row.innerHTML = "";
+      row.dataset.ch = channel.id;
+      row.dataset.embed = activeEmbedKey || "sirtv";
+      row.dataset.serv = String(activeServ);
+      return;
+    }
     const defaultKey = (match && match.embedKey) || window.SITE_DATA.embedKeyFor(channel.id);
     const needsRebuild = rebind !== false && (
       !row.querySelector(".server-btn") ||
@@ -324,8 +343,9 @@
         for (const serv of src.servs) {
           const url = channelEmbedUrl(channel.id, src.key, serv);
           const isActive = (activeEmbedKey || defaultKey) === src.key && activeServ === serv;
+          const kind = "reachable";
           buttons.push(`<button type="button" class="server-btn${isActive ? " active" : ""}${src.key === "weshan" || src.key === "amine" ? " server-btn--alt" : ""}"
-            data-srv="${serv}" data-embed="${src.key}" data-kind="reachable" data-url="${escapeHtml(url)}"
+            data-srv="${serv}" data-embed="${src.key}" data-kind="${kind}" data-url="${escapeHtml(url)}"
             data-label="${sourceLabel(src.key)} ${t("watch.server")} ${serv}">
             <span class="srv-label">${sourceLabel(src.key)} · ${t("watch.server")} ${serv}</span>
           </button>`);
@@ -432,12 +452,41 @@
     host.appendChild(btn);
   }
 
+  function applyDirectStream(direct) {
+    if (!direct || !direct.hidePickers) return false;
+    directStream = direct;
+    activeEmbedKey = direct.embedKey;
+    activeServ = 1;
+    setDirectStreamUi();
+    return true;
+  }
+
   function resolveSelection() {
+    const urlMatchId = params.get("match");
+    const urlDirect = urlMatchId && window.SITE_DATA.directStreamForMatchId
+      ? window.SITE_DATA.directStreamForMatchId(urlMatchId)
+      : null;
+    if (applyDirectStream(urlDirect)) {
+      const picked = window.resolveWatchSelection
+        ? window.resolveWatchSelection(MATCHES, CHANNELS, params)
+        : { channel: CHANNELS[0], match: null, embedKey: urlDirect.embedKey, direct: urlDirect };
+      channel = picked.channel;
+      match = picked.match;
+      return;
+    }
+
     const picked = window.resolveWatchSelection
       ? window.resolveWatchSelection(MATCHES, CHANNELS, params)
-      : { channel: CHANNELS[0], match: null, embedKey: null };
+      : { channel: CHANNELS[0], match: null, embedKey: null, direct: null };
     channel = picked.channel;
     match = picked.match;
+    if (applyDirectStream(picked.direct || (match && window.SITE_DATA.directStreamForMatch
+      ? window.SITE_DATA.directStreamForMatch(match)
+      : null))) {
+      return;
+    }
+    directStream = null;
+    setDirectStreamUi();
     activeEmbedKey = params.get("player") || picked.embedKey || (match && match.embedKey) || null;
     if (params.has("serv")) activeServ = Number(params.get("serv"));
     else if (match && match.streamServ != null) activeServ = Number(match.streamServ);
@@ -478,6 +527,7 @@
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(() => refreshMatchDetail().catch((e) => console.warn("Detail refresh failed:", e.message)), 60 * 1000);
     setInterval(() => {
+      if (directStream && directStream.hidePickers) return;
       const chRow = document.getElementById("channel-row");
       const srvRow = document.getElementById("servers");
       if (window.StreamCheck) {
