@@ -67,9 +67,9 @@
   }
 
   function altStreamIframe(url) {
+    // Same-origin /wk/ proxies — no sandbox (NTV upstream blocks sandboxed embeds).
     return (
       `<iframe class="embed-frame alt-stream-frame" src="${escapeHtml(url)}" ` +
-      `sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
       `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="lazy"></iframe>`
     );
