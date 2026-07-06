@@ -158,9 +158,8 @@
   function renderMatchDetail() {
     const slot = document.getElementById("match-detail-slot");
     if (!slot) return;
-    const goalsHtml = match && window.buildGoalsHtml && window.buildGoalsHtml(match)
-      ? staticPanel(t("card.goals"), window.buildGoalsHtml(match))
-      : "";
+    const goalsBody = match && window.buildGoalsHtml ? window.buildGoalsHtml(match) : "";
+    const goalsHtml = goalsBody ? staticPanel(t("card.goals"), goalsBody) : "";
     const lineupsHtml = match && match.lineups && window.buildLineupsHtml
       ? staticPanel(t("card.lineups"), window.buildLineupsHtml(match))
       : "";

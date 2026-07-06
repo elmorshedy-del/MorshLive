@@ -715,16 +715,24 @@ function lineupPlayerHtml(p) {
 
 /* Depth score (defensive → attacking) from ESPN's position abbreviation,
    used only to ORDER outfielders back-to-front; the formation counts decide
-   how that ordering is sliced into lines. */
+   how that ordering is sliced into lines. ESPN abbreviations look like
+   "CD-L" / "AM-R" / "DM" / "LB", so match the base token (before any "-")
+   against exact sets — a prefix regex would misfile "DM"/"CDM" as defenders. */
+const POS_DEPTH = (() => {
+  const map = {};
+  const add = (list, v) => list.forEach((k) => { map[k] = v; });
+  add(["CD", "CB", "SW", "D", "LB", "RB", "WB", "LWB", "RWB", "RCB", "LCB"], 10);
+  add(["DM", "CDM", "DEF MID"], 20);
+  add(["CM", "M", "LM", "RM", "LCM", "RCM", "MID"], 30);
+  add(["AM", "CAM", "ATT MID"], 40);
+  add(["F", "CF", "ST", "S", "FW", "W", "LW", "RW", "LF", "RF"], 50);
+  return map;
+})();
+
 function posDepth(p) {
-  const a = (p.pos || "").toUpperCase();
+  const a = (p.pos || "").toUpperCase().split("-")[0].trim();
   if (a === "G" || p.band === "gk") return 0;
-  if (/^(LB|RB|WB|LWB|RWB)/.test(a)) return 11;
-  if (/^(CD|CB|SW|D)/.test(a)) return 10;
-  if (/^(DM|CDM)/.test(a)) return 20;
-  if (/^(AM|CAM)/.test(a)) return 40;
-  if (/^(F|CF|ST|S|FW|W|LW|RW|LF|RF)/.test(a)) return 50;
-  if (/^(M|CM|LM|RM|LCM|RCM)/.test(a)) return 30;
+  if (a in POS_DEPTH) return POS_DEPTH[a];
   if (p.band === "def") return 10;
   if (p.band === "fwd") return 50;
   return 30;
