@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "updatedAt": "2026-07-06T04:00:00.000Z",
+  "notes": "Upstream scrape runs first. Candidates here are fallbacks — only embedded when Helix confirms LIVE (set TWITCH_CLIENT_ID + TWITCH_CLIENT_SECRET on the worker). Without Helix, only channels scraped from worldkoora this request are used.",
+  "globalCandidates": [],
+  "slots": {
+    "vip1": {
+      "candidates": []
+    },
+    "vip2": {
+      "candidates": []
+    }
+  }
+}
