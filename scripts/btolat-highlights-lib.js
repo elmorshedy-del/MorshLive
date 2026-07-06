@@ -8,6 +8,7 @@
  * ==========================================================================*/
 const VORTEX_EMBED_BASE = "https://nvtboo.vortexvisionworks.com/embed";
 const UA = "Mozilla/5.0 (compatible; MorshLive/1.0)";
+const { normalizeArabic, levenshtein } = require("./arabic-team-resolver");
 
 /** League page + main videos feed (goals clips often only on /videos). */
 const BTOLAT_VIDEO_FEEDS = [
@@ -41,12 +42,62 @@ function classifyBtolatTitle(title) {
 
 function titleTeams(title) {
   const t = String(title || "").replace(/\s+/g, " ").trim();
-  const m = /(?:اهداف|أهداف|ملخص)\s+مباراة\s+(.+?)(?:\s*\(|\s+كأس)/i.exec(t);
+  const m = /(?:اهداف|أهداف|ملخص)\s+مباراة\s+(.+?)(?:\s*\(|\s+ك[اأ]س)/i.exec(t);
   if (!m) return null;
   const chunk = m[1].replace(/[()]/g, " ").trim();
   const parts = chunk.split(/\s+و\s*/);
   if (parts.length < 2) return null;
   return { a: parts[0].trim(), b: parts[1].trim() };
+}
+
+function arabicSimilarity(a, b) {
+  const x = normalizeArabic(a);
+  const y = normalizeArabic(b);
+  if (!x || !y) return 0;
+  if (x === y) return 1;
+  if (x.includes(y) || y.includes(x)) {
+    return Math.min(x.length, y.length) / Math.max(x.length, y.length);
+  }
+  const max = Math.max(x.length, y.length);
+  return Math.max(0, 1 - levenshtein(x, y) / max);
+}
+
+function uniqueTruthy(items) {
+  return [...new Set(items.filter(Boolean))];
+}
+
+function teamArabicCandidates(match, side, arabicTeam) {
+  const name = match && match[side];
+  const ar = arabicTeam ? arabicTeam(name) : "";
+  return uniqueTruthy([ar, name]);
+}
+
+function sideScore(titleTeam, candidates) {
+  return Math.max(0, ...candidates.map((c) => arabicSimilarity(titleTeam, c)));
+}
+
+function buildContextualPairKey(teams, opts) {
+  const matches = Array.isArray(opts?.matches) ? opts.matches : [];
+  if (!matches.length || !opts?.pairKeyFn) return null;
+
+  let best = null;
+  for (const m of matches) {
+    if (!m?.home || !m?.away) continue;
+    const homeNames = teamArabicCandidates(m, "home", opts.arabicTeam);
+    const awayNames = teamArabicCandidates(m, "away", opts.arabicTeam);
+    const direct =
+      sideScore(teams.a, homeNames) + sideScore(teams.b, awayNames);
+    const reverse =
+      sideScore(teams.a, awayNames) + sideScore(teams.b, homeNames);
+    const score = Math.max(direct, reverse);
+    if (!best || score > best.score) {
+      best = { score, key: m.key || opts.pairKeyFn(m.home, m.away), match: m };
+    }
+  }
+
+  // Two team names give a max score of 2.0. This accepts typo/hamza variants
+  // while still requiring both sides of the title to resemble the same fixture.
+  return best && best.score >= 1.45 ? best.key : null;
 }
 
 async function fetchBtolatEmbedId(btolatId) {
@@ -71,7 +122,7 @@ function clipFromEmbed(embedId, meta) {
  * Scrape btolat World Cup feeds → map of pairKey → { goals?, full? }.
  * Approximate durations are editorial on btolat; we classify by title only.
  */
-async function scrapeBtolatHighlights(pairKeyFn, fetchMeta) {
+async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
   const seenIds = new Set();
   const candidates = [];
   for (const feed of BTOLAT_VIDEO_FEEDS) {
@@ -89,7 +140,7 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta) {
   for (const v of candidates) {
     const teams = titleTeams(v.title);
     if (!teams) continue;
-    const key = pairKeyFn(teams.a, teams.b);
+    const key = buildContextualPairKey(teams, { ...opts, pairKeyFn }) || pairKeyFn(teams.a, teams.b);
     const embedId = await fetchBtolatEmbedId(v.btolatId);
     if (!embedId) continue;
 

@@ -89,7 +89,8 @@ async function main() {
       const away = arToEn(b) || b;
       return pairKey(home, away);
     },
-    (id) => fetchVortexEmbedMeta(id)
+    (id) => fetchVortexEmbedMeta(id),
+    { matches, arabicTeam }
   );
   const dualCount = [...btolatMap.values()].filter((b) => b.goals && b.full).length;
   console.log(`btolat highlights: ${btolatMap.size} matches (${dualCount} with goals+full)`);
@@ -97,12 +98,25 @@ async function main() {
   let knownVortex = {};
   try { knownVortex = JSON.parse(fs.readFileSync(KNOWN_VORTEX, "utf8")); } catch { /* */ }
   let todayHighlights = new Map();
+  let todayDetails = new Map();
   try {
     const today = JSON.parse(fs.readFileSync(TODAY, "utf8"));
     for (const h of today.highlightsIndex || []) todayHighlights.set(h.key, h);
+    for (const m of today.matches || []) todayDetails.set(m.key, {
+      lineups: m.lineups || null,
+      stats: m.stats || null,
+    });
+    for (const d of today.matchDetailIndex || []) todayDetails.set(d.key, {
+      lineups: d.lineups || todayDetails.get(d.key)?.lineups || null,
+      stats: d.stats || todayDetails.get(d.key)?.stats || null,
+    });
   } catch { /* */ }
 
   for (const m of matches) {
+    const details = todayDetails.get(m.key);
+    if (details?.lineups && !m.lineups) m.lineups = details.lineups;
+    if (details?.stats && !m.stats) m.stats = details.stats;
+
     const bt = btolatMap.get(m.key);
     const pinned = todayHighlights.get(m.key);
     if (bt && applyBtolatHighlights(m, bt, normalizeHighlightBucket)) {
@@ -149,14 +163,12 @@ async function main() {
     for (const [key, list] of Object.entries(discovered)) {
       if (list.length) memes[key] = list;
     }
-  } else if (token && process.env.TWITTER_FETCH_LATEST === "1") {
-    console.log("TWITTER_FETCH_LATEST=1 — fetching memes for latest ملخص match only (≤9 API calls)");
-    const discovered = await discoverLatestHighlightMemes(matches, { pinnedMemes, maxMatches: 1 });
+  } else {
+    console.log("Fetching recent X media for latest highlight matches (syndication; bearer token used when set)");
+    const discovered = await discoverLatestHighlightMemes(matches, { pinnedMemes, maxMatches: 6 });
     for (const [key, list] of Object.entries(discovered)) {
       if (list.length) memes[key] = list;
     }
-  } else {
-    console.log("Skipping Twitter API (pinned + existing memes kept; set TWITTER_FETCH_LATEST=1 for one match only)");
   }
 
   const memeCount = Object.keys(memes).filter((k) => memes[k].length).length;
