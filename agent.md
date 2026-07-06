@@ -2,6 +2,12 @@
 
 **Mandatory workflow for every code change.** Do not skip steps.
 
+## 0. Read the architecture map first
+
+Before editing streams, memes, data, or deploy paths, read **`docs/ARCHITECTURE.md`**.
+It documents Cloudflare Worker ↔ static assets ↔ JSON pipelines ↔ `/api/*` routes.
+Skipping this is why the same bugs (stale meme cache, wrong VIP slot, undeployed worker) repeat.
+
 ## 1. Branch and PR first — never push straight to `main`
 
 - Create branch: `cursor/<short-description>-5da7`
@@ -62,6 +68,7 @@ After merge, confirm deploy: Cloudflare Workers Builds on `main`, or run `npm ru
 - [ ] Embed iframe: no hardcoded `vip1` for Player 2
 - [ ] Operator precedence in boolean conditions (especially embed-row checks)
 - [ ] Cache-bust query strings bumped when JS/CSS changes
+- [ ] Memes: live matches use short `/api/recent-memes` cache; static `match-memes.json` only updates on archive refresh
 
 ## 5. Deploy
 

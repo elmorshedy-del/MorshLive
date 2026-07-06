@@ -2967,6 +2967,7 @@ const RECENT_MEMES_MS = 24 * 60 * 60 * 1000;
 const RECENT_MATCH_MEME_CONTEXT_MS = 72 * 60 * 60 * 1000;
 const RECENT_MEMES_LIMIT = 48;
 const RECENT_MEMES_SCAN_CACHE_MS = 10 * 60 * 1000;
+const RECENT_MEMES_LIVE_SCAN_CACHE_MS = 2 * 60 * 1000;
 const TWITTER_API_BASE = "https://api.twitter.com/2";
 const MEME_MATCH_MS = 105 * 60 * 1000;
 const MEME_LOOKBACK_BEFORE_KICKOFF_MS = 15 * 60 * 1000;
@@ -3429,10 +3430,24 @@ function pruneRecentMemesRuntimeCache(sinceMs) {
   );
 }
 
-function recentMemesRuntimeFresh(sinceMs) {
+function recentMemesRuntimeFresh(sinceMs, liveNow) {
   pruneRecentMemesRuntimeCache(sinceMs);
+  const ttl = liveNow ? RECENT_MEMES_LIVE_SCAN_CACHE_MS : RECENT_MEMES_SCAN_CACHE_MS;
   return _recentMemesRuntimeCache.memes.length &&
-    Date.now() - _recentMemesRuntimeCache.at < RECENT_MEMES_SCAN_CACHE_MS;
+    Date.now() - _recentMemesRuntimeCache.at < ttl;
+}
+
+function hasLiveMatches(matches) {
+  return (matches || []).some((m) => m.status === "live");
+}
+
+function sortMemesRecentFirst(memes) {
+  return [...(memes || [])].sort((a, b) => {
+    const ta = Date.parse(a.postedAt || "") || 0;
+    const tb = Date.parse(b.postedAt || "") || 0;
+    if (tb !== ta) return tb - ta;
+    return (b.engagement || 0) - (a.engagement || 0);
+  });
 }
 
 function updateRecentMemesRuntimeCache(memes, sinceMs) {
@@ -3570,18 +3585,20 @@ function matchKickoffRecently(kickoffUtc, sinceMs) {
 async function proxyRecentMemesApi(request, env) {
   const url = new URL(request.url);
   const origin = url.origin;
+  const forceLive = url.searchParams.get("live") === "1";
+  const todayMatches = await loadTodayMatches(env, origin);
+  const liveNow = hasLiveMatches(todayMatches);
   const headers = {
     "Content-Type": "application/json; charset=utf-8",
     "Access-Control-Allow-Origin": "*",
-    "Cache-Control": "public, max-age=600",
+    "Cache-Control": liveNow ? "public, max-age=120" : "public, max-age=600",
     "X-KZ-Proxy": "recent-memes-api",
   };
   const sinceMs = Date.now() - RECENT_MEMES_MS;
   const matchSinceMs = Date.now() - RECENT_MATCH_MEME_CONTEXT_MS;
   const responseCacheKey = new Request(`${origin}/api/recent-memes/__response-cache`);
   const seenCacheKey = new Request(`${origin}/api/recent-memes/__seen-cache`);
-  const forceLive = url.searchParams.get("live") === "1";
-  if (!forceLive) {
+  if (!forceLive && !liveNow) {
     try {
       const cached = await caches.default.match(responseCacheKey);
       if (cached) {
@@ -3591,10 +3608,9 @@ async function proxyRecentMemesApi(request, env) {
       }
     } catch { /* cache optional */ }
   }
-  const [idx, pinned, todayMatches, memeConfig] = await Promise.all([
+  const [idx, pinned, memeConfig] = await Promise.all([
     loadMemesIndex(env, origin),
     loadPinnedMemes(env, origin),
-    loadTodayMatches(env, origin),
     loadMemeSources(env, origin),
   ]);
 
@@ -3607,7 +3623,7 @@ async function proxyRecentMemesApi(request, env) {
     if (matchKickoffRecently(m.kickoffUtc, matchSinceMs)) recentMatchKeys.add(key);
   }
 
-  if (recentMemesRuntimeFresh(sinceMs)) {
+  if (recentMemesRuntimeFresh(sinceMs, liveNow)) {
     const cachedMemes = filterMemesWithMedia(_recentMemesRuntimeCache.memes)
       .slice(0, RECENT_MEMES_LIMIT);
     return new Response(JSON.stringify({
@@ -3623,7 +3639,6 @@ async function proxyRecentMemesApi(request, env) {
   }
 
   const byTweetId = new Map();
-  const hasMemeForKey = (matchKey) => [...byTweetId.values()].some((m) => m.matchKey === matchKey);
   const scannerSeenIds = new Set(_recentMemesRuntimeCache.seenIds || []);
   let cacheSeedMemes = [];
   try {
@@ -3694,7 +3709,6 @@ async function proxyRecentMemesApi(request, env) {
   const bearer = env && env.TWITTER_BEARER_TOKEN;
   if (bearer) {
     for (const { key, m } of syndicateCandidates) {
-      if (hasMemeForKey(key)) continue;
       try {
         const hits = await searchCuratedMemes(bearer, m.home, m.away, m.kickoffUtc, m, memeConfig);
         for (const meme of hits) ingest(key, meme);
@@ -3702,8 +3716,7 @@ async function proxyRecentMemesApi(request, env) {
     }
   }
 
-  let memes = [...byTweetId.values()]
-    .sort((a, b) => (b.engagement || 0) - (a.engagement || 0))
+  let memes = sortMemesRecentFirst(byTweetId.values())
     .slice(0, RECENT_MEMES_LIMIT);
 
   if (memes.length) {
@@ -3725,7 +3738,11 @@ async function proxyRecentMemesApi(request, env) {
     headers,
   });
   try {
-    await caches.default.put(responseCacheKey, response.clone());
+    const cacheTtl = liveNow ? 120 : 600;
+    const seenTtl = liveNow ? 300 : 21600;
+    const cached = response.clone();
+    cached.headers.set("Cache-Control", `public, max-age=${cacheTtl}`);
+    await caches.default.put(responseCacheKey, cached);
     await caches.default.put(seenCacheKey, new Response(JSON.stringify({
       at: Date.now(),
       seenIds: [...scannerSeenIds],
@@ -3733,7 +3750,7 @@ async function proxyRecentMemesApi(request, env) {
     }), {
       headers: {
         "Content-Type": "application/json; charset=utf-8",
-        "Cache-Control": "public, max-age=21600",
+        "Cache-Control": `public, max-age=${seenTtl}`,
       },
     }));
   } catch { /* cache optional */ }
@@ -4268,7 +4285,7 @@ export default {
       return withEdgeCache(request, 1800, () => proxyMatchMemesApi(request, env));
     }
     if (RECENT_MEMES_API_RE.test(url.pathname) && method === "GET") {
-      return withEdgeCache(request, 600, () => proxyRecentMemesApi(request, env));
+      return proxyRecentMemesApi(request, env);
     }
     if (X_MEDIA_API_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
       return proxyXMedia(request);
