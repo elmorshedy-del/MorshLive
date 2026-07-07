@@ -18,6 +18,8 @@
  *   --match=espn-...     force one match id
  *   --skip-fallback      skip HTTP fallback probes on failure
  *   --force              ignore dedupe state
+ *   --test-sec=60        TEMP: replace T-45 with live + kickoff within N seconds
+ *   --schedule-sec=60    wait N seconds before selecting targets and running
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -38,6 +40,7 @@ import {
   buildWatchUrl,
   buildProxyUrl,
   selectPrekickoffMatches,
+  selectTestWindowMatches,
   selectMatchesWithin,
   selectLiveMatches,
   selectMatchById,
@@ -61,6 +64,8 @@ function parseArgs(argv) {
     withinMinutes: 0,
     skipFallback: false,
     force: false,
+    testSec: 0,
+    scheduleSec: 0,
   };
   for (const arg of argv) {
     if (arg === "--live") out.live = true;
@@ -73,6 +78,8 @@ function parseArgs(argv) {
     else if (arg.startsWith("--out=")) out.outDir = arg.slice(6);
     else if (arg.startsWith("--match=")) out.matchId = arg.slice(8);
     else if (arg.startsWith("--within=")) out.withinMinutes = Number(arg.slice(9)) || 90;
+    else if (arg.startsWith("--test-sec=")) out.testSec = Number(arg.slice(11)) || 60;
+    else if (arg.startsWith("--schedule-sec=")) out.scheduleSec = Number(arg.slice(15)) || 60;
   }
   return out;
 }
@@ -407,6 +414,14 @@ async function verifyMatch(browser, match, cfg, outDir) {
 async function main() {
   const cfg = parseArgs(process.argv.slice(2));
   fs.mkdirSync(cfg.outDir, { recursive: true });
+  fs.mkdirSync(path.join(ROOT, "logs", "prekickoff"), { recursive: true });
+
+  if (cfg.scheduleSec > 0) {
+    const fireAt = new Date(Date.now() + cfg.scheduleSec * 1000).toISOString();
+    console.log(`[prekickoff] scheduled: waiting ${cfg.scheduleSec}s (fire ~${fireAt})`);
+    await new Promise((r) => setTimeout(r, cfg.scheduleSec * 1000));
+    console.log(`[prekickoff] schedule elapsed — selecting targets`);
+  }
 
   const matches = await loadFreshMatches();
   let targets = [];
@@ -419,6 +434,13 @@ async function main() {
     targets = [one];
   } else if (cfg.live) {
     targets = selectLiveMatches(matches);
+  } else if (cfg.testSec > 0) {
+    targets = selectTestWindowMatches(matches, { withinSeconds: cfg.testSec, includeLive: true });
+    console.log(
+      `[prekickoff] test window: live or kickoff within ${cfg.testSec}s — ${targets.length} target(s)`
+    );
+  } else if (cfg.withinMinutes > 0) {
+    targets = selectMatchesWithin(matches, cfg.withinMinutes);
   } else {
     targets = selectPrekickoffMatches(matches, {
       windowMinutes: cfg.window,
@@ -427,17 +449,22 @@ async function main() {
   }
 
   if (!targets.length) {
-    const hint =
-      "Install external cron: */10 * * * * /path/to/scripts/prekickoff-cron.sh — not auto-run on deploy.";
+    const hint = cfg.testSec > 0
+      ? `Test window T+${cfg.testSec}s found no live/upcoming fixtures.`
+      : "Install external cron: */10 * * * * /path/to/scripts/prekickoff-cron.sh — not auto-run on deploy.";
     console.log(
       cfg.live
         ? "No live matches in today.json"
-        : `No matches in T-${cfg.window}±${cfg.slack}m window (${matches.length} fixtures loaded)`
+        : cfg.testSec > 0
+          ? `No matches in test window (${cfg.testSec}s, live included) — ${matches.length} fixtures loaded`
+          : `No matches in T-${cfg.window}±${cfg.slack}m window (${matches.length} fixtures loaded)`
     );
     console.log(hint);
     const summary = {
       ranAt: new Date().toISOString(),
-      mode: cfg.live ? "live" : "prekickoff",
+      mode: cfg.testSec > 0 ? "test-sec" : cfg.live ? "live" : "prekickoff",
+      testSec: cfg.testSec || null,
+      scheduleSec: cfg.scheduleSec || null,
       targets: 0,
       ok: true,
       reports: [],
@@ -450,7 +477,7 @@ async function main() {
 
   const statePath = path.join(cfg.outDir, "state.json");
   const state = loadState(statePath);
-  if (!cfg.force && !cfg.live && !cfg.matchId) {
+  if (!cfg.force && !cfg.live && !cfg.matchId && !cfg.testSec) {
     targets = targets.filter((m) => {
       const key = matchWindowKey(m);
       return !state.verified[key];
@@ -474,7 +501,7 @@ async function main() {
       const report = await verifyMatch(browser, match, cfg, cfg.outDir);
       reports.push(report);
       if (!report.ok) allOk = false;
-      if (!cfg.force && !cfg.live && !cfg.matchId && report.ok) {
+      if (!cfg.force && !cfg.live && !cfg.matchId && !cfg.testSec && report.ok) {
         state.verified[matchWindowKey(match)] = new Date().toISOString();
       }
     }

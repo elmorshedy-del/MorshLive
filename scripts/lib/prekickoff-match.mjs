@@ -97,8 +97,20 @@ export function selectPrekickoffMatches(matches, { windowMinutes = 45, slackMinu
   });
 }
 
-export function selectLiveMatches(matches) {
-  return (matches || []).filter((m) => m.status === "live");
+/** TEMP test mode: live fixtures OR kickoff within the next withinSeconds (replaces T-45). */
+export function selectTestWindowMatches(
+  matches,
+  { withinSeconds = 60, includeLive = true, now = Date.now() } = {}
+) {
+  const maxMs = withinSeconds * 1000;
+  return (matches || []).filter((m) => {
+    if (m.status === "ended") return false;
+    if (includeLive && m.status === "live") return true;
+    const kickoff = parseKickoffMs(m.kickoffUtc);
+    if (isNaN(kickoff)) return false;
+    const delta = kickoff - now;
+    return delta >= 0 && delta <= maxMs;
+  });
 }
 
 export function selectMatchById(matches, id) {
