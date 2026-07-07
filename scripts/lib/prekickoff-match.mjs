@@ -97,6 +97,10 @@ export function selectPrekickoffMatches(matches, { windowMinutes = 45, slackMinu
   });
 }
 
+export function selectLiveMatches(matches) {
+  return (matches || []).filter((m) => m.status === "live");
+}
+
 /** TEMP test mode: live fixtures OR kickoff within the next withinSeconds (replaces T-45). */
 export function selectTestWindowMatches(
   matches,
