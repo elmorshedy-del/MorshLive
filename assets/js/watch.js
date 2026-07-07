@@ -159,6 +159,10 @@
       if (!ev.data || ev.data.type !== "kz-alt-reload") return;
       reloadAltStreamIframes(ev.data.reason || "stall");
     });
+    setInterval(() => {
+      if (!match || match.status !== "live") return;
+      reloadAltStreamIframes("kickoff-poll");
+    }, 90 * 1000);
   }
 
   function reloadAltStreams() {

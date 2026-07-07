@@ -1332,6 +1332,207 @@ function kzWatchStall(v,hls,onStall){
   return function(){ clearInterval(iv); };
 }`;
 
+// NTV edgestream HLS is proxied twice (manifest + 4s segments) and uses expiring
+// signed tokens — needs a deeper buffer and hot URL refresh instead of startLoad loops.
+const NTV_HLS_BOOT_FN = `function kzNtvHlsOpts(){
+  return {
+    enableWorker: true,
+    lowLatencyMode: false,
+    startPosition: -1,
+    maxBufferLength: 80,
+    maxMaxBufferLength: 120,
+    backBufferLength: 45,
+    liveSyncDuration: 32,
+    liveMaxLatencyDuration: 80,
+    liveDurationInfinity: true,
+    maxLiveSyncPlaybackRate: 1.5,
+    highBufferWatchdogPeriod: 3,
+    maxBufferHole: 1.0,
+    nudgeOffset: 0.15,
+    nudgeMaxRetry: 6,
+    initialLiveManifestSize: 2,
+    startFragPrefetch: true,
+    manifestLoadingMaxRetry: 8,
+    manifestLoadingTimeOut: 15000,
+    levelLoadingMaxRetry: 6,
+    fragLoadingMaxRetry: 8,
+    fragLoadingTimeOut: 20000,
+    fragLoadingRetryDelay: 500,
+    abrEwmaFastLive: 5,
+    abrEwmaSlowLive: 12,
+    capLevelToPlayerSize: false,
+  };
+}
+function kzAttachNtvHls(v,src,onFatal){
+  var hls=new Hls(kzNtvHlsOpts());
+  hls.loadSource(src); hls.attachMedia(v);
+  hls.on(Hls.Events.ERROR,function(_e,d){
+    if(!d||!d.fatal) return;
+    if(d.type==='networkError'){
+      setTimeout(function(){ onFatal('network'); }, 800);
+      return;
+    }
+    if(d.type==='mediaError'){
+      try{ hls.recoverMediaError(); return; }catch(e){}
+    }
+    onFatal('fatal');
+  });
+  return hls;
+}`;
+
+function cleanNtvHlsPlayerHtml(initialSource, refreshApi) {
+  const src = String(initialSource || "");
+  const refresh = String(refreshApi || "/api/ntv-hls-url");
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NTV</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#v{width:100vw;height:100vh;background:#000;object-fit:contain}</style>
+<script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+</head><body>
+<video id="v" controls autoplay muted playsinline></video>
+<script>
+${NTV_HLS_BOOT_FN}
+(function(){
+  var v=document.getElementById('v'), refreshApi=${JSON.stringify(refresh)};
+  var source=${JSON.stringify(src)}, hls=null, stopStall=null, refreshBusy=false;
+  var stallRefreshes=0;
+  function pingParent(reason){
+    try{
+      if(window.parent&&window.parent!==window){
+        window.parent.postMessage({type:'kz-alt-reload', reason:reason||'stall'}, '*');
+      }
+    }catch(e){}
+  }
+  function destroy(){
+    if(stopStall){ stopStall(); stopStall=null; }
+    if(hls){ try{ hls.destroy(); }catch(e){} hls=null; }
+  }
+  function swapSource(newUrl, hard){
+    if(!newUrl) return false;
+    if(newUrl===source && !hard) return false;
+    source=newUrl;
+    if(hls){
+      try{
+        hls.loadSource(newUrl);
+        hls.startLoad(-1);
+        var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+        return true;
+      }catch(e){}
+    }
+    load();
+    return true;
+  }
+  function refreshSource(reason, hard){
+    if(refreshBusy) return;
+    refreshBusy=true;
+    fetch(refreshApi, { cache: 'no-store' })
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        if(!d||!d.ok||!d.url) throw new Error('refresh_failed');
+        if(!swapSource(d.url, hard) && hard) throw new Error('swap_failed');
+      })
+      .catch(function(){
+        if(hard){
+          stallRefreshes++;
+          if(stallRefreshes<=2){ load(); return; }
+          pingParent(reason||'stall');
+          setTimeout(function(){ location.reload(); }, 600);
+        }
+      })
+      .finally(function(){ refreshBusy=false; });
+  }
+  function onStall(reason){
+    refreshSource(reason||'stall', true);
+  }
+  function attachStallWatch(){
+    return (function(){
+      var lastCt=0, stallMs=0;
+      var iv=setInterval(function(){
+        if(v.paused||v.readyState<2){ stallMs=0; lastCt=v.currentTime; return; }
+        if(v.currentTime>0&&Math.abs(v.currentTime-lastCt)<0.04){
+          stallMs+=3000;
+          if(stallMs>=15000){
+            stallMs=0;
+            if(hls){
+              try{ hls.startLoad(-1); var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){}); return; }
+              catch(e){}
+            }
+            onStall('watch-stall');
+          }
+        } else { stallMs=0; }
+        lastCt=v.currentTime;
+      }, 3000);
+      return function(){ clearInterval(iv); };
+    })();
+  }
+  function load(){
+    if(!source) return;
+    destroy();
+    if(v.canPlayType('application/vnd.apple.mpegurl')){
+      v.src=source;
+      v.onerror=function(){ onStall('native-error'); };
+    } else if(window.Hls&&window.Hls.isSupported()){
+      hls=kzAttachNtvHls(v, source, function(reason){
+        if(hls){
+          try{ hls.startLoad(-1); var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){}); return; }
+          catch(e){}
+        }
+        onStall(reason||'error');
+      });
+      stopStall=attachStallWatch();
+    } else {
+      v.src=source;
+    }
+    var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
+  }
+  v.addEventListener('playing', function(){ stallRefreshes=0; blackMs=0; });
+  var blackMs=0;
+  setInterval(function(){
+    if(v.paused||v.readyState<2){ blackMs=0; return; }
+    if(v.videoWidth<1){
+      blackMs+=5000;
+      if(blackMs>=20000) refreshSource('black-frame', false);
+    } else { blackMs=0; }
+  }, 5000);
+  setInterval(function(){ refreshSource('token-rotate', false); }, 50*60*1000);
+  load();
+})();
+</script>
+</body></html>`;
+}
+
+function altStreamWaitingHtml(title, retrySec = 30) {
+  const label = String(title || "Stream").replace(/[<>&"]/g, "");
+  const sec = Math.max(15, Math.min(120, Number(retrySec) || 30));
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="refresh" content="${sec}">
+<title>${label}</title>
+<style>
+html,body{margin:0;height:100%;background:#0a0c12;color:#e8ecf4;font-family:system-ui,sans-serif}
+.wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:24px;text-align:center;gap:12px}
+.icon{font-size:2rem;opacity:.85}
+.title{font-size:1rem;font-weight:800}
+.note{font-size:.85rem;line-height:1.5;color:#9aa3b5;max-width:280px}
+.pulse{width:10px;height:10px;border-radius:50%;background:#7c5cff;animation:p 1.4s ease-in-out infinite}
+@keyframes p{0%,100%{opacity:.35;transform:scale(.85)}50%{opacity:1;transform:scale(1)}}
+</style></head><body>
+<div class="wrap">
+  <div class="pulse" aria-hidden="true"></div>
+  <div class="icon">📺</div>
+  <div class="title">${label}</div>
+  <div class="note">بانتظار البث — بين المباريات أو قبل الانطلاق<br>Waiting for stream — between kickoffs</div>
+</div>
+<script>
+(function(){
+  function ping(){ try{ window.parent.postMessage({type:'kz-alt-reload', reason:'kickoff-wait'}, '*'); }catch(e){} }
+  setTimeout(function(){ ping(); location.reload(); }, ${sec * 1000});
+  setInterval(ping, 90000);
+})();
+</script>
+</body></html>`;
+}
+
 function cleanHlsPlayerHtml(sources, title) {
   const list = Array.isArray(sources) ? sources.filter(Boolean) : [sources].filter(Boolean);
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
@@ -1506,9 +1707,13 @@ async function proxyHls(request, env) {
       Origin: WORLDKOORA,
     };
   })();
+  const targetIsManifest = /\.m3u8(?:\?|#|$)/i.test(String(target || ""));
   try {
+    if (targetIsManifest) {
+      delete upstreamHeaders.Range;
+    }
     const res = await fetch(target, {
-      method: request.method,
+      method: targetIsManifest ? "GET" : request.method,
       headers: upstreamHeaders,
       redirect: "follow",
     });
@@ -1749,6 +1954,74 @@ function weshanServerOrder(requestedServ) {
   return order;
 }
 
+async function resolveSirTvProxiedSources(request, origin, secret) {
+  const html = await fetchSirTvCh1Html(request);
+  const pool = [];
+  const seen = new Set();
+  if (html) {
+    for (const c of extractHlsCandidates(html)) {
+      if (!c.source || seen.has(c.source)) continue;
+      const probe = await streamProbe(c.source, "plain", request);
+      if (!probe.ok) continue;
+      seen.add(c.source);
+      const sig = await signTarget(c.source, secret);
+      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: probe.score });
+    }
+  }
+  if (pool.length) {
+    pool.sort((a, b) => a.score - b.score);
+    return pool.map((m) => m.url);
+  }
+
+  // Sir TV host often blocks datacenter IPs — fall back to live beIN MAX mirrors.
+  try {
+    const slots = [
+      { slot: "vip1", serv: "2" },
+      { slot: "vip2", serv: "2" },
+      { slot: "weshan", serv: "1" },
+      { slot: "amine", serv: null },
+    ];
+    for (const { slot, serv } of slots) {
+      const probeUrl = new URL(`${origin}/wk/albaplayer/${slot}/`);
+      probeUrl.searchParams.set("ch", "bein-max-1");
+      if (serv) probeUrl.searchParams.set("serv", serv);
+      const slotReq = new Request(probeUrl.toString(), { headers: request.headers });
+      let sources = [];
+      if (slot === "weshan") {
+        for (const s of weshanServerOrder(serv)) {
+          const html = await fetchWeshanHtml(slotReq, s);
+          if (!html) continue;
+          const resolved = await resolvePlayableSourceFromHtml(html, slotReq, 0, new Set());
+          if (resolved?.source) sources.push(resolved.source);
+        }
+      } else if (slot === "amine") {
+        for (const s of amineServerOrder("0")) {
+          const html = await fetchAmineHtml(slotReq, s);
+          if (!html) continue;
+          const resolved = await resolvePlayableSourceFromHtml(html, slotReq, 0, new Set());
+          if (resolved?.source) sources.push(resolved.source);
+        }
+      } else {
+        const { candidates } = await resolveVipSlotStream(slotReq, slot);
+        sources = (candidates || []).map((c) => c.source);
+      }
+      const out = [];
+      for (const source of sources) {
+        if (!source || seen.has(source)) continue;
+        const probe = await streamProbe(source, "wk", slotReq);
+        if (!probe.ok && !probe.soft) continue;
+        seen.add(source);
+        const sig = await signTarget(source, secret);
+        out.push(hlsProxyUrl(source, origin, sig));
+      }
+      if (out.length) return out;
+    }
+  } catch {
+    /* try next fallback */
+  }
+  return [];
+}
+
 async function fetchSirTvCh1Html(request) {
   try {
     const res = await fetchWithTimeout(SIRTV_CH1_PLAYER, {
@@ -1780,25 +2053,13 @@ async function proxySirTv(request, env) {
   if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
 
   try {
-    const html = await fetchSirTvCh1Html(request);
-    if (!html) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
-    const candidates = extractHlsCandidates(html);
-    const seenSources = new Set();
-    const pool = [];
-    for (const c of candidates) {
-      if (!c.source || seenSources.has(c.source)) continue;
-      const probe = await streamProbe(c.source, "plain", request);
-      if (!probe.ok) continue;
-      seenSources.add(c.source);
-      const sig = await signTarget(c.source, secret);
-      pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: probe.score });
+    const proxied = await resolveSirTvProxiedSources(request, origin, secret);
+    if (proxied.length) {
+      return new Response(cleanHlsPlayerHtml(proxied, "Sir TV"), { status: 200, headers: htmlHeaders });
     }
-    pool.sort((a, b) => a.score - b.score);
-    const proxied = pool.map((m) => m.url);
-    if (!proxied.length) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
-    return new Response(cleanHlsPlayerHtml(proxied, "Sir TV"), { status: 200, headers: htmlHeaders });
+    return new Response(altStreamWaitingHtml("Sir TV"), { status: 200, headers: htmlHeaders });
   } catch {
-    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    return new Response(altStreamWaitingHtml("Sir TV"), { status: 200, headers: htmlHeaders });
   }
 }
 
@@ -1901,6 +2162,31 @@ async function decryptNtvStreamUrl(request, input, hls2Url) {
   }
 }
 
+async function resolveNtvHlsPool(request, max = 3) {
+  const pool = [];
+  const seen = new Set();
+  for (let n = 0; n < max; n++) {
+    const m3u8 = await resolveNtvHlsM3u8(request);
+    if (!m3u8 || seen.has(m3u8)) continue;
+    const probe = await streamProbe(m3u8, "ntv", request);
+    if (!probe.ok) continue;
+    seen.add(m3u8);
+    pool.push({ url: m3u8, score: probe.score });
+  }
+  pool.sort((a, b) => a.score - b.score);
+  return pool;
+}
+
+async function resolveNtvProxiedSources(request, origin, secret) {
+  const pool = await resolveNtvHlsPool(request, 3);
+  const out = [];
+  for (const entry of pool) {
+    const sig = await signTarget(entry.url, secret);
+    out.push(hlsProxyUrl(entry.url, origin, sig));
+  }
+  return out;
+}
+
 async function resolveNtvHlsM3u8(request) {
   const resolved = await resolveNtvPlayablePage(request);
   if (!resolved) return null;
@@ -1964,14 +2250,12 @@ async function proxyNtv(request, env) {
   if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
 
   try {
-    const m3u8 = await resolveNtvHlsM3u8(request);
-    if (m3u8) {
-      const probe = await streamProbe(m3u8, "ntv", request);
-      if (probe.ok) {
-        const sig = await signTarget(m3u8, secret);
-        const proxied = hlsProxyUrl(m3u8, origin, sig);
-        return new Response(cleanHlsPlayerHtml([proxied], "NTV"), { status: 200, headers: htmlHeaders });
-      }
+    const proxied = await resolveNtvProxiedSources(request, origin, secret);
+    if (proxied.length) {
+      return new Response(cleanNtvHlsPlayerHtml(proxied[0], "/api/ntv-hls-url"), {
+        status: 200,
+        headers: htmlHeaders,
+      });
     }
 
     const resolved = await resolveNtvPlayablePage(request);
@@ -1988,9 +2272,12 @@ async function proxyNtv(request, env) {
       pool.push({ url: hlsProxyUrl(c.source, origin, sig), score: probe.score });
     }
     pool.sort((a, b) => a.score - b.score);
-    const proxied = pool.map((m) => m.url);
-    if (proxied.length) {
-      return new Response(cleanHlsPlayerHtml(proxied, "NTV"), { status: 200, headers: htmlHeaders });
+    const fallbackUrls = pool.map((m) => m.url);
+    if (fallbackUrls.length) {
+      return new Response(cleanNtvHlsPlayerHtml(fallbackUrls[0], "/api/ntv-hls-url"), {
+        status: 200,
+        headers: htmlHeaders,
+      });
     }
 
     // Clappr page breaks when re-hosted on korazero (frame checks + obfuscated JS).
@@ -1998,9 +2285,9 @@ async function proxyNtv(request, env) {
     if (resolved.url) {
       return new Response(cleanNtvEmbedWrapperHtml(resolved.url), { status: 200, headers: htmlHeaders });
     }
-    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    return new Response(altStreamWaitingHtml("NTV"), { status: 200, headers: htmlHeaders });
   } catch {
-    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    return new Response(altStreamWaitingHtml("NTV"), { status: 200, headers: htmlHeaders });
   }
 }
 
@@ -3275,6 +3562,7 @@ const X_MEDIA_API_RE = /^\/api\/x-media\/?$/i;
 const EDGE_API_RE = /^\/api\/edge\/?$/i;
 const STREAM_DIAGNOSE_RE = /^\/api\/stream-diagnose\/?$/i;
 const NTV_EMBED_API_RE = /^\/api\/ntv-embed-url\/?$/i;
+const NTV_HLS_API_RE = /^\/api\/ntv-hls-url\/?$/i;
 const TWITCH_API_RE = /^\/api\/twitch\/?$/i;
 const STREAMS_LAB_RE = /^\/api\/streams-lab\/?$/i;
 const SIIR_MATCHES_RE = /^\/api\/siir-matches\/?$/i;
@@ -4128,6 +4416,23 @@ async function proxyNtvEmbedUrlApi(request) {
   );
 }
 
+async function proxyNtvHlsUrlApi(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "no-store",
+    "X-KZ-Proxy": "ntv-hls-url",
+  };
+  const proxied = await resolveNtvProxiedSources(request, origin, secret);
+  if (!proxied.length) {
+    return new Response(JSON.stringify({ ok: false, error: "upstream_unavailable" }), { status: 502, headers });
+  }
+  return new Response(JSON.stringify({ ok: true, url: proxied[0] }), { status: 200, headers });
+}
+
 async function proxyStreamDiagnoseApi(request, env) {
   const url = new URL(request.url);
   const channelId = url.searchParams.get("ch") || "bein-max-1";
@@ -4669,6 +4974,10 @@ export default {
         });
       }
       const ttl = (url.searchParams.get("u") || "").includes(".m3u8") ? 2 : 60;
+      const target = url.searchParams.get("u") || "";
+      if (/edgestream/i.test(target) && target.includes(".m3u8")) {
+        return proxyHls(request, env);
+      }
       return withEdgeCache(request, ttl, () => proxyHls(request, env));
     }
     const dl = url.pathname.match(DL_EMBED_RE);
@@ -4744,6 +5053,9 @@ export default {
     }
     if (NTV_EMBED_API_RE.test(url.pathname) && method === "GET") {
       return proxyNtvEmbedUrlApi(request);
+    }
+    if (NTV_HLS_API_RE.test(url.pathname) && method === "GET") {
+      return proxyNtvHlsUrlApi(request, env);
     }
     if (TWITCH_API_RE.test(url.pathname) && method === "GET") {
       return proxyTwitchApi(request, env);
