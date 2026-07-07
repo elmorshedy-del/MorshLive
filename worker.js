@@ -326,13 +326,25 @@ function isAllowedStreamUrl(url) {
   }
 }
 
+// Stream hosts whose Cloudflare firewall denies our Workers egress IP — proxying
+// these returns "Upstream error 403" with a "Website Access Blocked" page and
+// blacks out the player. Leaving the URL unrewritten makes the browser fetch the
+// stream directly with the user's own IP (the same path worldkoora's native
+// player takes), bypassing the upstream geo/Workers-IP block at the cost of
+// Referer spoofing and ad-strip on those streams.
+const BYPASS_PROXY_HOSTS = /(^|\.)coorting\.online$/i;
+
 // Should this URL, found inside trusted upstream content, be routed through our
 // signed proxy? Yes for any external http(s) host (provenance trust); no for
-// non-http schemes or URLs already pointing back at us.
+// non-http schemes, URLs already pointing back at us, or hosts on the bypass
+// list (browser fetches those directly).
 function shouldProxyStream(url, origin) {
   if (!/^https?:\/\//i.test(url)) return false;
   try {
-    return new URL(url).origin !== origin;
+    const u = new URL(url);
+    if (u.origin === origin) return false;
+    if (BYPASS_PROXY_HOSTS.test(u.hostname)) return false;
+    return true;
   } catch {
     return false;
   }
