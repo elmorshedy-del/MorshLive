@@ -1853,6 +1853,17 @@ function sanitizeAltEmbedHtml(html, baseUrl) {
   return out;
 }
 
+function cleanNtvEmbedWrapperHtml(embedUrl) {
+  const safe = String(embedUrl || "").replace(/"/g, "&quot;");
+  return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NTV</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#f{width:100vw;height:100vh;border:0;display:block;background:#000}</style>
+</head><body>
+<iframe id="f" src="${safe}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+</body></html>`;
+}
+
 async function proxyNtv(request, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
@@ -1886,8 +1897,12 @@ async function proxyNtv(request, env) {
       return new Response(cleanHlsPlayerHtml(proxied, "NTV"), { status: 200, headers: htmlHeaders });
     }
 
-    const clean = sanitizeAltEmbedHtml(resolved.html, resolved.url);
-    return new Response(clean, { status: 200, headers: htmlHeaders });
+    // Clappr page breaks when re-hosted on korazero (frame checks + obfuscated JS).
+    // Wrap the live upstream player in a nested iframe — plays from the viewer's IP.
+    if (resolved.url) {
+      return new Response(cleanNtvEmbedWrapperHtml(resolved.url), { status: 200, headers: htmlHeaders });
+    }
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
   } catch {
     return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
   }
