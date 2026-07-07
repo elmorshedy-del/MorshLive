@@ -19,7 +19,10 @@
   let match = null;
   let matchesReady = false;
   let altStreamsSignature = "";
+  let activeAltStreamKind = "kooraCity";
+  let altStreamEntries = [];
   let lastStreamHealAt = 0;
+  const ALT_STREAM_ORDER = ["kooraCity", "amineAlt", "sirTv", "ntv"];
   const STREAM_HEAL_MIN_MS = 8000;
   const STREAM_SOURCES = [
     { key: "vip1", servs: [1, 2, 3, 4] },
@@ -73,11 +76,95 @@
       ? ""
       : 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ';
     return (
-      `<iframe class="embed-frame alt-stream-frame" src="${escapeHtml(url)}" ` +
+      `<iframe class="embed-frame alt-stream-frame" data-alt-kind="${escapeHtml(kind)}" src="${escapeHtml(url)}" ` +
       `${sandbox}` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
-      `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="lazy"></iframe>`
+      `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="eager"></iframe>`
     );
+  }
+
+  function altStreamCssKind(kind) {
+    if (kind === "kooraCity") return "kooracity";
+    if (kind === "amineAlt") return "amine";
+    if (kind === "sirTv") return "sirtv";
+    if (kind === "ntv") return "ntv";
+    return kind;
+  }
+
+  function buildAltStreamEntries(cfg) {
+    if (!cfg || !window.SITE_DATA.altStreamUrl) return [];
+    return ALT_STREAM_ORDER.filter((kind) => cfg[kind]).map((kind) => ({
+      kind,
+      def: cfg[kind],
+      url: window.SITE_DATA.altStreamUrl(kind, match),
+    }));
+  }
+
+  function altStreamTabHtml(entry, isActive) {
+    const cssKind = altStreamCssKind(entry.kind);
+    const isWorking = entry.kind === "kooraCity";
+    const tagKey = isWorking ? "watch.altKooraWorkingTag" : "watch.altBackup";
+    const tagClass = isWorking ? "alt-stream-tag alt-stream-tag--working" : "alt-stream-tag";
+    const activeClass = isActive ? " is-active" : "";
+    const workingClass = isWorking ? " alt-stream-tab--working" : "";
+    return (
+      `<button type="button" class="alt-stream-tab alt-stream-tab--${cssKind}${workingClass}${activeClass}" ` +
+      `data-alt-kind="${escapeHtml(entry.kind)}" aria-pressed="${isActive ? "true" : "false"}">` +
+      `<span class="alt-stream-name">${escapeHtml(t(entry.def.labelKey))}</span>` +
+      `<span class="${tagClass}">${escapeHtml(t(tagKey))}</span>` +
+      `</button>`
+    );
+  }
+
+  function updateAltStreamTabState() {
+    const card = document.getElementById("alt-streams");
+    if (!card) return;
+    card.querySelectorAll(".alt-stream-tab").forEach((btn) => {
+      const active = btn.dataset.altKind === activeAltStreamKind;
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    const stage = card.querySelector(".alt-stream-stage");
+    if (stage) {
+      stage.className = `alt-stream-stage alt-stream-stage--${altStreamCssKind(activeAltStreamKind)}`;
+    }
+  }
+
+  function loadActiveAltStreamIframe(entries) {
+    const card = document.getElementById("alt-streams");
+    if (!card) return;
+    const stage = card.querySelector(".alt-stream-stage");
+    const entry = entries.find((e) => e.kind === activeAltStreamKind);
+    if (!stage || !entry) return;
+    const current = stage.querySelector(".alt-stream-frame");
+    if (current && current.dataset.altKind === activeAltStreamKind) {
+      try {
+        const cur = new URL(current.src);
+        const next = new URL(entry.url, location.origin);
+        if (cur.pathname === next.pathname && cur.search === next.search) return;
+      } catch {
+        /* reload on bad src */
+      }
+    }
+    stage.innerHTML = altStreamIframe(entry.url, entry.kind);
+  }
+
+  function switchAltStream(kind) {
+    if (!kind || kind === activeAltStreamKind) return;
+    if (!altStreamEntries.some((e) => e.kind === kind)) return;
+    activeAltStreamKind = kind;
+    updateAltStreamTabState();
+    loadActiveAltStreamIframe(altStreamEntries);
+  }
+
+  function bindAltStreamTabs(card) {
+    if (card.dataset.altTabsBound === "1") return;
+    card.dataset.altTabsBound = "1";
+    card.addEventListener("click", (ev) => {
+      const btn = ev.target.closest("[data-alt-kind]");
+      if (!btn || !btn.classList.contains("alt-stream-tab")) return;
+      switchAltStream(btn.dataset.altKind);
+    });
   }
 
   function renderAltStreams() {
@@ -86,87 +173,47 @@
     const cfg = window.SITE_DATA.altStreamsForMatch
       ? window.SITE_DATA.altStreamsForMatch(match)
       : null;
-    if (!cfg) {
+    const entries = buildAltStreamEntries(cfg);
+    if (!entries.length) {
       card.hidden = true;
       card.innerHTML = "";
+      card.dataset.altTabsBound = "";
       altStreamsSignature = "";
+      altStreamEntries = [];
       return;
     }
 
-    const parts = [];
-    if (cfg.sirTv && window.SITE_DATA.altStreamUrl) {
-      parts.push(`sirTv:${window.SITE_DATA.altStreamUrl("sirTv", match)}`);
+    altStreamEntries = entries;
+    const signature = entries.map((e) => `${e.kind}:${e.url}`).join("|");
+    if (!entries.some((e) => e.kind === activeAltStreamKind)) {
+      activeAltStreamKind = entries[0].kind;
     }
-    if (cfg.ntv && window.SITE_DATA.altStreamUrl) {
-      parts.push(`ntv:${window.SITE_DATA.altStreamUrl("ntv", match)}`);
-    }
-    if (cfg.kooraCity && window.SITE_DATA.altStreamUrl) {
-      parts.push(`kooraCity:${window.SITE_DATA.altStreamUrl("kooraCity", match)}`);
-    }
-    if (cfg.amineAlt && window.SITE_DATA.altStreamUrl) {
-      parts.push(`amineAlt:${window.SITE_DATA.altStreamUrl("amineAlt", match)}`);
-    }
-    const signature = parts.join("|");
-    if (signature === altStreamsSignature && card.querySelector(".alt-stream-pane")) {
+
+    if (signature === altStreamsSignature && card.querySelector(".alt-stream-tabs")) {
       card.hidden = false;
+      loadActiveAltStreamIframe(entries);
+      updateAltStreamTabState();
       return;
     }
     altStreamsSignature = signature;
 
-    const panes = [];
-    if (cfg.kooraCity) {
-      panes.push(
-        `<div class="alt-stream-pane alt-stream-pane--kooracity alt-stream-pane--working">
-          <div class="alt-stream-head">
-            <span class="alt-stream-name">${escapeHtml(t(cfg.kooraCity.labelKey))}</span>
-            <span class="alt-stream-tag alt-stream-tag--working">${escapeHtml(t("watch.altKooraWorkingTag"))}</span>
-          </div>
-          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("kooraCity", match), "kooraCity")}</div>
-        </div>`
-      );
-    }
-    if (cfg.amineAlt) {
-      panes.push(
-        `<div class="alt-stream-pane alt-stream-pane--amine">
-          <div class="alt-stream-head">
-            <span class="alt-stream-name">${escapeHtml(t(cfg.amineAlt.labelKey))}</span>
-            <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
-          </div>
-          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("amineAlt", match), "amineAlt")}</div>
-        </div>`
-      );
-    }
-    if (cfg.sirTv) {
-      panes.push(
-        `<div class="alt-stream-pane alt-stream-pane--sirtv">
-          <div class="alt-stream-head">
-            <span class="alt-stream-name">${escapeHtml(t(cfg.sirTv.labelKey))}</span>
-            <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
-          </div>
-          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("sirTv", match), "sirTv")}</div>
-        </div>`
-      );
-    }
-    if (cfg.ntv) {
-      panes.push(
-        `<div class="alt-stream-pane alt-stream-pane--ntv">
-          <div class="alt-stream-head">
-            <span class="alt-stream-name">${escapeHtml(t(cfg.ntv.labelKey))}</span>
-            <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
-          </div>
-          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("ntv", match), "ntv")}</div>
-        </div>`
-      );
-    }
+    const tabs = entries.map((entry) => altStreamTabHtml(entry, entry.kind === activeAltStreamKind)).join("");
+    const showKooraAlert = entries.some((e) => e.kind === "kooraCity");
 
     card.hidden = false;
     card.innerHTML =
       `<div class="alt-streams-head">
         <h3 class="alt-streams-title">${escapeHtml(t("watch.altStreams"))}</h3>
         <p class="alt-streams-note">${escapeHtml(t("watch.altStreamsNote"))}</p>
-      </div>
-      <div class="alt-streams-koora-alert" role="status">${escapeHtml(t("watch.altKooraLiveBanner"))}</div>
-      <div class="alt-streams-grid">${panes.join("")}</div>`;
+      </div>` +
+      (showKooraAlert
+        ? `<div class="alt-streams-koora-alert" role="status">${escapeHtml(t("watch.altKooraLiveBanner"))}</div>`
+        : "") +
+      `<div class="alt-stream-tabs" role="tablist">${tabs}</div>
+       <div class="alt-stream-stage alt-stream-stage--${altStreamCssKind(activeAltStreamKind)}"></div>`;
+
+    bindAltStreamTabs(card);
+    loadActiveAltStreamIframe(entries);
   }
 
   function showStreamHealToast() {
@@ -199,7 +246,8 @@
   }
 
   function reloadAltStreamIframes(reason) {
-    document.querySelectorAll(".alt-stream-frame").forEach(bumpIframeHeal);
+    const frame = document.querySelector(".alt-stream-stage .alt-stream-frame");
+    if (frame) bumpIframeHeal(frame);
     if (reason) console.info("Alt stream heal:", reason);
   }
 
@@ -238,6 +286,8 @@
 
   function reloadAltStreams() {
     altStreamsSignature = "";
+    const card = document.getElementById("alt-streams");
+    if (card) card.dataset.altTabsBound = "";
     renderAltStreams();
   }
 
