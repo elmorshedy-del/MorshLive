@@ -3178,6 +3178,7 @@ const RECENT_MEMES_API_RE = /^\/api\/recent-memes\/?$/i;
 const X_MEDIA_API_RE = /^\/api\/x-media\/?$/i;
 const EDGE_API_RE = /^\/api\/edge\/?$/i;
 const STREAM_DIAGNOSE_RE = /^\/api\/stream-diagnose\/?$/i;
+const NTV_EMBED_API_RE = /^\/api\/ntv-embed-url\/?$/i;
 const TWITCH_API_RE = /^\/api\/twitch\/?$/i;
 const STREAMS_LAB_RE = /^\/api\/streams-lab\/?$/i;
 const SIIR_MATCHES_RE = /^\/api\/siir-matches\/?$/i;
@@ -4017,6 +4018,20 @@ async function mirrorDiagnosisRow(label, source, kind, request) {
   };
 }
 
+async function proxyNtvEmbedUrlApi(request) {
+  const resolved = await resolveNtvPlayablePage(request);
+  const headers = {
+    "Content-Type": "application/json; charset=utf-8",
+    "Access-Control-Allow-Origin": "*",
+    "Cache-Control": "no-store",
+    "X-KZ-Proxy": "ntv-embed-url",
+  };
+  if (!resolved?.url) {
+    return new Response(JSON.stringify({ ok: false, error: "upstream_unavailable" }), { status: 502, headers });
+  }
+  return new Response(JSON.stringify({ ok: true, url: resolved.url }), { status: 200, headers });
+}
+
 async function proxyStreamDiagnoseApi(request, env) {
   const url = new URL(request.url);
   const channelId = url.searchParams.get("ch") || "bein-max-1";
@@ -4630,6 +4645,9 @@ export default {
     }
     if (STREAM_DIAGNOSE_RE.test(url.pathname) && method === "GET") {
       return proxyStreamDiagnoseApi(request, env);
+    }
+    if (NTV_EMBED_API_RE.test(url.pathname) && method === "GET") {
+      return proxyNtvEmbedUrlApi(request);
     }
     if (TWITCH_API_RE.test(url.pathname) && method === "GET") {
       return proxyTwitchApi(request, env);

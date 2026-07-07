@@ -59,14 +59,11 @@ function ts() {
   const ntv = iframes.find((f) => f.kind === "ntv");
   const sir = iframes.find((f) => f.kind === "sirTv");
 
-  const ntvFrame = page.frames().find((f) => f.url().includes("/wk/albaplayer/ntv/"));
-  let ntvInner = null;
+  const ntvFrame = page.frames().find((f) => /streams\.center/i.test(f.url()));
+  let ntvInner = ntv?.src || null;
   if (ntvFrame) {
-    ntvInner = await ntvFrame.evaluate(() => {
-      const outer = document.querySelector("#f");
-      return { wrapper: !!outer, innerSrc: outer?.src || null };
-    }).catch(() => null);
-    console.log("NTV wrapper:", ntvInner);
+    ntvInner = ntvFrame.url();
+    console.log("NTV frame url:", ntvInner);
   }
 
   await browser.close();
@@ -75,14 +72,14 @@ function ts() {
   if (ntv.hasSandbox) {
     throw new Error(`NTV iframe still has sandbox="${ntv.sandbox}" — fix altStreamIframe kind param`);
   }
-  if (!ntvInner?.innerSrc || !/streams\.center/i.test(ntvInner.innerSrc)) {
-    throw new Error(`NTV wrapper missing streams.center embed (got ${ntvInner?.innerSrc || "none"})`);
+  if (!ntvInner || !/streams\.center/i.test(ntvInner)) {
+    throw new Error(`NTV must load streams.center directly (got ${ntvInner || "none"})`);
   }
   if (sir && !sir.hasSandbox) {
     console.warn("warn: Sir TV iframe has no sandbox (acceptable but unexpected)");
   }
 
   console.log("\n✓ NTV iframe has no sandbox attribute");
-  console.log("✓ NTV inner embed:", ntvInner.innerSrc);
+  console.log("✓ NTV inner embed:", ntvInner);
   if (sir) console.log("✓ Sir TV iframe sandbox:", sir.sandbox || "(none)");
 })();
