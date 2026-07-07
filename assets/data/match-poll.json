@@ -4,60 +4,6 @@
   "titleEn": "Who do you think wins?",
   "polls": [
     {
-      "pollId": "espn-fifa.world-760506",
-      "matchIds": [
-        "espn-fifa.world-760506"
-      ],
-      "homeKey": "portugal",
-      "awayKey": "spain",
-      "teams": {
-        "portugal": {
-          "nameAr": "البرتغال",
-          "nameEn": "Portugal"
-        },
-        "spain": {
-          "nameAr": "إسبانيا",
-          "nameEn": "Spain"
-        }
-      }
-    },
-    {
-      "pollId": "espn-fifa.world-760507",
-      "matchIds": [
-        "espn-fifa.world-760507"
-      ],
-      "homeKey": "unitedstates",
-      "awayKey": "belgium",
-      "teams": {
-        "unitedstates": {
-          "nameAr": "الولايات المتحدة",
-          "nameEn": "United States"
-        },
-        "belgium": {
-          "nameAr": "بلجيكا",
-          "nameEn": "Belgium"
-        }
-      }
-    },
-    {
-      "pollId": "espn-fifa.world-760509",
-      "matchIds": [
-        "espn-fifa.world-760509"
-      ],
-      "homeKey": "argentina",
-      "awayKey": "egypt",
-      "teams": {
-        "argentina": {
-          "nameAr": "الأرجنتين",
-          "nameEn": "Argentina"
-        },
-        "egypt": {
-          "nameAr": "مصر",
-          "nameEn": "Egypt"
-        }
-      }
-    },
-    {
       "pollId": "espn-fifa.world-760508",
       "matchIds": [
         "espn-fifa.world-760508"

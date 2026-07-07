@@ -305,6 +305,7 @@ window.keepDisplayMatch = keepDisplayMatch;
  * MATCHES above only if the live file can't be loaded (e.g. opened via file://).
  * ------------------------------------------------------------------------- */
 // Corrects cached snapshot status using kickoff timestamp when API status is stale.
+// Never force "ended" from wall-clock elapsed time — trust ESPN/TheSportsDB live feeds for ET/penalties.
 const MATCH_WINDOW_MS = 135 * 60 * 1000;
 const RECENT_ENDED_MS = 18 * 60 * 60 * 1000;
 const POST_MATCH_STREAM_MS = 2 * 60 * 60 * 1000;
@@ -318,15 +319,14 @@ function parseKickoffMs(ts) {
 }
 
 function refineStatus(m, dateStr) {
-  if (m.status === "ended") return "ended";
+  if (m.status === "ended" || m.status === "live") return m.status;
   const kickoff = m.kickoffUtc
     ? parseKickoffMs(m.kickoffUtc)
     : (dateStr && m.time && /^\d{2}:\d{2}$/.test(m.time) ? Date.parse(`${dateStr}T${m.time}:00Z`) : NaN);
   if (isNaN(kickoff)) return m.status;
   const elapsed = Date.now() - kickoff;
   if (elapsed < 0) return "upcoming";
-  if (elapsed < MATCH_WINDOW_MS) return m.status === "ended" ? "ended" : "live";
-  return "ended";
+  return "live";
 }
 
 function keepDisplayMatch(m) {
