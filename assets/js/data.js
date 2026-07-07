@@ -43,14 +43,22 @@ const ALT_STREAM_DEFS = {
   ntv: { key: "ntv", path: "/wk/albaplayer/ntv/", labelKey: "watch.altNtv" },
 };
 
-// Show Sir TV + NTV backup panel for live, upcoming, and ended matches.
+// Show Sir TV + NTV backup panel around kickoff — live, soon-upcoming, or recently ended.
 function altStreamsForMatch(m) {
   if (!m) return null;
-  if (m.status !== "live" && m.status !== "upcoming" && m.status !== "ended") return null;
-  return {
-    sirTv: ALT_STREAM_DEFS.sirTv,
-    ntv: ALT_STREAM_DEFS.ntv,
-  };
+  if (m.status === "live") {
+    return { sirTv: ALT_STREAM_DEFS.sirTv, ntv: ALT_STREAM_DEFS.ntv };
+  }
+  if (m.status === "ended" && typeof isRecentlyEndedMatch === "function" && isRecentlyEndedMatch(m)) {
+    return { sirTv: ALT_STREAM_DEFS.sirTv, ntv: ALT_STREAM_DEFS.ntv };
+  }
+  if (m.status === "upcoming") {
+    const kickoff = parseKickoffMs(m.kickoffUtc);
+    if (!isNaN(kickoff) && kickoff - Date.now() <= 90 * 60 * 1000) {
+      return { sirTv: ALT_STREAM_DEFS.sirTv, ntv: ALT_STREAM_DEFS.ntv };
+    }
+  }
+  return null;
 }
 
 function altStreamUrl(kind) {
@@ -60,6 +68,26 @@ function altStreamUrl(kind) {
   const u = new URL(def.path, base);
   u.searchParams.set("_kz", "13");
   return u.toString();
+}
+
+let _ntvEmbedCache = null;
+let _ntvEmbedAt = 0;
+
+async function resolveNtvEmbedUrl() {
+  if (_ntvEmbedCache && Date.now() - _ntvEmbedAt < 3 * 60 * 1000) return _ntvEmbedCache;
+  try {
+    const res = await fetch("/api/ntv-embed-url", { cache: "no-store" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.ok && data.url) {
+      _ntvEmbedCache = data.url;
+      _ntvEmbedAt = Date.now();
+      return data.url;
+    }
+  } catch {
+    /* optional */
+  }
+  return null;
 }
 
 function matchStreamKey(m) {
@@ -284,7 +312,7 @@ function resolveWatchSelection(matches, channels, searchParams) {
 window.SITE_DATA = {
   CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor,
   servIndexFromParam, EMBED_BINDING, streamOptionsFor, streamOptionUrl,
-  altStreamsForMatch, altStreamUrl,
+  altStreamsForMatch, altStreamUrl, resolveNtvEmbedUrl,
 };
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;

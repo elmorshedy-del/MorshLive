@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Playwright: verify alt-stream iframes — NTV must NOT have sandbox; Sir TV should.
+ * Playwright: verify alt-stream iframes use korazero clean HLS proxies (Sir TV + NTV).
  * Saves screenshots to /opt/cursor/artifacts/screenshots/ for visual proof.
  *
  * Usage:
@@ -31,7 +31,7 @@ function ts() {
   await page.goto(WATCH_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
 
   await page.waitForSelector("#alt-streams:not([hidden])", { timeout: 60000 }).catch(() => {});
-  await page.waitForTimeout(8000);
+  await page.waitForTimeout(10000);
 
   const iframes = await page.evaluate(() => {
     const frames = [...document.querySelectorAll(".alt-stream-frame")];
@@ -59,30 +59,43 @@ function ts() {
   const ntv = iframes.find((f) => f.kind === "ntv");
   const sir = iframes.find((f) => f.kind === "sirTv");
 
-  const ntvFrame = page.frames().find((f) => f.url().includes("/wk/albaplayer/ntv/"));
-  let ntvInner = null;
+  let ntvVideo = null;
+  const ntvFrame = page.frames().find((f) => /\/wk\/albaplayer\/ntv\//i.test(f.url()));
   if (ntvFrame) {
-    ntvInner = await ntvFrame.evaluate(() => {
-      const outer = document.querySelector("#f");
-      return { wrapper: !!outer, innerSrc: outer?.src || null };
-    }).catch(() => null);
-    console.log("NTV wrapper:", ntvInner);
+    try {
+      ntvVideo = await ntvFrame.evaluate(() => {
+        const v = document.querySelector("video");
+        if (!v) return null;
+        return { w: v.videoWidth, h: v.videoHeight, readyState: v.readyState, paused: v.paused };
+      });
+      console.log("NTV video:", ntvVideo);
+    } catch (e) {
+      console.warn("NTV frame eval failed:", e.message);
+    }
+  }
+
+  const streamsCenterFrame = page.frames().find((f) => /streams\.center/i.test(f.url()));
+  if (streamsCenterFrame) {
+    console.warn("warn: streams.center frame still present:", streamsCenterFrame.url());
   }
 
   await browser.close();
 
   if (!ntv) throw new Error("NTV alt-stream iframe not found — is match pinned?");
-  if (ntv.hasSandbox) {
-    throw new Error(`NTV iframe still has sandbox="${ntv.sandbox}" — fix altStreamIframe kind param`);
+  if (!/\/wk\/albaplayer\/ntv\//i.test(ntv.src)) {
+    throw new Error(`NTV must use korazero clean proxy (got ${ntv.src})`);
   }
-  if (!ntvInner?.innerSrc || !/streams\.center/i.test(ntvInner.innerSrc)) {
-    throw new Error(`NTV wrapper missing streams.center embed (got ${ntvInner?.innerSrc || "none"})`);
+  if (/streams\.center/i.test(ntv.src)) {
+    throw new Error("NTV must not embed streams.center directly (ad popups)");
+  }
+  if (!ntvVideo || ntvVideo.w < 1) {
+    throw new Error(`NTV video not playing (video=${JSON.stringify(ntvVideo)})`);
   }
   if (sir && !sir.hasSandbox) {
     console.warn("warn: Sir TV iframe has no sandbox (acceptable but unexpected)");
   }
 
-  console.log("\n✓ NTV iframe has no sandbox attribute");
-  console.log("✓ NTV inner embed:", ntvInner.innerSrc);
+  console.log("\n✓ NTV uses korazero clean proxy:", ntv.src);
+  console.log("✓ NTV video playing:", `${ntvVideo.w}x${ntvVideo.h}`);
   if (sir) console.log("✓ Sir TV iframe sandbox:", sir.sandbox || "(none)");
 })();

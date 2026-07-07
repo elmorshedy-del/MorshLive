@@ -67,12 +67,9 @@
   }
 
   function altStreamIframe(url, kind) {
-    const sandbox = kind === "ntv"
-      ? ""
-      : 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ';
     return (
       `<iframe class="embed-frame alt-stream-frame" src="${escapeHtml(url)}" ` +
-      `${sandbox}` +
+      `sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
       `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="lazy"></iframe>`
     );
@@ -129,6 +126,12 @@
       );
     }
 
+    if (!panes.length) {
+      card.hidden = true;
+      card.innerHTML = "";
+      return;
+    }
+
     card.hidden = false;
     card.innerHTML =
       `<div class="alt-streams-head">
@@ -156,6 +159,10 @@
       if (!ev.data || ev.data.type !== "kz-alt-reload") return;
       reloadAltStreamIframes(ev.data.reason || "stall");
     });
+    setInterval(() => {
+      if (!match || match.status !== "live") return;
+      reloadAltStreamIframes("kickoff-poll");
+    }, 90 * 1000);
   }
 
   function reloadAltStreams() {
