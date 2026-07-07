@@ -12,14 +12,14 @@
 
 'use strict';
 
-const { CAP } = require('./schema');
+const { CAP, withImplied } = require('./schema');
 
 function round2(n) {
   return Math.round(n * 100) / 100;
 }
 
 function analyze(m) {
-  const caps = m.capabilities;
+  const caps = withImplied(m.capabilities);
   const out = {
     meta: {
       source: m.source,
@@ -81,20 +81,34 @@ function analyze(m) {
     out.locked.push('xgByHalf — needs xG');
   }
 
-  // Goal build-up chains + flank vulnerability (need x/y)
+  // Flank vulnerability + goal-location: need SHOT-level coords only.
+  // This is the live-capable tier (free StatsBomb showcase OR a live shot feed).
+  if (caps.has(CAP.SHOT_XY)) {
+    P.chanceFlank = flank(m, teams);
+    P.goalLocation = goals.map((g) => ({
+      minute: g.minute,
+      team: g.team,
+      player: g.player,
+      x: g.x,
+      y: g.y,
+      xg: g.xg,
+      shotType: g.subtype,
+    }));
+  } else {
+    out.locked.push(
+      'flankVulnerability — needs shot coordinates',
+      'goalLocation — needs shot coordinates'
+    );
+  }
+
+  // Full build-up chains: need FULL per-event coords (passes/carries), i.e.
+  // xy_events. Showcase/enterprise only — honestly locked on a shot-only feed.
   if (caps.has(CAP.XY_EVENTS)) {
     const byPoss = {};
     for (const e of m.events) {
       (byPoss[e.possession] = byPoss[e.possession] || []).push(e);
     }
-    const chainTypes = new Set([
-      'pass',
-      'carry',
-      'shot',
-      'goal',
-      'dribble',
-      'foul_won',
-    ]);
+    const chainTypes = new Set(['pass', 'carry', 'shot', 'goal', 'dribble', 'foul_won']);
     P.goalChains = goals.map((g) => {
       const seq = (byPoss[g.possession] || [])
         .slice()
@@ -112,12 +126,8 @@ function analyze(m) {
         })),
       };
     });
-    P.chanceFlank = flank(m, teams);
   } else {
-    out.locked.push(
-      'goalChains — needs x/y events',
-      'flankVulnerability — needs x/y events'
-    );
+    out.locked.push('goalChains — needs full x/y event coordinates (passes)');
     P.goalChainsBasic = goals.map((g) => ({
       goalMinute: g.minute,
       team: g.team,
