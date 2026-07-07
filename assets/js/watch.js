@@ -103,6 +103,9 @@
     if (cfg.kooraCity && window.SITE_DATA.altStreamUrl) {
       parts.push(`kooraCity:${window.SITE_DATA.altStreamUrl("kooraCity", match)}`);
     }
+    if (cfg.amineAlt && window.SITE_DATA.altStreamUrl) {
+      parts.push(`amineAlt:${window.SITE_DATA.altStreamUrl("amineAlt", match)}`);
+    }
     const signature = parts.join("|");
     if (signature === altStreamsSignature && card.querySelector(".alt-stream-pane")) {
       card.hidden = false;
@@ -119,6 +122,17 @@
             <span class="alt-stream-tag alt-stream-tag--working">${escapeHtml(t("watch.altKooraWorkingTag"))}</span>
           </div>
           <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("kooraCity", match), "kooraCity")}</div>
+        </div>`
+      );
+    }
+    if (cfg.amineAlt) {
+      panes.push(
+        `<div class="alt-stream-pane alt-stream-pane--amine">
+          <div class="alt-stream-head">
+            <span class="alt-stream-name">${escapeHtml(t(cfg.amineAlt.labelKey))}</span>
+            <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
+          </div>
+          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("amineAlt", match), "amineAlt")}</div>
         </div>`
       );
     }

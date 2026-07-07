@@ -723,6 +723,11 @@ img { max-width: 100%; display: block; }
   color: #e8c96a;
   border-color: rgba(201, 162, 84, .32);
 }
+.alt-stream-pane--amine .alt-stream-tag {
+  background: rgba(34, 211, 238, .14);
+  color: #7ee8ff;
+  border-color: rgba(34, 211, 238, .28);
+}
 .alt-stream-tag--working {
   background: rgba(255, 200, 60, .28) !important;
   color: #fff !important;

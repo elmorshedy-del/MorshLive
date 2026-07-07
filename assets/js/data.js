@@ -43,6 +43,7 @@ const ALT_STREAM_DEFS = {
   sirTv: { key: "sirTv", path: "/wk/albaplayer/sirtv/", labelKey: "watch.altSirTv" },
   ntv: { key: "ntv", path: "/wk/albaplayer/ntv/", labelKey: "watch.altNtv" },
   kooraCity: { key: "kooraCity", path: "/wk/albaplayer/kooracity/", labelKey: "watch.altKooraCity" },
+  amineAlt: { key: "amineAlt", path: "/wk/albaplayer/amine/", labelKey: "watch.altAmine", serv: 0 },
 };
 
 // Show backup panel for live, upcoming, and recently ended matches.
@@ -53,6 +54,7 @@ function altStreamsForMatch(m) {
     sirTv: ALT_STREAM_DEFS.sirTv,
     ntv: ALT_STREAM_DEFS.ntv,
     kooraCity: ALT_STREAM_DEFS.kooraCity,
+    amineAlt: ALT_STREAM_DEFS.amineAlt,
   };
 }
 
@@ -62,6 +64,8 @@ function altStreamUrl(kind, match) {
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(def.path, base);
   u.searchParams.set("_kz", "13");
+  if (def.serv != null && def.serv !== "") u.searchParams.set("serv", String(def.serv));
+  if (match && match.channelId) u.searchParams.set("ch", match.channelId);
   if (match && match.home) u.searchParams.set("home", match.home);
   if (match && match.away) u.searchParams.set("away", match.away);
   return u.toString();
