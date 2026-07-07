@@ -28,7 +28,7 @@ function ts() {
   const page = await browser.newPage({ viewport: { width: 430, height: 932 } });
 
   console.log("Opening", WATCH_URL);
-  await page.goto(WATCH_URL, { waitUntil: "networkidle", timeout: 90000 });
+  await page.goto(WATCH_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
 
   await page.waitForSelector("#alt-streams:not([hidden])", { timeout: 60000 }).catch(() => {});
   await page.waitForTimeout(8000);
