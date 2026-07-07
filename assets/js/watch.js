@@ -109,6 +109,17 @@
     altStreamsSignature = signature;
 
     const panes = [];
+    if (cfg.kooraCity) {
+      panes.push(
+        `<div class="alt-stream-pane alt-stream-pane--kooracity alt-stream-pane--working">
+          <div class="alt-stream-head">
+            <span class="alt-stream-name">${escapeHtml(t(cfg.kooraCity.labelKey))}</span>
+            <span class="alt-stream-tag alt-stream-tag--working">${escapeHtml(t("watch.altKooraWorkingTag"))}</span>
+          </div>
+          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("kooraCity", match), "kooraCity")}</div>
+        </div>`
+      );
+    }
     if (cfg.sirTv) {
       panes.push(
         `<div class="alt-stream-pane alt-stream-pane--sirtv">
@@ -117,17 +128,6 @@
             <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
           </div>
           <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("sirTv", match), "sirTv")}</div>
-        </div>`
-      );
-    }
-    if (cfg.kooraCity) {
-      panes.push(
-        `<div class="alt-stream-pane alt-stream-pane--kooracity">
-          <div class="alt-stream-head">
-            <span class="alt-stream-name">${escapeHtml(t(cfg.kooraCity.labelKey))}</span>
-            <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
-          </div>
-          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("kooraCity", match), "kooraCity")}</div>
         </div>`
       );
     }
@@ -149,6 +149,7 @@
         <h3 class="alt-streams-title">${escapeHtml(t("watch.altStreams"))}</h3>
         <p class="alt-streams-note">${escapeHtml(t("watch.altStreamsNote"))}</p>
       </div>
+      <div class="alt-streams-koora-alert" role="status">${escapeHtml(t("watch.altKooraLiveBanner"))}</div>
       <div class="alt-streams-grid">${panes.join("")}</div>`;
   }
 
