@@ -600,7 +600,7 @@
       renderServers();
       renderSidebar();
       loadPlayer();
-      renderAltStreams();
+      await renderAltStreams();
     }
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(() => refreshMatchDetail().catch((e) => console.warn("Detail refresh failed:", e.message)), 60 * 1000);

@@ -1818,19 +1818,40 @@ async function fetchAltStreamHtml(url, request, referer) {
   }
 }
 
+function ntvEmbedShellUrl(pageUrl) {
+  try {
+    const u = new URL(pageUrl);
+    if (/streams\.center\/embed\/hls2\.php/i.test(u.href)) {
+      u.pathname = u.pathname.replace(/hls2\.php.*/i, "ch2.php");
+      u.search = "";
+      return u.href;
+    }
+  } catch {
+    // Fall back to the resolved page URL.
+  }
+  return pageUrl;
+}
+
 async function resolveNtvPlayablePage(request) {
   let page = await fetchAltStreamHtml(NTV_EMBED, request, "https://ntv.cx/");
   if (!page) return null;
   for (let depth = 0; depth < 5; depth++) {
     const candidates = extractHlsCandidates(page.html);
-    if (candidates.length) return { html: page.html, url: page.url, candidates };
+    if (candidates.length) {
+      return { html: page.html, url: ntvEmbedShellUrl(page.url), candidates };
+    }
     const iframes = extractAnyIframeSrc(page.html, page.url);
     if (!iframes.length) break;
-    page = await fetchAltStreamHtml(iframes[0], request, page.url);
+    const next = iframes[0];
+    // hls2.php rejects cross-site embeds (403) unless loaded from ch2.php shell.
+    if (/streams\.center\/embed\/hls2\.php/i.test(next)) {
+      return { html: page.html, url: page.url, candidates: extractHlsCandidates(page.html) };
+    }
+    page = await fetchAltStreamHtml(next, request, page.url);
     if (!page) break;
   }
   return page
-    ? { html: page.html, url: page.url, candidates: extractHlsCandidates(page.html) }
+    ? { html: page.html, url: ntvEmbedShellUrl(page.url), candidates: extractHlsCandidates(page.html) }
     : null;
 }
 

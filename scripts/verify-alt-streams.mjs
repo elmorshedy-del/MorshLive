@@ -59,12 +59,27 @@ function ts() {
   const ntv = iframes.find((f) => f.kind === "ntv");
   const sir = iframes.find((f) => f.kind === "sirTv");
 
-  const ntvFrame = page.frames().find((f) => /streams\.center/i.test(f.url()));
+  const ntvFrames = page.frames().filter((f) => /streams\.center/i.test(f.url()));
   let ntvInner = ntv?.src || null;
-  if (ntvFrame) {
-    ntvInner = ntvFrame.url();
-    console.log("NTV frame url:", ntvInner);
+  if (ntvFrames.length) {
+    ntvInner = ntvFrames.map((f) => f.url()).join(" -> ");
+    console.log("NTV frame chain:", ntvInner);
   }
+
+  let ntvVideo = null;
+  for (const f of ntvFrames) {
+    try {
+      ntvVideo = await f.evaluate(() => {
+        const v = document.querySelector("video");
+        if (!v) return null;
+        return { w: v.videoWidth, h: v.videoHeight, readyState: v.readyState, paused: v.paused };
+      });
+      if (ntvVideo?.w > 0) break;
+    } catch {
+      // Cross-origin frame — try the next one.
+    }
+  }
+  if (ntvVideo) console.log("NTV video:", ntvVideo);
 
   await browser.close();
 
@@ -73,13 +88,20 @@ function ts() {
     throw new Error(`NTV iframe still has sandbox="${ntv.sandbox}" — fix altStreamIframe kind param`);
   }
   if (!ntvInner || !/streams\.center/i.test(ntvInner)) {
-    throw new Error(`NTV must load streams.center directly (got ${ntvInner || "none"})`);
+    throw new Error(`NTV must load streams.center (got ${ntvInner || "none"})`);
+  }
+  if (!/streams\.center\/embed\/ch2\.php/i.test(ntvInner)) {
+    throw new Error(`NTV must use ch2.php shell, not bare hls2 (got ${ntvInner})`);
+  }
+  if (!ntvVideo || ntvVideo.w < 1) {
+    throw new Error(`NTV video not playing (video=${JSON.stringify(ntvVideo)})`);
   }
   if (sir && !sir.hasSandbox) {
     console.warn("warn: Sir TV iframe has no sandbox (acceptable but unexpected)");
   }
 
   console.log("\n✓ NTV iframe has no sandbox attribute");
-  console.log("✓ NTV inner embed:", ntvInner);
+  console.log("✓ NTV embed chain:", ntvInner);
+  console.log("✓ NTV video playing:", `${ntvVideo.w}x${ntvVideo.h}`);
   if (sir) console.log("✓ Sir TV iframe sandbox:", sir.sandbox || "(none)");
 })();
