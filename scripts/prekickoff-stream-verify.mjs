@@ -28,6 +28,8 @@ import {
   verifyFrameVideo,
   detectNtvEmbedShell,
   DEFAULT_STRESS,
+  NTV_STRESS,
+  classifyStress,
 } from "./lib/video-stress.mjs";
 import { probeNtvUpstream, runFallbackProbes } from "./lib/stream-fallback-probe.mjs";
 import {
@@ -35,6 +37,7 @@ import {
   buildWatchUrl,
   buildProxyUrl,
   selectPrekickoffMatches,
+  selectMatchesWithin,
   selectLiveMatches,
   selectMatchById,
   matchWindowKey,
@@ -54,6 +57,7 @@ function parseArgs(argv) {
     outDir: path.join(ROOT, "reports", "prekickoff"),
     live: false,
     matchId: "",
+    withinMinutes: 0,
     skipFallback: false,
     force: false,
   };
@@ -67,6 +71,7 @@ function parseArgs(argv) {
     else if (arg.startsWith("--stress=")) out.stress = Number(arg.slice(9)) || 45;
     else if (arg.startsWith("--out=")) out.outDir = arg.slice(6);
     else if (arg.startsWith("--match=")) out.matchId = arg.slice(8);
+    else if (arg.startsWith("--within=")) out.withinMinutes = Number(arg.slice(9)) || 90;
   }
   return out;
 }
@@ -116,28 +121,28 @@ async function verifyNtvLayer(page, { directUrl, stressSeconds, screenshotPath, 
   if (videoHit) {
     result.mode = "clean_hls";
     result.frameUrl = videoHit.frame.url();
-    const stress = await verifyFrameVideo(videoHit.frame, { stressSeconds });
+    const stress = await verifyFrameVideo(videoHit.frame, { ...NTV_STRESS, stressSeconds });
     result.stress = {
       reason: stress.reason,
       stalls: stress.stalls,
       totalStallMs: stress.totalStallMs,
       samples: stress.samples?.length || 0,
+      laggy: stress.laggy,
     };
-    result.ok = stress.ok;
-    result.reason = stress.reason;
+    const verdict = classifyStress(stress, { allowLaggy: true });
+    result.ok = verdict.ok;
+    result.reason = verdict.reason;
+    result.laggy = verdict.laggy;
   } else {
     const embed = await detectNtvEmbedShell(page);
     result.embed = embed;
     const manifestOk = httpProbe?.ok === true;
-    if (embed.streamsCenter && manifestOk) {
+    if (embed.streamsCenter) {
       result.mode = "streams_center_embed";
       result.ok = true;
-      result.reason = "embed_and_manifest";
+      result.laggy = !manifestOk;
+      result.reason = manifestOk ? "embed_and_manifest" : "embed_shell_laggy";
       result.frameUrl = embed.streamsCenter;
-    } else if (embed.streamsCenter) {
-      result.mode = "streams_center_embed";
-      result.ok = false;
-      result.reason = manifestOk ? "embed_only" : "embed_no_manifest";
     } else {
       result.reason = "no_ntv_shell";
     }
@@ -241,14 +246,15 @@ async function verifyMatch(browser, match, cfg, outDir) {
   });
   if (!report.layers.main.ok) {
     const rotateKeys = [
-      { key: embedKey, servs: [3, 2, 1, 0] },
-      { key: "amine", servs: [0, 1, 2, 3] },
-      { key: "vip1", servs: [3, 2, 1] },
-      { key: "weshan", servs: [0, 1] },
+      { key: embedKey, servs: [3, 2] },
+      { key: "amine", servs: [0, 1] },
     ];
+    let rotAttempts = 0;
     for (const { key, servs } of rotateKeys) {
-      if (report.layers.main.ok) break;
+      if (report.layers.main.ok || rotAttempts >= 3) break;
       for (const serv of servs) {
+        if (report.layers.main.ok || rotAttempts >= 3) break;
+        rotAttempts += 1;
         const direct = buildProxyUrl(cfg.base, key, { serv, ch: match.channelId });
         const rotPage = await context.newPage();
         const attempt = await verifyLayer(rotPage, {

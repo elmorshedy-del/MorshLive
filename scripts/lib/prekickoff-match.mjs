@@ -33,6 +33,17 @@ export function buildProxyUrl(base, slot, { serv, ch } = {}) {
   return u.toString();
 }
 
+export function selectMatchesWithin(matches, withinMinutes = 90, now = Date.now()) {
+  const maxMs = withinMinutes * 60 * 1000;
+  return (matches || []).filter((m) => {
+    if (m.status === "ended") return false;
+    const kickoff = parseKickoffMs(m.kickoffUtc);
+    if (isNaN(kickoff)) return false;
+    const delta = kickoff - now;
+    return delta >= 0 && delta <= maxMs;
+  });
+}
+
 /** Matches whose kickoff is in (now + minLead, now + maxLead] minutes. */
 export function selectPrekickoffMatches(matches, { windowMinutes = 45, slackMinutes = 10, now = Date.now() } = {}) {
   const minMs = (windowMinutes - slackMinutes) * 60 * 1000;

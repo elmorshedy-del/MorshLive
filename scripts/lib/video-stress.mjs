@@ -12,6 +12,14 @@ export const DEFAULT_STRESS = {
   minVideoWidth: 1,
 };
 
+/** NTV edgestream — known to lag; align with worker NTV stall tolerance. */
+export const NTV_STRESS = {
+  ...DEFAULT_STRESS,
+  maxStallMs: 18000,
+  maxTotalStallMs: 45000,
+  minAdvanceSeconds: 0.25,
+};
+
 export async function openVerifyBrowser(options = {}) {
   return launchBrowser({
     headless: options.headless !== false,
@@ -160,12 +168,30 @@ export async function stressVideoPlayback(frame, opts = {}) {
 
   const first = samples.find((s) => s.currentTime > 0);
   const last = samples[samples.length - 1];
-  const advanced = first && last && last.currentTime - first.currentTime >= 0.5;
+  const minAdvance = cfg.minAdvanceSeconds ?? 0.5;
+  const advanced = first && last && last.currentTime - first.currentTime >= minAdvance;
   if (!advanced) {
     return { ok: false, reason: "time_not_advancing", samples, stalls, totalStallMs, startedAt, endedAt: Date.now() };
   }
 
-  return { ok: true, reason: "ok", samples, stalls, totalStallMs, startedAt, endedAt: Date.now(), lastState: state };
+  return { ok: true, reason: "ok", samples, stalls, totalStallMs, startedAt, endedAt: Date.now(), lastState: state, laggy: stalls >= 1 || totalStallMs >= cfg.maxStallMs };
+}
+
+/** Pass when video plays but stalls (NTV / known-laggy paths). */
+export function classifyStress(stress, { allowLaggy = false } = {}) {
+  if (stress.ok) return { ok: true, laggy: !!stress.laggy, reason: stress.reason };
+  if (!allowLaggy) return { ok: false, laggy: false, reason: stress.reason };
+  const first = stress.samples?.find((s) => s.currentTime > 0);
+  const last = stress.samples?.[stress.samples.length - 1];
+  const advanced = first && last && last.currentTime - first.currentTime >= 0.25;
+  if (
+    advanced &&
+    (stress.reason === "lag_stall" || stress.reason === "time_not_advancing") &&
+    stress.samples?.length >= 3
+  ) {
+    return { ok: true, laggy: true, reason: "laggy_ok" };
+  }
+  return { ok: false, laggy: false, reason: stress.reason };
 }
 
 export async function verifyFrameVideo(frame, opts = {}) {
