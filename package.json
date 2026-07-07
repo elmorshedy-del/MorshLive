@@ -19,6 +19,8 @@
     "probe:streams-lab": "node scripts/probe-streams-lab.mjs",
     "probe:dlhd-bein": "node scripts/probe-dlhd-bein.mjs",
     "sync:streams-lab": "node scripts/sync-streams-lab-catalog.mjs",
+    "verify:prekickoff": "node scripts/prekickoff-stream-verify.mjs",
+    "verify:prekickoff:live": "node scripts/prekickoff-stream-verify.mjs --live --stress=30",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
