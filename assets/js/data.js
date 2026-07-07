@@ -62,6 +62,26 @@ function altStreamUrl(kind) {
   return u.toString();
 }
 
+let _ntvEmbedCache = null;
+let _ntvEmbedAt = 0;
+
+async function resolveNtvEmbedUrl() {
+  if (_ntvEmbedCache && Date.now() - _ntvEmbedAt < 3 * 60 * 1000) return _ntvEmbedCache;
+  try {
+    const res = await fetch("/api/ntv-embed-url", { cache: "no-store" });
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (data.ok && data.url) {
+      _ntvEmbedCache = data.url;
+      _ntvEmbedAt = Date.now();
+      return data.url;
+    }
+  } catch {
+    /* optional */
+  }
+  return null;
+}
+
 function matchStreamKey(m) {
   if (!m) return "";
   if (m.key) return String(m.key).toLowerCase();
@@ -284,7 +304,7 @@ function resolveWatchSelection(matches, channels, searchParams) {
 window.SITE_DATA = {
   CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor,
   servIndexFromParam, EMBED_BINDING, streamOptionsFor, streamOptionUrl,
-  altStreamsForMatch, altStreamUrl,
+  altStreamsForMatch, altStreamUrl, resolveNtvEmbedUrl,
 };
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;

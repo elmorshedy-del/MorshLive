@@ -67,18 +67,20 @@
   }
 
   function altStreamIframe(url, kind) {
-    const sandbox = kind === "ntv"
+    const isNtv = kind === "ntv";
+    const sandbox = isNtv
       ? ""
       : 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ';
+    const referrer = isNtv ? "no-referrer-when-downgrade" : EMBED_REFERRER;
     return (
       `<iframe class="embed-frame alt-stream-frame" src="${escapeHtml(url)}" ` +
       `${sandbox}` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
-      `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="lazy"></iframe>`
+      `referrerpolicy="${referrer}" scrolling="no" loading="lazy"></iframe>`
     );
   }
 
-  function renderAltStreams() {
+  async function renderAltStreams() {
     const card = document.getElementById("alt-streams");
     if (!card) return;
     const cfg = window.SITE_DATA.altStreamsForMatch
@@ -91,12 +93,17 @@
       return;
     }
 
+    let ntvUrl = null;
+    if (cfg.ntv && window.SITE_DATA.resolveNtvEmbedUrl) {
+      ntvUrl = await window.SITE_DATA.resolveNtvEmbedUrl();
+    }
+
     const parts = [];
     if (cfg.sirTv && window.SITE_DATA.altStreamUrl) {
       parts.push(`sirTv:${window.SITE_DATA.altStreamUrl("sirTv")}`);
     }
-    if (cfg.ntv && window.SITE_DATA.altStreamUrl) {
-      parts.push(`ntv:${window.SITE_DATA.altStreamUrl("ntv")}`);
+    if (cfg.ntv && ntvUrl) {
+      parts.push(`ntv:${ntvUrl}`);
     }
     const signature = parts.join("|");
     if (signature === altStreamsSignature && card.querySelector(".alt-stream-pane")) {
@@ -117,16 +124,22 @@
         </div>`
       );
     }
-    if (cfg.ntv) {
+    if (cfg.ntv && ntvUrl) {
       panes.push(
         `<div class="alt-stream-pane alt-stream-pane--ntv">
           <div class="alt-stream-head">
             <span class="alt-stream-name">${escapeHtml(t(cfg.ntv.labelKey))}</span>
             <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
           </div>
-          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("ntv"), "ntv")}</div>
+          <div class="alt-stream-shell">${altStreamIframe(ntvUrl, "ntv")}</div>
         </div>`
       );
+    }
+
+    if (!panes.length) {
+      card.hidden = true;
+      card.innerHTML = "";
+      return;
     }
 
     card.hidden = false;
@@ -551,7 +564,7 @@
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
-    renderAltStreams();
+    await renderAltStreams();
     const channelChanged = channel.id !== previousChannelId;
     const matchChanged = (match && match.id) !== previousMatchId;
     if (!matchesReady) {
