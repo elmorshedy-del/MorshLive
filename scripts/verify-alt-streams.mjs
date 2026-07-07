@@ -59,16 +59,30 @@ function ts() {
   const ntv = iframes.find((f) => f.kind === "ntv");
   const sir = iframes.find((f) => f.kind === "sirTv");
 
+  const ntvFrame = page.frames().find((f) => f.url().includes("/wk/albaplayer/ntv/"));
+  let ntvInner = null;
+  if (ntvFrame) {
+    ntvInner = await ntvFrame.evaluate(() => {
+      const outer = document.querySelector("#f");
+      return { wrapper: !!outer, innerSrc: outer?.src || null };
+    }).catch(() => null);
+    console.log("NTV wrapper:", ntvInner);
+  }
+
   await browser.close();
 
   if (!ntv) throw new Error("NTV alt-stream iframe not found — is match pinned?");
   if (ntv.hasSandbox) {
     throw new Error(`NTV iframe still has sandbox="${ntv.sandbox}" — fix altStreamIframe kind param`);
   }
+  if (!ntvInner?.innerSrc || !/streams\.center/i.test(ntvInner.innerSrc)) {
+    throw new Error(`NTV wrapper missing streams.center embed (got ${ntvInner?.innerSrc || "none"})`);
+  }
   if (sir && !sir.hasSandbox) {
     console.warn("warn: Sir TV iframe has no sandbox (acceptable but unexpected)");
   }
 
   console.log("\n✓ NTV iframe has no sandbox attribute");
+  console.log("✓ NTV inner embed:", ntvInner.innerSrc);
   if (sir) console.log("✓ Sir TV iframe sandbox:", sir.sandbox || "(none)");
 })();
