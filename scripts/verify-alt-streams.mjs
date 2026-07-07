@@ -59,12 +59,18 @@ function ts() {
   const ntv = iframes.find((f) => f.kind === "ntv");
   const sir = iframes.find((f) => f.kind === "sirTv");
 
+  const ntvShell = await page.evaluate(() => {
+    const frame = document.querySelector(".alt-stream-pane--ntv .alt-stream-frame");
+    if (!frame) return null;
+    const src = frame.src || "";
+    if (/streams\.center\/embed\/ch2\.php/i.test(src)) return src;
+    return src;
+  });
+  console.log("NTV outer iframe:", ntvShell);
+
   const ntvFrames = page.frames().filter((f) => /streams\.center/i.test(f.url()));
-  let ntvInner = ntv?.src || null;
-  if (ntvFrames.length) {
-    ntvInner = ntvFrames.map((f) => f.url()).join(" -> ");
-    console.log("NTV frame chain:", ntvInner);
-  }
+  let ntvInner = ntvFrames.map((f) => f.url()).join(" -> ") || ntv?.src || null;
+  if (ntvFrames.length) console.log("NTV frame chain:", ntvInner);
 
   let ntvVideo = null;
   for (const f of ntvFrames) {
@@ -90,8 +96,11 @@ function ts() {
   if (!ntvInner || !/streams\.center/i.test(ntvInner)) {
     throw new Error(`NTV must load streams.center (got ${ntvInner || "none"})`);
   }
-  if (!/streams\.center\/embed\/ch2\.php/i.test(ntvInner)) {
-    throw new Error(`NTV must use ch2.php shell, not bare hls2 (got ${ntvInner})`);
+  const usesCh2Shell =
+    /streams\.center\/embed\/ch2\.php/i.test(ntvShell || "") ||
+    /streams\.center\/embed\/ch2\.php/i.test(ntvInner);
+  if (!usesCh2Shell) {
+    throw new Error(`NTV must use ch2.php shell (outer=${ntvShell}, chain=${ntvInner})`);
   }
   if (!ntvVideo || ntvVideo.w < 1) {
     throw new Error(`NTV video not playing (video=${JSON.stringify(ntvVideo)})`);
