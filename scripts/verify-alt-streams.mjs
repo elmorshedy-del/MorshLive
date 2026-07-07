@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Playwright: verify alt-stream iframes — NTV must NOT have sandbox; Sir TV should.
+ * Playwright: verify alt-stream iframes use korazero clean HLS proxies (Sir TV + NTV).
  * Saves screenshots to /opt/cursor/artifacts/screenshots/ for visual proof.
  *
  * Usage:
@@ -31,7 +31,7 @@ function ts() {
   await page.goto(WATCH_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
 
   await page.waitForSelector("#alt-streams:not([hidden])", { timeout: 60000 }).catch(() => {});
-  await page.waitForTimeout(8000);
+  await page.waitForTimeout(10000);
 
   const iframes = await page.evaluate(() => {
     const frames = [...document.querySelectorAll(".alt-stream-frame")];
@@ -59,48 +59,34 @@ function ts() {
   const ntv = iframes.find((f) => f.kind === "ntv");
   const sir = iframes.find((f) => f.kind === "sirTv");
 
-  const ntvShell = await page.evaluate(() => {
-    const frame = document.querySelector(".alt-stream-pane--ntv .alt-stream-frame");
-    if (!frame) return null;
-    const src = frame.src || "";
-    if (/streams\.center\/embed\/ch2\.php/i.test(src)) return src;
-    return src;
-  });
-  console.log("NTV outer iframe:", ntvShell);
-
-  const ntvFrames = page.frames().filter((f) => /streams\.center/i.test(f.url()));
-  let ntvInner = ntvFrames.map((f) => f.url()).join(" -> ") || ntv?.src || null;
-  if (ntvFrames.length) console.log("NTV frame chain:", ntvInner);
-
   let ntvVideo = null;
-  for (const f of ntvFrames) {
+  const ntvFrame = page.frames().find((f) => /\/wk\/albaplayer\/ntv\//i.test(f.url()));
+  if (ntvFrame) {
     try {
-      ntvVideo = await f.evaluate(() => {
+      ntvVideo = await ntvFrame.evaluate(() => {
         const v = document.querySelector("video");
         if (!v) return null;
         return { w: v.videoWidth, h: v.videoHeight, readyState: v.readyState, paused: v.paused };
       });
-      if (ntvVideo?.w > 0) break;
-    } catch {
-      // Cross-origin frame — try the next one.
+      console.log("NTV video:", ntvVideo);
+    } catch (e) {
+      console.warn("NTV frame eval failed:", e.message);
     }
   }
-  if (ntvVideo) console.log("NTV video:", ntvVideo);
+
+  const streamsCenterFrame = page.frames().find((f) => /streams\.center/i.test(f.url()));
+  if (streamsCenterFrame) {
+    console.warn("warn: streams.center frame still present:", streamsCenterFrame.url());
+  }
 
   await browser.close();
 
   if (!ntv) throw new Error("NTV alt-stream iframe not found — is match pinned?");
-  if (ntv.hasSandbox) {
-    throw new Error(`NTV iframe still has sandbox="${ntv.sandbox}" — fix altStreamIframe kind param`);
+  if (!/\/wk\/albaplayer\/ntv\//i.test(ntv.src)) {
+    throw new Error(`NTV must use korazero clean proxy (got ${ntv.src})`);
   }
-  if (!ntvInner || !/streams\.center/i.test(ntvInner)) {
-    throw new Error(`NTV must load streams.center (got ${ntvInner || "none"})`);
-  }
-  const usesCh2Shell =
-    /streams\.center\/embed\/ch2\.php/i.test(ntvShell || "") ||
-    /streams\.center\/embed\/ch2\.php/i.test(ntvInner);
-  if (!usesCh2Shell) {
-    throw new Error(`NTV must use ch2.php shell (outer=${ntvShell}, chain=${ntvInner})`);
+  if (/streams\.center/i.test(ntv.src)) {
+    throw new Error("NTV must not embed streams.center directly (ad popups)");
   }
   if (!ntvVideo || ntvVideo.w < 1) {
     throw new Error(`NTV video not playing (video=${JSON.stringify(ntvVideo)})`);
@@ -109,8 +95,7 @@ function ts() {
     console.warn("warn: Sir TV iframe has no sandbox (acceptable but unexpected)");
   }
 
-  console.log("\n✓ NTV iframe has no sandbox attribute");
-  console.log("✓ NTV embed chain:", ntvInner);
+  console.log("\n✓ NTV uses korazero clean proxy:", ntv.src);
   console.log("✓ NTV video playing:", `${ntvVideo.w}x${ntvVideo.h}`);
   if (sir) console.log("✓ Sir TV iframe sandbox:", sir.sandbox || "(none)");
 })();

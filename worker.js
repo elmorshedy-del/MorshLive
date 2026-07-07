@@ -39,6 +39,8 @@ const SIRTV_RE = /^\/wk\/albaplayer\/sirtv\/?$/i;
 const NTV_EMBED =
   "https://ntv.cx/embed?t=OFd0cFZIcCtUQ3NleURxSUs1SW9VQW81eDZjTHdaUjNGL0RxZWZUU24zVTNIQlVsbEpqTkgzbkk3TmhiRGJwMw~~";
 const NTV_RE = /^\/wk\/albaplayer\/ntv\/?$/i;
+const NTV_CH2_URL = "https://streams.center/embed/ch2.php";
+const NTV_STREAMS_CENTER = "https://streams.center/";
 const ALT_STREAM_AD_HOSTS =
   /cosetengarb|corruptioneasiest|histats|acscdn|aclib|doubleclick|googlesyndication|popads|propeller|exoclick|adsterra|mgid|taboola|outbrain|cloudflareinsights|console-ban|pubads|googletagmanager|google-analytics|imasdk|advertising|\/ads\//i;
 const POLL_RE = /^\/api\/poll\/([a-z0-9.-]+)\/?$/i;
@@ -460,6 +462,14 @@ async function resolvePlayableSourceFromHtml(html, request, depth = 0, seen = ne
 function streamFetchHeaders(kind, request) {
   const ua = request.headers.get("User-Agent") || "Mozilla/5.0";
   if (kind === "dl") return { "User-Agent": ua, Accept: "*/*" };
+  if (kind === "ntv") {
+    return {
+      "User-Agent": ua,
+      Accept: "*/*",
+      Referer: NTV_STREAMS_CENTER,
+      Origin: "https://streams.center",
+    };
+  }
   return { "User-Agent": ua, Accept: "*/*", Referer: WORLDKOORA + "/", Origin: WORLDKOORA };
 }
 
@@ -1485,6 +1495,9 @@ async function proxyHls(request, env) {
       if (/syria-llive\.live$/i.test(host)) {
         return { "User-Agent": ua, Accept: "*/*", Referer: "https://mysportv.live/" };
       }
+      if (/edgestream/i.test(host)) {
+        return { "User-Agent": ua, Accept: "*/*", Referer: NTV_STREAMS_CENTER };
+      }
     } catch { /* noop */ }
     return {
       "User-Agent": ua,
@@ -1855,6 +1868,58 @@ async function resolveNtvPlayablePage(request) {
     : null;
 }
 
+function extractNtvHls2Url(html, base) {
+  for (const src of extractAnyIframeSrc(html, base)) {
+    if (/streams\.center\/embed\/hls2\.php/i.test(src)) return src;
+  }
+  return null;
+}
+
+function extractNtvDecryptInput(html) {
+  const m = String(html || "").match(/input:\s*"([^"]+)"/);
+  return m ? m[1] : null;
+}
+
+async function decryptNtvStreamUrl(request, input, hls2Url) {
+  try {
+    const res = await fetchWithTimeout("https://streams.center/embed/decrypt.php", {
+      method: "POST",
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        "Content-Type": "application/x-www-form-urlencoded",
+        Referer: hls2Url || "https://streams.center/embed/hls2.php",
+        Origin: "https://streams.center",
+      },
+      body: new URLSearchParams({ input }).toString(),
+    });
+    if (!res.ok) return null;
+    const text = (await res.text()).trim();
+    if (!/^https?:\/\/.+\.m3u8/i.test(text)) return null;
+    return text;
+  } catch {
+    return null;
+  }
+}
+
+async function resolveNtvHlsM3u8(request) {
+  const resolved = await resolveNtvPlayablePage(request);
+  if (!resolved) return null;
+
+  let hls2Url = extractNtvHls2Url(resolved.html, resolved.url);
+  if (!hls2Url && /streams\.center\/embed\/hls2\.php/i.test(resolved.url)) {
+    hls2Url = resolved.url;
+  }
+  if (!hls2Url) return null;
+
+  const hls2Page = await fetchAltStreamHtml(hls2Url, request, NTV_CH2_URL);
+  if (!hls2Page) return null;
+
+  const input = extractNtvDecryptInput(hls2Page.html);
+  if (!input) return null;
+
+  return decryptNtvStreamUrl(request, input, hls2Page.url);
+}
+
 function sanitizeAltEmbedHtml(html, baseUrl) {
   let out = String(html || "");
   out = out.replace(/<script\b[^>]*src=["'][^"']+["'][^>]*>\s*<\/script>/gi, (tag) =>
@@ -1899,6 +1964,16 @@ async function proxyNtv(request, env) {
   if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
 
   try {
+    const m3u8 = await resolveNtvHlsM3u8(request);
+    if (m3u8) {
+      const probe = await streamProbe(m3u8, "ntv", request);
+      if (probe.ok) {
+        const sig = await signTarget(m3u8, secret);
+        const proxied = hlsProxyUrl(m3u8, origin, sig);
+        return new Response(cleanHlsPlayerHtml([proxied], "NTV"), { status: 200, headers: htmlHeaders });
+      }
+    }
+
     const resolved = await resolveNtvPlayablePage(request);
     if (!resolved) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
 
@@ -1906,7 +1981,7 @@ async function proxyNtv(request, env) {
     const seen = new Set();
     for (const c of resolved.candidates || []) {
       if (!c.source || seen.has(c.source)) continue;
-      const probe = await streamProbe(c.source, "plain", request);
+      const probe = await streamProbe(c.source, "ntv", request);
       if (!probe.ok) continue;
       seen.add(c.source);
       const sig = await signTarget(c.source, secret);
@@ -4040,17 +4115,17 @@ async function mirrorDiagnosisRow(label, source, kind, request) {
 }
 
 async function proxyNtvEmbedUrlApi(request) {
-  const resolved = await resolveNtvPlayablePage(request);
+  const incoming = new URL(request.url);
   const headers = {
     "Content-Type": "application/json; charset=utf-8",
     "Access-Control-Allow-Origin": "*",
     "Cache-Control": "no-store",
     "X-KZ-Proxy": "ntv-embed-url",
   };
-  if (!resolved?.url) {
-    return new Response(JSON.stringify({ ok: false, error: "upstream_unavailable" }), { status: 502, headers });
-  }
-  return new Response(JSON.stringify({ ok: true, url: resolved.url }), { status: 200, headers });
+  return new Response(
+    JSON.stringify({ ok: true, url: `${incoming.origin}/wk/albaplayer/ntv/` }),
+    { status: 200, headers }
+  );
 }
 
 async function proxyStreamDiagnoseApi(request, env) {
