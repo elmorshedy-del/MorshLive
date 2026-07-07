@@ -36,6 +36,65 @@ const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
 const SIRTV_CH1_PLAYER = "https://we.shootsync.site/albaplayer/sniaer/";
 const SIRTV_CH1_REFERER = "https://s.sirtv.space/2026/02/ch1.html?m=1";
 const SIRTV_RE = /^\/wk\/albaplayer\/sirtv\/?$/i;
+const KOORA_CITY = "https://kooora-city.com/";
+const KOORA_YALASHOT_DEFAULT = "https://s.yalashot.online/2026/06/ch1.html";
+const KOORACITY_RE = /^\/wk\/albaplayer\/kooracity\/?$/i;
+const KOORA_TEAM_AR = {
+  argentina: "الأرجنتين",
+  australia: "أستراليا",
+  austria: "النمسا",
+  belgium: "بلجيكا",
+  brazil: "البرازيل",
+  cameroon: "الكاميرون",
+  canada: "كندا",
+  capeverde: "الرأس الأخضر",
+  chile: "تشيلي",
+  colombia: "كولومبيا",
+  costarica: "كوستاريكا",
+  croatia: "كرواتيا",
+  czechia: "التشيك",
+  czechrepublic: "التشيك",
+  denmark: "الدنمارك",
+  ecuador: "الإكوادور",
+  egypt: "مصر",
+  england: "إنجلترا",
+  france: "فرنسا",
+  germany: "ألمانيا",
+  ghana: "غانا",
+  greece: "اليونان",
+  iran: "إيران",
+  iraq: "العراق",
+  italy: "إيطاليا",
+  ivorycoast: "ساحل العاج",
+  japan: "اليابان",
+  jordan: "الأردن",
+  mexico: "المكسيك",
+  morocco: "المغرب",
+  netherlands: "هولندا",
+  newzealand: "نيوزيلندا",
+  nigeria: "نيجيريا",
+  norway: "النرويج",
+  panama: "بنما",
+  paraguay: "باراغواي",
+  peru: "بيرو",
+  poland: "بولندا",
+  portugal: "البرتغال",
+  qatar: "قطر",
+  saudiarabia: "السعودية",
+  senegal: "السنغال",
+  serbia: "صربيا",
+  southafrica: "جنوب أفريقيا",
+  southkorea: "كوريا الجنوبية",
+  spain: "إسبانيا",
+  switzerland: "سويسرا",
+  tunisia: "تونس",
+  turkey: "تركيا",
+  unitedarabemirates: "الإمارات",
+  unitedstates: "الولايات المتحدة",
+  uruguay: "أوروغواي",
+  uzbekistan: "أوزبكستان",
+  wales: "ويلز",
+};
 const NTV_EMBED =
   "https://ntv.cx/embed?t=OFd0cFZIcCtUQ3NleURxSUs1SW9VQW81eDZjTHdaUjNGL0RxZWZUU24zVTNIQlVsbEpqTkgzbkk3TmhiRGJwMw~~";
 const NTV_RE = /^\/wk\/albaplayer\/ntv\/?$/i;
@@ -1734,6 +1793,119 @@ function weshanServerOrder(requestedServ) {
   if (Number.isFinite(raw) && raw >= 0 && raw <= 3) order.push(raw);
   for (let s = 0; s <= 3; s++) if (!order.includes(s)) order.push(s);
   return order;
+}
+
+function kooraNormTeam(name) {
+  return String(name || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function kooraTeamAr(name) {
+  const key = kooraNormTeam(name);
+  return KOORA_TEAM_AR[key] || String(name || "");
+}
+
+function findKooraCardHref(html, home, away) {
+  const homeAr = kooraTeamAr(home);
+  const awayAr = kooraTeamAr(away);
+  const chunks = String(html || "").split(/<div class=['"]match-container/);
+  for (let i = 1; i < chunks.length; i++) {
+    const block = chunks[i];
+    const hasHome =
+      block.includes(homeAr) ||
+      block.toLowerCase().includes(String(home || "").toLowerCase());
+    const hasAway =
+      block.includes(awayAr) ||
+      block.toLowerCase().includes(String(away || "").toLowerCase());
+    if (!hasHome || !hasAway) continue;
+    const m = block.match(/<a\b[^>]*\bhref=(["'])(https?:\/\/[^"']+)\1/i);
+    if (m && !/\/matches-(today|yesterday|tomorrow)\/?$/i.test(m[2])) return m[2];
+  }
+  return null;
+}
+
+async function resolveKooraCardUrl(request, home, away) {
+  const pages = [KOORA_CITY, `${KOORA_CITY}matches-today/`];
+  for (const pageUrl of pages) {
+    const page = await fetchAltStreamHtml(pageUrl, request, KOORA_CITY);
+    if (!page) continue;
+    const card = findKooraCardHref(page.html, home, away);
+    if (card) return card;
+  }
+  return null;
+}
+
+async function resolveKooraCityHls(cardUrl, request) {
+  let page = await fetchAltStreamHtml(cardUrl, request, KOORA_CITY);
+  if (!page) return null;
+  let referer = page.url;
+  for (let depth = 0; depth < 6; depth++) {
+    for (const c of extractHlsCandidates(page.html)) {
+      if (c.source && isHlsUrl(c.source)) return { source: c.source, referer, cardUrl };
+    }
+    const iframes = extractAnyIframeSrc(page.html, page.url);
+    const next =
+      iframes.find((u) => /albaplayer|fluxion|veloqia|yalashot|shootsync|nexalure/i.test(u)) ||
+      iframes[0];
+    if (!next) break;
+    page = await fetchAltStreamHtml(next, request, referer);
+    if (!page) break;
+    referer = page.url;
+  }
+  return null;
+}
+
+async function proxyKooraCity(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "kooracity",
+  };
+  if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
+
+  const home = incoming.searchParams.get("home") || "";
+  const away = incoming.searchParams.get("away") || "";
+  const cardOverride = incoming.searchParams.get("card") || "";
+
+  try {
+    let resolved = null;
+    if (cardOverride) {
+      resolved = await resolveKooraCityHls(cardOverride, request);
+    } else if (home && away) {
+      const card = await resolveKooraCardUrl(request, home, away);
+      if (card) resolved = await resolveKooraCityHls(card, request);
+    }
+    if (!resolved) resolved = await resolveKooraCityHls(KOORA_YALASHOT_DEFAULT, request);
+
+    if (!resolved || !resolved.source) {
+      return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    }
+
+    const probe = await streamProbe(resolved.source, "plain", request);
+    if (!probe.ok) {
+      return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    }
+
+    const sig = await signTarget(resolved.source, secret);
+    const proxied = hlsProxyUrl(resolved.source, origin, sig);
+    return new Response(cleanHlsPlayerHtml([proxied], "Koora City"), {
+      status: 200,
+      headers: {
+        ...htmlHeaders,
+        "X-KZ-Card": resolved.cardUrl || "",
+      },
+    });
+  } catch {
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  }
 }
 
 async function fetchSirTvCh1Html(request) {
@@ -4538,6 +4710,9 @@ export default {
     }
     if (SIRTV_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxySirTv(request, env);
+    }
+    if (KOORACITY_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxyKooraCity(request, env);
     }
     if (NTV_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyNtv(request, env);

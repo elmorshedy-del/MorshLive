@@ -93,10 +93,13 @@
 
     const parts = [];
     if (cfg.sirTv && window.SITE_DATA.altStreamUrl) {
-      parts.push(`sirTv:${window.SITE_DATA.altStreamUrl("sirTv")}`);
+      parts.push(`sirTv:${window.SITE_DATA.altStreamUrl("sirTv", match)}`);
     }
     if (cfg.ntv && window.SITE_DATA.altStreamUrl) {
-      parts.push(`ntv:${window.SITE_DATA.altStreamUrl("ntv")}`);
+      parts.push(`ntv:${window.SITE_DATA.altStreamUrl("ntv", match)}`);
+    }
+    if (cfg.kooraCity && window.SITE_DATA.altStreamUrl) {
+      parts.push(`kooraCity:${window.SITE_DATA.altStreamUrl("kooraCity", match)}`);
     }
     const signature = parts.join("|");
     if (signature === altStreamsSignature && card.querySelector(".alt-stream-pane")) {
@@ -113,7 +116,18 @@
             <span class="alt-stream-name">${escapeHtml(t(cfg.sirTv.labelKey))}</span>
             <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
           </div>
-          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("sirTv"), "sirTv")}</div>
+          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("sirTv", match), "sirTv")}</div>
+        </div>`
+      );
+    }
+    if (cfg.kooraCity) {
+      panes.push(
+        `<div class="alt-stream-pane alt-stream-pane--kooracity">
+          <div class="alt-stream-head">
+            <span class="alt-stream-name">${escapeHtml(t(cfg.kooraCity.labelKey))}</span>
+            <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
+          </div>
+          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("kooraCity", match), "kooraCity")}</div>
         </div>`
       );
     }
@@ -124,7 +138,7 @@
             <span class="alt-stream-name">${escapeHtml(t(cfg.ntv.labelKey))}</span>
             <span class="alt-stream-tag">${escapeHtml(t("watch.altBackup"))}</span>
           </div>
-          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("ntv"), "ntv")}</div>
+          <div class="alt-stream-shell">${altStreamIframe(window.SITE_DATA.altStreamUrl("ntv", match), "ntv")}</div>
         </div>`
       );
     }

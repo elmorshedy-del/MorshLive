@@ -33,32 +33,37 @@ const EMBEDS = {
     defaultServer: 0,
     servers: 4,
   },
-  // Alternative backup players — proxied ad-free on /wk/albaplayer/{sirtv,ntv}/.
+  // Alternative backup players — proxied ad-free on /wk/albaplayer/{sirtv,ntv,kooracity}/.
   sirtv: { url: "/wk/albaplayer/sirtv/", defaultServer: 1, servers: 1 },
   ntv: { url: "/wk/albaplayer/ntv/", defaultServer: 1, servers: 1 },
+  kooracity: { url: "/wk/albaplayer/kooracity/", defaultServer: 1, servers: 1 },
 };
 
 const ALT_STREAM_DEFS = {
   sirTv: { key: "sirTv", path: "/wk/albaplayer/sirtv/", labelKey: "watch.altSirTv" },
   ntv: { key: "ntv", path: "/wk/albaplayer/ntv/", labelKey: "watch.altNtv" },
+  kooraCity: { key: "kooraCity", path: "/wk/albaplayer/kooracity/", labelKey: "watch.altKooraCity" },
 };
 
-// Show Sir TV + NTV backup panel for live, upcoming, and ended matches.
+// Show backup panel for live, upcoming, and recently ended matches.
 function altStreamsForMatch(m) {
   if (!m) return null;
   if (m.status !== "live" && m.status !== "upcoming" && m.status !== "ended") return null;
   return {
     sirTv: ALT_STREAM_DEFS.sirTv,
     ntv: ALT_STREAM_DEFS.ntv,
+    kooraCity: ALT_STREAM_DEFS.kooraCity,
   };
 }
 
-function altStreamUrl(kind) {
+function altStreamUrl(kind, match) {
   const def = ALT_STREAM_DEFS[kind];
   if (!def) return "";
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(def.path, base);
   u.searchParams.set("_kz", "13");
+  if (match && match.home) u.searchParams.set("home", match.home);
+  if (match && match.away) u.searchParams.set("away", match.away);
   return u.toString();
 }
 

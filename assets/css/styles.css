@@ -700,6 +700,11 @@ img { max-width: 100%; display: block; }
   color: #bf9bff;
   border-color: rgba(145, 71, 255, .28);
 }
+.alt-stream-pane--kooracity .alt-stream-tag {
+  background: rgba(201, 162, 84, .16);
+  color: #e8c96a;
+  border-color: rgba(201, 162, 84, .32);
+}
 .alt-stream-shell {
   position: relative;
   aspect-ratio: 16 / 9;
