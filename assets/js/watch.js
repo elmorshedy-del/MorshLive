@@ -19,6 +19,8 @@
   let match = null;
   let matchesReady = false;
   let altStreamsSignature = "";
+  let lastStreamHealAt = 0;
+  const STREAM_HEAL_MIN_MS = 8000;
   const STREAM_SOURCES = [
     { key: "vip1", servs: [1, 2, 3, 4] },
     { key: "vip2", servs: [1, 2, 3, 4] },
@@ -153,24 +155,71 @@
       <div class="alt-streams-grid">${panes.join("")}</div>`;
   }
 
+  function showStreamHealToast() {
+    let el = document.getElementById("stream-heal-toast");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "stream-heal-toast";
+      el.className = "stream-heal-toast";
+      el.setAttribute("role", "status");
+      const host = document.getElementById("player-panel-1") || document.getElementById("player-shell") || document.body;
+      host.appendChild(el);
+    }
+    el.textContent = t("watch.streamHeal");
+    el.hidden = false;
+    clearTimeout(showStreamHealToast._hideTimer);
+    showStreamHealToast._hideTimer = setTimeout(() => {
+      el.hidden = true;
+    }, 3500);
+  }
+
+  function bumpIframeHeal(frame) {
+    if (!frame || !frame.src) return;
+    try {
+      const u = new URL(frame.src);
+      u.searchParams.set("_heal", String(Date.now()));
+      frame.src = u.toString();
+    } catch {
+      /* ignore bad src */
+    }
+  }
+
   function reloadAltStreamIframes(reason) {
-    document.querySelectorAll(".alt-stream-frame").forEach((frame) => {
-      try {
-        const u = new URL(frame.src);
-        u.searchParams.set("_heal", String(Date.now()));
-        frame.src = u.toString();
-      } catch {
-        /* ignore bad src */
-      }
-    });
+    document.querySelectorAll(".alt-stream-frame").forEach(bumpIframeHeal);
     if (reason) console.info("Alt stream heal:", reason);
+  }
+
+  function bumpMainPlayer(reason) {
+    const frame = shell && shell.querySelector(".embed-frame:not(.alt-stream-frame)");
+    if (!frame) return;
+    bumpIframeHeal(frame);
+    loadedUrl = frame.src || loadedUrl;
+    if (reason) console.info("Main player heal:", reason);
+  }
+
+  function healAllStreams(reason, { includeMain = false, force = false } = {}) {
+    const now = Date.now();
+    if (!force && reason !== "manual" && now - lastStreamHealAt < STREAM_HEAL_MIN_MS) return;
+    lastStreamHealAt = now;
+    showStreamHealToast();
+    reloadAltStreamIframes(reason);
+    if (includeMain || reason === "exhausted" || reason === "stall" || reason === "black") {
+      bumpMainPlayer(reason);
+    }
   }
 
   function initAltStreamHeal() {
     window.addEventListener("message", (ev) => {
       if (!ev.data || ev.data.type !== "kz-alt-reload") return;
-      reloadAltStreamIframes(ev.data.reason || "stall");
+      const reason = ev.data.reason || "stall";
+      healAllStreams(reason, { includeMain: reason === "exhausted" || reason === "black" });
     });
+
+    setInterval(() => {
+      if (!match) return;
+      if (match.status !== "live" && match.status !== "upcoming" && match.status !== "ended") return;
+      healAllStreams("periodic", { includeMain: match.status === "live" });
+    }, 45000);
   }
 
   function reloadAltStreams() {
@@ -540,7 +589,9 @@
       `<svg class="ico reload-ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><polyline points="21 4 21 10 15 10"/></svg> ` +
       `<span data-i18n="watch.reload">${t("watch.reload")}</span>`;
     btn.addEventListener("click", () => {
+      lastStreamHealAt = 0;
       reloadPlayer();
+      showStreamHealToast();
       btn.classList.add("is-spinning");
       setTimeout(() => btn.classList.remove("is-spinning"), 700);
     });

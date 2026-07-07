@@ -1402,6 +1402,10 @@ ${HLS_BOOT_FN}
     }catch(e){}
   }
   function destroy(){ if(stopStall){ stopStall(); stopStall=null; } if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
+  function onStall(reason){
+    pingParent(reason||'stall');
+    next();
+  }
   function next(){
     i=(i+1)%sources.length; tries++;
     if(tries<=sources.length*6){ setTimeout(load, 400); return; }
@@ -1413,10 +1417,10 @@ ${HLS_BOOT_FN}
     var src=sources[i]; if(!src) return;
     destroy();
     if(v.canPlayType('application/vnd.apple.mpegurl')){
-      v.src=src; v.addEventListener('error', next, {once:true});
+      v.src=src; v.addEventListener('error', function(){ onStall('native-error'); }, {once:true});
     } else if(window.Hls&&window.Hls.isSupported()){
-      hls=kzAttachHls(v, src, next);
-      stopStall=kzWatchStall(v, hls, next);
+      hls=kzAttachHls(v, src, function(){ onStall('fatal'); });
+      stopStall=kzWatchStall(v, hls, function(){ onStall('watch-stall'); });
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
   }
@@ -1424,6 +1428,13 @@ ${HLS_BOOT_FN}
     v.dataset.kzWait='1';
     v.addEventListener('waiting', function(){ kzSoftRecover(v, hls); });
   }
+  var blackMs=0;
+  setInterval(function(){
+    if(v.paused){ blackMs=0; return; }
+    if(v.videoWidth>0&&v.readyState>=2&&v.currentTime>0){ blackMs=0; return; }
+    blackMs+=5000;
+    if(blackMs>=18000){ blackMs=0; onStall('black'); }
+  }, 5000);
   load();
 })();
 </script>
@@ -2033,6 +2044,25 @@ function cleanNtvEmbedWrapperHtml(embedUrl) {
 <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#f{width:100vw;height:100vh;border:0;display:block;background:#000}</style>
 </head><body>
 <iframe id="f" src="${safe}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+<script>
+(function(){
+  var f=document.getElementById('f'), lastAt=0;
+  function heal(reason){
+    if(!f||!f.src) return;
+    var now=Date.now();
+    if(now-lastAt<8000) return;
+    lastAt=now;
+    try{
+      var u=new URL(f.src);
+      u.searchParams.set('_heal', String(now));
+      f.src=u.toString();
+    }catch(e){}
+    try{ window.parent.postMessage({type:'kz-alt-reload', reason:reason||'ntv-heal'}, '*'); }catch(e){}
+  }
+  if(f){ f.addEventListener('error', function(){ heal('ntv-error'); }); }
+  setInterval(function(){ heal('ntv-periodic'); }, 50000);
+})();
+</script>
 </body></html>`;
 }
 

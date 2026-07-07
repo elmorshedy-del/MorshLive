@@ -1106,6 +1106,24 @@ img { max-width: 100%; display: block; }
 }
 .player-reload-btn:hover { color: var(--text); border-color: var(--brand); }
 .player-reload-btn.is-spinning .reload-ico { animation: spin .7s linear; }
+.stream-heal-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 12;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(10, 12, 24, .92);
+  border: 1px solid rgba(232, 201, 106, .55);
+  color: #fff8dc;
+  font-size: .82rem;
+  font-weight: 700;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .45);
+  pointer-events: none;
+  white-space: nowrap;
+}
+.player-panel.active { position: relative; }
 .player-switch-btn {
   flex: 1; min-width: 140px;
   background: var(--surface); border: 1px solid var(--border); color: var(--muted);
