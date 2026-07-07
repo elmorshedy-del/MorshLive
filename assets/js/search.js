@@ -81,7 +81,8 @@
   }
 
   function matchCard(m) {
-    const minute = m.status === "live" && m.minute ? ` · ${m.minute}` : "";
+    const minute = window.liveMinuteLabel ? window.liveMinuteLabel(m) : (m.status === "live" && m.minute ? String(m.minute).trim() : "");
+    const minuteSuffix = minute ? ` · ${minute}` : "";
     return `
       <article class="match-card" data-status="${m.status}">
         <div class="match-top">

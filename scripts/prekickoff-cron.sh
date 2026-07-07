@@ -6,14 +6,14 @@
 #   chmod +x scripts/prekickoff-cron.sh
 #   crontab -e
 #
-# Every 10 minutes — catches matches ~45 min before kickoff:
+# Every 10 minutes — catches matches ~45 min before kickoff (T-45±15m window):
 #   */10 * * * * /absolute/path/to/MorshLive/scripts/prekickoff-cron.sh >> /absolute/path/to/MorshLive/logs/prekickoff/cron.log 2>&1
 #
 # Optional env (or export in crontab):
 #   KZ_BASE=https://korazero.com
 #   PREKICKOFF_STRESS=45
 #   PREKICKOFF_WINDOW=45
-#   PREKICKOFF_SLACK=10
+#   PREKICKOFF_SLACK=15
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -31,9 +31,12 @@ mkdir -p logs/prekickoff reports/prekickoff
 export KZ_BASE="${KZ_BASE:-https://korazero.com}"
 STRESS="${PREKICKOFF_STRESS:-45}"
 WINDOW="${PREKICKOFF_WINDOW:-45}"
-SLACK="${PREKICKOFF_SLACK:-10}"
+SLACK="${PREKICKOFF_SLACK:-15}"
 
 echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] prekickoff cron start base=$KZ_BASE"
+
+# Refresh today.json from ESPN before selecting T-45 window.
+node scripts/fetch-matches.js "$(date -u +%Y-%m-%d)" || echo "fetch-matches failed — continuing with cached today.json" >&2
 
 # Ensure Chromium is available for Playwright.
 if ! node -e "require('playwright-core')" 2>/dev/null; then

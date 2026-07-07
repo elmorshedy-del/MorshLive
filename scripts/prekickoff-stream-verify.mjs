@@ -34,6 +34,7 @@ import {
 import { probeNtvUpstream, runFallbackProbes } from "./lib/stream-fallback-probe.mjs";
 import {
   loadTodayMatches,
+  loadFreshMatches,
   buildWatchUrl,
   buildProxyUrl,
   selectPrekickoffMatches,
@@ -52,7 +53,7 @@ function parseArgs(argv) {
   const out = {
     base: process.env.KZ_BASE || "https://korazero.com",
     window: 45,
-    slack: 10,
+    slack: 15,
     stress: DEFAULT_STRESS.stressSeconds,
     outDir: path.join(ROOT, "reports", "prekickoff"),
     live: false,
@@ -407,7 +408,7 @@ async function main() {
   const cfg = parseArgs(process.argv.slice(2));
   fs.mkdirSync(cfg.outDir, { recursive: true });
 
-  const matches = loadTodayMatches();
+  const matches = await loadFreshMatches();
   let targets = [];
   if (cfg.matchId) {
     const one = selectMatchById(matches, cfg.matchId);
@@ -426,17 +427,22 @@ async function main() {
   }
 
   if (!targets.length) {
+    const hint =
+      "Install external cron: */10 * * * * /path/to/scripts/prekickoff-cron.sh — not auto-run on deploy.";
     console.log(
       cfg.live
         ? "No live matches in today.json"
-        : `No matches in T-${cfg.window}±${cfg.slack}m window`
+        : `No matches in T-${cfg.window}±${cfg.slack}m window (${matches.length} fixtures loaded)`
     );
+    console.log(hint);
     const summary = {
       ranAt: new Date().toISOString(),
       mode: cfg.live ? "live" : "prekickoff",
       targets: 0,
       ok: true,
       reports: [],
+      hint,
+      fixtureCount: matches.length,
     };
     fs.writeFileSync(path.join(cfg.outDir, "latest.json"), JSON.stringify(summary, null, 2));
     process.exit(0);

@@ -346,6 +346,15 @@ function isRecentlyEndedMatch(m) {
   return elapsed <= MATCH_WINDOW_MS + POST_MATCH_STREAM_MS;
 }
 
+/** Live match minute for cards (e.g. 112', HT, ET) — empty when not live. */
+function liveMinuteLabel(m) {
+  if (!m || m.status !== "live") return "";
+  const minute = String(m.minute || "").trim();
+  return minute;
+}
+
+window.liveMinuteLabel = liveMinuteLabel;
+
 function sortDisplayMatches(matches) {
   const order = { live: 0, upcoming: 1, ended: 2 };
   return matches.sort((a, b) => {

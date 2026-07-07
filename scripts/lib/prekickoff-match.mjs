@@ -10,9 +10,49 @@ import { embedKeyFor, loadBindings } from "../channel-bindings-lib.js";
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const TODAY_JSON = path.join(ROOT, "assets", "data", "today.json");
 
+/** Load fixtures from today.json merged with live ESPN scoreboard (kickoff + status). */
+export async function loadFreshMatches() {
+  const cached = loadTodayMatches();
+  try {
+    const { createRequire } = await import("node:module");
+    const require = createRequire(import.meta.url);
+    const { mergeMatches, normalizeEspnEvent } = require("../matches-lib.js");
+    const range = espnDateRange();
+    const leagues = ["fifa.world"];
+    const settled = await Promise.allSettled(
+      leagues.map(async (slug) => {
+        const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${slug}/scoreboard?dates=${range}&limit=100`;
+        const res = await fetch(url, {
+          headers: { "User-Agent": "morsh-live-prekickoff/1.0", Accept: "application/json" },
+        });
+        if (!res.ok) throw new Error(`ESPN ${res.status}`);
+        const json = await res.json();
+        const league = json.leagues && json.leagues[0] ? json.leagues[0] : { slug };
+        return (json.events || []).map((e) => normalizeEspnEvent(e, league));
+      })
+    );
+    const espn = settled.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
+    if (!espn.length) return cached;
+    return mergeMatches(cached, espn);
+  } catch (e) {
+    console.warn("loadFreshMatches: ESPN merge failed, using today.json only:", e.message);
+    return cached;
+  }
+}
+
 export function loadTodayMatches() {
   const doc = JSON.parse(fs.readFileSync(TODAY_JSON, "utf8"));
   return Array.isArray(doc.matches) ? doc.matches : [];
+}
+
+function espnDateRange(now = new Date()) {
+  const iso = (d) => d.toISOString().slice(0, 10);
+  const shift = (days) => {
+    const d = new Date(now);
+    d.setUTCDate(d.getUTCDate() + days);
+    return iso(d);
+  };
+  return `${shift(-1).replace(/-/g, "")}-${shift(1).replace(/-/g, "")}`;
 }
 
 export function buildWatchUrl(base, match, { embedKey, serv } = {}) {
@@ -44,8 +84,8 @@ export function selectMatchesWithin(matches, withinMinutes = 90, now = Date.now(
   });
 }
 
-/** Matches whose kickoff is in (now + minLead, now + maxLead] minutes. */
-export function selectPrekickoffMatches(matches, { windowMinutes = 45, slackMinutes = 10, now = Date.now() } = {}) {
+/** Matches whose kickoff is in [now + (window - slack), now + (window + slack)] minutes — e.g. T-45±15 → 30–60 min before kickoff. */
+export function selectPrekickoffMatches(matches, { windowMinutes = 45, slackMinutes = 15, now = Date.now() } = {}) {
   const minMs = (windowMinutes - slackMinutes) * 60 * 1000;
   const maxMs = (windowMinutes + slackMinutes) * 60 * 1000;
   return (matches || []).filter((m) => {

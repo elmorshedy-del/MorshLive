@@ -410,23 +410,34 @@
     if (!before || !after) return true;
     return JSON.stringify(before.lineups) !== JSON.stringify(after.lineups)
       || JSON.stringify(before.stats) !== JSON.stringify(after.stats)
-      || JSON.stringify(before.goals) !== JSON.stringify(after.goals);
+      || JSON.stringify(before.goals) !== JSON.stringify(after.goals)
+      || before.minute !== after.minute
+      || before.score !== after.score
+      || before.status !== after.status;
   }
 
   async function refreshMatchDetail() {
     if (!match || !window.MatchDetailAPI) return;
     if (match.status !== "live" && match.status !== "upcoming") return;
-    const before = { lineups: match.lineups, stats: match.stats };
+    const before = { lineups: match.lineups, stats: match.stats, minute: match.minute, score: match.score, status: match.status };
     try {
       const enriched = await window.MatchDetailAPI.enrichMatch(match, { force: true });
       if (!matchDetailChanged(before, enriched)) return;
       match = enriched;
       const idx = MATCHES.findIndex((m) => m.id === match.id);
       if (idx >= 0) MATCHES[idx] = enriched;
+      fillInfo();
+      renderSidebar();
       renderMatchDetail();
     } catch (e) {
       console.warn("Match detail refresh failed:", e.message);
     }
+  }
+
+  function liveStatusHtml(m, { liveKey = "watch.live" } = {}) {
+    const minute = window.liveMinuteLabel ? window.liveMinuteLabel(m) : (m && m.status === "live" ? String(m.minute || "").trim() : "");
+    const label = minute ? `${t(liveKey)} · ${minute}` : t(liveKey);
+    return `<span class="status-pill status-live">${escapeHtml(label)}</span>`;
   }
 
   function fillInfo() {
@@ -434,10 +445,10 @@
     const commentary = matchIsCommentary();
     document.getElementById("ch-name").textContent = channel.name;
     document.getElementById("ch-status").innerHTML = live
-      ? `<span class="status-pill status-live">${t("watch.live")}</span>`
+      ? liveStatusHtml(match)
       : commentary
-        ? `<span class="status-pill status-ended">${t("watch.endedCommentary")}</span>`
-        : `<span class="status-pill status-upcoming">${t("watch.ready")}</span>`;
+        ? `<span class="status-pill status-ended">${escapeHtml(t("watch.endedCommentary"))}</span>`
+        : `<span class="status-pill status-upcoming">${escapeHtml(t("watch.ready"))}</span>`;
     document.title = commentary
       ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} — ${t("watch.commentary")}`
       : `${channel.name} — ${t("watch.titleSuffix")}`;
@@ -446,7 +457,9 @@
     sub.textContent = match
       ? commentary
         ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.score} · ${t("watch.commentary")}`
-        : `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.league}`
+        : live && match.minute
+          ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.score} · ${match.minute}`
+          : `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.league}`
       : channel.quality;
 
     document.getElementById("info-quality").textContent = channel.quality;
@@ -628,10 +641,12 @@
       const sideLabel = (window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(m))
         ? t("side.commentary")
         : (label[m.status] || m.status);
+      const minute = window.liveMinuteLabel ? window.liveMinuteLabel(m) : "";
+      const statusText = m.status === "live" && minute ? `${sideLabel} · ${minute}` : sideLabel;
       return `<a class="side-match ${match && m.id === match.id ? "active" : ""}" href="watch.html?ch=${m.channelId || "live"}&match=${m.id}">
-         <span class="side-status status-${m.status}">${sideLabel}</span>
-         <span class="side-teams">${m.home} <i>×</i> ${m.away}</span>
-         <span class="side-league">${m.league || ""}</span>
+         <span class="side-status status-${m.status}">${escapeHtml(statusText)}</span>
+         <span class="side-teams">${escapeHtml(m.home)} <i>×</i> ${escapeHtml(m.away)}</span>
+         <span class="side-league">${escapeHtml(m.league || "")}</span>
        </a>`;
     }).join("");
   }
