@@ -29,6 +29,7 @@ import {
   findFrameWithVideo,
   verifyFrameVideo,
   detectNtvEmbedShell,
+  ntvEmbedShellPlayable,
   DEFAULT_STRESS,
   NTV_STRESS,
   classifyStress,
@@ -142,17 +143,31 @@ async function verifyNtvLayer(page, { directUrl, stressSeconds, screenshotPath, 
     result.reason = verdict.reason;
     result.laggy = verdict.laggy;
   } else {
-    const embed = await detectNtvEmbedShell(page);
-    result.embed = embed;
-    const manifestOk = httpProbe?.ok === true;
-    if (embed.streamsCenter) {
+    const shell = await ntvEmbedShellPlayable(page);
+    result.embed = shell.embed;
+    if (shell.ok) {
       result.mode = "streams_center_embed";
       result.ok = true;
-      result.laggy = !manifestOk;
-      result.reason = manifestOk ? "embed_and_manifest" : "embed_shell_laggy";
-      result.frameUrl = embed.streamsCenter;
+      result.laggy = httpProbe?.ok !== true;
+      result.reason = shell.reason;
+      result.frameUrl = shell.embed?.streamsCenter || null;
+      if (shell.videoHit) {
+        const stress = await verifyFrameVideo(shell.videoHit.frame, { ...NTV_STRESS, stressSeconds });
+        result.stress = {
+          reason: stress.reason,
+          stalls: stress.stalls,
+          totalStallMs: stress.totalStallMs,
+          samples: stress.samples?.length || 0,
+          laggy: stress.laggy,
+        };
+        const verdict = classifyStress(stress, { allowLaggy: true });
+        result.ok = verdict.ok;
+        result.reason = verdict.reason;
+        result.laggy = verdict.laggy;
+      }
     } else {
-      result.reason = "no_ntv_shell";
+      result.reason = shell.reason;
+      result.shellText = shell.shellText || null;
     }
   }
 

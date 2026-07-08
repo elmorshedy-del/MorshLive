@@ -46,7 +46,7 @@ export async function findFrameWithVideo(page, pattern, { maxDepth = 5, waitMs =
   return null;
 }
 
-/** NTV may use cross-origin streams.center Clappr — no readable <video>. */
+/** NTV may use cross-origin streams.center Clappr — verify shell is not dead. */
 export async function detectNtvEmbedShell(page) {
   const frames = page.frames().map((f) => f.url());
   const outer = frames.find((u) => /\/wk\/albaplayer\/ntv\//i.test(u));
@@ -56,6 +56,28 @@ export async function detectNtvEmbedShell(page) {
     streamsCenter: center || null,
     frameCount: frames.length,
   };
+}
+
+/** True only when streams.center iframe loads real content (not 403 Forbidden). */
+export async function ntvEmbedShellPlayable(page) {
+  const embed = await detectNtvEmbedShell(page);
+  if (!embed.streamsCenter) return { ok: false, reason: "no_ntv_shell", embed };
+  const centerFrame = page.frames().find((f) => /streams\.center/i.test(f.url()));
+  if (!centerFrame) return { ok: false, reason: "no_center_frame", embed };
+  let shellText = "";
+  try {
+    shellText = await centerFrame.evaluate(() => (document.body && document.body.innerText) || "");
+  } catch {
+    return { ok: false, reason: "center_cross_origin", embed };
+  }
+  if (/forbidden|access denied|blocked/i.test(shellText)) {
+    return { ok: false, reason: "embed_forbidden", embed, shellText: shellText.trim().slice(0, 120) };
+  }
+  const videoHit = await findFrameWithVideo(page, null, { attempts: 8, waitMs: 2000 });
+  if (videoHit && videoHit.state.videoWidth > 0 && videoHit.state.currentTime > 0) {
+    return { ok: true, reason: "embed_video", embed, videoHit };
+  }
+  return { ok: false, reason: "embed_no_video", embed, shellText: shellText.trim().slice(0, 120) };
 }
 
 async function frameHasVideo(frame, { maxDepth = 4, depth = 0 } = {}) {
