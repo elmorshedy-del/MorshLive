@@ -8,6 +8,10 @@
   "homeMaxKeepFraction": 0.9,
   "homeDayTzOffsetHours": 3,
   "homeDisplayDays": 3,
+  "homeRecentDays": 2,
+  "homeRecentTargetPerDay": 4,
+  "homeRecentMinKeepFraction": 0.5,
+  "homeRecentMaxKeepFraction": 0.85,
   "matchFetchLimit": 50,
   "universalTerms": [
     "World Cup",

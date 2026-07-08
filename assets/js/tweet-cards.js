@@ -114,14 +114,26 @@
       </div>`;
   }
 
+  function mediaBlockHtml(items) {
+    const list = (items || []).filter((item) => item && (item.previewUrl || item.url));
+    if (!list.length) return "";
+    if (list.length === 1) return mediaHtml(list[0]);
+    const count = Math.min(list.length, 4);
+    return `
+      <div class="kz-tweet__media-grid kz-tweet__media-grid--${count}">
+        ${list.slice(0, 4).map((item) => mediaHtml(item)).join("")}
+      </div>`;
+  }
+
   function memeHtml(meme, opts) {
     if (!meme || meme.type !== "tweet" || !meme.url || !memeHasMedia(meme)) return "";
-    const item = meme.media[0];
+    const caption = tweetText(meme.text);
     if (opts && opts.compact) {
       return `
       <article class="kz-tweet kz-tweet--compact">
         <a class="kz-tweet__link" href="${escapeHtml(meme.url)}" target="_blank" rel="noopener noreferrer" aria-label="@${escapeHtml(meme.author || "X")}"></a>
-        ${mediaHtml(item)}
+        ${mediaBlockHtml(meme.media)}
+        ${caption ? `<p class="kz-tweet__text kz-tweet__text--compact" dir="auto">${caption}</p>` : ""}
       </article>`;
     }
     const showMatch = opts && opts.showMatch;
@@ -141,8 +153,8 @@
           </div>
           <a class="kz-tweet__x" href="${escapeHtml(meme.url)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(t("tournament.viewOnX"))}">𝕏</a>
         </div>
-        <p class="kz-tweet__text" dir="auto">${tweetText(meme.text)}</p>
-        ${mediaHtml(item)}
+        <p class="kz-tweet__text" dir="auto">${caption}</p>
+        ${mediaBlockHtml(meme.media)}
         <footer class="kz-tweet__foot">
           <span class="kz-tweet__stat" title="${t("tournament.tweetLikes")}">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
