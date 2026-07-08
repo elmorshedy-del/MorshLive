@@ -3765,7 +3765,7 @@ async function fetchAccountTweets(bearer, userId, startTime, endTime) {
   return { tweets: json.data || [], includes: json.includes || {} };
 }
 
-async function fetchAccountTweetsSince(bearer, userId, startTime, endTime, maxPages = 12) {
+async function fetchAccountTweetsSince(bearer, userId, startTime, endTime, maxPages = 4) {
   const tweets = [];
   const includes = { media: [], users: [] };
   let nextToken = null;
@@ -4281,7 +4281,8 @@ function computeAccountLikesThreshold(pool, memeConfig) {
   if (!entries.length) {
     return { threshold: 0, keepFraction: 1, estimatedPerDay: 0, poolSize: 0, passing: 0, daysSinceWc: 0 };
   }
-  const sinceMs = Date.parse(memeConfig.homeSinceUtc || WC_HOME_SINCE_UTC);
+  let sinceMs = Date.parse(memeConfig.homeSinceUtc || WC_HOME_SINCE_UTC);
+  if (isNaN(sinceMs)) sinceMs = Date.parse(WC_HOME_SINCE_UTC);
   const days = Math.max(1, (Date.now() - sinceMs) / 86400000);
   const targetPerDay = memeConfig.homeTargetPerDay || 4;
   const minK = memeConfig.homeMinKeepFraction ?? 0.7;
@@ -4352,16 +4353,24 @@ async function fetchHomeViralMemes(memeConfig, bearer, timelineCache) {
   const accountStats = {};
   const memes = [];
 
-  for (const acct of accounts) {
-    const pool = await collectAccountHomePool(acct, config, bearer, timelineCache);
-    const stats = computeAccountLikesThreshold(pool, config);
-    thresholds[acct.username] = stats.threshold;
-    accountStats[acct.username] = stats;
-    for (const m of pool) {
-      if (!memeInRecentDays(m.postedAt, tz, displayDays)) continue;
-      if ((Number(m.likes) || 0) < stats.threshold) continue;
-      memes.push({ ...m, likesThreshold: stats.threshold });
-    }
+  const accountRows = await Promise.all(
+    accounts.map(async (acct) => {
+      const pool = await collectAccountHomePool(acct, config, bearer, timelineCache);
+      const stats = computeAccountLikesThreshold(pool, config);
+      const hits = [];
+      for (const m of pool) {
+        if (!memeInRecentDays(m.postedAt, tz, displayDays)) continue;
+        if ((Number(m.likes) || 0) < stats.threshold) continue;
+        hits.push({ ...m, likesThreshold: stats.threshold });
+      }
+      return { username: acct.username, stats, hits };
+    })
+  );
+
+  for (const row of accountRows) {
+    thresholds[row.username] = row.stats.threshold;
+    accountStats[row.username] = row.stats;
+    memes.push(...row.hits);
   }
 
   return {
