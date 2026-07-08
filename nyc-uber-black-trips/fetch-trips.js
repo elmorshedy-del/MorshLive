@@ -1,37 +1,31 @@
 #!/usr/bin/env node
 /**
- * Aggregate Uber Black trips per year (2021–2027) from NYC Open Data.
+ * Aggregate Uber trips per year (2021–2027) from NYC Open Data.
  *
- * Uses the same underlying source as https://data.cityofnewyork.us/api/v3/views/gre9-vvjv/query.json
- * (FHV Base Aggregate Report, dataset 2v9c-2k7f) plus HVFHV trip datasets for vehicle-type proxy.
+ * Same source as https://data.cityofnewyork.us/api/v3/views/gre9-vvjv/query.json
+ * (FHV Base Aggregate Report 2v9c-2k7f, SEARCH 'uber').
  *
  * Identification fallback chain:
- *   1. Explicit "Uber Black" in base_name / dba
- *   2. Vehicle-type proxy: Uber trips on TLC Black Car dispatching bases
- *   3. Business trips: rolled-up UBER row (SEARCH 'uber' in gre9-vvjv view)
+ *   1. Explicit "Uber Black" in base_name / dba (product tier — not in TLC data today)
+ *   2. Uber-only via HVFHS license HV0003 (trip-level datasets, 2021–2023)
+ *   3. Uber business aggregate: rolled-up UBER row (excludes non-Uber limo/black-car bases)
+ *
+ * We do NOT filter by Black Car base type — that would include unrelated limo companies.
  */
 
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const SOCRATA_HOST = "https://data.cityofnewyork.us";
 const AGGREGATE_DATASET = "2v9c-2k7f";
 const V3_VIEW = "gre9-vvjv";
+const UBER_HVFHS = "HV0003";
 const START_YEAR = 2021;
 const END_YEAR = 2027;
 
-/** Yearly HVFHV trip datasets on Open Data (full-year parquet not exposed via SoQL after 2023). */
+/** Yearly HVFHV trip datasets on Open Data (not available via SoQL after 2023). */
 const HVFHV_BY_YEAR = {
   2021: "5ufr-wvc5",
   2022: "g6pj-fsah",
   2023: "u253-aew4",
 };
-
-const BLACK_BASES = JSON.parse(
-  readFileSync(join(__dirname, "uber-black-bases.json"), "utf8")
-).bases;
 
 const format = process.argv.includes("--format")
   ? process.argv[process.argv.indexOf("--format") + 1] ?? "table"
@@ -74,7 +68,18 @@ async function fetchExplicitUberBlack(year) {
   return total > 0 ? total : null;
 }
 
-async function fetchBusinessTrips(year) {
+async function fetchUberHvfhsTrips(year) {
+  const datasetId = HVFHV_BY_YEAR[year];
+  if (!datasetId) return null;
+
+  const rows = await socrataQuery(datasetId, {
+    $select: "count(*)",
+    $where: `hvfhs_license_num='${UBER_HVFHS}'`,
+  });
+  return Number(rows[0]?.count ?? 0);
+}
+
+async function fetchUberBusinessAggregate(year) {
   const appToken = process.env.SOCRATA_APP_TOKEN;
   if (appToken) {
     try {
@@ -96,39 +101,27 @@ async function fetchBusinessTrips(year) {
   return Number(rows[0]?.sum_total_dispatched_trips ?? 0);
 }
 
-async function fetchVehicleTypeProxy(year) {
-  const datasetId = HVFHV_BY_YEAR[year];
-  if (!datasetId) return null;
-
-  const baseList = BLACK_BASES.map((b) => `'${b}'`).join(",");
-  const rows = await socrataQuery(datasetId, {
-    $select: "count(*)",
-    $where: `hvfhs_license_num='HV0003' AND dispatching_base_num in(${baseList})`,
-  });
-  return Number(rows[0]?.count ?? 0);
-}
-
 async function resolveYear(year) {
   const explicit = await fetchExplicitUberBlack(year);
   if (explicit != null) {
     return { year, trips: explicit, method: "uber_black_explicit" };
   }
 
-  const proxy = await fetchVehicleTypeProxy(year);
-  if (proxy != null && proxy > 0) {
-    return { year, trips: proxy, method: "vehicle_type_black_car_bases" };
+  const hvfhs = await fetchUberHvfhsTrips(year);
+  if (hvfhs != null && hvfhs > 0) {
+    return { year, trips: hvfhs, method: "uber_hvfhs_hv0003" };
   }
 
-  const business = await fetchBusinessTrips(year);
-  if (business > 0) {
-    return { year, trips: business, method: "business_trips_uber_aggregate" };
+  const aggregate = await fetchUberBusinessAggregate(year);
+  if (aggregate > 0) {
+    return { year, trips: aggregate, method: "uber_business_aggregate" };
   }
 
   return { year, trips: null, method: "no_data" };
 }
 
 function printTable(results) {
-  console.log("\nUber Black trips by year (NYC TLC Open Data)\n");
+  console.log("\nUber trips by year (NYC TLC Open Data — Uber only, not all Black Car/limo bases)\n");
   console.log("Year   | Trips          | Method");
   console.log("-------|----------------|----------------------------------");
   for (const row of results) {
@@ -137,9 +130,10 @@ function printTable(results) {
     console.log(`${row.year}   | ${trips} | ${row.method}`);
   }
   console.log(
-    "\nNote: TLC does not label 'Uber Black' as a product tier. Years 2021–2023 use Black Car base proxy;"
+    "\nNote: TLC does not separate Uber Black from other Uber products (UberX, etc.)."
   );
-  console.log("2024+ use the UBER business aggregate (gre9-vvjv / 2v9c-2k7f). 2027 has no published data yet.");
+  console.log("Counts are all Uber-dispatched trips. Black Car base type is NOT used — it includes non-Uber limos.");
+  console.log("2026 is partial (Jan–Mar). 2027 has no published data.");
 }
 
 async function main() {
