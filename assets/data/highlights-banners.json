@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-07-08T05:36:13.387Z",
+  "updatedAt": "2026-07-08T05:48:18.934Z",
   "days": [
     {
       "date": "2026-07-07",
@@ -25,8 +25,9 @@
           "away": "England",
           "score": "2 - 3",
           "kickoffUtc": "2026-07-06T01:00Z",
-          "poster": "",
-          "stage": ""
+          "poster": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=ajk5VTk4VXhYYVRkRkRwRGIzTzN0MmxNVzVzY0FwR0s0bGUxNk1mL09MYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5NjU2NjM3MTUxNTEz&keypair=ZmRBVlA0OElsbWFCSVJuVjJsbEo1b0JJb09tSFdVRk9uZEVmcFhpdmVycz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTY1NjYzNzE1MTUxMw==",
+          "stage": "",
+          "embed": "https://nvtboo.vortexvisionworks.com/embed/WAOCAqgXRSoPe"
         }
       ]
     }

@@ -72,6 +72,28 @@ function pickPrimaryHighlight(highlights) {
   return null;
 }
 
+function highlightLookupRank(entry) {
+  let rank = 0;
+  if (entry.kind === "full" || entry.clip === "full") rank += 4;
+  else if (entry.kind === "goals" || entry.clip === "goals") rank += 2;
+  if (entry.thumbnail) rank += 8;
+  if (entry.videoUrl) rank += 1;
+  return rank;
+}
+
+/** Best poster/embed per match key from highlightsIndex rows. */
+function buildHighlightLookup(highlightsIndex) {
+  const byKey = new Map();
+  for (const entry of highlightsIndex || []) {
+    if (!entry?.key || !entry.videoUrl) continue;
+    const cur = byKey.get(entry.key);
+    if (!cur || highlightLookupRank(entry) > highlightLookupRank(cur)) {
+      byKey.set(entry.key, entry);
+    }
+  }
+  return byKey;
+}
+
 function normalizeHighlightBucket(bucket) {
   if (!bucket) return bucket;
   const out = {};
@@ -245,6 +267,7 @@ module.exports = {
   normalizeHighlightBucket,
   enrichHighlightMeta,
   pickPrimaryHighlight,
+  buildHighlightLookup,
   validateClip,
   extractEmbedIds,
 };

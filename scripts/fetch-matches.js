@@ -25,7 +25,7 @@ const {
   pinEndedChannels,
 } = require("./commentators-lib");
 const { attachSummaries, buildHighlightQueries, pickArabicVideo, arabicTeam } = require("./highlights-lib");
-const { findVortexHighlight, fetchVortexEmbedMeta, normalizeHighlightBucket, enrichHighlightMeta, pickPrimaryHighlight } = require("./vortex-highlights-lib");
+const { findVortexHighlight, fetchVortexEmbedMeta, normalizeHighlightBucket, enrichHighlightMeta, pickPrimaryHighlight, buildHighlightLookup } = require("./vortex-highlights-lib");
 const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-highlights-lib");
 const { parseEspnMatchId, extractLineups, extractMatchStats, extractGoals } = require("./match-detail-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
@@ -354,13 +354,37 @@ function mergeReplayFromPrevious(matches, previousPayload) {
   const replayRestored = mergeReplayFromPrevious(matches, previousPayload);
   if (replayRestored) console.log(`replay merge: restored goals/clips on ${replayRestored} ended matches`);
   const highlightsIndex = Array.from(highlightsByKey.values());
+  const highlightLookup = buildHighlightLookup(highlightsIndex);
 
-  function buildHighlightsBanners(endedMatches) {
+  function resolveBannerMedia(match, lookup) {
+    const key = pairKey(match.home, match.away);
+    const fromMatch = pickPrimaryHighlight(match.highlights) || match.highlight;
+    const fromIndex = lookup.get(key);
+    const videoUrl = fromMatch?.videoUrl || fromIndex?.videoUrl || "";
+    if (!videoUrl) return null;
+    return {
+      videoUrl,
+      thumbnail: fromMatch?.thumbnail || fromIndex?.thumbnail || "",
+    };
+  }
+
+  function enrichBannerEntry(entry, lookup) {
+    if (!entry?.key || !lookup) return entry;
+    const idx = lookup.get(entry.key);
+    if (!idx) return entry;
+    return {
+      ...entry,
+      poster: entry.poster || idx.thumbnail || "",
+      embed: entry.embed || idx.videoUrl || "",
+    };
+  }
+
+  function buildHighlightsBanners(endedMatches, lookup) {
     const daysMap = new Map();
     for (const m of endedMatches) {
       if (m.status !== "ended") continue;
-      const primary = pickPrimaryHighlight(m.highlights) || m.highlight;
-      if (!primary || !primary.videoUrl) continue;
+      const media = resolveBannerMedia(m, lookup);
+      if (!media) continue;
       const day = String(m.kickoffUtc || "").slice(0, 10);
       if (!day) continue;
       if (!daysMap.has(day)) daysMap.set(day, []);
@@ -370,8 +394,8 @@ function mergeReplayFromPrevious(matches, previousPayload) {
         away: m.away,
         score: m.score || "",
         kickoffUtc: m.kickoffUtc,
-        poster: primary.thumbnail || "",
-        embed: primary.videoUrl || "",
+        poster: media.thumbnail,
+        embed: media.videoUrl,
         stage: m.stage || "",
       });
     }
@@ -396,7 +420,7 @@ function mergeReplayFromPrevious(matches, previousPayload) {
     return out;
   }
 
-  function mergeHighlightsBanners(previous, fresh, refDay = arabiaTodayIso()) {
+  function mergeHighlightsBanners(previous, fresh, lookup, refDay = arabiaTodayIso()) {
     const allowed = new Set(rollingBannerDates(refDay, HIGHLIGHT_BANNER_DAYS));
     const daysMap = new Map();
     for (const day of (previous && previous.days) || []) {
@@ -412,7 +436,10 @@ function mergeReplayFromPrevious(matches, previousPayload) {
     const days = [...daysMap.entries()]
       .filter(([date]) => allowed.has(date))
       .sort((a, b) => b[0].localeCompare(a[0]))
-      .map(([date, matches]) => ({ date, matches }));
+      .map(([date, matches]) => ({
+        date,
+        matches: matches.map((m) => enrichBannerEntry(m, lookup)),
+      }));
     return { updatedAt: new Date().toISOString(), days };
   }
 
@@ -421,7 +448,11 @@ function mergeReplayFromPrevious(matches, previousPayload) {
     previousBanners = JSON.parse(fs.readFileSync(BANNERS_OUT, "utf8"));
   } catch { /* first run */ }
 
-  const highlightsBanners = mergeHighlightsBanners(previousBanners, buildHighlightsBanners(matches));
+  const highlightsBanners = mergeHighlightsBanners(
+    previousBanners,
+    buildHighlightsBanners(matches, highlightLookup),
+    highlightLookup
+  );
 
   // Pre-match lineups + advanced live stats — same ESPN source already used
   // for scores, so coverage is limited to matches ESPN itself carries (an
