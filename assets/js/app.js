@@ -200,9 +200,16 @@
         ${window.buildGoalsHtml ? window.buildGoalsHtml(m) : ""}
         <div class="live-detail-meta">${footMeta(m)}</div>
         <a class="watch-link live-detail-watch" href="${watchHref(m)}">${ICON.play} ${live ? t("card.watchNow") : t("card.watchCommentary")}</a>
+        ${!live && window.KZHighlights && window.KZHighlights.hasSummaryContent(m)
+          ? `<div class="live-detail-section live-detail-section--highlights">
+               <h3>${ICON.trophy} ${t("card.summary")}</h3>
+               ${window.KZHighlights.summaryBodyHtml(m)}
+             </div>`
+          : ""}
         ${sections}
       </div>`;
     if (window.activateStatBars) window.activateStatBars(wrap);
+    if (window.KZHighlights) window.KZHighlights.bindReplayLaunch(wrap);
     if (m.stats && window.MatchNotice) {
       const statsSlot = document.getElementById("live-stats-notice-slot");
       window.MatchNotice.showStatsBeta(statsSlot).catch(() => {

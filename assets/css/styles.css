@@ -2260,6 +2260,13 @@ body.tournament-video-modal-open { overflow: hidden; }
   scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
 }
 .kz-tweet-rail--home::-webkit-scrollbar { display: none; }
+.kz-tweet-rail--home .kz-tweet {
+  flex: 0 0 min(320px, 88vw);
+  width: min(320px, 88vw);
+  scroll-snap-align: start;
+}
+.live-detail-section--highlights .tournament-highlights-duo,
+.live-detail-section--highlights .tournament-clips-block { margin-top: 10px; }
 .kz-tweet-rail--home .kz-tweet--compact {
   position: relative;
   flex: 0 0 min(340px, 88vw);
