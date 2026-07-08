@@ -83,7 +83,13 @@
   }
 
   function matchLabel(meme) {
+    if (meme.scope === "worldcup" || meme.matchKey === "worldcup") {
+      return t("home.memeWorldCup");
+    }
     if (!meme.home || !meme.away) return "";
+    if (meme.scope === "upcoming" || meme.status === "upcoming") {
+      return `${teamLabel(meme.home)} vs ${teamLabel(meme.away)} · ${t("home.memeUpcoming")}`;
+    }
     const score = meme.score ? ` ${meme.score}` : "";
     return `${teamLabel(meme.home)} vs ${teamLabel(meme.away)}${score}`;
   }

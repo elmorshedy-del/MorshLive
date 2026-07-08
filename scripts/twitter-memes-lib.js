@@ -19,7 +19,13 @@ const SYNDICATION = "https://syndication.twitter.com/srv/timeline-profile/screen
 const UA = "Mozilla/5.0 (compatible; MorshLive/1.0)";
 const USER_IDS_PATH = path.join(__dirname, "..", "assets", "data", "twitter-user-ids.json");
 const MEME_SOURCES_PATH = path.join(__dirname, "..", "assets", "data", "meme-sources.json");
-const { memeCaptionMatches, attachMatchMeta, orderMemesChronological } = require("./lib/meme-match-lib");
+const {
+  memeCaptionMatches,
+  attachMatchMeta,
+  orderMemesChronological,
+  memeWindowForMatch,
+  memeInWindow,
+} = require("./lib/meme-match-lib");
 
 function loadMemeSourcesConfig() {
   try {
@@ -280,7 +286,7 @@ function toMemeEntry(tweet, username) {
 async function discoverMatchMemes(home, away, opts = {}) {
   const token = normalizeBearer(opts.bearerToken || process.env.TWITTER_BEARER_TOKEN);
   const match = opts.match || { home, away, kickoffUtc: opts.kickoffUtc };
-  const window = postMatchWindow(match.kickoffUtc || opts.kickoffUtc);
+  const window = memeWindowForMatch(match);
   if (!window) return [];
 
   const accounts = token ? await resolveMemeUserIds(token) : loadCachedUserIds().accounts || {};

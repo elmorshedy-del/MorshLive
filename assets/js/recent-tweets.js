@@ -30,7 +30,7 @@
     section.hidden = false;
     if (count) count.textContent = t("home.recentTweetsCount", { n: list.length });
     rail.innerHTML = window.KZTweets.railHtml(list, {
-      showMatch: true,
+      showMatch: false,
       railClass: "kz-tweet-rail kz-tweet-rail--home",
     });
     window.KZTweets.bindVideoPlayers(rail);

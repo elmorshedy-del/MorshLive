@@ -3505,9 +3505,11 @@ async function proxyReplayAsset(request) {
   return new Response(request.method === "HEAD" ? null : upstream.body, { status: upstream.status, headers: out });
 }
 
-/* ----------------------------------------------- viral X memes — 3 curated accounts
- * @TrollFootball @Contxtfootball @memesvsfootball
- * GET /api/match-memes?home=&away=&kickoff= */
+/* ----------------------------------------------- viral X memes
+ * Home: @TrollFootball + @memesvsfootball — last 50 each, top 75% by likes
+ * Match tab: any caption mentioning teams or players from curated accounts
+ * GET /api/match-memes?home=&away=&kickoff=
+ * GET /api/recent-memes */
 const MEMES_API_RE = /^\/api\/match-memes\/?$/i;
 const RECENT_MEMES_API_RE = /^\/api\/recent-memes\/?$/i;
 const X_MEDIA_API_RE = /^\/api\/x-media\/?$/i;
@@ -3599,6 +3601,12 @@ function memeCaptionHits(text, home, away, match) {
   return false;
 }
 
+/** Match tab: any team or player mention in caption (no moment gate). */
+function memeCaptionRelates(text, home, away, match) {
+  const s = memeCaptionScoreDetailed(text, home, away, match);
+  return !!(s.homeHit || s.awayHit || s.player > 0);
+}
+
 function memeCaptionScore(text, home, away, match) {
   return memeCaptionScoreDetailed(text, home, away, match).total;
 }
@@ -3607,6 +3615,87 @@ function memeUniversalHits(text, memeConfig) {
   const t = String(text || "").toLowerCase();
   const terms = Array.isArray(memeConfig?.universalTerms) ? memeConfig.universalTerms : [];
   return terms.some((term) => t.includes(String(term).toLowerCase()));
+}
+
+function memePostWindow(kickoffUtc) {
+  const kickoff = Date.parse(kickoffUtc || "");
+  if (isNaN(kickoff)) return null;
+  const now = Date.now();
+  const contextEnd = kickoff + RECENT_MATCH_MEME_CONTEXT_MS;
+  return {
+    start: new Date(kickoff - MEME_LOOKBACK_BEFORE_KICKOFF_MS).toISOString(),
+    end: new Date(Math.min(Math.max(now, kickoff + MEME_MATCH_MS), contextEnd)).toISOString(),
+  };
+}
+
+const MEME_PREVIEW_MS = 14 * 24 * 60 * 60 * 1000;
+
+function memePreviewWindow(kickoffUtc) {
+  const kickoff = Date.parse(kickoffUtc || "");
+  if (isNaN(kickoff) || kickoff <= Date.now()) return null;
+  return {
+    start: new Date(Math.max(Date.now() - 86400000, kickoff - MEME_PREVIEW_MS)).toISOString(),
+    end: new Date(kickoff + 15 * 60 * 1000).toISOString(),
+  };
+}
+
+function inferMemeStatusFromKickoff(kickoffUtc, explicitStatus) {
+  if (explicitStatus === "live" || explicitStatus === "ended" || explicitStatus === "upcoming") {
+    return explicitStatus;
+  }
+  const kickoff = Date.parse(kickoffUtc || "");
+  if (isNaN(kickoff)) return explicitStatus || "ended";
+  const now = Date.now();
+  if (kickoff > now + 5 * 60 * 1000) return "upcoming";
+  if (kickoff + MEME_MATCH_MS < now) return "ended";
+  return "live";
+}
+
+function memeWindowForStatus(kickoffUtc, status) {
+  return status === "upcoming" ? memePreviewWindow(kickoffUtc) : memePostWindow(kickoffUtc);
+}
+
+function resolveMemeTarget(text, matches, universalTerms) {
+  const universal = memeUniversalHits(text, { universalTerms });
+  const ranked = (matches || [])
+    .filter((m) => m?.home && m?.away)
+    .map((m) => {
+      const s = memeCaptionScoreDetailed(text, m.home, m.away, m);
+      const status = inferMemeStatusFromKickoff(m.kickoffUtc, m.status);
+      return { key: highlightPairKeyMemes(m.home, m.away), score: s.total, ...s, match: m, status };
+    })
+    .filter((r) => r.total >= 0.8)
+    .sort((a, b) => b.score - a.score || (Date.parse(b.match.kickoffUtc || "") - Date.parse(a.match.kickoffUtc || "")));
+
+  const top = ranked[0];
+  const second = ranked[1];
+  if (top && memeMatchUnambiguous(top, second)) {
+    const m = top.match;
+    const status = top.status;
+    return {
+      matchKey: top.key,
+      scope: status === "upcoming" ? "upcoming" : "match",
+      home: m.home,
+      away: m.away,
+      score: status === "ended" || status === "live" ? m.score || null : null,
+      kickoffUtc: m.kickoffUtc || null,
+      status,
+    };
+  }
+
+  if (universal) {
+    return {
+      matchKey: "worldcup",
+      scope: "worldcup",
+      home: null,
+      away: null,
+      score: null,
+      kickoffUtc: null,
+      status: null,
+    };
+  }
+
+  return null;
 }
 
 function memeMatchUnambiguous(top, second) {
@@ -3619,21 +3708,7 @@ function memeMatchUnambiguous(top, second) {
 }
 
 function bestMemeMatchKey(text, matches) {
-  const ranked = (matches || [])
-    .filter((m) => m?.home && m?.away)
-    .map((m) => {
-      const s = memeCaptionScoreDetailed(text, m.home, m.away, m);
-      return {
-        key: highlightPairKeyMemes(m.home, m.away),
-        score: s.total,
-        ...s,
-        tieBreak: Date.parse(m.kickoffUtc || "") || 0,
-      };
-    })
-    .filter((r) => r.total >= 0.8)
-    .sort((a, b) => b.score - a.score || b.tieBreak - a.tieBreak);
-  if (!ranked.length) return null;
-  return memeMatchUnambiguous(ranked[0], ranked[1]) ? ranked[0].key : null;
+  return resolveMemeTarget(text, matches, [])?.matchKey || null;
 }
 
 function orderMemesByPostedAt(memes) {
@@ -3651,17 +3726,6 @@ function orderMemesByPostedAt(memes) {
 function memeEngagement(m) {
   const x = m || {};
   return (x.like_count || 0) + (x.retweet_count || 0) * 2 + (x.quote_count || 0) * 2;
-}
-
-function memePostWindow(kickoffUtc) {
-  const kickoff = Date.parse(kickoffUtc || "");
-  if (isNaN(kickoff)) return null;
-  const now = Date.now();
-  const contextEnd = kickoff + RECENT_MATCH_MEME_CONTEXT_MS;
-  return {
-    start: new Date(kickoff - MEME_LOOKBACK_BEFORE_KICKOFF_MS).toISOString(),
-    end: new Date(Math.min(Math.max(now, kickoff + MEME_MATCH_MS), contextEnd)).toISOString(),
-  };
 }
 
 function memeInWindow(createdAt, window) {
@@ -3954,7 +4018,8 @@ async function enrichMemesMedia(memes, bearer) {
 }
 
 async function searchCuratedMemesSyndication(home, away, kickoffUtc, match, memeConfig, timelineCache, seenIds) {
-  const window = memePostWindow(kickoffUtc);
+  const status = inferMemeStatusFromKickoff(kickoffUtc, match?.status);
+  const window = memeWindowForStatus(kickoffUtc, status);
   if (!window) return [];
   const out = [];
   const config = memeConfig || { accounts: [], topPerAccount: 3 };
@@ -3975,6 +4040,40 @@ async function searchCuratedMemesSyndication(home, away, kickoffUtc, match, meme
       .filter((t) => memeInWindow(t.created_at, window) && memeCaptionHits(t.text, home, away, match))
       .map((t) => memeToEntry(t, acct.username, {}));
     out.push(...pickTopMediaMemes(hits, config.topPerAccount || 3));
+  }
+  return out;
+}
+
+async function searchResolvedTimelineMemes(matches, memeConfig, timelineCache, sinceMs, seenIds) {
+  const out = [];
+  const config = memeConfig || { accounts: [], universalTerms: [] };
+  const allMatches = matches || [];
+  for (const acct of config.accounts || []) {
+    let tweets;
+    try {
+      if (timelineCache && timelineCache.has(acct.username)) {
+        tweets = timelineCache.get(acct.username);
+      } else {
+        tweets = await fetchSyndicationTimeline(acct.username, 100);
+        if (timelineCache) timelineCache.set(acct.username, tweets);
+      }
+    } catch {
+      continue;
+    }
+    for (const t of tweets) {
+      if (seenIds && seenIds.has(String(t.id))) continue;
+      if (!tweetPostedRecently(t.created_at, sinceMs)) continue;
+      const target = resolveMemeTarget(t.text, allMatches, config.universalTerms);
+      if (!target) continue;
+      if (target.scope !== "worldcup") {
+        const w = memeWindowForStatus(target.kickoffUtc, target.status);
+        if (w && !memeInWindow(t.created_at, w)) continue;
+      }
+      out.push({
+        entry: memeToEntry(t, acct.username, {}),
+        target,
+      });
+    }
   }
   return out;
 }
@@ -4005,7 +4104,8 @@ async function searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache
 }
 
 async function searchCuratedMemes(bearer, home, away, kickoffUtc, match, memeConfig) {
-  const window = memePostWindow(kickoffUtc);
+  const status = inferMemeStatusFromKickoff(kickoffUtc, match?.status);
+  const window = memeWindowForStatus(kickoffUtc, status);
   if (!window) return [];
   const out = [];
   const config = memeConfig || { accounts: [], topPerAccount: 3 };
@@ -4045,39 +4145,116 @@ async function loadMemeSources(env, origin) {
     _memeSourcesCache = {
       accounts: Array.isArray(json.accounts) ? json.accounts.filter((a) => a?.key && a?.username) : [],
       topPerAccount: Number(json.topPerAccount) || 3,
+      homeAccounts: Array.isArray(json.homeAccounts) ? json.homeAccounts.filter(Boolean) : ["TrollFootball", "memesvsfootball"],
+      homeFetchLimit: Number(json.homeFetchLimit) || 50,
+      homeKeepFraction: Number(json.homeKeepFraction) || 0.75,
+      matchFetchLimit: Number(json.matchFetchLimit) || 50,
       universalTerms: Array.isArray(json.universalTerms) ? json.universalTerms.filter(Boolean) : [],
     };
   } catch {
-    _memeSourcesCache = { accounts: [], topPerAccount: 3, universalTerms: [] };
+    _memeSourcesCache = {
+      accounts: [],
+      topPerAccount: 3,
+      homeAccounts: ["TrollFootball", "memesvsfootball"],
+      homeFetchLimit: 50,
+      homeKeepFraction: 0.75,
+      matchFetchLimit: 50,
+      universalTerms: [],
+    };
   }
   return _memeSourcesCache;
 }
 
-function pruneRecentMemesRuntimeCache(sinceMs) {
-  const kept = (_recentMemesRuntimeCache.memes || [])
-    .filter((m) => tweetPostedRecently(m.postedAt, sinceMs));
-  _recentMemesRuntimeCache.memes = kept;
-  _recentMemesRuntimeCache.seenIds = new Set(
-    kept.map((m) => String(m.tweetId || m.url || "")).filter(Boolean)
-  );
-}
-
-function recentMemesRuntimeFresh(sinceMs) {
-  pruneRecentMemesRuntimeCache(sinceMs);
+function recentMemesRuntimeFresh() {
   return _recentMemesRuntimeCache.memes.length &&
     Date.now() - _recentMemesRuntimeCache.at < RECENT_MEMES_SCAN_CACHE_MS;
 }
 
-function updateRecentMemesRuntimeCache(memes, sinceMs) {
-  const merged = mergeMemeLists(_recentMemesRuntimeCache.memes, memes)
-    .filter((m) => tweetPostedRecently(m.postedAt, sinceMs))
-    .slice(0, RECENT_MEMES_LIMIT);
+function updateRecentMemesRuntimeCache(memes) {
+  const merged = orderMemesByPostedAt(memes).slice(0, RECENT_MEMES_LIMIT);
   _recentMemesRuntimeCache = {
     at: Date.now(),
     memes: merged,
     seenIds: new Set(merged.map((m) => String(m.tweetId || m.url || "")).filter(Boolean)),
   };
   return merged;
+}
+
+/** Minimum likes to keep the top `keepFraction` of tweets (e.g. 0.75 → drop bottom 25%). */
+function likesThresholdForTopFraction(entries, keepFraction = 0.75) {
+  const sorted = (entries || []).map((e) => Number(e.likes) || 0).sort((a, b) => a - b);
+  if (!sorted.length) return 0;
+  const drop = Math.floor(sorted.length * (1 - keepFraction));
+  const idx = Math.min(Math.max(drop, 0), sorted.length - 1);
+  return sorted[idx];
+}
+
+function filterEntriesByLikesThreshold(entries, keepFraction = 0.75) {
+  const threshold = likesThresholdForTopFraction(entries, keepFraction);
+  return {
+    threshold,
+    entries: (entries || []).filter((e) => (Number(e.likes) || 0) >= threshold),
+  };
+}
+
+async function fetchHomeViralMemes(memeConfig, timelineCache) {
+  const config = memeConfig || {};
+  const homeKeys = config.homeAccounts || ["TrollFootball", "memesvsfootball"];
+  const limit = config.homeFetchLimit || 50;
+  const keepFraction = config.homeKeepFraction ?? 0.75;
+  const accounts = (config.accounts || []).filter((a) => homeKeys.includes(a.key));
+  const out = [];
+  const thresholds = {};
+
+  for (const acct of accounts) {
+    let tweets;
+    try {
+      if (timelineCache && timelineCache.has(acct.username)) {
+        tweets = timelineCache.get(acct.username);
+      } else {
+        tweets = await fetchSyndicationTimeline(acct.username, limit);
+        if (timelineCache) timelineCache.set(acct.username, tweets);
+      }
+    } catch {
+      continue;
+    }
+
+    const entries = tweets
+      .slice(0, limit)
+      .map((t) => memeToEntry(t, acct.username, {}))
+      .filter(memeHasMedia);
+    const { threshold, entries: kept } = filterEntriesByLikesThreshold(entries, keepFraction);
+    thresholds[acct.username] = threshold;
+    out.push(...kept.map((e) => ({ ...e, likesThreshold: threshold })));
+  }
+
+  return { memes: orderMemesByPostedAt(out), thresholds };
+}
+
+async function searchMatchMemesSyndication(home, away, match, memeConfig, timelineCache, seenIds) {
+  const config = memeConfig || { accounts: [], matchFetchLimit: 50 };
+  const limit = config.matchFetchLimit || 50;
+  const out = [];
+  for (const acct of config.accounts || []) {
+    let tweets;
+    try {
+      if (timelineCache && timelineCache.has(acct.username)) {
+        tweets = timelineCache.get(acct.username);
+      } else {
+        tweets = await fetchSyndicationTimeline(acct.username, limit);
+        if (timelineCache) timelineCache.set(acct.username, tweets);
+      }
+    } catch {
+      continue;
+    }
+    const hits = tweets
+      .slice(0, limit)
+      .filter((t) => !seenIds || !seenIds.has(String(t.id)))
+      .filter((t) => memeCaptionRelates(t.text, home, away, match))
+      .map((t) => memeToEntry(t, acct.username, {}));
+    out.push(...hits);
+  }
+  return filterMemesWithMedia(out);
 }
 
 async function loadMemesIndex(env, origin) {
@@ -4141,7 +4318,7 @@ async function proxyMatchMemesApi(request, env) {
   let source = memes.length ? (pinned[key]?.length && !idx[key]?.length ? "pinned" : "archive") : "none";
 
   try {
-    const synd = await searchCuratedMemesSyndication(home, away, kickoff, match, memeConfig);
+    const synd = await searchMatchMemesSyndication(home, away, match, memeConfig);
     if (synd.length) {
       memes = mergeMemeLists(memes, synd);
       source = source === "none" ? "twitter-syndication" : `${source}+twitter-syndication`;
@@ -4173,12 +4350,14 @@ async function proxyMatchMemesApi(request, env) {
       if (source === "archive" || source === "pinned") source = "archive+media";
     } catch { /* text-only fallback */ }
     memes = filterMemesWithMedia(memes);
+    const status = inferMemeStatusFromKickoff(match.kickoffUtc, match.status);
     memes = orderMemesByPostedAt(memes).map((meme) => ({
       ...meme,
       home: match.home,
       away: match.away,
-      score: match.score || meme.score || null,
+      score: status === "upcoming" ? null : (match.score || meme.score || null),
       kickoffUtc: match.kickoffUtc || meme.kickoffUtc || null,
+      status,
     }));
   }
 
@@ -4247,165 +4426,64 @@ async function proxyRecentMemesApi(request, env) {
     "Cache-Control": "public, max-age=600",
     "X-KZ-Proxy": "recent-memes-api",
   };
-  const sinceMs = Date.now() - RECENT_MEMES_MS;
-  const matchSinceMs = Date.now() - RECENT_MATCH_MEME_CONTEXT_MS;
   const responseCacheKey = new Request(`${origin}/api/recent-memes/__response-cache`);
-  const seenCacheKey = new Request(`${origin}/api/recent-memes/__seen-cache`);
   const forceLive = url.searchParams.get("live") === "1";
   if (!forceLive) {
     try {
       const cached = await caches.default.match(responseCacheKey);
       if (cached) {
         const h = new Headers(cached.headers);
-        h.set("X-KZ-Meme-Source", "runtime-cache");
+        h.set("X-KZ-Meme-Source", "edge-cache");
         return new Response(cached.body, { status: 200, headers: h });
       }
     } catch { /* cache optional */ }
-  }
-  const [idx, pinned, todayMatches, archiveMatches, memeConfig] = await Promise.all([
-    loadMemesIndex(env, origin),
-    loadPinnedMemes(env, origin),
-    loadTodayMatches(env, origin),
-    loadTournamentArchiveMatches(env, origin),
-    loadMemeSources(env, origin),
-  ]);
-
-  const matchByKey = new Map();
-  const recentMatchKeys = new Set();
-  for (const m of [...todayMatches, ...archiveMatches]) {
-    if (!m.home || !m.away) continue;
-    const key = highlightPairKeyMemes(m.home, m.away);
-    if (!matchByKey.has(key)) matchByKey.set(key, m);
-    if (matchKickoffRecently(m.kickoffUtc, matchSinceMs)) recentMatchKeys.add(key);
-  }
-
-  if (recentMemesRuntimeFresh(sinceMs)) {
-    const cachedMemes = filterMemesWithMedia(_recentMemesRuntimeCache.memes)
-      .slice(0, RECENT_MEMES_LIMIT);
-    return new Response(JSON.stringify({
-      memes: cachedMemes,
-      count: cachedMemes.length,
-      windowHours: 24,
-      matchCount: recentMatchKeys.size,
-      cached: true,
-    }), {
-      status: 200,
-      headers: { ...headers, "X-KZ-Meme-Source": "runtime-cache" },
-    });
-  }
-
-  const byTweetId = new Map();
-  const hasMemeForKey = (matchKey) => [...byTweetId.values()].some((m) => m.matchKey === matchKey);
-  const scannerSeenIds = new Set(_recentMemesRuntimeCache.seenIds || []);
-  let cacheSeedMemes = [];
-  try {
-    const seenCached = await caches.default.match(seenCacheKey);
-    if (seenCached) {
-      const seenJson = await seenCached.json();
-      for (const id of seenJson.seenIds || []) scannerSeenIds.add(String(id));
-      cacheSeedMemes = Array.isArray(seenJson.memes) ? seenJson.memes : [];
-    }
-  } catch { /* cache optional */ }
-  const ingest = (matchKey, meme) => {
-    if (!meme || meme.type !== "tweet") return;
-    const meta = matchByKey.get(matchKey);
-    const postedOk = tweetPostedRecently(meme.postedAt, sinceMs);
-    const matchOk = recentMatchKeys.has(matchKey);
-    if (!postedOk && !matchOk) return;
-    const id = String(meme.tweetId || meme.url || "");
-    if (!id) return;
-    scannerSeenIds.add(id);
-    const row = {
-      ...meme,
-      matchKey,
-      home: meta?.home || meme.home || null,
-      away: meta?.away || meme.away || null,
-      score: meta?.score || meme.score || null,
-      kickoffUtc: meta?.kickoffUtc || meme.kickoffUtc || null,
-    };
-    const prev = byTweetId.get(id);
-    if (!prev || (row.engagement || 0) > (prev.engagement || 0)) byTweetId.set(id, row);
-  };
-
-  for (const meme of cacheSeedMemes) {
-    ingest(meme.matchKey || "worldcup", meme);
-  }
-  for (const meme of _recentMemesRuntimeCache.memes || []) {
-    ingest(meme.matchKey || "worldcup", meme);
-  }
-  for (const [key, list] of Object.entries(idx)) {
-    for (const meme of list || []) ingest(key, meme);
-  }
-  for (const [key, list] of Object.entries(pinned)) {
-    for (const meme of list || []) ingest(key, meme);
-  }
-
-  const timelineCache = new Map();
-  try {
-    const universal = await searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache, sinceMs, scannerSeenIds);
-    for (const meme of universal) {
-      const matchKey = bestMemeMatchKey(meme.text, [...matchByKey.values()]);
-      ingest(matchKey || "worldcup", {
-        ...meme,
-        scope: matchKey ? "match" : "worldcup",
+    if (recentMemesRuntimeFresh()) {
+      const cachedMemes = filterMemesWithMedia(_recentMemesRuntimeCache.memes)
+        .slice(0, RECENT_MEMES_LIMIT);
+      return new Response(JSON.stringify({
+        memes: cachedMemes,
+        count: cachedMemes.length,
+        accounts: ["TrollFootball", "memesvsfootball"],
+        cached: true,
+      }), {
+        status: 200,
+        headers: { ...headers, "X-KZ-Meme-Source": "runtime-cache" },
       });
     }
-  } catch { /* universal timeline optional */ }
-
-  const syndicateCandidates = [...recentMatchKeys]
-    .map((key) => ({ key, m: matchByKey.get(key) }))
-    .filter((x) => x.m)
-    .sort((a, b) => Date.parse(b.m.kickoffUtc) - Date.parse(a.m.kickoffUtc));
-  await Promise.all(syndicateCandidates.map(async ({ key, m }) => {
-    try {
-      const hits = await searchCuratedMemesSyndication(m.home, m.away, m.kickoffUtc, m, memeConfig, timelineCache, scannerSeenIds);
-      for (const meme of hits) ingest(key, meme);
-    } catch { /* syndication optional */ }
-  }));
-
-  const bearer = env && env.TWITTER_BEARER_TOKEN;
-  if (bearer) {
-    for (const { key, m } of syndicateCandidates) {
-      if (hasMemeForKey(key)) continue;
-      try {
-        const hits = await searchCuratedMemes(bearer, m.home, m.away, m.kickoffUtc, m, memeConfig);
-        for (const meme of hits) ingest(key, meme);
-      } catch { /* live API optional */ }
-    }
   }
 
-  let memes = orderMemesByPostedAt([...byTweetId.values()]).slice(0, RECENT_MEMES_LIMIT);
+  const memeConfig = await loadMemeSources(env, origin);
+  const bearer = env && env.TWITTER_BEARER_TOKEN;
+  let source = "twitter-syndication";
+  let thresholds = {};
+
+  let memes = [];
+  try {
+    const pack = await fetchHomeViralMemes(memeConfig);
+    memes = pack.memes;
+    thresholds = pack.thresholds;
+  } catch { /* syndication optional */ }
 
   if (memes.length) {
     try {
       memes = await enrichMemesMedia(memes, bearer);
     } catch { /* static */ }
-    memes = filterMemesWithMedia(memes);
+    memes = filterMemesWithMedia(memes).slice(0, RECENT_MEMES_LIMIT);
   }
-  memes = updateRecentMemesRuntimeCache(memes, sinceMs);
+
+  memes = updateRecentMemesRuntimeCache(memes);
 
   const body = JSON.stringify({
     memes,
     count: memes.length,
-    windowHours: 24,
-    matchCount: recentMatchKeys.size,
+    accounts: memeConfig.homeAccounts || ["TrollFootball", "memesvsfootball"],
+    thresholds,
+    keepFraction: memeConfig.homeKeepFraction ?? 0.75,
+    fetchLimit: memeConfig.homeFetchLimit || 50,
   });
-  const response = new Response(body, {
-    status: 200,
-    headers,
-  });
+  const response = new Response(body, { status: 200, headers });
   try {
     await caches.default.put(responseCacheKey, response.clone());
-    await caches.default.put(seenCacheKey, new Response(JSON.stringify({
-      at: Date.now(),
-      seenIds: [...scannerSeenIds],
-      memes,
-    }), {
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "Cache-Control": "public, max-age=21600",
-      },
-    }));
   } catch { /* cache optional */ }
   return response;
 }

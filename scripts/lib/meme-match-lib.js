@@ -1,29 +1,21 @@
 /**
  * Deterministic meme ↔ fixture matching (name + kickoff window). No LLM.
- * Allows one team, player, or moment caption when the match is unambiguous.
+ *
+ * Scopes:
+ *   match    — ended/live fixture (score when available)
+ *   upcoming — preview/hype before kickoff (no score)
+ *   worldcup — general tournament meme (no fixture)
  */
 
 const MOMENT_TERMS = [
-  "referee",
-  "var",
-  "penalty",
-  "red card",
-  "save",
-  "keeper",
-  "goalkeeper",
-  "highlights",
-  "miss",
-  "chance",
-  "highlights",
-  "ملخص",
-  "هدف",
-  "تصدي",
-  "حارس",
-  "حكم",
-  "طرد",
-  "جزاء",
-  "فرصة",
-  "عارضة",
+  "referee", "var", "penalty", "red card", "save", "keeper", "goalkeeper",
+  "highlights", "miss", "chance", "hype", "preview",
+  "ملخص", "هدف", "تصدي", "حارس", "حكم", "طرد", "جزاء", "فرصة", "عارضة",
+];
+
+const PREVIEW_TERMS = [
+  "preview", "hype", "predict", "lineup", "starting xi", "countdown",
+  "ready for", "look ahead", "استعداد", "موعد", "قبل", "غدا", "غداً", "غداً",
 ];
 
 function normText(s) {
@@ -58,8 +50,7 @@ function teamHit(text, name) {
   const t = normText(text);
   const n = normTeam(name);
   if (!t || n.length <= 2) return 0;
-  if (t.includes(n)) return 1;
-  return 0;
+  return t.includes(n) ? 1 : 0;
 }
 
 function playerHitScore(text, match) {
@@ -69,8 +60,7 @@ function playerHitScore(text, match) {
   for (const p of playerNamesFromMatch(match)) {
     const pn = normTeam(p);
     if (pn.length > 3 && t.includes(pn)) best = Math.max(best, 1);
-    const parts = pn.split(/\s+/).filter((w) => w.length >= 4);
-    for (const w of parts) {
+    for (const w of pn.split(/\s+/).filter((x) => x.length >= 4)) {
       if (t.includes(w)) best = Math.max(best, 0.8);
     }
   }
@@ -82,7 +72,17 @@ function momentHit(text) {
   return MOMENT_TERMS.some((term) => t.includes(normText(term)));
 }
 
-/** Rich caption score for one fixture. */
+function previewHit(text) {
+  const t = normText(text);
+  return PREVIEW_TERMS.some((term) => t.includes(normText(term)));
+}
+
+function memeUniversalHits(text, universalTerms) {
+  const t = normText(text);
+  const terms = Array.isArray(universalTerms) ? universalTerms : [];
+  return terms.some((term) => t.includes(normText(term)));
+}
+
 function memeCaptionScoreDetailed(text, home, away, match) {
   const homeHit = teamHit(text, home);
   const awayHit = teamHit(text, away);
@@ -97,10 +97,6 @@ function memeCaptionScore(text, home, away, match) {
   return memeCaptionScoreDetailed(text, home, away, match).total;
 }
 
-/**
- * Match caption to a known fixture (post-match window already applied by caller).
- * One team, player, or moment + team/player is enough.
- */
 function memeCaptionMatches(text, home, away, match) {
   const s = memeCaptionScoreDetailed(text, home, away, match);
   if (s.homeHit && s.awayHit) return true;
@@ -119,6 +115,18 @@ function isUnambiguousWinner(top, second) {
   return false;
 }
 
+function inferStatusFromKickoff(kickoffUtc, explicitStatus) {
+  if (explicitStatus === "live" || explicitStatus === "ended" || explicitStatus === "upcoming") {
+    return explicitStatus;
+  }
+  const kickoff = Date.parse(kickoffUtc || "");
+  if (isNaN(kickoff)) return explicitStatus || "ended";
+  const now = Date.now();
+  if (kickoff > now + 5 * 60 * 1000) return "upcoming";
+  if (kickoff + 105 * 60 * 1000 < now) return "ended";
+  return "live";
+}
+
 function memePostWindow(kickoffUtc, opts = {}) {
   const kickoff = Date.parse(kickoffUtc || "");
   if (isNaN(kickoff)) return null;
@@ -133,6 +141,25 @@ function memePostWindow(kickoffUtc, opts = {}) {
   };
 }
 
+/** Hype / preview tweets before kickoff (default: 14 days out → kickoff). */
+function memePreviewWindow(kickoffUtc, opts = {}) {
+  const kickoff = Date.parse(kickoffUtc || "");
+  if (isNaN(kickoff)) return null;
+  const now = Date.now();
+  if (kickoff <= now) return null;
+  const leadMs = (opts.previewDays ?? 14) * 24 * 60 * 60 * 1000;
+  return {
+    start: new Date(Math.max(now - 24 * 60 * 60 * 1000, kickoff - leadMs)).toISOString(),
+    end: new Date(kickoff + (opts.afterKickoffMs ?? 15 * 60 * 1000)).toISOString(),
+  };
+}
+
+function memeWindowForMatch(match, opts = {}) {
+  const status = inferStatusFromKickoff(match?.kickoffUtc, match?.status);
+  if (status === "upcoming") return memePreviewWindow(match.kickoffUtc, opts);
+  return memePostWindow(match.kickoffUtc, opts);
+}
+
 function memeInWindow(createdAt, window) {
   if (!window || !createdAt) return false;
   const t = Date.parse(createdAt);
@@ -144,35 +171,93 @@ function matchPairKey(m) {
   return m.key || [norm(m.home), norm(m.away)].filter(Boolean).sort().join("~");
 }
 
-/** Pick fixture for universal captions — only when one game clearly wins. */
-function bestMemeMatchKey(text, matches) {
-  const ranked = (matches || [])
+function rankMemeFixtures(text, matches) {
+  return (matches || [])
     .filter((m) => m?.home && m?.away)
     .map((m) => {
       const s = memeCaptionScoreDetailed(text, m.home, m.away, m);
-      return { key: matchPairKey(m), score: s.total, ...s, match: m };
+      const status = inferStatusFromKickoff(m.kickoffUtc, m.status);
+      const previewBoost = status === "upcoming" && previewHit(text) ? 0.25 : 0;
+      return {
+        key: matchPairKey(m),
+        score: s.total + previewBoost,
+        ...s,
+        match: m,
+        status,
+      };
     })
     .filter((r) => r.total >= 0.8)
-    .sort((a, b) => b.score - a.score || (Date.parse(b.match.kickoffUtc || "") - Date.parse(a.match.kickoffUtc || "")));
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        (statusPriority(b.status) - statusPriority(a.status)) ||
+        (Date.parse(b.match.kickoffUtc || "") - Date.parse(a.match.kickoffUtc || ""))
+    );
+}
 
-  if (!ranked.length) return null;
+function statusPriority(status) {
+  if (status === "live") return 3;
+  if (status === "upcoming") return 2;
+  return 1;
+}
+
+/**
+ * Route caption → { matchKey, scope, home, away, score, kickoffUtc, status } | worldcup | null.
+ */
+function resolveMemeTarget(text, matches, universalTerms = []) {
+  const universal = memeUniversalHits(text, universalTerms);
+  const ranked = rankMemeFixtures(text, matches);
   const top = ranked[0];
   const second = ranked[1];
-  return isUnambiguousWinner(top, second) ? top.key : null;
+
+  if (top && isUnambiguousWinner(top, second)) {
+    const m = top.match;
+    const status = top.status;
+    return {
+      matchKey: top.key,
+      scope: status === "upcoming" ? "upcoming" : "match",
+      home: m.home,
+      away: m.away,
+      score: status === "ended" || status === "live" ? m.score || null : null,
+      kickoffUtc: m.kickoffUtc || null,
+      status,
+    };
+  }
+
+  if (universal) {
+    return {
+      matchKey: "worldcup",
+      scope: "worldcup",
+      home: null,
+      away: null,
+      score: null,
+      kickoffUtc: null,
+      status: null,
+    };
+  }
+
+  return null;
+}
+
+function bestMemeMatchKey(text, matches) {
+  return resolveMemeTarget(text, matches, [])?.matchKey || null;
 }
 
 function attachMatchMeta(meme, match) {
   if (!match) return meme;
+  const status = inferStatusFromKickoff(match.kickoffUtc, match.status);
+  const scope = status === "upcoming" ? "upcoming" : "match";
   return {
     ...meme,
+    scope: meme.scope || scope,
+    status,
     home: match.home || meme.home || null,
     away: match.away || meme.away || null,
-    score: match.score || meme.score || null,
+    score: status === "ended" || status === "live" ? match.score || meme.score || null : null,
     kickoffUtc: match.kickoffUtc || meme.kickoffUtc || null,
   };
 }
 
-/** Preserve syndication fetch order; tie-break by postedAt desc. */
 function orderMemesChronological(memes) {
   return [...(memes || [])]
     .map((m, i) => ({ ...m, _order: i }))
@@ -189,11 +274,16 @@ module.exports = {
   memeCaptionScore,
   memeCaptionScoreDetailed,
   memeCaptionMatches,
+  memeUniversalHits,
   memePostWindow,
+  memePreviewWindow,
+  memeWindowForMatch,
   memeInWindow,
+  resolveMemeTarget,
   bestMemeMatchKey,
   attachMatchMeta,
   orderMemesChronological,
+  inferStatusFromKickoff,
   playerHitScore,
   momentHit,
 };

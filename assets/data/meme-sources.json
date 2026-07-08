@@ -1,5 +1,9 @@
 {
   "topPerAccount": 3,
+  "homeAccounts": ["TrollFootball", "memesvsfootball"],
+  "homeFetchLimit": 50,
+  "homeKeepFraction": 0.75,
+  "matchFetchLimit": 50,
   "universalTerms": [
     "World Cup",
     "FIFA World Cup",

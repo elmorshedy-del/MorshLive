@@ -305,6 +305,7 @@
         ${matchLineupsHtml(m)}
         ${matchStatsHtml(m)}
         ${matchSummaryHtml(m)}
+        ${window.KZMatchMemes ? window.KZMatchMemes.panelShell(m) : ""}
       </article>`;
   }
 
@@ -321,6 +322,9 @@
     // event (that only fires on user interaction), so activate their bars here.
     if (window.activateStatBars) {
       grid.querySelectorAll(".match-panel[open]").forEach((el) => window.activateStatBars(el));
+    }
+    if (window.KZMatchMemes) {
+      window.KZMatchMemes.hydrateMatchMemes(grid, list).catch(() => { /* optional */ });
     }
     const count = document.getElementById("matches-count");
     if (count) count.textContent = t("matches.count", { n: list.length });
