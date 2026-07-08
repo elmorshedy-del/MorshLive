@@ -18,7 +18,7 @@
     const rail = document.getElementById("recent-tweets-rail");
     if (!section || !rail || !window.KZTweets) return;
 
-    const list = window.KZTweets.mediaMemes(memes, { byEngagement: true });
+    const list = window.KZTweets.mediaMemes(memes, { preserveOrder: true });
     if (!list.length) {
       section.hidden = true;
       return;

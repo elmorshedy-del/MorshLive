@@ -78,6 +78,9 @@
   }
 
   function mediaMemes(memes, opts) {
+    if (opts && opts.preserveOrder) {
+      return (memes || []).filter(memeHasMedia);
+    }
     const sortFn = opts && opts.byEngagement ? sortedMemes : chronologicalMemes;
     return sortFn(memes).filter(memeHasMedia);
   }

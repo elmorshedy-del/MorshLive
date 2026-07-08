@@ -3724,6 +3724,18 @@ function orderMemesByPostedAt(memes) {
     .map(({ _order, ...m }) => m);
 }
 
+function orderMemesOldestFirst(memes) {
+  return [...(memes || [])]
+    .map((m, i) => ({ ...m, _order: i }))
+    .sort((a, b) => {
+      const ta = Date.parse(a.postedAt || "") || 0;
+      const tb = Date.parse(b.postedAt || "") || 0;
+      if (ta !== tb) return ta - tb;
+      return (a._order || 0) - (b._order || 0);
+    })
+    .map(({ _order, ...m }) => m);
+}
+
 function memeEngagement(m) {
   const x = m || {};
   return (x.like_count || 0) + (x.retweet_count || 0) * 2 + (x.quote_count || 0) * 2;
@@ -4184,6 +4196,7 @@ async function loadMemeSources(env, origin) {
       homeMinKeepFraction: Number(json.homeMinKeepFraction) || 0.7,
       homeMaxKeepFraction: Number(json.homeMaxKeepFraction) || 0.9,
       homeDayTzOffsetHours: Number(json.homeDayTzOffsetHours) || 3,
+      homeDisplayDays: Number(json.homeDisplayDays) || 3,
       matchFetchLimit: Number(json.matchFetchLimit) || 50,
       universalTerms: Array.isArray(json.universalTerms) ? json.universalTerms.filter(Boolean) : [],
     };
@@ -4198,6 +4211,7 @@ async function loadMemeSources(env, origin) {
       homeMinKeepFraction: 0.7,
       homeMaxKeepFraction: 0.9,
       homeDayTzOffsetHours: 3,
+      homeDisplayDays: 3,
       matchFetchLimit: 50,
       universalTerms: [],
     };
@@ -4212,7 +4226,7 @@ function recentMemesRuntimeFresh(dayKey) {
 }
 
 function updateRecentMemesRuntimeCache(memes, dayKey) {
-  const merged = orderMemesByPostedAt(memes).slice(0, RECENT_MEMES_LIMIT);
+  const merged = orderMemesOldestFirst(memes).slice(0, RECENT_MEMES_LIMIT);
   _recentMemesRuntimeCache = {
     at: Date.now(),
     dayKey,
@@ -4245,6 +4259,20 @@ function memeDayKey(postedAt, tzOffsetHours = 3) {
 
 function todayMemeDayKey(tzOffsetHours = 3) {
   return memeDayKey(new Date().toISOString(), tzOffsetHours);
+}
+
+function recentMemeDayKeys(tzOffsetHours = 3, dayCount = 3) {
+  const keys = [];
+  const now = Date.now() + tzOffsetHours * 60 * 60 * 1000;
+  for (let i = dayCount - 1; i >= 0; i--) {
+    keys.push(new Date(now - i * 86400000).toISOString().slice(0, 10));
+  }
+  return keys;
+}
+
+function memeInRecentDays(postedAt, tzOffsetHours = 3, dayCount = 3) {
+  const key = memeDayKey(postedAt, tzOffsetHours);
+  return key && recentMemeDayKeys(tzOffsetHours, dayCount).includes(key);
 }
 
 /** Per-account likes bar from WC pool — targets ~N viral memes/day for that account. */
@@ -4316,7 +4344,8 @@ async function collectAccountHomePool(acct, memeConfig, bearer, timelineCache) {
 async function fetchHomeViralMemes(memeConfig, bearer, timelineCache) {
   const config = memeConfig || {};
   const tz = config.homeDayTzOffsetHours ?? 3;
-  const today = todayMemeDayKey(tz);
+  const displayDays = config.homeDisplayDays || 3;
+  const dayKeys = recentMemeDayKeys(tz, displayDays);
   const homeKeys = config.homeAccounts || ["TrollFootball", "memesvsfootball"];
   const accounts = (config.accounts || []).filter((a) => homeKeys.includes(a.key));
   const thresholds = {};
@@ -4329,13 +4358,19 @@ async function fetchHomeViralMemes(memeConfig, bearer, timelineCache) {
     thresholds[acct.username] = stats.threshold;
     accountStats[acct.username] = stats;
     for (const m of pool) {
-      if (memeDayKey(m.postedAt, tz) !== today) continue;
+      if (!memeInRecentDays(m.postedAt, tz, displayDays)) continue;
       if ((Number(m.likes) || 0) < stats.threshold) continue;
       memes.push({ ...m, likesThreshold: stats.threshold });
     }
   }
 
-  return { memes: orderMemesByPostedAt(memes), thresholds, accountStats, today };
+  return {
+    memes: orderMemesOldestFirst(memes),
+    thresholds,
+    accountStats,
+    displayDays,
+    dayKeys,
+  };
 }
 
 async function searchMatchMemesSyndication(home, away, match, memeConfig, timelineCache, seenIds) {
@@ -4554,6 +4589,7 @@ async function proxyRecentMemesApi(request, env) {
         memes: cachedMemes,
         count: cachedMemes.length,
         day: today,
+        displayDays: memeConfig.homeDisplayDays || 3,
         accounts: memeConfig.homeAccounts || ["TrollFootball", "memesvsfootball"],
         cached: true,
       }), {
@@ -4588,6 +4624,8 @@ async function proxyRecentMemesApi(request, env) {
     memes,
     count: memes.length,
     day: today,
+    displayDays: memeConfig.homeDisplayDays || 3,
+    dayKeys: recentMemeDayKeys(tz, memeConfig.homeDisplayDays || 3),
     accounts: memeConfig.homeAccounts || ["TrollFootball", "memesvsfootball"],
     thresholds,
     accountStats,
