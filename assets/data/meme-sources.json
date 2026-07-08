@@ -12,6 +12,9 @@
   "homeRecentTargetPerDay": 4,
   "homeRecentMinKeepFraction": 0.5,
   "homeRecentMaxKeepFraction": 0.85,
+  "homeTodayRampHours": 18,
+  "homeTodayMinLikes": 0,
+  "homeTodayMinAgeFactor": 0.05,
   "matchFetchLimit": 50,
   "universalTerms": [
     "World Cup",

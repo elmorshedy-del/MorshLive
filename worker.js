@@ -4248,6 +4248,9 @@ async function loadMemeSources(env, origin) {
       homeRecentTargetPerDay: Number(json.homeRecentTargetPerDay) || Number(json.homeTargetPerDay) || 4,
       homeRecentMinKeepFraction: Number(json.homeRecentMinKeepFraction) || 0.5,
       homeRecentMaxKeepFraction: Number(json.homeRecentMaxKeepFraction) || 0.85,
+      homeTodayRampHours: Number(json.homeTodayRampHours) || 18,
+      homeTodayMinLikes: Number(json.homeTodayMinLikes) || 0,
+      homeTodayMinAgeFactor: Number(json.homeTodayMinAgeFactor) || 0.05,
       matchFetchLimit: Number(json.matchFetchLimit) || 50,
       universalTerms: Array.isArray(json.universalTerms) ? json.universalTerms.filter(Boolean) : [],
     };
@@ -4267,6 +4270,9 @@ async function loadMemeSources(env, origin) {
       homeRecentTargetPerDay: 4,
       homeRecentMinKeepFraction: 0.5,
       homeRecentMaxKeepFraction: 0.85,
+      homeTodayRampHours: 18,
+      homeTodayMinLikes: 0,
+      homeTodayMinAgeFactor: 0.05,
       matchFetchLimit: 50,
       universalTerms: [],
     };
@@ -4335,6 +4341,39 @@ function memeInRecentDays(postedAt, tzOffsetHours = 3, dayCount = 3) {
 function memeIsRecent(postedAt, tzOffsetHours = 3, recentDays = 2) {
   const key = memeDayKey(postedAt, tzOffsetHours);
   return key && recentMemeDayKeys(tzOffsetHours, recentDays).includes(key);
+}
+
+function memeIsToday(postedAt, tzOffsetHours = 3) {
+  return memeDayKey(postedAt, tzOffsetHours) === todayMemeDayKey(tzOffsetHours);
+}
+
+function memeAgeHours(postedAt) {
+  const t = Date.parse(postedAt || "");
+  if (isNaN(t)) return 24;
+  return Math.max(0, (Date.now() - t) / 3600000);
+}
+
+/** Scale the likes bar by upload age — fresh today tweets need fewer likes. */
+function computeTodayTweetThreshold(postedAt, capThreshold, memeConfig) {
+  const cap = Math.max(0, Number(capThreshold) || 0);
+  if (!cap) return 0;
+  const rampHours = Number(memeConfig.homeTodayRampHours) || 18;
+  const minLikes = Number(memeConfig.homeTodayMinLikes) || 0;
+  const minFactor = Number(memeConfig.homeTodayMinAgeFactor) || 0.05;
+  const ageHours = memeAgeHours(postedAt);
+  if (ageHours >= rampHours) return cap;
+  const factor = Math.max(minFactor, ageHours / rampHours);
+  return Math.max(minLikes, Math.ceil(cap * factor));
+}
+
+function homeMemeLikesThreshold(m, stats, recentStats, config, tz) {
+  const standard = Number(stats?.threshold) || 0;
+  const recentCap = Math.min(Number(recentStats?.threshold) || standard, standard);
+  if (memeIsToday(m.postedAt, tz)) {
+    return computeTodayTweetThreshold(m.postedAt, recentCap, config);
+  }
+  if (memeIsRecent(m.postedAt, tz, config.homeRecentDays || 2)) return recentCap;
+  return standard;
 }
 
 /** Per-account likes bar from WC pool — targets ~N viral memes/day for that account. */
@@ -4407,16 +4446,16 @@ function refreshMemesFromPool(entries, pool) {
 
 function classifyHomeMeme(m, stats, recentStats, config, tz, displayDays) {
   if (!memeInRecentDays(m.postedAt, tz, displayDays)) return null;
-  const isRecent = memeIsRecent(m.postedAt, tz, config.homeRecentDays || 2);
-  const threshold = isRecent
-    ? Math.min(recentStats.threshold, stats.threshold)
-    : stats.threshold;
+  const isToday = memeIsToday(m.postedAt, tz);
+  const isRecent = isToday || memeIsRecent(m.postedAt, tz, config.homeRecentDays || 2);
+  const threshold = homeMemeLikesThreshold(m, stats, recentStats, config, tz);
   const passing = (Number(m.likes) || 0) >= threshold;
   return {
     isRecent,
+    isToday,
     threshold,
     passing,
-    entry: { ...m, likesThreshold: threshold, recent: isRecent },
+    entry: { ...m, likesThreshold: threshold, recent: isRecent, today: isToday },
   };
 }
 
