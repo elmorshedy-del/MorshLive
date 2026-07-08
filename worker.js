@@ -109,6 +109,64 @@ const POLL_TEAMS = {
 let _pollConfigCache = null;
 let _pollConfigAt = 0;
 
+let _streamRoutesCache = null;
+let _streamRoutesAt = 0;
+
+const DEFAULT_STREAM_ROUTES = {
+  version: 1,
+  slots: {
+    ntv: { embedUrl: NTV_EMBED, wrapperUrl: null, chain: [] },
+    sirTv: { player: SIRTV_CH1_PLAYER, referer: SIRTV_CH1_REFERER },
+    kooraCity: { defaultCard: KOORA_YALASHOT_DEFAULT, wrapperUrl: null },
+    amine: { base: "https://yallashooot.tv/albaplayer/amine/", defaultServ: 0 },
+  },
+  byMatch: {},
+};
+
+async function loadStreamRoutes(env, origin) {
+  if (_streamRoutesCache && Date.now() - _streamRoutesAt < 60 * 1000) return _streamRoutesCache;
+  try {
+    const res = await env.ASSETS.fetch(`${origin}/assets/data/stream-routes.json`);
+    if (res.ok) {
+      const raw = await res.json();
+      _streamRoutesCache = {
+        ...DEFAULT_STREAM_ROUTES,
+        ...raw,
+        slots: { ...DEFAULT_STREAM_ROUTES.slots, ...(raw.slots || {}) },
+        byMatch: { ...(raw.byMatch || {}) },
+      };
+    } else {
+      _streamRoutesCache = DEFAULT_STREAM_ROUTES;
+    }
+  } catch {
+    _streamRoutesCache = DEFAULT_STREAM_ROUTES;
+  }
+  _streamRoutesAt = Date.now();
+  return _streamRoutesCache;
+}
+
+function matchRouteKey(home, away) {
+  const norm = (s) =>
+    String(s || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "");
+  return [norm(home), norm(away)].filter(Boolean).sort().join("~");
+}
+
+function isDeadShellHtml(html) {
+  const t = String(html || "").trim().slice(0, 500);
+  return /forbidden|access denied|upstream unavailable|invalid or expired stream token/i.test(t);
+}
+
+function pickNtvWrapperUrl(resolvedUrl, routes) {
+  const healed = routes?.slots?.ntv?.wrapperUrl;
+  if (healed && !/hls2\.php\?stream=/i.test(healed)) return healed;
+  if (resolvedUrl && !/hls2\.php\?stream=/i.test(resolvedUrl)) return resolvedUrl;
+  return healed || resolvedUrl || null;
+}
+
 async function loadPollConfig(env, origin) {
   if (_pollConfigCache && Date.now() - _pollConfigAt < 60 * 1000) return _pollConfigCache;
   try {
@@ -1885,23 +1943,46 @@ async function proxyKooraCity(request, env) {
   const home = incoming.searchParams.get("home") || "";
   const away = incoming.searchParams.get("away") || "";
   const cardOverride = incoming.searchParams.get("card") || "";
+  const routes = await loadStreamRoutes(env, origin);
+  const routeKey = matchRouteKey(home, away);
+  const matchRoute = routes.byMatch?.[routeKey];
+
+  async function iframeFallback(reason) {
+    const wrapperUrl =
+      matchRoute?.kooraWrapper ||
+      routes.slots?.kooraCity?.wrapperUrl ||
+      matchRoute?.kooraCard ||
+      null;
+    if (!wrapperUrl) return null;
+    return new Response(cleanAltEmbedWrapperHtml(wrapperUrl, "Koora City", reason || "koora-iframe"), {
+      status: 200,
+      headers: { ...htmlHeaders, "X-KZ-Mode": "iframe-heal" },
+    });
+  }
 
   try {
     let resolved = null;
     if (cardOverride) {
       resolved = await resolveKooraCityHls(cardOverride, request);
     } else if (home && away) {
-      const card = await resolveKooraCardUrl(request, home, away);
+      const card = matchRoute?.kooraCard || (await resolveKooraCardUrl(request, home, away));
       if (card) resolved = await resolveKooraCityHls(card, request);
     }
-    if (!resolved) resolved = await resolveKooraCityHls(KOORA_YALASHOT_DEFAULT, request);
+    if (!resolved) {
+      const fallbackCard = routes.slots?.kooraCity?.defaultCard || KOORA_YALASHOT_DEFAULT;
+      resolved = await resolveKooraCityHls(fallbackCard, request);
+    }
 
     if (!resolved || !resolved.source) {
+      const healed = await iframeFallback("no-hls");
+      if (healed) return healed;
       return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
     }
 
     const probe = await streamProbe(resolved.source, "plain", request);
     if (!probe.ok) {
+      const healed = await iframeFallback("probe-fail");
+      if (healed) return healed;
       return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
     }
 
@@ -1915,22 +1996,28 @@ async function proxyKooraCity(request, env) {
       },
     });
   } catch {
+    const healed = await iframeFallback("error");
+    if (healed) return healed;
     return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
   }
 }
 
-async function fetchSirTvCh1Html(request) {
+async function fetchSirTvCh1Html(request, routes) {
+  const player = routes?.slots?.sirTv?.player || SIRTV_CH1_PLAYER;
+  const referer = routes?.slots?.sirTv?.referer || SIRTV_CH1_REFERER;
   try {
-    const res = await fetchWithTimeout(SIRTV_CH1_PLAYER, {
+    const res = await fetchWithTimeout(player, {
       headers: {
         "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
         Accept: "text/html,application/xhtml+xml",
-        Referer: SIRTV_CH1_REFERER,
+        Referer: referer,
       },
       redirect: "follow",
     });
     if (!res.ok) return null;
-    return res.text();
+    const html = await res.text();
+    if (isDeadShellHtml(html)) return null;
+    return html;
   } catch {
     return null;
   }
@@ -1950,7 +2037,8 @@ async function proxySirTv(request, env) {
   if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
 
   try {
-    const html = await fetchSirTvCh1Html(request);
+    const routes = await loadStreamRoutes(env, origin);
+    const html = await fetchSirTvCh1Html(request, routes);
     if (!html) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
     const candidates = extractHlsCandidates(html);
     const seenSources = new Set();
@@ -2001,18 +2089,24 @@ async function fetchAltStreamHtml(url, request, referer) {
   }
 }
 
-async function resolveNtvPlayablePage(request) {
-  let page = await fetchAltStreamHtml(NTV_EMBED, request, "https://ntv.cx/");
-  if (!page) return null;
+async function resolveNtvPlayablePage(request, routes) {
+  const embedUrl = routes?.slots?.ntv?.embedUrl || NTV_EMBED;
+  let page = await fetchAltStreamHtml(embedUrl, request, "https://ntv.cx/");
+  if (!page || isDeadShellHtml(page.html)) return null;
   for (let depth = 0; depth < 5; depth++) {
+    if (isDeadShellHtml(page.html)) break;
     const candidates = extractHlsCandidates(page.html);
     if (candidates.length) return { html: page.html, url: page.url, candidates };
     const iframes = extractAnyIframeSrc(page.html, page.url);
-    if (!iframes.length) break;
-    page = await fetchAltStreamHtml(iframes[0], request, page.url);
-    if (!page) break;
+    const next =
+      iframes.find((u) => !/hls2\.php\?stream=/i.test(u)) ||
+      iframes.find((u) => /streams\.center|hesgoal|ch2\.php/i.test(u)) ||
+      iframes[0];
+    if (!next) break;
+    page = await fetchAltStreamHtml(next, request, page.url);
+    if (!page || isDeadShellHtml(page.html)) break;
   }
-  return page
+  return page && !isDeadShellHtml(page.html)
     ? { html: page.html, url: page.url, candidates: extractHlsCandidates(page.html) }
     : null;
 }
@@ -2036,17 +2130,19 @@ function sanitizeAltEmbedHtml(html, baseUrl) {
   return out;
 }
 
-function cleanNtvEmbedWrapperHtml(embedUrl) {
+function cleanAltEmbedWrapperHtml(embedUrl, title, healTag) {
   const safe = String(embedUrl || "").replace(/"/g, "&quot;");
+  const label = String(title || "Stream").replace(/</g, "");
+  const tag = String(healTag || "alt-heal").replace(/[^a-z0-9-]/gi, "");
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NTV</title>
+<title>${label}</title>
 <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#f{width:100vw;height:100vh;border:0;display:block;background:#000}</style>
 </head><body>
 <iframe id="f" src="${safe}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
 <script>
 (function(){
-  var f=document.getElementById('f'), lastAt=0;
+  var f=document.getElementById('f'), lastAt=0, tag='${tag}';
   function heal(reason){
     if(!f||!f.src) return;
     var now=Date.now();
@@ -2057,13 +2153,17 @@ function cleanNtvEmbedWrapperHtml(embedUrl) {
       u.searchParams.set('_heal', String(now));
       f.src=u.toString();
     }catch(e){}
-    try{ window.parent.postMessage({type:'kz-alt-reload', reason:reason||'ntv-heal'}, '*'); }catch(e){}
+    try{ window.parent.postMessage({type:'kz-alt-reload', reason:reason||tag}, '*'); }catch(e){}
   }
-  if(f){ f.addEventListener('error', function(){ heal('ntv-error'); }); }
-  setInterval(function(){ heal('ntv-periodic'); }, 50000);
+  if(f){ f.addEventListener('error', function(){ heal(tag + '-error'); }); }
+  setInterval(function(){ heal(tag + '-periodic'); }, 50000);
 })();
 </script>
 </body></html>`;
+}
+
+function cleanNtvEmbedWrapperHtml(embedUrl) {
+  return cleanAltEmbedWrapperHtml(embedUrl, "NTV", "ntv-heal");
 }
 
 async function proxyNtv(request, env) {
@@ -2080,7 +2180,8 @@ async function proxyNtv(request, env) {
   if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
 
   try {
-    const resolved = await resolveNtvPlayablePage(request);
+    const routes = await loadStreamRoutes(env, origin);
+    const resolved = await resolveNtvPlayablePage(request, routes);
     if (!resolved) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
 
     const pool = [];
@@ -2099,10 +2200,12 @@ async function proxyNtv(request, env) {
       return new Response(cleanHlsPlayerHtml(proxied, "NTV"), { status: 200, headers: htmlHeaders });
     }
 
-    // Clappr page breaks when re-hosted on korazero (frame checks + obfuscated JS).
-    // Wrap the live upstream player in a nested iframe — plays from the viewer's IP.
-    if (resolved.url) {
-      return new Response(cleanNtvEmbedWrapperHtml(resolved.url), { status: 200, headers: htmlHeaders });
+    const wrapperUrl = pickNtvWrapperUrl(resolved.url, routes);
+    if (wrapperUrl) {
+      return new Response(cleanNtvEmbedWrapperHtml(wrapperUrl), {
+        status: 200,
+        headers: { ...htmlHeaders, "X-KZ-Mode": "iframe-heal" },
+      });
     }
     return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
   } catch {

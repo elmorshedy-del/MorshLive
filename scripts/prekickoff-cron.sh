@@ -14,6 +14,7 @@
 #   PREKICKOFF_STRESS=45
 #   PREKICKOFF_WINDOW=45
 #   PREKICKOFF_SLACK=15
+#   PREKICKOFF_DEPLOY=1   — wrangler deploy when heal updates assets/data/stream-routes.json
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -44,6 +45,11 @@ if ! node -e "require('playwright-core')" 2>/dev/null; then
   exit 1
 fi
 
+ROUTES_HASH_BEFORE=""
+if [[ -f assets/data/stream-routes.json ]]; then
+  ROUTES_HASH_BEFORE=$(md5sum assets/data/stream-routes.json | awk '{print $1}')
+fi
+
 node scripts/prekickoff-stream-verify.mjs \
   --base="$KZ_BASE" \
   --window="$WINDOW" \
@@ -52,5 +58,18 @@ node scripts/prekickoff-stream-verify.mjs \
   --out="$ROOT/reports/prekickoff"
 
 code=$?
+
+if [[ "${PREKICKOFF_DEPLOY:-}" == "1" ]] && [[ -f .env ]] && [[ -f assets/data/stream-routes.json ]]; then
+  ROUTES_HASH_AFTER=$(md5sum assets/data/stream-routes.json | awk '{print $1}')
+  if [[ "$ROUTES_HASH_BEFORE" != "$ROUTES_HASH_AFTER" ]]; then
+    echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] heal updated stream-routes — deploying"
+    set -a
+    # shellcheck disable=SC1091
+    source .env
+    set +a
+    npx wrangler deploy || code=$?
+  fi
+fi
+
 echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] prekickoff cron exit=$code"
 exit "$code"

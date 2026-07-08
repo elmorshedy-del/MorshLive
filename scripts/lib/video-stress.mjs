@@ -20,6 +20,100 @@ export const NTV_STRESS = {
   minAdvanceSeconds: 0.25,
 };
 
+/** Readable iframe/main bodies that mean the player is dead — global for all layers. */
+export const DEAD_SHELL_PATTERNS = [
+  /forbidden/i,
+  /access denied/i,
+  /upstream unavailable/i,
+  /invalid or expired stream token/i,
+  /not available/i,
+  /geo.?block/i,
+];
+
+export function isDeadShellText(text) {
+  const blob = String(text || "").trim();
+  if (!blob) return false;
+  if (blob.length <= 80 && DEAD_SHELL_PATTERNS.some((re) => re.test(blob))) return true;
+  return DEAD_SHELL_PATTERNS.some((re) => re.test(blob.slice(0, 500)));
+}
+
+/** Scan every frame we can read for forbidden/unavailable shells. */
+export async function scanDeadShells(page) {
+  const hits = [];
+  for (const frame of page.frames()) {
+    try {
+      const text = await frame.evaluate(() => (document.body && document.body.innerText) || "");
+      if (isDeadShellText(text)) {
+        hits.push({ url: frame.url(), text: text.trim().slice(0, 120) });
+      }
+    } catch {
+      // Cross-origin — skip.
+    }
+  }
+  return hits;
+}
+
+/**
+ * Global player audit: fail on dead shells / 502 pages; pass only on advancing video.
+ * Used by prekickoff for main, amine, sirTv, ntv, kooraCity proxies.
+ */
+export async function auditPlayerPlayable(page, {
+  framePattern = null,
+  stressSeconds = DEFAULT_STRESS.stressSeconds,
+  stressOpts = {},
+  allowLaggy = false,
+  warmupMs = 12000,
+  findAttempts = 20,
+} = {}) {
+  if (warmupMs > 0) await page.waitForTimeout(warmupMs);
+
+  let mainText = "";
+  try {
+    mainText = await page.evaluate(() => (document.body && document.body.innerText) || "");
+  } catch {
+    /* ignore */
+  }
+  if (/upstream unavailable/i.test(mainText) || /^502$/i.test(mainText.trim())) {
+    return { ok: false, reason: "dead_upstream", shellText: mainText.trim().slice(0, 120) };
+  }
+
+  const deadShells = await scanDeadShells(page);
+  if (deadShells.length) {
+    return {
+      ok: false,
+      reason: "embed_forbidden",
+      deadShells,
+      shellText: deadShells[0].text,
+      frameUrl: deadShells[0].url,
+    };
+  }
+
+  const videoHit = await findFrameWithVideo(page, framePattern, { attempts: findAttempts, waitMs: 2000 });
+  if (!videoHit) {
+    return { ok: false, reason: "no_video_frame", deadShells };
+  }
+
+  const stressCfg = { ...stressOpts, stressSeconds };
+  const stress = await verifyFrameVideo(videoHit.frame, stressCfg);
+  const verdict = classifyStress(stress, { allowLaggy });
+  return {
+    ok: verdict.ok,
+    reason: verdict.reason,
+    laggy: verdict.laggy,
+    frameUrl: videoHit.frame.url(),
+    mode: "video",
+    stress: {
+      reason: stress.reason,
+      stalls: stress.stalls,
+      totalStallMs: stress.totalStallMs,
+      samples: stress.samples?.length || 0,
+      laggy: stress.laggy,
+    },
+    videoHit,
+    deadShells,
+  };
+}
+
 export async function openVerifyBrowser(options = {}) {
   return launchBrowser({
     headless: options.headless !== false,
@@ -60,24 +154,34 @@ export async function detectNtvEmbedShell(page) {
 
 /** True only when streams.center iframe loads real content (not 403 Forbidden). */
 export async function ntvEmbedShellPlayable(page) {
+  const audit = await auditPlayerPlayable(page, {
+    framePattern: null,
+    stressSeconds: NTV_STRESS.stressSeconds,
+    stressOpts: NTV_STRESS,
+    allowLaggy: true,
+    warmupMs: 0,
+    findAttempts: 8,
+  });
   const embed = await detectNtvEmbedShell(page);
-  if (!embed.streamsCenter) return { ok: false, reason: "no_ntv_shell", embed };
-  const centerFrame = page.frames().find((f) => /streams\.center/i.test(f.url()));
-  if (!centerFrame) return { ok: false, reason: "no_center_frame", embed };
-  let shellText = "";
-  try {
-    shellText = await centerFrame.evaluate(() => (document.body && document.body.innerText) || "");
-  } catch {
-    return { ok: false, reason: "center_cross_origin", embed };
+  if (audit.ok) {
+    return { ok: true, reason: audit.reason, embed, videoHit: audit.videoHit, laggy: audit.laggy };
   }
-  if (/forbidden|access denied|blocked/i.test(shellText)) {
-    return { ok: false, reason: "embed_forbidden", embed, shellText: shellText.trim().slice(0, 120) };
+  if (audit.reason === "no_video_frame" && embed.streamsCenter) {
+    return {
+      ok: false,
+      reason: "embed_no_video",
+      embed,
+      shellText: audit.shellText || null,
+      deadShells: audit.deadShells,
+    };
   }
-  const videoHit = await findFrameWithVideo(page, null, { attempts: 8, waitMs: 2000 });
-  if (videoHit && videoHit.state.videoWidth > 0 && videoHit.state.currentTime > 0) {
-    return { ok: true, reason: "embed_video", embed, videoHit };
-  }
-  return { ok: false, reason: "embed_no_video", embed, shellText: shellText.trim().slice(0, 120) };
+  return {
+    ok: false,
+    reason: audit.reason,
+    embed,
+    shellText: audit.shellText || null,
+    deadShells: audit.deadShells,
+  };
 }
 
 async function frameHasVideo(frame, { maxDepth = 4, depth = 0 } = {}) {

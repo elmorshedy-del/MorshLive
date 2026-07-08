@@ -17,6 +17,7 @@
  *   --live               verify all live matches (manual / smoke test)
  *   --match=espn-...     force one match id
  *   --skip-fallback      skip HTTP fallback probes on failure
+ *   --skip-heal          skip crawl + stream-routes.json heal on failure
  *   --force              ignore dedupe state
  *   --test-sec=60        TEMP: replace T-45 with live + kickoff within N seconds
  *   --schedule-sec=60    wait N seconds before selecting targets and running
@@ -26,15 +27,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   openVerifyBrowser,
-  findFrameWithVideo,
-  verifyFrameVideo,
   detectNtvEmbedShell,
-  ntvEmbedShellPlayable,
+  auditPlayerPlayable,
   DEFAULT_STRESS,
   NTV_STRESS,
-  classifyStress,
 } from "./lib/video-stress.mjs";
-import { probeNtvUpstream, runFallbackProbes } from "./lib/stream-fallback-probe.mjs";
+import { runFallbackProbes } from "./lib/stream-fallback-probe.mjs";
+import { runPrekickoffHeal } from "./lib/prekickoff-heal.mjs";
 import {
   loadTodayMatches,
   loadFreshMatches,
@@ -65,12 +64,14 @@ function parseArgs(argv) {
     withinMinutes: 0,
     skipFallback: false,
     force: false,
+    heal: true,
     testSec: 0,
     scheduleSec: 0,
   };
   for (const arg of argv) {
     if (arg === "--live") out.live = true;
     else if (arg === "--skip-fallback") out.skipFallback = true;
+    else if (arg === "--skip-heal") out.heal = false;
     else if (arg === "--force") out.force = true;
     else if (arg.startsWith("--base=")) out.base = arg.slice(7);
     else if (arg.startsWith("--window=")) out.window = Number(arg.slice(9)) || 45;
@@ -111,7 +112,55 @@ async function waitForSelector(page, sel, timeout = 60000) {
   }
 }
 
-async function verifyNtvLayer(page, { directUrl, stressSeconds, screenshotPath, httpProbe }) {
+async function verifyLayer(page, { label, framePattern, directUrl, stressSeconds, screenshotPath, allowLaggy = false }) {
+  const result = {
+    label,
+    ok: false,
+    reason: "not_started",
+    frameUrl: null,
+    stress: null,
+    screenshot: null,
+    deadShells: null,
+  };
+
+  if (directUrl) {
+    await page.goto(directUrl, { waitUntil: "domcontentloaded", timeout: 90000 });
+  }
+
+  const audit = await auditPlayerPlayable(page, {
+    framePattern: framePattern || null,
+    stressSeconds,
+    stressOpts: allowLaggy ? NTV_STRESS : {},
+    allowLaggy,
+    warmupMs: directUrl ? 0 : 8000,
+    findAttempts: 20,
+  });
+
+  result.ok = audit.ok;
+  result.reason = audit.reason;
+  result.frameUrl = audit.frameUrl || null;
+  result.mode = audit.mode || null;
+  result.laggy = audit.laggy;
+  result.stress = audit.stress || null;
+  result.deadShells = audit.deadShells || null;
+  result.shellText = audit.shellText || null;
+
+  if (screenshotPath) {
+    fs.mkdirSync(path.dirname(screenshotPath), { recursive: true });
+    await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {});
+    result.screenshot = screenshotPath;
+  }
+  return result;
+}
+
+function buildKooraCityUrl(base, match) {
+  const u = new URL(buildProxyUrl(base, "kooracity", { ch: match.channelId }));
+  if (match.home) u.searchParams.set("home", match.home);
+  if (match.away) u.searchParams.set("away", match.away);
+  return u.toString();
+}
+
+async function verifyNtvLayer(page, { directUrl, stressSeconds, screenshotPath }) {
   const result = {
     label: "ntv",
     ok: false,
@@ -124,96 +173,25 @@ async function verifyNtvLayer(page, { directUrl, stressSeconds, screenshotPath, 
   };
 
   await page.goto(directUrl, { waitUntil: "domcontentloaded", timeout: 90000 });
-  await page.waitForTimeout(12000);
 
-  const videoHit = await findFrameWithVideo(page, /\/wk\/albaplayer\/ntv\//, { attempts: 10, waitMs: 2000 });
-  if (videoHit) {
-    result.mode = "clean_hls";
-    result.frameUrl = videoHit.frame.url();
-    const stress = await verifyFrameVideo(videoHit.frame, { ...NTV_STRESS, stressSeconds });
-    result.stress = {
-      reason: stress.reason,
-      stalls: stress.stalls,
-      totalStallMs: stress.totalStallMs,
-      samples: stress.samples?.length || 0,
-      laggy: stress.laggy,
-    };
-    const verdict = classifyStress(stress, { allowLaggy: true });
-    result.ok = verdict.ok;
-    result.reason = verdict.reason;
-    result.laggy = verdict.laggy;
-  } else {
-    const shell = await ntvEmbedShellPlayable(page);
-    result.embed = shell.embed;
-    if (shell.ok) {
-      result.mode = "streams_center_embed";
-      result.ok = true;
-      result.laggy = httpProbe?.ok !== true;
-      result.reason = shell.reason;
-      result.frameUrl = shell.embed?.streamsCenter || null;
-      if (shell.videoHit) {
-        const stress = await verifyFrameVideo(shell.videoHit.frame, { ...NTV_STRESS, stressSeconds });
-        result.stress = {
-          reason: stress.reason,
-          stalls: stress.stalls,
-          totalStallMs: stress.totalStallMs,
-          samples: stress.samples?.length || 0,
-          laggy: stress.laggy,
-        };
-        const verdict = classifyStress(stress, { allowLaggy: true });
-        result.ok = verdict.ok;
-        result.reason = verdict.reason;
-        result.laggy = verdict.laggy;
-      }
-    } else {
-      result.reason = shell.reason;
-      result.shellText = shell.shellText || null;
-    }
-  }
+  const audit = await auditPlayerPlayable(page, {
+    framePattern: /\/wk\/albaplayer\/ntv\//,
+    stressSeconds,
+    stressOpts: NTV_STRESS,
+    allowLaggy: true,
+    warmupMs: 0,
+    findAttempts: 12,
+  });
 
-  if (screenshotPath) {
-    fs.mkdirSync(path.dirname(screenshotPath), { recursive: true });
-    await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {});
-    result.screenshot = screenshotPath;
-  }
-  return result;
-}
-
-async function verifyLayer(page, { label, framePattern, directUrl, stressSeconds, screenshotPath }) {
-  const result = {
-    label,
-    ok: false,
-    reason: "not_started",
-    frameUrl: null,
-    stress: null,
-    screenshot: null,
-  };
-
-  if (directUrl) {
-    await page.goto(directUrl, { waitUntil: "domcontentloaded", timeout: 90000 });
-  }
-
-  const hit = await findFrameWithVideo(page, framePattern || null, { attempts: 20, waitMs: 2000 });
-  if (!hit) {
-    result.reason = "no_video_frame";
-    if (screenshotPath) {
-      fs.mkdirSync(path.dirname(screenshotPath), { recursive: true });
-      await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {});
-      result.screenshot = screenshotPath;
-    }
-    return result;
-  }
-
-  result.frameUrl = hit.frame.url();
-  const stress = await verifyFrameVideo(hit.frame, { stressSeconds });
-  result.stress = {
-    reason: stress.reason,
-    stalls: stress.stalls,
-    totalStallMs: stress.totalStallMs,
-    samples: stress.samples?.length || 0,
-  };
-  result.ok = stress.ok;
-  result.reason = stress.reason;
+  result.embed = await detectNtvEmbedShell(page);
+  result.ok = audit.ok;
+  result.reason = audit.reason;
+  result.laggy = audit.laggy;
+  result.frameUrl = audit.frameUrl || result.embed?.streamsCenter || null;
+  result.mode = audit.ok ? (audit.mode || "video") : null;
+  result.stress = audit.stress || null;
+  result.deadShells = audit.deadShells || null;
+  result.shellText = audit.shellText || null;
 
   if (screenshotPath) {
     fs.mkdirSync(path.dirname(screenshotPath), { recursive: true });
@@ -302,123 +280,84 @@ async function verifyMatch(browser, match, cfg, outDir) {
   const amineUrl = buildProxyUrl(cfg.base, "amine", { serv: 0, ch: match.channelId });
   const sirTvUrl = buildProxyUrl(cfg.base, "sirtv", { ch: match.channelId });
   const ntvUrl = buildProxyUrl(cfg.base, "ntv", { ch: match.channelId });
+  const kooraCityUrl = buildKooraCityUrl(cfg.base, match);
 
-  const aminePage = await context.newPage();
-  report.layers.amine = await verifyLayer(aminePage, {
-    label: "amine",
-    directUrl: amineUrl,
-    framePattern: /\/wk\/albaplayer\/amine\//,
-    stressSeconds: cfg.stress,
-    screenshotPath: path.join(shotDir, "amine.png"),
-  });
-  await aminePage.close();
-  console.log("  amine:", report.layers.amine.ok ? "PASS" : `FAIL (${report.layers.amine.reason})`);
+  async function verifyAltLayers() {
+    const aminePage = await context.newPage();
+    report.layers.amine = await verifyLayer(aminePage, {
+      label: "amine",
+      directUrl: amineUrl,
+      framePattern: /\/wk\/albaplayer\/amine\//,
+      stressSeconds: cfg.stress,
+      screenshotPath: path.join(shotDir, "amine.png"),
+    });
+    await aminePage.close();
+    console.log("  amine:", report.layers.amine.ok ? "PASS" : `FAIL (${report.layers.amine.reason})`);
 
-  const sirPage = await context.newPage();
-  report.layers.sirTv = await verifyLayer(sirPage, {
-    label: "sirTv",
-    directUrl: sirTvUrl,
-    framePattern: /\/wk\/albaplayer\/sirtv\//,
-    stressSeconds: cfg.stress,
-    screenshotPath: path.join(shotDir, "sir-tv.png"),
-  });
-  await sirPage.close();
-  console.log("  sirTv:", report.layers.sirTv.ok ? "PASS" : `FAIL (${report.layers.sirTv.reason})`);
+    const sirPage = await context.newPage();
+    report.layers.sirTv = await verifyLayer(sirPage, {
+      label: "sirTv",
+      directUrl: sirTvUrl,
+      framePattern: /\/wk\/albaplayer\/sirtv\//,
+      stressSeconds: cfg.stress,
+      screenshotPath: path.join(shotDir, "sir-tv.png"),
+    });
+    await sirPage.close();
+    console.log("  sirTv:", report.layers.sirTv.ok ? "PASS" : `FAIL (${report.layers.sirTv.reason})`);
 
-  const ntvHttp = await probeNtvUpstream();
-  const ntvPage = await context.newPage();
-  report.layers.ntv = await verifyNtvLayer(ntvPage, {
-    directUrl: ntvUrl,
-    stressSeconds: cfg.stress,
-    httpProbe: ntvHttp,
-    screenshotPath: path.join(shotDir, "ntv.png"),
-  });
-  await ntvPage.close();
-  console.log(
-    "  ntv:",
-    report.layers.ntv.ok ? `PASS (${report.layers.ntv.mode})` : `FAIL (${report.layers.ntv.reason})`
-  );
+    const ntvPage = await context.newPage();
+    report.layers.ntv = await verifyNtvLayer(ntvPage, {
+      directUrl: ntvUrl,
+      stressSeconds: cfg.stress,
+      screenshotPath: path.join(shotDir, "ntv.png"),
+    });
+    await ntvPage.close();
+    console.log(
+      "  ntv:",
+      report.layers.ntv.ok ? `PASS (${report.layers.ntv.mode})` : `FAIL (${report.layers.ntv.reason})`
+    );
 
-  const required = ["main", "sirTv", "ntv", "amine"];
-  const allRequiredOk = required.every((k) => report.layers[k]?.ok);
-  report.ok = allRequiredOk;
+    const kooraPage = await context.newPage();
+    report.layers.kooraCity = await verifyLayer(kooraPage, {
+      label: "kooraCity",
+      directUrl: kooraCityUrl,
+      framePattern: /\/wk\/albaplayer\/kooracity\//,
+      stressSeconds: cfg.stress,
+      screenshotPath: path.join(shotDir, "koora-city.png"),
+    });
+    await kooraPage.close();
+    console.log(
+      "  kooraCity:",
+      report.layers.kooraCity.ok ? "PASS" : `FAIL (${report.layers.kooraCity.reason})`
+    );
+  }
+
+  await verifyAltLayers();
+
+  const required = ["main", "sirTv", "ntv", "amine", "kooraCity"];
+  report.ok = required.every((k) => report.layers[k]?.ok);
 
   if (!report.ok && !cfg.skipFallback) {
-    console.log("  running HTTP fallback probes…");
+    console.log("  running HTTP fallback probes (diagnostics only — no auto-PASS)…");
     report.fallback = await runFallbackProbes(cfg.base, match);
     const fb = report.fallback;
-    const anyUpstream =
-      fb.sirTv?.ok || fb.amine?.ok || fb.ntv?.ok || fb.kooraCity?.ok;
-    console.log("  fallback upstream:", anyUpstream ? "live manifest found" : "all dead");
+    const hints = [
+      fb.sirTv?.ok && "sirTv-manifest",
+      fb.amine?.ok && "amine-manifest",
+      fb.ntv?.ok && "ntv-manifest",
+      fb.kooraCity?.ok && "koora-manifest",
+    ].filter(Boolean);
+    console.log("  fallback upstream:", hints.length ? hints.join(", ") : "all dead");
+  }
 
-    // Re-verify korazero proxy URLs if HTTP says worker pages exist but Playwright failed.
-    if (!report.layers.sirTv.ok && fb.sirTv?.ok) {
-      report.layers.sirTv = {
-        ...report.layers.sirTv,
-        ok: true,
-        reason: "upstream_manifest",
-        mode: "http_fallback",
-        upstream: fb.sirTv.manifest,
-      };
-    } else if (!report.layers.sirTv.ok && fb.kooraCity?.ok) {
-      report.layers.sirTv = {
-        ...report.layers.sirTv,
-        ok: true,
-        reason: "koora_city_manifest",
-        mode: "http_fallback",
-        upstream: fb.kooraCity.manifest,
-        sirPage: fb.kooraCity.sirPage,
-      };
-    } else if (!report.layers.sirTv.ok && fb.korazero?.sirTv?.ok) {
-      report.layers.sirTv = {
-        ...report.layers.sirTv,
-        ok: true,
-        reason: "korazero_proxy",
-        mode: "http_fallback",
-      };
+  if (!report.ok && cfg.heal) {
+    report.heal = await runPrekickoffHeal(report, match);
+    if (report.heal.changes?.length) {
+      console.log("  re-verify after heal (deploy stream-routes.json for worker to pick up routes)…");
+      await verifyAltLayers();
+      report.ok = required.every((k) => report.layers[k]?.ok);
+      report.postHealOk = report.ok;
     }
-    if (!report.layers.ntv.ok && fb.ntv?.ok) {
-      const p = await context.newPage();
-      report.layers.ntvRetry = await verifyNtvLayer(p, {
-        directUrl: ntvUrl,
-        stressSeconds: Math.min(30, cfg.stress),
-        httpProbe: fb.ntv,
-        screenshotPath: path.join(shotDir, "ntv-retry.png"),
-      });
-      await p.close();
-      if (report.layers.ntvRetry.ok) report.layers.ntv = report.layers.ntvRetry;
-    }
-    if (!report.layers.amine.ok && fb.amine?.ok) {
-      const p = await context.newPage();
-      report.layers.amineRetry = await verifyLayer(p, {
-        label: "amineRetry",
-        directUrl: amineUrl,
-        framePattern: /\/wk\/albaplayer\/amine\//,
-        stressSeconds: Math.min(30, cfg.stress),
-        screenshotPath: path.join(shotDir, "amine-retry.png"),
-      });
-      await p.close();
-      if (report.layers.amineRetry.ok) report.layers.amine = report.layers.amineRetry;
-      else if (fb.amine.ok) {
-        report.layers.amine = {
-          ...report.layers.amine,
-          ok: true,
-          reason: "upstream_manifest",
-          mode: "http_fallback",
-          upstream: fb.amine.manifest,
-        };
-        if (!report.layers.main.ok && report.layers.main.frameUrl) {
-          report.layers.main = {
-            ...report.layers.main,
-            ok: true,
-            reason: "via_amine_mirror",
-            mode: "http_fallback",
-          };
-        }
-      }
-    }
-
-    report.ok = required.every((k) => report.layers[k]?.ok);
   }
 
   report.endedAt = new Date().toISOString();
