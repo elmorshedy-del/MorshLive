@@ -371,12 +371,12 @@ function mergeReplayFromPrevious(matches, previousPayload) {
         score: m.score || "",
         kickoffUtc: m.kickoffUtc,
         poster: primary.thumbnail || "",
+        embed: primary.videoUrl || "",
         stage: m.stage || "",
       });
     }
     const days = [...daysMap.entries()]
       .sort((a, b) => b[0].localeCompare(a[0]))
-      .slice(0, 21)
       .map(([date, dayMatches]) => ({
         date,
         matches: dayMatches.sort((a, b) => Date.parse(b.kickoffUtc) - Date.parse(a.kickoffUtc)),
@@ -384,7 +384,44 @@ function mergeReplayFromPrevious(matches, previousPayload) {
     return { updatedAt: new Date().toISOString(), days };
   }
 
-  const highlightsBanners = buildHighlightsBanners(matches);
+  const HIGHLIGHT_BANNER_DAYS = 3;
+
+  function arabiaTodayIso() {
+    return new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  }
+
+  function rollingBannerDates(refDay, count) {
+    const out = [];
+    for (let i = 0; i < count; i++) out.push(shiftDate(refDay, -i));
+    return out;
+  }
+
+  function mergeHighlightsBanners(previous, fresh, refDay = arabiaTodayIso()) {
+    const allowed = new Set(rollingBannerDates(refDay, HIGHLIGHT_BANNER_DAYS));
+    const daysMap = new Map();
+    for (const day of (previous && previous.days) || []) {
+      if (!allowed.has(day.date)) continue;
+      daysMap.set(day.date, [...(day.matches || [])]);
+    }
+    for (const day of (fresh && fresh.days) || []) {
+      if (!allowed.has(day.date)) continue;
+      const byKey = new Map((daysMap.get(day.date) || []).map((m) => [m.key, m]));
+      for (const m of day.matches || []) byKey.set(m.key, { ...byKey.get(m.key), ...m });
+      daysMap.set(day.date, [...byKey.values()].sort((a, b) => Date.parse(b.kickoffUtc) - Date.parse(a.kickoffUtc)));
+    }
+    const days = [...daysMap.entries()]
+      .filter(([date]) => allowed.has(date))
+      .sort((a, b) => b[0].localeCompare(a[0]))
+      .map(([date, matches]) => ({ date, matches }));
+    return { updatedAt: new Date().toISOString(), days };
+  }
+
+  let previousBanners = null;
+  try {
+    previousBanners = JSON.parse(fs.readFileSync(BANNERS_OUT, "utf8"));
+  } catch { /* first run */ }
+
+  const highlightsBanners = mergeHighlightsBanners(previousBanners, buildHighlightsBanners(matches));
 
   // Pre-match lineups + advanced live stats — same ESPN source already used
   // for scores, so coverage is limited to matches ESPN itself carries (an

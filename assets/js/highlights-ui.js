@@ -156,7 +156,7 @@
       ? `<p class="match-summary-novideo">${t("card.noHighlightVideo")}</p>`
       : "";
     const text = m.summaryAr ? `<p class="match-summary-text">${escapeHtml(m.summaryAr)}</p>` : "";
-    return `${text}${highlights}${clips}${novideo}`;
+    return `${text}${clips}${highlights}${novideo}`;
   }
 
   const warmedEmbeds = new Set();

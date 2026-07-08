@@ -1,6 +1,21 @@
 {
-  "updatedAt": "2026-07-06T19:13:43.923Z",
+  "updatedAt": "2026-07-08T05:36:13.387Z",
   "days": [
+    {
+      "date": "2026-07-07",
+      "matches": [
+        {
+          "key": "argentina~egypt",
+          "home": "Argentina",
+          "away": "Egypt",
+          "score": "3 - 2",
+          "kickoffUtc": "2026-07-07T16:00Z",
+          "poster": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318271/poster/0.png?token=UWV6bEQyRnlQVkRCUDZWcGxFVzdiUk0wbFJ5NFc2emZOQjQza1I4Vi9Mcz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy83LzMxODI3MS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTkwNjM2MjExNTk4NzU5&keypair=bUJvbnhYeGpRL2hHVmEwTE1IR0E5V2JUT3dXbTJydXlvSHNjZHo3RHhGVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy83LzMxODI3MS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE5MDYzNjIxMTU5ODc1OQ==",
+          "embed": "https://nvtboo.vortexvisionworks.com/embed/xQIvMCYBsealR",
+          "stage": ""
+        }
+      ]
+    },
     {
       "date": "2026-07-06",
       "matches": [

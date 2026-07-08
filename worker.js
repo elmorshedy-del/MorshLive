@@ -3413,6 +3413,42 @@ function replayAssetProxyUrl(raw, type, origin, base = VORTEX_BASE) {
   return `${origin}/replay/asset?type=${encodeURIComponent(type || replayResourceType(abs))}&u=${encodeURIComponent(abs)}`;
 }
 
+function replayManifestIsM3u8(target, contentType) {
+  return /\.m3u8(?:\?|#|$)/i.test(String(target || ""))
+    || /mpegurl|m3u8/i.test(String(contentType || ""));
+}
+
+function replayShouldProxyAsset(abs, origin) {
+  if (!/^https?:\/\//i.test(abs)) return false;
+  try {
+    const host = new URL(abs).hostname;
+    if (/flashframenetwork\.com$/i.test(host)) return true;
+    if (host === VORTEX_HOST) return true;
+    return new URL(abs).origin !== origin;
+  } catch {
+    return false;
+  }
+}
+
+function rewriteReplayM3u8(body, manifestUrl, origin) {
+  const lines = String(body || "").split("\n");
+  const rewritten = lines.map((line) => {
+    const trimmed = line.trim();
+    if (!trimmed) return line;
+    if (trimmed.startsWith("#")) {
+      return line.replace(/URI="([^"]+)"/gi, (all, uri) => {
+        const abs = resolveStreamUrl(uri, manifestUrl);
+        if (!replayShouldProxyAsset(abs, origin)) return all;
+        return `URI="${replayAssetProxyUrl(abs, replayResourceType(abs, "media"), origin)}"`;
+      });
+    }
+    const abs = resolveStreamUrl(trimmed, manifestUrl);
+    if (!replayShouldProxyAsset(abs, origin)) return trimmed;
+    return replayAssetProxyUrl(abs, replayResourceType(abs, "media"), origin);
+  });
+  return rewritten.join("\n");
+}
+
 function sanitizeReplayEmbedHtml(html, id, origin) {
   const base = `${VORTEX_EMBED_BASE}/${id}`;
   let out = String(html || "");
@@ -3498,10 +3534,20 @@ async function proxyReplayAsset(request) {
     cf: { cacheEverything: true, cacheTtl: 86400 },
   });
   const out = new Headers(headers);
-  for (const h of ["Content-Type", "Content-Length", "Content-Range", "Accept-Ranges", "Last-Modified", "ETag"]) {
+  for (const h of ["Content-Type", "Content-Range", "Accept-Ranges", "Last-Modified", "ETag"]) {
     const v = upstream.headers.get(h);
     if (v) out.set(h, v);
   }
+  const origin = url.origin;
+  const upstreamType = upstream.headers.get("Content-Type") || "";
+  if (request.method !== "HEAD" && replayManifestIsM3u8(target, upstreamType) && upstream.ok) {
+    const text = await upstream.text();
+    const rewritten = rewriteReplayM3u8(text, target, origin);
+    out.set("Content-Type", "application/vnd.apple.mpegurl; charset=utf-8");
+    return new Response(rewritten, { status: upstream.status, headers: out });
+  }
+  const len = upstream.headers.get("Content-Length");
+  if (len) out.set("Content-Length", len);
   return new Response(request.method === "HEAD" ? null : upstream.body, { status: upstream.status, headers: out });
 }
 

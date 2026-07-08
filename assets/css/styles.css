@@ -2344,7 +2344,9 @@ body.tournament-video-modal-open { overflow: hidden; }
   border: 1px solid rgba(255,255,255,.1); background: #060a12;
   display: flex; flex-direction: column; justify-content: flex-end;
   transition: border-color .2s ease, transform .2s ease;
+  cursor: pointer; font: inherit; text-align: start; padding: 0;
 }
+button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 .kz-hl-banner:hover { border-color: rgba(24,226,154,.45); transform: translateY(-1px); }
 .kz-hl-banner__poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .kz-hl-banner__poster--fallback { display: grid; place-items: center; background: linear-gradient(135deg, #0a1220, #101828); font-size: 1.3rem; }
