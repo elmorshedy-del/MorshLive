@@ -5,11 +5,38 @@ Standalone tools for **Uber-only** trip totals and **fare-model classification**
 ## Scripts
 
 ```bash
-npm run fetch              # total Uber trips per year (HV0003 / UBER aggregate)
+npm run fetch              # total Uber trips per year (TLC rolled-up UBER aggregate row)
 npm run classify           # classify trips by year-specific rate cards (2021–2023 full SoQL)
 npm run classify:sample    # 50k-trip sample per year (faster)
 node calibrate-rates.js    # compare rate cards vs TLC trip medians
 ```
+
+### `fetch-trips.js` — totals
+
+Reports Uber's total dispatched trips per year from the TLC rolled-up `UBER` row
+(`base_license_number = 'UBER'`) in dataset `2v9c-2k7f`. This single source is:
+
+- **Authoritative** — TLC's own published rollup, excluding non-Uber limo / Black Car bases.
+- **Consistent** — one methodology for every year, rather than mixing trip-level HVFHS
+  counts (2021–2023) with aggregates (2024+).
+- **Complete** — available for all years, so 2024+ no longer needs the parquet CDN just
+  for totals.
+
+The reported year range is **discovered from the data** (no hard-coded end year), and
+partial years are flagged from the months actually reported (e.g. 2026 → `Jan–Mar`).
+
+Environment knobs:
+
+| Var | Default | Effect |
+|-----|---------|--------|
+| `START_YEAR` / `END_YEAR` | discovered | bound the reported range |
+| `SOCRATA_APP_TOKEN` | — | raises Socrata rate limits |
+| `CROSS_CHECK=1` | off | also fetch the slow HV0003 trip-level count (2021–2023) and report the delta |
+| `REQUEST_TIMEOUT_MS` | 60000 | per-request timeout |
+| `MAX_RETRIES` | 4 | retries with exponential backoff on timeouts / 429 / 5xx |
+
+All network calls retry with exponential backoff and time out cleanly, so a transient
+Socrata hiccup no longer aborts the whole run.
 
 ## Rate cards per year (`rate-cards.json`)
 
@@ -62,11 +89,16 @@ assign product with min |base_passenger_fare - expected|  if <= tolerance
 
 ## Total Uber trips (not classified)
 
-| Year | Trips |
-|------|------:|
-| 2021 | 126,129,064 |
-| 2022 | 153,847,310 |
-| 2023 | 167,127,330 |
-| 2024 | 179,126,787 |
-| 2025 | 175,989,546 |
-| 2026 | 45,267,840 (partial) |
+TLC rolled-up `UBER` aggregate row (`2v9c-2k7f`), one consistent source for every year:
+
+| Year | Trips | Coverage |
+|------|------:|----------|
+| 2021 | 126,129,645 | full year |
+| 2022 | 153,838,222 | full year |
+| 2023 | 167,130,196 | full year |
+| 2024 | 179,126,787 | full year |
+| 2025 | 175,989,546 | full year |
+| 2026 | 45,267,840 | Jan–Mar (partial) |
+
+Run `npm run fetch` for the live figures (the year range and partial-year flag are
+computed from the data, not hard-coded).

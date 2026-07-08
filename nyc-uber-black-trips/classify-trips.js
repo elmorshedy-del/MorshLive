@@ -20,9 +20,24 @@ const END_YEAR = Number(process.env.END_YEAR ?? 2027);
 const TOLERANCE = Number(process.env.FARE_TOLERANCE ?? 1.5);
 const SAMPLE_LIMIT = Number(process.env.SAMPLE_LIMIT ?? 0);
 
-const format = process.argv.includes("--format")
-  ? process.argv[process.argv.indexOf("--format") + 1] ?? "table"
-  : "table";
+const APP_TOKEN = process.env.SOCRATA_APP_TOKEN || "";
+const REQUEST_TIMEOUT_MS = Number(process.env.REQUEST_TIMEOUT_MS ?? 60000);
+const MAX_RETRIES = Number(process.env.MAX_RETRIES ?? 4);
+
+/** Robust `--format` parsing: supports `--format json`, `--format=json`, ignores flags. */
+function parseFormat(argv) {
+  const eq = argv.find((a) => a.startsWith("--format="));
+  if (eq) return eq.slice("--format=".length) || "table";
+  const idx = argv.indexOf("--format");
+  if (idx !== -1) {
+    const next = argv[idx + 1];
+    if (next && !next.startsWith("-")) return next;
+  }
+  return "table";
+}
+
+const format = parseFormat(process.argv.slice(2));
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 function expectedFare(miles, minutes, rates) {
   const raw = rates.base + rates.per_mile * miles + rates.per_minute * minutes;
@@ -59,9 +74,37 @@ async function socrataPage(datasetId, params, offset = 0) {
     url.searchParams.set(key, value);
   }
   url.searchParams.set("$offset", String(offset));
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Socrata ${datasetId} ${res.status}`);
-  return res.json();
+
+  const headers = {};
+  if (APP_TOKEN) headers["X-App-Token"] = APP_TOKEN;
+
+  let lastErr;
+  for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, { headers, signal: controller.signal });
+      if (res.status === 429 || res.status >= 500) {
+        throw new Error(`Socrata ${datasetId} transient ${res.status}`);
+      }
+      if (!res.ok) throw new Error(`Socrata ${datasetId} ${res.status}`);
+      return await res.json();
+    } catch (err) {
+      lastErr = err;
+      const retriable =
+        err.name === "AbortError" ||
+        /transient|fetch failed|network|ECONN|ETIMEDOUT|EAI_AGAIN/i.test(err.message);
+      if (!retriable || attempt === MAX_RETRIES) break;
+      const backoff = Math.min(2000 * 2 ** (attempt - 1), 16000);
+      process.stderr.write(
+        `  ${datasetId}@${offset}: attempt ${attempt} failed (${err.message}); retry in ${backoff}ms…\n`
+      );
+      await sleep(backoff);
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+  throw new Error(`Socrata ${datasetId} failed after ${MAX_RETRIES} attempts: ${lastErr?.message}`);
 }
 
 async function fetchTripsForYear(year) {
@@ -120,8 +163,10 @@ function aggregateYear(year, trips) {
 
   for (const t of trips) {
     counts.total++;
+    // Datasets contain a few trips whose pickup falls in an adjacent year; use the
+    // actual pickup year's rate card when one exists, else the dataset year.
     const pickupYear = new Date(t.pickup_datetime).getUTCFullYear();
-    const tripYear = pickupYear === year ? year : year;
+    const tripYear = RATE_CARDS.years[String(pickupYear)] ? pickupYear : year;
     const { product } = classifyTrip(
       Number(t.trip_miles),
       Number(t.trip_time),
