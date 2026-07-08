@@ -233,16 +233,9 @@
   }
 
   function matchSummaryHtml(m) {
-    if (m.status !== "ended" || (!m.summaryAr && !m.highlight)) return "";
-    const videoBlock = m.highlight && m.highlight.videoUrl
-      ? `<div class="match-highlight-video">
-           <iframe src="${m.highlight.videoUrl}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
-             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
-             sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
-         </div>`
-      : `<p class="match-summary-novideo">${t("card.noHighlightVideo")}</p>`;
-    const body = `${m.summaryAr ? `<p class="match-summary-text">${escapeHtml(m.summaryAr)}</p>` : ""}${videoBlock}`;
-    return panel(m.id, "summary", ICON.trophy, t("card.summary"), body);
+    const H = window.KZHighlights;
+    if (!H || !H.hasSummaryContent(m)) return "";
+    return panel(m.id, "summary", ICON.trophy, t("card.summary"), H.summaryBodyHtml(m));
   }
 
   function matchLineupsHtml(m) {
@@ -326,6 +319,7 @@
     if (window.KZMatchMemes) {
       window.KZMatchMemes.hydrateMatchMemes(grid, list).catch(() => { /* optional */ });
     }
+    if (window.KZHighlights) window.KZHighlights.bindReplayLaunch(grid);
     const count = document.getElementById("matches-count");
     if (count) count.textContent = t("matches.count", { n: list.length });
   }

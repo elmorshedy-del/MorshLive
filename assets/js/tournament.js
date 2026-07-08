@@ -155,7 +155,7 @@
         ${sectionHead("★", "video", t("tournament.notableClipsTitle"), clips.length)}
         <div class="tournament-clips-grid">
           ${clips.map((clip) => {
-            const embed = escapeHtml(clip.videoUrl);
+            const embed = escapeHtml(replayEmbedUrl(clip.videoUrl));
             const poster = clip.thumbnail || "";
             const title = clip.title ? escapeHtml(clip.title) : escapeHtml(clipKindLabel(clip.kind));
             return `

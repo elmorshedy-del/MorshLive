@@ -378,6 +378,8 @@ img { max-width: 100%; display: block; }
 .match-panel-body { margin-top: 10px; animation: fadeUp .3s ease both; }
 .match-summary-text { color: var(--text); font-size: .88rem; line-height: 1.7; }
 .match-summary-novideo { color: var(--muted); font-size: .82rem; margin-top: 8px; }
+.match-panel-body .tournament-highlights-duo,
+.match-panel-body .tournament-clips-block { margin-top: 12px; }
 .match-highlight-video {
   position: relative; width: 100%; aspect-ratio: 16 / 9; margin-top: 10px;
   border-radius: 10px; overflow: hidden; background: #000; border: 1px solid var(--border);

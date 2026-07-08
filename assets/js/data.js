@@ -530,6 +530,44 @@ async function loadHighlightsIndex() {
   return _highlightsIdx;
 }
 
+function mergeReplayFields(out, src) {
+  if (!src) return out;
+  const merged = { ...out };
+  if (!merged.summaryAr && src.summaryAr) merged.summaryAr = src.summaryAr;
+  if (!merged.highlight && src.highlight) merged.highlight = src.highlight;
+  if (src.highlights) {
+    merged.highlights = { ...(merged.highlights || {}) };
+    if (!merged.highlights.goals && src.highlights.goals) merged.highlights.goals = src.highlights.goals;
+    if (!merged.highlights.full && src.highlights.full) merged.highlights.full = src.highlights.full;
+  }
+  if (!(merged.clips && merged.clips.length) && src.clips?.length) merged.clips = src.clips;
+  return merged;
+}
+
+/** Pull goals/full/clips from cached today.json when the live API omits them. */
+function applyStaticReplayFromToday(matches, todayMatches) {
+  if (!Array.isArray(todayMatches) || !todayMatches.length) return matches;
+  const byId = new Map();
+  const byKey = new Map();
+  todayMatches.forEach((m) => {
+    const replay = {
+      summaryAr: m.summaryAr,
+      highlight: m.highlight,
+      highlights: m.highlights,
+      clips: m.clips,
+    };
+    if (!replay.summaryAr && !replay.highlight && !replay.highlights && !(replay.clips?.length)) return;
+    if (m.id) byId.set(m.id, replay);
+    byKey.set(commentaryKey(m.home, m.away), replay);
+  });
+  return matches.map((m) => {
+    if (m.status !== "ended") return m;
+    const src = byId.get(m.id) || byKey.get(commentaryKey(m.home, m.away));
+    if (!src) return m;
+    return mergeReplayFields(m, src);
+  });
+}
+
 function applyHighlights(matches, idx) {
   return matches.map((m) => {
     if (m.status !== "ended") return m;
@@ -551,6 +589,14 @@ function applyHighlights(matches, idx) {
       },
     };
   });
+}
+
+function matchNeedsReplayFetch(m) {
+  if (m.status !== "ended") return false;
+  const hasGoals = !!(m.highlights?.goals?.videoUrl);
+  const hasFull = !!(m.highlights?.full?.videoUrl || m.highlight?.videoUrl);
+  const hasClips = !!(m.clips && m.clips.length);
+  return !hasFull || !hasGoals || !hasClips;
 }
 
 const _highlightFetchCache = new Map();
@@ -581,9 +627,7 @@ async function fetchHighlightFromApi(m) {
 
 /** Fill missing replay clips for ended matches via /api/highlight (archive first, then vortex/YouTube). */
 async function ensureHighlightsFromApi(matches) {
-  const pending = matches.filter(
-    (m) => m.status === "ended" && !m.highlight && !m.highlights && !(m.clips && m.clips.length)
-  );
+  const pending = matches.filter(matchNeedsReplayFetch);
   if (!pending.length) return matches;
   const results = await Promise.all(
     pending.map(async (m) => {
@@ -596,13 +640,16 @@ async function ensureHighlightsFromApi(matches) {
   return matches.map((m) => {
     const bundle = byKey.get(commentaryKey(m.home, m.away));
     if (!bundle) return m;
-    return {
-      ...m,
+    const merged = mergeReplayFields(m, {
       summaryAr: m.summaryAr || buildArabicSummary(m),
-      highlight: bundle.highlight || m.highlight,
-      highlights: bundle.highlights || m.highlights,
-      clips: bundle.clips?.length ? bundle.clips : m.clips,
-    };
+      highlight: bundle.highlight,
+      highlights: bundle.highlights,
+      clips: bundle.clips,
+    });
+    if (bundle.clips?.length && (!merged.clips || merged.clips.length < bundle.clips.length)) {
+      merged.clips = bundle.clips;
+    }
+    return merged;
   });
 }
 
@@ -1015,8 +1062,7 @@ window.buildGoalsHtml = buildGoalsHtml;
 window.activateStatBars = activateStatBars;
 
 function scheduleHighlightEnrich(matches) {
-  const needsApi = matches.some((m) => m.status === "ended" && !m.highlight);
-  if (!needsApi) return;
+  if (!matches.some(matchNeedsReplayFetch)) return;
   ensureHighlightsFromApi(matches).then((enriched) => {
     if (typeof window.__kzOnMatchesUpdated === "function") window.__kzOnMatchesUpdated(enriched);
   }).catch(() => {});
@@ -1038,7 +1084,8 @@ window.getMatches = async function getMatches({ force } = {}) {
         const withCommentary = applyCommentary(live.matches, idx);
         const withChannels = applyTodayChannelIds(withCommentary, data.matches);
         const withHighlights = applyHighlights(withChannels, hidx);
-        const withStaticDetail = applyMatchDetail(withHighlights, didx);
+        const withStaticReplay = applyStaticReplayFromToday(withHighlights, data.matches);
+        const withStaticDetail = applyMatchDetail(withStaticReplay, didx);
         const withLiveDetail = await enrichLiveMatchDetails(withStaticDetail, { force });
         scheduleHighlightEnrich(withLiveDetail);
         return { ...live, matches: withLiveDetail };

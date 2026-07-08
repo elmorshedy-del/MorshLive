@@ -357,21 +357,17 @@
   /* ملخص المباراة (match summary) — Arabic recap + highlight clip when the
      current match has ended, shown next to the commentary replay. */
   function matchSummaryHtml(m) {
-    if (!m || m.status !== "ended" || (!m.summaryAr && !m.highlight)) return "";
-    const videoBlock = m.highlight && m.highlight.videoUrl
-      ? `<div class="match-highlight-video">
-           <iframe src="${m.highlight.videoUrl}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="lazy"
-             allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
-             sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>
-         </div>`
-      : `<p class="match-summary-novideo">${t("card.noHighlightVideo")}</p>`;
-    const body = `${m.summaryAr ? `<p class="match-summary-text">${escapeHtml(m.summaryAr)}</p>` : ""}${videoBlock}`;
-    return staticPanel(t("card.summary"), body);
+    const H = window.KZHighlights;
+    if (!H || !H.hasSummaryContent(m)) return "";
+    return staticPanel(t("card.summary"), H.summaryBodyHtml(m));
   }
 
   function renderMatchSummary() {
     const slot = document.getElementById("match-summary-slot");
-    if (slot) slot.innerHTML = matchSummaryHtml(match);
+    if (slot) {
+      slot.innerHTML = matchSummaryHtml(match);
+      if (window.KZHighlights) window.KZHighlights.bindReplayLaunch(slot);
+    }
   }
 
   /* التشكيلة الرسمية + إحصائيات المباراة — below the stream, as requested:
@@ -682,6 +678,15 @@
     else if (match && match.streamServ != null) activeServ = Number(match.streamServ);
     if (Number.isNaN(activeServ)) activeServ = 3;
   }
+
+  window.__kzOnMatchesUpdated = (matches) => {
+    MATCHES = matches;
+    if (!match) return;
+    const updated = matches.find((m) => m.id === match.id);
+    if (!updated) return;
+    match = updated;
+    renderMatchSummary();
+  };
 
   async function refreshMatches({ force } = {}) {
     const previousChannelId = channel.id;
