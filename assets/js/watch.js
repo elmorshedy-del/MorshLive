@@ -276,12 +276,6 @@
       const reason = ev.data.reason || "stall";
       healAllStreams(reason, { includeMain: reason === "exhausted" || reason === "black" });
     });
-
-    setInterval(() => {
-      if (!match) return;
-      if (match.status !== "live" && match.status !== "upcoming" && match.status !== "ended") return;
-      healAllStreams("periodic", { includeMain: match.status === "live" });
-    }, 45000);
   }
 
   function reloadAltStreams() {

@@ -148,7 +148,6 @@
     const state = (type.state || "").toLowerCase();
     if (type.completed || state === "post") return "ended";
     if (state === "in") return "live";
-    if (state === "pre") return kickoffInferStatus(kickoffUtc, "upcoming");
     return kickoffInferStatus(kickoffUtc, "upcoming");
   }
 
