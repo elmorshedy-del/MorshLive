@@ -5,6 +5,11 @@
   "type": "module",
   "scripts": {
     "fetch": "node fetch-trips.js",
-    "fetch:json": "node fetch-trips.js --format json"
+    "fetch:json": "node fetch-trips.js --format json",
+    "classify": "node classify-trips.js",
+    "classify:sample": "SAMPLE_LIMIT=50000 node classify-trips.js",
+    "classify:json": "node classify-trips.js --format json",
+    "classify:parquet": "python3 classify-parquet.py",
+    "calibrate": "node calibrate-rates.js"
   }
 }

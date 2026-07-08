@@ -1,0 +1,108 @@
+{
+  "meta": {
+    "city": "New York City",
+    "currency": "USD",
+    "fare_field": "base_passenger_fare",
+    "notes": [
+      "TLC trip data does not label Uber Black / SUV / X / XL. Rates are used to classify trips by nearest fare formula match.",
+      "Baseline card structure from Uber's Jan 2016 NYC rate cut (newsroom) and current Black/SUV tiers (TaxiFareFinder / Uber published tiers).",
+      "Per-year values scale base, per_mile, per_minute, and minimum by a passenger_fare_multiplier tied to TLC minimum driver-pay per-mile factor changes (proxy for fare passthrough).",
+      "booking_fee, tolls, taxes, congestion, and surge are NOT in base_passenger_fare — excluded from expected fare."
+    ],
+    "sources": [
+      "https://www.uber.com/us/en/newsroom/making-uber-more-affordable-for-all-new-yorkers/",
+      "https://www.nyc.gov/assets/tlc/downloads/pdf/driver_expense_report.pdf",
+      "https://rules.cityofnewyork.us/wp-content/uploads/2023/01/PROMULGATION-FINAL-VERSION-March-8.pdf",
+      "https://www.nyc.gov/assets/tlc/downloads/pdf/industry-notices/industry_notice_24_02_english.pdf"
+    ]
+  },
+  "baseline_2019": {
+    "description": "Pre-TLC-pay-standard card (2016 Uber NYC cut; min fares updated). Reference for multipliers.",
+    "driver_pay_per_mile_factor": 0.631,
+    "products": {
+      "uberx": { "base": 2.55, "per_mile": 1.75, "per_minute": 0.35, "minimum": 8.0 },
+      "uberxl": { "base": 3.85, "per_mile": 2.85, "per_minute": 0.5, "minimum": 12.0 },
+      "black": { "base": 7.0, "per_mile": 3.75, "per_minute": 0.65, "minimum": 15.0 },
+      "suv": { "base": 14.0, "per_mile": 4.5, "per_minute": 0.8, "minimum": 25.0 }
+    }
+  },
+  "years": {
+    "2021": {
+      "passenger_fare_multiplier": 1.0143,
+      "driver_pay_per_mile_factor": 0.64,
+      "effective": "2021 — TLC 3/1/2020 driver-pay factors (no 2021 CPI adjustment)",
+      "products": {
+        "uberx": { "base": 2.59, "per_mile": 1.78, "per_minute": 0.35, "minimum": 8.11 },
+        "uberxl": { "base": 3.91, "per_mile": 2.89, "per_minute": 0.51, "minimum": 12.17 },
+        "black": { "base": 7.1, "per_mile": 3.8, "per_minute": 0.66, "minimum": 15.21 },
+        "suv": { "base": 14.2, "per_mile": 4.56, "per_minute": 0.81, "minimum": 25.36 }
+      }
+    },
+    "2022": {
+      "passenger_fare_multiplier": 1.0582,
+      "driver_pay_per_mile_factor": 0.673,
+      "effective": "2022 — weighted blend: Jan–Feb 1.014×, Mar–Dec 1.067× (3/1/2022 +5.3% CPI)",
+      "products": {
+        "uberx": { "base": 2.7, "per_mile": 1.85, "per_minute": 0.37, "minimum": 8.47 },
+        "uberxl": { "base": 4.07, "per_mile": 3.02, "per_minute": 0.53, "minimum": 12.7 },
+        "black": { "base": 7.41, "per_mile": 3.97, "per_minute": 0.69, "minimum": 15.87 },
+        "suv": { "base": 14.81, "per_mile": 4.76, "per_minute": 0.85, "minimum": 26.46 }
+      }
+    },
+    "2023": {
+      "passenger_fare_multiplier": 1.1949,
+      "driver_pay_per_mile_factor": 0.762,
+      "effective": "2023 — blend: Jan 1.132× (2/1 CPI +6.39%), Mar+ 1.208× (transport index + CPI)",
+      "products": {
+        "uberx": { "base": 3.05, "per_mile": 2.09, "per_minute": 0.42, "minimum": 9.56 },
+        "uberxl": { "base": 4.6, "per_mile": 3.41, "per_minute": 0.6, "minimum": 14.34 },
+        "black": { "base": 8.36, "per_mile": 4.48, "per_minute": 0.78, "minimum": 17.92 },
+        "suv": { "base": 16.73, "per_mile": 5.38, "per_minute": 0.96, "minimum": 29.87 }
+      }
+    },
+    "2024": {
+      "passenger_fare_multiplier": 1.2504,
+      "driver_pay_per_mile_factor": 0.789,
+      "effective": "2024 — 3/1/2024 +3.49% CPI on driver-pay factors",
+      "products": {
+        "uberx": { "base": 3.19, "per_mile": 2.19, "per_minute": 0.44, "minimum": 10.0 },
+        "uberxl": { "base": 4.81, "per_mile": 3.56, "per_minute": 0.63, "minimum": 15.0 },
+        "black": { "base": 8.75, "per_mile": 4.69, "per_minute": 0.81, "minimum": 18.76 },
+        "suv": { "base": 17.51, "per_mile": 5.63, "per_minute": 1.0, "minimum": 31.26 }
+      }
+    },
+    "2025": {
+      "passenger_fare_multiplier": 1.2979,
+      "driver_pay_per_mile_factor": 0.819,
+      "effective": "2025 — 3/1/2025 +3.9% CPI on 2024 factors",
+      "products": {
+        "uberx": { "base": 3.31, "per_mile": 2.27, "per_minute": 0.45, "minimum": 10.38 },
+        "uberxl": { "base": 5.0, "per_mile": 3.7, "per_minute": 0.65, "minimum": 15.57 },
+        "black": { "base": 9.09, "per_mile": 4.87, "per_minute": 0.84, "minimum": 19.47 },
+        "suv": { "base": 18.17, "per_mile": 5.84, "per_minute": 1.04, "minimum": 32.45 }
+      }
+    },
+    "2026": {
+      "passenger_fare_multiplier": 1.3463,
+      "driver_pay_per_mile_factor": 0.85,
+      "effective": "2026 — Aug 2025 TLC rule promulgation ($0.850/mi base factor)",
+      "products": {
+        "uberx": { "base": 3.43, "per_mile": 2.36, "per_minute": 0.47, "minimum": 10.77 },
+        "uberxl": { "base": 5.18, "per_mile": 3.84, "per_minute": 0.67, "minimum": 16.16 },
+        "black": { "base": 9.42, "per_mile": 5.05, "per_minute": 0.88, "minimum": 20.19 },
+        "suv": { "base": 18.85, "per_mile": 6.06, "per_minute": 1.08, "minimum": 33.66 }
+      }
+    },
+    "2027": {
+      "passenger_fare_multiplier": 1.3463,
+      "driver_pay_per_mile_factor": 0.85,
+      "effective": "2027 — hold 2026 rates until TLC publishes new factors",
+      "products": {
+        "uberx": { "base": 3.43, "per_mile": 2.36, "per_minute": 0.47, "minimum": 10.77 },
+        "uberxl": { "base": 5.18, "per_mile": 3.84, "per_minute": 0.67, "minimum": 16.16 },
+        "black": { "base": 9.42, "per_mile": 5.05, "per_minute": 0.88, "minimum": 20.19 },
+        "suv": { "base": 18.85, "per_mile": 6.06, "per_minute": 1.08, "minimum": 33.66 }
+      }
+    }
+  }
+}
