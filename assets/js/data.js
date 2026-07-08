@@ -33,32 +33,41 @@ const EMBEDS = {
     defaultServer: 0,
     servers: 4,
   },
-  // Alternative backup players — proxied ad-free on /wk/albaplayer/{sirtv,ntv}/.
+  // Alternative backup players — proxied ad-free on /wk/albaplayer/{sirtv,ntv,kooracity}/.
   sirtv: { url: "/wk/albaplayer/sirtv/", defaultServer: 1, servers: 1 },
   ntv: { url: "/wk/albaplayer/ntv/", defaultServer: 1, servers: 1 },
+  kooracity: { url: "/wk/albaplayer/kooracity/", defaultServer: 1, servers: 1 },
 };
 
 const ALT_STREAM_DEFS = {
   sirTv: { key: "sirTv", path: "/wk/albaplayer/sirtv/", labelKey: "watch.altSirTv" },
   ntv: { key: "ntv", path: "/wk/albaplayer/ntv/", labelKey: "watch.altNtv" },
+  kooraCity: { key: "kooraCity", path: "/wk/albaplayer/kooracity/", labelKey: "watch.altKooraCity" },
+  amineAlt: { key: "amineAlt", path: "/wk/albaplayer/amine/", labelKey: "watch.altAmine", serv: 0 },
 };
 
-// Show Sir TV + NTV backup panel for live, upcoming, and ended matches.
+// Show backup panel for live, upcoming, and recently ended matches.
 function altStreamsForMatch(m) {
   if (!m) return null;
   if (m.status !== "live" && m.status !== "upcoming" && m.status !== "ended") return null;
   return {
     sirTv: ALT_STREAM_DEFS.sirTv,
     ntv: ALT_STREAM_DEFS.ntv,
+    kooraCity: ALT_STREAM_DEFS.kooraCity,
+    amineAlt: ALT_STREAM_DEFS.amineAlt,
   };
 }
 
-function altStreamUrl(kind) {
+function altStreamUrl(kind, match) {
   const def = ALT_STREAM_DEFS[kind];
   if (!def) return "";
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(def.path, base);
   u.searchParams.set("_kz", "13");
+  if (def.serv != null && def.serv !== "") u.searchParams.set("serv", String(def.serv));
+  if (match && match.channelId) u.searchParams.set("ch", match.channelId);
+  if (match && match.home) u.searchParams.set("home", match.home);
+  if (match && match.away) u.searchParams.set("away", match.away);
   return u.toString();
 }
 
@@ -296,6 +305,7 @@ window.keepDisplayMatch = keepDisplayMatch;
  * MATCHES above only if the live file can't be loaded (e.g. opened via file://).
  * ------------------------------------------------------------------------- */
 // Corrects cached snapshot status using kickoff timestamp when API status is stale.
+// Never force "ended" from wall-clock elapsed time — trust ESPN/TheSportsDB live feeds for ET/penalties.
 const MATCH_WINDOW_MS = 135 * 60 * 1000;
 const RECENT_ENDED_MS = 18 * 60 * 60 * 1000;
 const POST_MATCH_STREAM_MS = 2 * 60 * 60 * 1000;
@@ -309,15 +319,14 @@ function parseKickoffMs(ts) {
 }
 
 function refineStatus(m, dateStr) {
-  if (m.status === "ended") return "ended";
+  if (m.status === "ended" || m.status === "live") return m.status;
   const kickoff = m.kickoffUtc
     ? parseKickoffMs(m.kickoffUtc)
     : (dateStr && m.time && /^\d{2}:\d{2}$/.test(m.time) ? Date.parse(`${dateStr}T${m.time}:00Z`) : NaN);
   if (isNaN(kickoff)) return m.status;
   const elapsed = Date.now() - kickoff;
   if (elapsed < 0) return "upcoming";
-  if (elapsed < MATCH_WINDOW_MS) return m.status === "ended" ? "ended" : "live";
-  return "ended";
+  return "live";
 }
 
 function keepDisplayMatch(m) {
@@ -336,6 +345,15 @@ function isRecentlyEndedMatch(m) {
   if (elapsed < 0) return false;
   return elapsed <= MATCH_WINDOW_MS + POST_MATCH_STREAM_MS;
 }
+
+/** Live match minute for cards (e.g. 112', HT, ET) — empty when not live. */
+function liveMinuteLabel(m) {
+  if (!m || m.status !== "live") return "";
+  const minute = String(m.minute || "").trim();
+  return minute;
+}
+
+window.liveMinuteLabel = liveMinuteLabel;
 
 function sortDisplayMatches(matches) {
   const order = { live: 0, upcoming: 1, ended: 2 };
@@ -515,8 +533,11 @@ async function loadHighlightsIndex() {
 function applyHighlights(matches, idx) {
   return matches.map((m) => {
     if (m.status !== "ended") return m;
-    const out = m.summaryAr ? m : { ...m, summaryAr: buildArabicSummary(m) };
-    if (out.highlight) return out;
+    const out = {
+      ...m,
+      summaryAr: m.summaryAr || buildArabicSummary(m),
+    };
+    if (out.highlight || out.highlights || out.clips?.length) return out;
     const entry = idx && idx[commentaryKey(m.home, m.away)];
     if (!entry) return out;
     return {
@@ -544,7 +565,12 @@ async function fetchHighlightFromApi(m) {
       const res = await fetch(`/api/highlight?${params.toString()}`);
       if (!res.ok) return null;
       const data = await res.json();
-      return data && data.videoUrl ? data : null;
+      if (!data || (!data.videoUrl && !data.highlight?.videoUrl)) return null;
+      return {
+        highlight: data.highlight || (data.videoUrl ? data : null),
+        highlights: data.highlights || null,
+        clips: data.clips || [],
+      };
     } catch {
       return null;
     }
@@ -553,25 +579,29 @@ async function fetchHighlightFromApi(m) {
   return promise;
 }
 
-/** Fill missing replay clips for ended matches via /api/highlight (YouTube, server-side). */
+/** Fill missing replay clips for ended matches via /api/highlight (archive first, then vortex/YouTube). */
 async function ensureHighlightsFromApi(matches) {
-  const pending = matches.filter((m) => m.status === "ended" && !m.highlight);
+  const pending = matches.filter(
+    (m) => m.status === "ended" && !m.highlight && !m.highlights && !(m.clips && m.clips.length)
+  );
   if (!pending.length) return matches;
   const results = await Promise.all(
     pending.map(async (m) => {
-      const h = await fetchHighlightFromApi(m);
-      return h ? { key: commentaryKey(m.home, m.away), highlight: h } : null;
+      const bundle = await fetchHighlightFromApi(m);
+      return bundle ? { key: commentaryKey(m.home, m.away), bundle } : null;
     })
   );
-  const byKey = new Map(results.filter(Boolean).map((r) => [r.key, r.highlight]));
+  const byKey = new Map(results.filter(Boolean).map((r) => [r.key, r.bundle]));
   if (!byKey.size) return matches;
   return matches.map((m) => {
-    const h = byKey.get(commentaryKey(m.home, m.away));
-    if (!h) return m;
+    const bundle = byKey.get(commentaryKey(m.home, m.away));
+    if (!bundle) return m;
     return {
       ...m,
       summaryAr: m.summaryAr || buildArabicSummary(m),
-      highlight: h,
+      highlight: bundle.highlight || m.highlight,
+      highlights: bundle.highlights || m.highlights,
+      clips: bundle.clips?.length ? bundle.clips : m.clips,
     };
   });
 }

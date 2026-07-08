@@ -64,12 +64,32 @@
     return [...(memes || [])].sort((a, b) => (b.engagement || 0) - (a.engagement || 0));
   }
 
-  function mediaMemes(memes) {
-    return sortedMemes(memes).filter(memeHasMedia);
+  /** Display order: syndication fetch order / postedAt (newest first). */
+  function chronologicalMemes(memes) {
+    return [...(memes || [])]
+      .map((m, i) => ({ ...m, _order: i }))
+      .sort((a, b) => {
+        const ta = Date.parse(a.postedAt || "") || 0;
+        const tb = Date.parse(b.postedAt || "") || 0;
+        if (tb !== ta) return tb - ta;
+        return (a._order || 0) - (b._order || 0);
+      })
+      .map(({ _order, ...m }) => m);
+  }
+
+  function mediaMemes(memes, opts) {
+    const sortFn = opts && opts.byEngagement ? sortedMemes : chronologicalMemes;
+    return sortFn(memes).filter(memeHasMedia);
   }
 
   function matchLabel(meme) {
+    if (meme.scope === "worldcup" || meme.matchKey === "worldcup") {
+      return t("home.memeWorldCup");
+    }
     if (!meme.home || !meme.away) return "";
+    if (meme.scope === "upcoming" || meme.status === "upcoming") {
+      return `${teamLabel(meme.home)} vs ${teamLabel(meme.away)} · ${t("home.memeUpcoming")}`;
+    }
     const score = meme.score ? ` ${meme.score}` : "";
     return `${teamLabel(meme.home)} vs ${teamLabel(meme.away)}${score}`;
   }
@@ -177,6 +197,7 @@
     memeHasMedia,
     mediaMemes,
     sortedMemes,
+    chronologicalMemes,
     memeHtml,
     railHtml,
     bindVideoPlayers,

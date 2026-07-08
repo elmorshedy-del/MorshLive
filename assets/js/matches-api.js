@@ -41,25 +41,25 @@
     return Date.parse(normalized);
   }
 
-  function kickoffStatus(ts, fallback) {
+  /** Infer upcoming/live from kickoff only when the provider has no status. Never infer "ended" from elapsed time — knockouts run ET and pens well past 90'. */
+  function kickoffInferStatus(ts, fallback) {
     const kickoff = parseKickoffMs(ts);
     if (isNaN(kickoff)) return fallback;
     const elapsed = Date.now() - kickoff;
     if (elapsed < 0) return "upcoming";
-    if (elapsed < MATCH_WINDOW_MS) return "live";
-    return "ended";
+    return "live";
   }
 
   function statusOf(strStatus, strTimestamp) {
     const s = (strStatus || "").trim();
     if (!s || s === "NS" || /not started/i.test(s)) {
-      return kickoffStatus(strTimestamp, "upcoming");
+      return kickoffInferStatus(strTimestamp, "upcoming");
     }
     if (ENDED.has(s) || /^FT/i.test(s)) return "ended";
     if (LIVE.has(s) || /^\d+$/.test(s) || /'/.test(s) || /half/i.test(s)) {
-      return kickoffStatus(strTimestamp, "live") === "ended" ? "ended" : "live";
+      return "live";
     }
-    return kickoffStatus(strTimestamp, "upcoming");
+    return kickoffInferStatus(strTimestamp, "upcoming");
   }
 
   function formatScore(hs, as, status) {
@@ -147,8 +147,8 @@
     const type = status && status.type ? status.type : {};
     const state = (type.state || "").toLowerCase();
     if (type.completed || state === "post") return "ended";
-    if (state === "in") return kickoffStatus(kickoffUtc, "live") === "ended" ? "ended" : "live";
-    return kickoffStatus(kickoffUtc, "upcoming");
+    if (state === "in") return "live";
+    return kickoffInferStatus(kickoffUtc, "upcoming");
   }
 
   function normalizeEspnEvent(e, league) {
@@ -212,9 +212,9 @@
 
   function mergeMatch(existing, incoming) {
     const merged = { ...existing };
-    if (incoming.status === "live" || incoming.status === "ended" || existing.status === "upcoming") {
-      merged.status = incoming.status;
-    }
+    if (incoming.status === "live") merged.status = "live";
+    else if (incoming.status === "ended") merged.status = "ended";
+    else if (existing.status === "upcoming") merged.status = incoming.status;
     if (incoming.minute) merged.minute = incoming.minute;
     if (hasScore(incoming)) merged.score = incoming.score;
     if (incoming.channel && !merged.channel) merged.channel = incoming.channel;
@@ -332,7 +332,7 @@
         const hit = byKey.get(pairKey(m.home, m.away));
         if (!hit) return m;
         const out = { ...m };
-        if (hit.status === "live" || hit.status === "ended") out.status = hit.status;
+        if (hit.status) out.status = hit.status;
         if (hit.score && hit.score !== "VS" && hit.score !== "—") out.score = hit.score;
         if (hit.minute) out.minute = hit.minute;
         if (hit.kickoffUtc) out.kickoffUtc = hit.kickoffUtc;

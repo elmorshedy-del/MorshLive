@@ -15,6 +15,7 @@ const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-high
 const { findKnownVortexHighlight, findKnownVortexHighlights, fetchVortexEmbedMeta, normalizeHighlightBucket, enrichHighlightMeta, pickPrimaryHighlight } = require("./vortex-highlights-lib");
 const { arabicTeam } = require("./highlights-lib");
 const { discoverLatestHighlightMemes, discoverAllMatchMemes } = require("./twitter-memes-lib");
+const { attachMatchMeta, orderMemesChronological } = require("./lib/meme-match-lib");
 
 const OUT = path.join(__dirname, "..", "assets", "data", "tournament-archive.json");
 const MEMES_OUT = path.join(__dirname, "..", "assets", "data", "match-memes.json");
@@ -174,6 +175,15 @@ async function main() {
   const memeCount = Object.keys(memes).filter((k) => memes[k].length).length;
   console.log(`memes for ${memeCount} matches (${Object.keys(pinnedMemes).length} pinned)`);
 
+  const matchByKey = new Map(matches.map((m) => [m.key, m]));
+  const memesWithScores = {};
+  for (const [key, list] of Object.entries(memes)) {
+    const m = matchByKey.get(key);
+    memesWithScores[key] = orderMemesChronological(
+      (list || []).map((item) => attachMatchMeta(item, m))
+    );
+  }
+
   const stageCounts = {};
   for (const m of matches) stageCounts[m.stage] = (stageCounts[m.stage] || 0) + 1;
 
@@ -187,11 +197,11 @@ async function main() {
     matchCount: matches.length,
     memeMatchCount: memeCount,
     matches,
-    memes,
+    memes: memesWithScores,
   };
 
   fs.writeFileSync(OUT, JSON.stringify(payload, null, 2));
-  fs.writeFileSync(MEMES_OUT, JSON.stringify(memes, null, 2));
+  fs.writeFileSync(MEMES_OUT, JSON.stringify(memesWithScores, null, 2));
   console.log(`Wrote ${matches.length} ended matches → ${OUT}`);
   console.log(`Wrote memes for ${memeCount} matches → ${MEMES_OUT}`);
 }

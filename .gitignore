@@ -7,4 +7,5 @@ Thumbs.db
 node_modules/
 .auth/
 storage/
-crawlee_storage/
+reports/
+logs/

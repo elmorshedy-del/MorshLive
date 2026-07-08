@@ -112,7 +112,7 @@
             <div class="featured-league">${m.league}${m.minute ? ` · ${m.minute}` : ""}</div>
             <div class="featured-teams">
               <span>${teamLabel(m.home)}</span>
-              <b class="featured-score">${m.score}</b>
+              <b class="featured-score">${m.score}${window.liveMinuteLabel && window.liveMinuteLabel(m) ? ` · ${window.liveMinuteLabel(m)}` : (m.minute ? ` · ${m.minute}` : "")}</b>
               <span>${teamLabel(m.away)}</span>
             </div>
             ${commentatorText(m) ? `<div class="featured-commentator">${ICON.mic} ${commentatorText(m)}</div>` : ""}
@@ -164,7 +164,8 @@
     if (section) section.hidden = false;
 
     const live = m.status === "live";
-    const statusHtml = `<span class="status-pill status-${m.status}">${live ? '<span class="live-dot-i"></span> ' : ""}${statusLabel(m.status)}${m.minute ? ` · ${m.minute}` : ""}</span>`;
+    const minute = window.liveMinuteLabel ? window.liveMinuteLabel(m) : (live && m.minute ? String(m.minute).trim() : "");
+    const statusHtml = `<span class="status-pill status-${m.status}">${live ? '<span class="live-dot-i"></span> ' : ""}${statusLabel(m.status)}${minute ? ` · ${minute}` : ""}</span>`;
     const sections = [
       m.lineups ? `
         <div class="live-detail-section">
@@ -273,13 +274,14 @@
   /* -------------------------------------------------- Matches rendering */
   function matchCard(m) {
     const liveBtn = watchAction(m);
-    const minute = m.status === "live" && m.minute ? ` · ${m.minute}` : "";
+    const minute = window.liveMinuteLabel ? window.liveMinuteLabel(m) : (m.status === "live" && m.minute ? String(m.minute).trim() : "");
+    const minuteSuffix = minute ? ` · ${minute}` : "";
     return `
       <article class="match-card" data-status="${m.status}">
         <div class="match-top">
           <span class="league-tag">${m.league}</span>
           <span class="match-top-end">
-            <span class="status-pill status-${m.status}">${statusLabel(m.status)}${minute}</span>
+            <span class="status-pill status-${m.status}">${statusLabel(m.status)}${minuteSuffix}</span>
             ${favStar(m)}
           </span>
         </div>
@@ -303,6 +305,7 @@
         ${matchLineupsHtml(m)}
         ${matchStatsHtml(m)}
         ${matchSummaryHtml(m)}
+        ${window.KZMatchMemes ? window.KZMatchMemes.panelShell(m) : ""}
       </article>`;
   }
 
@@ -319,6 +322,9 @@
     // event (that only fires on user interaction), so activate their bars here.
     if (window.activateStatBars) {
       grid.querySelectorAll(".match-panel[open]").forEach((el) => window.activateStatBars(el));
+    }
+    if (window.KZMatchMemes) {
+      window.KZMatchMemes.hydrateMatchMemes(grid, list).catch(() => { /* optional */ });
     }
     const count = document.getElementById("matches-count");
     if (count) count.textContent = t("matches.count", { n: list.length });

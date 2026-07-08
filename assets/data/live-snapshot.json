@@ -1,6 +1,6 @@
 {
-  "updatedAt": "2026-07-06T19:14:26.632Z",
-  "bindingVersion": 11,
+  "updatedAt": "2026-07-07T22:27:07.492Z",
+  "bindingVersion": 12,
   "embedBinding": {
     "bein-max-1": "vip1",
     "bein-max-2": "amine",
@@ -12,17 +12,17 @@
   "liveCount": 1,
   "routes": [
     {
-      "id": "espn-fifa.world-760506",
-      "home": "Portugal",
-      "away": "Spain",
+      "id": "espn-fifa.world-760508",
+      "home": "Switzerland",
+      "away": "Colombia",
       "score": "0 - 0",
-      "minute": "14'",
-      "channelId": "bein-max-1",
-      "channel": "beIN MAX 1",
-      "commentator": "عصام الشوالي",
-      "embedKey": "vip1",
-      "embedUrl": "https://vip.worldkoora.com/albaplayer/vip1/",
-      "kickoffUtc": "2026-07-06T19:00Z"
+      "minute": "112'",
+      "channelId": "bein-max-2",
+      "channel": "beIN MAX 2",
+      "commentator": "علي الكعبي",
+      "embedKey": "amine",
+      "embedUrl": "https://yallashooot.tv/albaplayer/amine/",
+      "kickoffUtc": "2026-07-07T20:00Z"
     }
   ],
   "conflicts": [],

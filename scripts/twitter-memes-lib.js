@@ -19,6 +19,13 @@ const SYNDICATION = "https://syndication.twitter.com/srv/timeline-profile/screen
 const UA = "Mozilla/5.0 (compatible; MorshLive/1.0)";
 const USER_IDS_PATH = path.join(__dirname, "..", "assets", "data", "twitter-user-ids.json");
 const MEME_SOURCES_PATH = path.join(__dirname, "..", "assets", "data", "meme-sources.json");
+const {
+  memeCaptionMatches,
+  attachMatchMeta,
+  orderMemesChronological,
+  memeWindowForMatch,
+  memeInWindow,
+} = require("./lib/meme-match-lib");
 
 function loadMemeSourcesConfig() {
   try {
@@ -153,15 +160,7 @@ function playerNamesFromMatch(match) {
 }
 
 function captionMentionsMatch(text, home, away, match) {
-  const t = String(text || "").toLowerCase();
-  const terms = [
-    home,
-    away,
-    ...playerNamesFromMatch(match),
-  ]
-    .map((s) => s.toLowerCase())
-    .filter((s) => s.length > 2);
-  return terms.some((term) => t.includes(term));
+  return memeCaptionMatches(text, home, away, match);
 }
 
 function engagementScore(metrics) {
@@ -287,7 +286,7 @@ function toMemeEntry(tweet, username) {
 async function discoverMatchMemes(home, away, opts = {}) {
   const token = normalizeBearer(opts.bearerToken || process.env.TWITTER_BEARER_TOKEN);
   const match = opts.match || { home, away, kickoffUtc: opts.kickoffUtc };
-  const window = postMatchWindow(match.kickoffUtc || opts.kickoffUtc);
+  const window = memeWindowForMatch(match);
   if (!window) return [];
 
   const accounts = token ? await resolveMemeUserIds(token) : loadCachedUserIds().accounts || {};
@@ -302,11 +301,10 @@ async function discoverMatchMemes(home, away, opts = {}) {
       continue;
     }
     const hits = tweets
+      .filter((t) => tweetInWindow(t.created_at, window))
       .filter((t) => captionMentionsMatch(t.text, home, away, match))
-      .map((t) => ({ tweet: t, engagement: engagementScore(t.public_metrics) }))
-      .sort((a, b) => b.engagement - a.engagement)
       .slice(0, topPerAccount())
-      .map(({ tweet }) => toMemeEntry(tweet, acct.username));
+      .map((t) => toMemeEntry(t, acct.username || src.username));
     results.push(...hits);
   }
   return results;
@@ -376,10 +374,8 @@ async function discoverAllMatchMemes(matches, opts = {}) {
       const hits = bucket.tweets
         .filter((t) => tweetInWindow(t.created_at, window))
         .filter((t) => captionMentionsMatch(t.text, m.home, m.away, m))
-        .map((t) => ({ tweet: t, engagement: engagementScore(t.public_metrics) }))
-        .sort((a, b) => b.engagement - a.engagement)
         .slice(0, topPerAccount())
-        .map(({ tweet }) => toMemeEntry(tweet, bucket.username));
+        .map((t) => toMemeEntry(t, bucket.username));
       memes.push(...hits);
     }
     if (memes.length) out[key] = memes;
@@ -417,7 +413,9 @@ async function discoverLatestHighlightMemes(matches, opts = {}) {
         kickoffUtc: m.kickoffUtc,
         bearerToken: token,
       });
-      if (hits.length) out[m.key] = hits;
+      if (hits.length) {
+        out[m.key] = orderMemesChronological(hits.map((h) => attachMatchMeta(h, m)));
+      }
       await sleep(600);
     } catch (err) {
       console.warn(`memes skipped for ${m.key}:`, err.message);

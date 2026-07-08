@@ -222,11 +222,20 @@
 
     try {
       const summary = await fetchSummary(match);
+      const header = summary && summary.header ? summary.header : {};
+      const comp = header.competitions && header.competitions[0] ? header.competitions[0] : {};
+      const status = comp.status || {};
+      const statusType = status.type || {};
+      const minute =
+        match.status === "live"
+          ? (status.displayClock || statusType.shortDetail || statusType.detail || "")
+          : "";
       const detail = {
         at: Date.now(),
         lineups: extractLineups(summary),
         stats: extractMatchStats(summary),
         goals: extractGoals(summary),
+        minute: minute ? String(minute).trim() : "",
       };
       _cache.set(match.id, detail);
       return detail;
@@ -242,6 +251,7 @@
     if (detail.lineups) out.lineups = detail.lineups;
     if (detail.stats) out.stats = detail.stats;
     if (detail.goals) out.goals = detail.goals;
+    if (detail.minute && match.status === "live") out.minute = detail.minute;
     return out;
   }
 

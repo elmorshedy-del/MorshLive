@@ -1,0 +1,289 @@
+/**
+ * Deterministic meme ↔ fixture matching (name + kickoff window). No LLM.
+ *
+ * Scopes:
+ *   match    — ended/live fixture (score when available)
+ *   upcoming — preview/hype before kickoff (no score)
+ *   worldcup — general tournament meme (no fixture)
+ */
+
+const MOMENT_TERMS = [
+  "referee", "var", "penalty", "red card", "save", "keeper", "goalkeeper",
+  "highlights", "miss", "chance", "hype", "preview",
+  "ملخص", "هدف", "تصدي", "حارس", "حكم", "طرد", "جزاء", "فرصة", "عارضة",
+];
+
+const PREVIEW_TERMS = [
+  "preview", "hype", "predict", "lineup", "starting xi", "countdown",
+  "ready for", "look ahead", "استعداد", "موعد", "قبل", "غدا", "غداً", "غداً",
+];
+
+function normText(s) {
+  return String(s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function normTeam(s) {
+  return normText(s);
+}
+
+function playerNamesFromMatch(match) {
+  const names = [];
+  const push = (n) => {
+    const s = String(n || "").trim();
+    if (s.length > 2 && !names.includes(s)) names.push(s);
+  };
+  for (const side of ["home", "away"]) {
+    const lu = match?.lineups?.[side];
+    if (!lu) continue;
+    for (const band of ["starters", "subs", "bench"]) {
+      for (const p of lu[band] || []) push(p.name);
+    }
+  }
+  return names;
+}
+
+function teamHit(text, name) {
+  const t = normText(text);
+  const n = normTeam(name);
+  if (!t || n.length <= 2) return 0;
+  return t.includes(n) ? 1 : 0;
+}
+
+function playerHitScore(text, match) {
+  const t = normText(text);
+  if (!t) return 0;
+  let best = 0;
+  for (const p of playerNamesFromMatch(match)) {
+    const pn = normTeam(p);
+    if (pn.length > 3 && t.includes(pn)) best = Math.max(best, 1);
+    for (const w of pn.split(/\s+/).filter((x) => x.length >= 4)) {
+      if (t.includes(w)) best = Math.max(best, 0.8);
+    }
+  }
+  return best;
+}
+
+function momentHit(text) {
+  const t = normText(text);
+  return MOMENT_TERMS.some((term) => t.includes(normText(term)));
+}
+
+function previewHit(text) {
+  const t = normText(text);
+  return PREVIEW_TERMS.some((term) => t.includes(normText(term)));
+}
+
+function memeUniversalHits(text, universalTerms) {
+  const t = normText(text);
+  const terms = Array.isArray(universalTerms) ? universalTerms : [];
+  return terms.some((term) => t.includes(normText(term)));
+}
+
+function memeCaptionScoreDetailed(text, home, away, match) {
+  const homeHit = teamHit(text, home);
+  const awayHit = teamHit(text, away);
+  const player = playerHitScore(text, match);
+  const moment = momentHit(text) ? 0.35 : 0;
+  const teams = homeHit + awayHit;
+  const total = teams + player + moment;
+  return { total, teams, homeHit, awayHit, player, moment };
+}
+
+function memeCaptionScore(text, home, away, match) {
+  return memeCaptionScoreDetailed(text, home, away, match).total;
+}
+
+function memeCaptionMatches(text, home, away, match) {
+  const s = memeCaptionScoreDetailed(text, home, away, match);
+  if (s.homeHit && s.awayHit) return true;
+  if (s.homeHit || s.awayHit) return true;
+  if (s.player >= 0.8) return true;
+  if (s.moment && (s.homeHit || s.awayHit || s.player >= 0.8)) return true;
+  return false;
+}
+
+function isUnambiguousWinner(top, second) {
+  if (!top) return false;
+  if (top.homeHit && top.awayHit) return true;
+  if (top.player >= 0.8 && (!second || top.player > second.player + 0.1)) return true;
+  if (top.teams >= 1 && (!second || top.total >= second.total + 0.45)) return true;
+  if (top.moment && top.teams >= 1 && (!second || top.total >= second.total + 0.35)) return true;
+  return false;
+}
+
+function inferStatusFromKickoff(kickoffUtc, explicitStatus) {
+  if (explicitStatus === "live" || explicitStatus === "ended" || explicitStatus === "upcoming") {
+    return explicitStatus;
+  }
+  const kickoff = Date.parse(kickoffUtc || "");
+  if (isNaN(kickoff)) return explicitStatus || "ended";
+  const now = Date.now();
+  if (kickoff > now + 5 * 60 * 1000) return "upcoming";
+  if (kickoff + 105 * 60 * 1000 < now) return "ended";
+  return "live";
+}
+
+function memePostWindow(kickoffUtc, opts = {}) {
+  const kickoff = Date.parse(kickoffUtc || "");
+  if (isNaN(kickoff)) return null;
+  const now = Date.now();
+  const matchMs = opts.matchMs ?? 105 * 60 * 1000;
+  const lookbackMs = opts.lookbackMs ?? 15 * 60 * 1000;
+  const contextMs = opts.contextMs ?? 72 * 60 * 60 * 1000;
+  const contextEnd = kickoff + contextMs;
+  return {
+    start: new Date(kickoff - lookbackMs).toISOString(),
+    end: new Date(Math.min(Math.max(now, kickoff + matchMs), contextEnd)).toISOString(),
+  };
+}
+
+/** Hype / preview tweets before kickoff (default: 14 days out → kickoff). */
+function memePreviewWindow(kickoffUtc, opts = {}) {
+  const kickoff = Date.parse(kickoffUtc || "");
+  if (isNaN(kickoff)) return null;
+  const now = Date.now();
+  if (kickoff <= now) return null;
+  const leadMs = (opts.previewDays ?? 14) * 24 * 60 * 60 * 1000;
+  return {
+    start: new Date(Math.max(now - 24 * 60 * 60 * 1000, kickoff - leadMs)).toISOString(),
+    end: new Date(kickoff + (opts.afterKickoffMs ?? 15 * 60 * 1000)).toISOString(),
+  };
+}
+
+function memeWindowForMatch(match, opts = {}) {
+  const status = inferStatusFromKickoff(match?.kickoffUtc, match?.status);
+  if (status === "upcoming") return memePreviewWindow(match.kickoffUtc, opts);
+  return memePostWindow(match.kickoffUtc, opts);
+}
+
+function memeInWindow(createdAt, window) {
+  if (!window || !createdAt) return false;
+  const t = Date.parse(createdAt);
+  return t >= Date.parse(window.start) && t <= Date.parse(window.end);
+}
+
+function matchPairKey(m) {
+  const norm = (s) => normTeam(s).replace(/[^a-z0-9]/g, "");
+  return m.key || [norm(m.home), norm(m.away)].filter(Boolean).sort().join("~");
+}
+
+function rankMemeFixtures(text, matches) {
+  return (matches || [])
+    .filter((m) => m?.home && m?.away)
+    .map((m) => {
+      const s = memeCaptionScoreDetailed(text, m.home, m.away, m);
+      const status = inferStatusFromKickoff(m.kickoffUtc, m.status);
+      const previewBoost = status === "upcoming" && previewHit(text) ? 0.25 : 0;
+      return {
+        key: matchPairKey(m),
+        score: s.total + previewBoost,
+        ...s,
+        match: m,
+        status,
+      };
+    })
+    .filter((r) => r.total >= 0.8)
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        (statusPriority(b.status) - statusPriority(a.status)) ||
+        (Date.parse(b.match.kickoffUtc || "") - Date.parse(a.match.kickoffUtc || ""))
+    );
+}
+
+function statusPriority(status) {
+  if (status === "live") return 3;
+  if (status === "upcoming") return 2;
+  return 1;
+}
+
+/**
+ * Route caption → { matchKey, scope, home, away, score, kickoffUtc, status } | worldcup | null.
+ */
+function resolveMemeTarget(text, matches, universalTerms = []) {
+  const universal = memeUniversalHits(text, universalTerms);
+  const ranked = rankMemeFixtures(text, matches);
+  const top = ranked[0];
+  const second = ranked[1];
+
+  if (top && isUnambiguousWinner(top, second)) {
+    const m = top.match;
+    const status = top.status;
+    return {
+      matchKey: top.key,
+      scope: status === "upcoming" ? "upcoming" : "match",
+      home: m.home,
+      away: m.away,
+      score: status === "ended" || status === "live" ? m.score || null : null,
+      kickoffUtc: m.kickoffUtc || null,
+      status,
+    };
+  }
+
+  if (universal) {
+    return {
+      matchKey: "worldcup",
+      scope: "worldcup",
+      home: null,
+      away: null,
+      score: null,
+      kickoffUtc: null,
+      status: null,
+    };
+  }
+
+  return null;
+}
+
+function bestMemeMatchKey(text, matches) {
+  return resolveMemeTarget(text, matches, [])?.matchKey || null;
+}
+
+function attachMatchMeta(meme, match) {
+  if (!match) return meme;
+  const status = inferStatusFromKickoff(match.kickoffUtc, match.status);
+  const scope = status === "upcoming" ? "upcoming" : "match";
+  return {
+    ...meme,
+    scope: meme.scope || scope,
+    status,
+    home: match.home || meme.home || null,
+    away: match.away || meme.away || null,
+    score: status === "ended" || status === "live" ? match.score || meme.score || null : null,
+    kickoffUtc: match.kickoffUtc || meme.kickoffUtc || null,
+  };
+}
+
+function orderMemesChronological(memes) {
+  return [...(memes || [])]
+    .map((m, i) => ({ ...m, _order: i }))
+    .sort((a, b) => {
+      const ta = Date.parse(a.postedAt || "") || 0;
+      const tb = Date.parse(b.postedAt || "") || 0;
+      if (tb !== ta) return tb - ta;
+      return (a._order || 0) - (b._order || 0);
+    })
+    .map(({ _order, ...m }) => m);
+}
+
+module.exports = {
+  memeCaptionScore,
+  memeCaptionScoreDetailed,
+  memeCaptionMatches,
+  memeUniversalHits,
+  memePostWindow,
+  memePreviewWindow,
+  memeWindowForMatch,
+  memeInWindow,
+  resolveMemeTarget,
+  bestMemeMatchKey,
+  attachMatchMeta,
+  orderMemesChronological,
+  inferStatusFromKickoff,
+  playerHitScore,
+  momentHit,
+};

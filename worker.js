@@ -36,6 +36,65 @@ const WESHAN_RE = /^\/wk\/albaplayer\/weshan\/?$/i;
 const SIRTV_CH1_PLAYER = "https://we.shootsync.site/albaplayer/sniaer/";
 const SIRTV_CH1_REFERER = "https://s.sirtv.space/2026/02/ch1.html?m=1";
 const SIRTV_RE = /^\/wk\/albaplayer\/sirtv\/?$/i;
+const KOORA_CITY = "https://kooora-city.com/";
+const KOORA_YALASHOT_DEFAULT = "https://s.yalashot.online/2026/06/ch1.html";
+const KOORACITY_RE = /^\/wk\/albaplayer\/kooracity\/?$/i;
+const KOORA_TEAM_AR = {
+  argentina: "الأرجنتين",
+  australia: "أستراليا",
+  austria: "النمسا",
+  belgium: "بلجيكا",
+  brazil: "البرازيل",
+  cameroon: "الكاميرون",
+  canada: "كندا",
+  capeverde: "الرأس الأخضر",
+  chile: "تشيلي",
+  colombia: "كولومبيا",
+  costarica: "كوستاريكا",
+  croatia: "كرواتيا",
+  czechia: "التشيك",
+  czechrepublic: "التشيك",
+  denmark: "الدنمارك",
+  ecuador: "الإكوادور",
+  egypt: "مصر",
+  england: "إنجلترا",
+  france: "فرنسا",
+  germany: "ألمانيا",
+  ghana: "غانا",
+  greece: "اليونان",
+  iran: "إيران",
+  iraq: "العراق",
+  italy: "إيطاليا",
+  ivorycoast: "ساحل العاج",
+  japan: "اليابان",
+  jordan: "الأردن",
+  mexico: "المكسيك",
+  morocco: "المغرب",
+  netherlands: "هولندا",
+  newzealand: "نيوزيلندا",
+  nigeria: "نيجيريا",
+  norway: "النرويج",
+  panama: "بنما",
+  paraguay: "باراغواي",
+  peru: "بيرو",
+  poland: "بولندا",
+  portugal: "البرتغال",
+  qatar: "قطر",
+  saudiarabia: "السعودية",
+  senegal: "السنغال",
+  serbia: "صربيا",
+  southafrica: "جنوب أفريقيا",
+  southkorea: "كوريا الجنوبية",
+  spain: "إسبانيا",
+  switzerland: "سويسرا",
+  tunisia: "تونس",
+  turkey: "تركيا",
+  unitedarabemirates: "الإمارات",
+  unitedstates: "الولايات المتحدة",
+  uruguay: "أوروغواي",
+  uzbekistan: "أوزبكستان",
+  wales: "ويلز",
+};
 const NTV_EMBED =
   "https://ntv.cx/embed?t=OFd0cFZIcCtUQ3NleURxSUs1SW9VQW81eDZjTHdaUjNGL0RxZWZUU24zVTNIQlVsbEpqTkgzbkk3TmhiRGJwMw~~";
 const NTV_RE = /^\/wk\/albaplayer\/ntv\/?$/i;
@@ -49,6 +108,64 @@ const POLL_TEAMS = {
 
 let _pollConfigCache = null;
 let _pollConfigAt = 0;
+
+let _streamRoutesCache = null;
+let _streamRoutesAt = 0;
+
+const DEFAULT_STREAM_ROUTES = {
+  version: 1,
+  slots: {
+    ntv: { embedUrl: NTV_EMBED, wrapperUrl: null, chain: [] },
+    sirTv: { player: SIRTV_CH1_PLAYER, referer: SIRTV_CH1_REFERER },
+    kooraCity: { defaultCard: KOORA_YALASHOT_DEFAULT, wrapperUrl: null },
+    amine: { base: "https://yallashooot.tv/albaplayer/amine/", defaultServ: 0 },
+  },
+  byMatch: {},
+};
+
+async function loadStreamRoutes(env, origin) {
+  if (_streamRoutesCache && Date.now() - _streamRoutesAt < 60 * 1000) return _streamRoutesCache;
+  try {
+    const res = await env.ASSETS.fetch(`${origin}/assets/data/stream-routes.json`);
+    if (res.ok) {
+      const raw = await res.json();
+      _streamRoutesCache = {
+        ...DEFAULT_STREAM_ROUTES,
+        ...raw,
+        slots: { ...DEFAULT_STREAM_ROUTES.slots, ...(raw.slots || {}) },
+        byMatch: { ...(raw.byMatch || {}) },
+      };
+    } else {
+      _streamRoutesCache = DEFAULT_STREAM_ROUTES;
+    }
+  } catch {
+    _streamRoutesCache = DEFAULT_STREAM_ROUTES;
+  }
+  _streamRoutesAt = Date.now();
+  return _streamRoutesCache;
+}
+
+function matchRouteKey(home, away) {
+  const norm = (s) =>
+    String(s || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "");
+  return [norm(home), norm(away)].filter(Boolean).sort().join("~");
+}
+
+function isDeadShellHtml(html) {
+  const t = String(html || "").trim().slice(0, 500);
+  return /forbidden|access denied|upstream unavailable|invalid or expired stream token/i.test(t);
+}
+
+function pickNtvWrapperUrl(resolvedUrl, routes) {
+  const healed = routes?.slots?.ntv?.wrapperUrl;
+  if (healed && !/hls2\.php\?stream=/i.test(healed)) return healed;
+  if (resolvedUrl && !/hls2\.php\?stream=/i.test(resolvedUrl)) return resolvedUrl;
+  return healed || resolvedUrl || null;
+}
 
 async function loadPollConfig(env, origin) {
   if (_pollConfigCache && Date.now() - _pollConfigAt < 60 * 1000) return _pollConfigCache;
@@ -1343,6 +1460,10 @@ ${HLS_BOOT_FN}
     }catch(e){}
   }
   function destroy(){ if(stopStall){ stopStall(); stopStall=null; } if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
+  function onStall(reason){
+    pingParent(reason||'stall');
+    next();
+  }
   function next(){
     i=(i+1)%sources.length; tries++;
     if(tries<=sources.length*6){ setTimeout(load, 400); return; }
@@ -1354,10 +1475,10 @@ ${HLS_BOOT_FN}
     var src=sources[i]; if(!src) return;
     destroy();
     if(v.canPlayType('application/vnd.apple.mpegurl')){
-      v.src=src; v.addEventListener('error', next, {once:true});
+      v.src=src; v.addEventListener('error', function(){ onStall('native-error'); }, {once:true});
     } else if(window.Hls&&window.Hls.isSupported()){
-      hls=kzAttachHls(v, src, next);
-      stopStall=kzWatchStall(v, hls, next);
+      hls=kzAttachHls(v, src, function(){ onStall('fatal'); });
+      stopStall=kzWatchStall(v, hls, function(){ onStall('watch-stall'); });
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
   }
@@ -1365,6 +1486,13 @@ ${HLS_BOOT_FN}
     v.dataset.kzWait='1';
     v.addEventListener('waiting', function(){ kzSoftRecover(v, hls); });
   }
+  var blackMs=0;
+  setInterval(function(){
+    if(v.paused){ blackMs=0; return; }
+    if(v.videoWidth>0&&v.readyState>=2&&v.currentTime>0){ blackMs=0; return; }
+    blackMs+=5000;
+    if(blackMs>=18000){ blackMs=0; onStall('black'); }
+  }, 5000);
   load();
 })();
 </script>
@@ -1736,18 +1864,160 @@ function weshanServerOrder(requestedServ) {
   return order;
 }
 
-async function fetchSirTvCh1Html(request) {
+function kooraNormTeam(name) {
+  return String(name || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "");
+}
+
+function kooraTeamAr(name) {
+  const key = kooraNormTeam(name);
+  return KOORA_TEAM_AR[key] || String(name || "");
+}
+
+function findKooraCardHref(html, home, away) {
+  const homeAr = kooraTeamAr(home);
+  const awayAr = kooraTeamAr(away);
+  const chunks = String(html || "").split(/<div class=['"]match-container/);
+  for (let i = 1; i < chunks.length; i++) {
+    const block = chunks[i];
+    const hasHome =
+      block.includes(homeAr) ||
+      block.toLowerCase().includes(String(home || "").toLowerCase());
+    const hasAway =
+      block.includes(awayAr) ||
+      block.toLowerCase().includes(String(away || "").toLowerCase());
+    if (!hasHome || !hasAway) continue;
+    const m = block.match(/<a\b[^>]*\bhref=(["'])(https?:\/\/[^"']+)\1/i);
+    if (m && !/\/matches-(today|yesterday|tomorrow)\/?$/i.test(m[2])) return m[2];
+  }
+  return null;
+}
+
+async function resolveKooraCardUrl(request, home, away) {
+  const pages = [KOORA_CITY, `${KOORA_CITY}matches-today/`];
+  for (const pageUrl of pages) {
+    const page = await fetchAltStreamHtml(pageUrl, request, KOORA_CITY);
+    if (!page) continue;
+    const card = findKooraCardHref(page.html, home, away);
+    if (card) return card;
+  }
+  return null;
+}
+
+async function resolveKooraCityHls(cardUrl, request) {
+  let page = await fetchAltStreamHtml(cardUrl, request, KOORA_CITY);
+  if (!page) return null;
+  let referer = page.url;
+  for (let depth = 0; depth < 6; depth++) {
+    for (const c of extractHlsCandidates(page.html)) {
+      if (c.source && isHlsUrl(c.source)) return { source: c.source, referer, cardUrl };
+    }
+    const iframes = extractAnyIframeSrc(page.html, page.url);
+    const next =
+      iframes.find((u) => /albaplayer|fluxion|veloqia|yalashot|shootsync|nexalure/i.test(u)) ||
+      iframes[0];
+    if (!next) break;
+    page = await fetchAltStreamHtml(next, request, referer);
+    if (!page) break;
+    referer = page.url;
+  }
+  return null;
+}
+
+async function proxyKooraCity(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "kooracity",
+  };
+  if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
+
+  const home = incoming.searchParams.get("home") || "";
+  const away = incoming.searchParams.get("away") || "";
+  const cardOverride = incoming.searchParams.get("card") || "";
+  const routes = await loadStreamRoutes(env, origin);
+  const routeKey = matchRouteKey(home, away);
+  const matchRoute = routes.byMatch?.[routeKey];
+
+  async function iframeFallback(reason) {
+    const wrapperUrl =
+      matchRoute?.kooraWrapper ||
+      routes.slots?.kooraCity?.wrapperUrl ||
+      matchRoute?.kooraCard ||
+      null;
+    if (!wrapperUrl) return null;
+    return new Response(cleanAltEmbedWrapperHtml(wrapperUrl, "Koora City", reason || "koora-iframe"), {
+      status: 200,
+      headers: { ...htmlHeaders, "X-KZ-Mode": "iframe-heal" },
+    });
+  }
+
   try {
-    const res = await fetchWithTimeout(SIRTV_CH1_PLAYER, {
+    let resolved = null;
+    if (cardOverride) {
+      resolved = await resolveKooraCityHls(cardOverride, request);
+    } else if (home && away) {
+      const card = matchRoute?.kooraCard || (await resolveKooraCardUrl(request, home, away));
+      if (card) resolved = await resolveKooraCityHls(card, request);
+    }
+    if (!resolved) {
+      const fallbackCard = routes.slots?.kooraCity?.defaultCard || KOORA_YALASHOT_DEFAULT;
+      resolved = await resolveKooraCityHls(fallbackCard, request);
+    }
+
+    if (!resolved || !resolved.source) {
+      const healed = await iframeFallback("no-hls");
+      if (healed) return healed;
+      return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    }
+
+    const probe = await streamProbe(resolved.source, "plain", request);
+    if (!probe.ok) {
+      const healed = await iframeFallback("probe-fail");
+      if (healed) return healed;
+      return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+    }
+
+    const sig = await signTarget(resolved.source, secret);
+    const proxied = hlsProxyUrl(resolved.source, origin, sig);
+    return new Response(cleanHlsPlayerHtml([proxied], "Koora City"), {
+      status: 200,
+      headers: {
+        ...htmlHeaders,
+        "X-KZ-Card": resolved.cardUrl || "",
+      },
+    });
+  } catch {
+    const healed = await iframeFallback("error");
+    if (healed) return healed;
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  }
+}
+
+async function fetchSirTvCh1Html(request, routes) {
+  const player = routes?.slots?.sirTv?.player || SIRTV_CH1_PLAYER;
+  const referer = routes?.slots?.sirTv?.referer || SIRTV_CH1_REFERER;
+  try {
+    const res = await fetchWithTimeout(player, {
       headers: {
         "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
         Accept: "text/html,application/xhtml+xml",
-        Referer: SIRTV_CH1_REFERER,
+        Referer: referer,
       },
       redirect: "follow",
     });
     if (!res.ok) return null;
-    return res.text();
+    const html = await res.text();
+    if (isDeadShellHtml(html)) return null;
+    return html;
   } catch {
     return null;
   }
@@ -1767,7 +2037,8 @@ async function proxySirTv(request, env) {
   if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
 
   try {
-    const html = await fetchSirTvCh1Html(request);
+    const routes = await loadStreamRoutes(env, origin);
+    const html = await fetchSirTvCh1Html(request, routes);
     if (!html) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
     const candidates = extractHlsCandidates(html);
     const seenSources = new Set();
@@ -1818,18 +2089,24 @@ async function fetchAltStreamHtml(url, request, referer) {
   }
 }
 
-async function resolveNtvPlayablePage(request) {
-  let page = await fetchAltStreamHtml(NTV_EMBED, request, "https://ntv.cx/");
-  if (!page) return null;
+async function resolveNtvPlayablePage(request, routes) {
+  const embedUrl = routes?.slots?.ntv?.embedUrl || NTV_EMBED;
+  let page = await fetchAltStreamHtml(embedUrl, request, "https://ntv.cx/");
+  if (!page || isDeadShellHtml(page.html)) return null;
   for (let depth = 0; depth < 5; depth++) {
+    if (isDeadShellHtml(page.html)) break;
     const candidates = extractHlsCandidates(page.html);
     if (candidates.length) return { html: page.html, url: page.url, candidates };
     const iframes = extractAnyIframeSrc(page.html, page.url);
-    if (!iframes.length) break;
-    page = await fetchAltStreamHtml(iframes[0], request, page.url);
-    if (!page) break;
+    const next =
+      iframes.find((u) => !/hls2\.php\?stream=/i.test(u)) ||
+      iframes.find((u) => /streams\.center|hesgoal|ch2\.php/i.test(u)) ||
+      iframes[0];
+    if (!next) break;
+    page = await fetchAltStreamHtml(next, request, page.url);
+    if (!page || isDeadShellHtml(page.html)) break;
   }
-  return page
+  return page && !isDeadShellHtml(page.html)
     ? { html: page.html, url: page.url, candidates: extractHlsCandidates(page.html) }
     : null;
 }
@@ -1853,15 +2130,40 @@ function sanitizeAltEmbedHtml(html, baseUrl) {
   return out;
 }
 
-function cleanNtvEmbedWrapperHtml(embedUrl) {
+function cleanAltEmbedWrapperHtml(embedUrl, title, healTag) {
   const safe = String(embedUrl || "").replace(/"/g, "&quot;");
+  const label = String(title || "Stream").replace(/</g, "");
+  const tag = String(healTag || "alt-heal").replace(/[^a-z0-9-]/gi, "");
   return `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NTV</title>
+<title>${label}</title>
 <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#f{width:100vw;height:100vh;border:0;display:block;background:#000}</style>
 </head><body>
 <iframe id="f" src="${safe}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+<script>
+(function(){
+  var f=document.getElementById('f'), lastAt=0, tag='${tag}';
+  function heal(reason){
+    if(!f||!f.src) return;
+    var now=Date.now();
+    if(now-lastAt<8000) return;
+    lastAt=now;
+    try{
+      var u=new URL(f.src);
+      u.searchParams.set('_heal', String(now));
+      f.src=u.toString();
+    }catch(e){}
+    try{ window.parent.postMessage({type:'kz-alt-reload', reason:reason||tag}, '*'); }catch(e){}
+  }
+  if(f){ f.addEventListener('error', function(){ heal(tag + '-error'); }); }
+  setInterval(function(){ heal(tag + '-periodic'); }, 50000);
+})();
+</script>
 </body></html>`;
+}
+
+function cleanNtvEmbedWrapperHtml(embedUrl) {
+  return cleanAltEmbedWrapperHtml(embedUrl, "NTV", "ntv-heal");
 }
 
 async function proxyNtv(request, env) {
@@ -1878,7 +2180,8 @@ async function proxyNtv(request, env) {
   if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
 
   try {
-    const resolved = await resolveNtvPlayablePage(request);
+    const routes = await loadStreamRoutes(env, origin);
+    const resolved = await resolveNtvPlayablePage(request, routes);
     if (!resolved) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
 
     const pool = [];
@@ -1897,10 +2200,12 @@ async function proxyNtv(request, env) {
       return new Response(cleanHlsPlayerHtml(proxied, "NTV"), { status: 200, headers: htmlHeaders });
     }
 
-    // Clappr page breaks when re-hosted on korazero (frame checks + obfuscated JS).
-    // Wrap the live upstream player in a nested iframe — plays from the viewer's IP.
-    if (resolved.url) {
-      return new Response(cleanNtvEmbedWrapperHtml(resolved.url), { status: 200, headers: htmlHeaders });
+    const wrapperUrl = pickNtvWrapperUrl(resolved.url, routes);
+    if (wrapperUrl) {
+      return new Response(cleanNtvEmbedWrapperHtml(wrapperUrl), {
+        status: 200,
+        headers: { ...htmlHeaders, "X-KZ-Mode": "iframe-heal" },
+      });
     }
     return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
   } catch {
@@ -3025,6 +3330,28 @@ async function searchYouTubeHighlight(apiKey, queries, kickoffUtc) {
   return null;
 }
 
+async function lookupStaticHighlights(env, origin, home, away) {
+  const key = highlightPairKey(home, away);
+  const today = await loadTodayMatches(env, origin);
+  let m = today.find((x) => highlightPairKey(x.home, x.away) === key);
+  if (!m?.highlight && !m?.highlights && !(m?.clips?.length)) {
+    const archive = await loadTournamentArchiveMatches(env, origin);
+    m = archive.find((x) => highlightPairKey(x.home, x.away) === key) || m;
+  }
+  if (!m) return null;
+  const primary = m.highlight || m.highlights?.full || m.highlights?.goals || null;
+  if (!primary?.videoUrl && !m.highlights && !(m.clips?.length)) return null;
+  return {
+    highlight: primary,
+    highlights: m.highlights || null,
+    clips: m.clips || [],
+    videoUrl: primary?.videoUrl,
+    title: primary?.title,
+    thumbnail: primary?.thumbnail,
+    source: primary?.source || "archive",
+  };
+}
+
 async function proxyHighlightApi(request, env) {
   const url = new URL(request.url);
   const home = (url.searchParams.get("home") || "").trim();
@@ -3040,6 +3367,14 @@ async function proxyHighlightApi(request, env) {
     return new Response(JSON.stringify({ error: "home and away required" }), { status: 400, headers });
   }
   try {
+    const staticHit = await lookupStaticHighlights(env, url.origin, home, away);
+    if (staticHit) {
+      return new Response(JSON.stringify(staticHit), {
+        status: 200,
+        headers: { ...headers, "X-KZ-Highlight-Source": "archive" },
+      });
+    }
+
     const teamAr = await loadTeamAr(env, url.origin);
     const knownVortex = await loadKnownVortex(env, url.origin);
 
@@ -3170,9 +3505,11 @@ async function proxyReplayAsset(request) {
   return new Response(request.method === "HEAD" ? null : upstream.body, { status: upstream.status, headers: out });
 }
 
-/* ----------------------------------------------- viral X memes — 3 curated accounts
- * @TrollFootball @Contxtfootball @memesvsfootball
- * GET /api/match-memes?home=&away=&kickoff= */
+/* ----------------------------------------------- viral X memes
+ * Home: @TrollFootball + @memesvsfootball — last 50 each, top 75% by likes
+ * Match tab: any caption mentioning teams or players from curated accounts
+ * GET /api/match-memes?home=&away=&kickoff=
+ * GET /api/recent-memes */
 const MEMES_API_RE = /^\/api\/match-memes\/?$/i;
 const RECENT_MEMES_API_RE = /^\/api\/recent-memes\/?$/i;
 const X_MEDIA_API_RE = /^\/api\/x-media\/?$/i;
@@ -3208,37 +3545,76 @@ function memePlayerTerms(match) {
   return names;
 }
 
+const MEME_MOMENT_TERMS = [
+  "referee", "var", "penalty", "red card", "save", "keeper", "goalkeeper",
+  "highlights", "miss", "chance", "ملخص", "هدف", "تصدي", "حارس", "حكم", "طرد", "جزاء", "فرصة", "عارضة",
+];
+
+function memeNormText(s) {
+  return String(s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function memeTeamHit(text, name) {
+  const t = memeNormText(text);
+  const n = memeNormText(name);
+  return n.length > 2 && t.includes(n) ? 1 : 0;
+}
+
+function memePlayerHitScore(text, match) {
+  const t = memeNormText(text);
+  if (!t) return 0;
+  let best = 0;
+  for (const p of memePlayerTerms(match)) {
+    const pn = memeNormText(p);
+    if (pn.length > 3 && t.includes(pn)) best = Math.max(best, 1);
+    for (const w of pn.split(/\s+/).filter((x) => x.length >= 4)) {
+      if (t.includes(w)) best = Math.max(best, 0.8);
+    }
+  }
+  return best;
+}
+
+function memeMomentHit(text) {
+  const t = memeNormText(text);
+  return MEME_MOMENT_TERMS.some((term) => t.includes(memeNormText(term)));
+}
+
+function memeCaptionScoreDetailed(text, home, away, match) {
+  const homeHit = memeTeamHit(text, home);
+  const awayHit = memeTeamHit(text, away);
+  const player = memePlayerHitScore(text, match);
+  const moment = memeMomentHit(text) ? 0.35 : 0;
+  const teams = homeHit + awayHit;
+  return { total: teams + player + moment, teams, homeHit, awayHit, player, moment };
+}
+
 function memeCaptionHits(text, home, away, match) {
-  return memeCaptionScore(text, home, away, match) > 0;
+  const s = memeCaptionScoreDetailed(text, home, away, match);
+  if (s.homeHit && s.awayHit) return true;
+  if (s.homeHit || s.awayHit) return true;
+  if (s.player >= 0.8) return true;
+  if (s.moment && (s.homeHit || s.awayHit || s.player >= 0.8)) return true;
+  return false;
+}
+
+/** Match tab: any team or player mention in caption (no moment gate). */
+function memeCaptionRelates(text, home, away, match) {
+  const s = memeCaptionScoreDetailed(text, home, away, match);
+  return !!(s.homeHit || s.awayHit || s.player > 0);
 }
 
 function memeCaptionScore(text, home, away, match) {
-  const t = String(text || "").toLowerCase();
-  return [home, away, ...memePlayerTerms(match)]
-    .filter(Boolean)
-    .reduce((score, n) => score + (t.includes(n.toLowerCase()) ? 1 : 0), 0);
+  return memeCaptionScoreDetailed(text, home, away, match).total;
 }
 
 function memeUniversalHits(text, memeConfig) {
   const t = String(text || "").toLowerCase();
   const terms = Array.isArray(memeConfig?.universalTerms) ? memeConfig.universalTerms : [];
   return terms.some((term) => t.includes(String(term).toLowerCase()));
-}
-
-function bestMemeMatchKey(text, matches) {
-  let best = null;
-  for (const m of matches || []) {
-    const score = memeCaptionScore(text, m.home, m.away, m);
-    if (score > 0 && (!best || score > best.score)) {
-      best = { key: highlightPairKeyMemes(m.home, m.away), score };
-    }
-  }
-  return best?.key || null;
-}
-
-function memeEngagement(m) {
-  const x = m || {};
-  return (x.like_count || 0) + (x.retweet_count || 0) * 2 + (x.quote_count || 0) * 2;
 }
 
 function memePostWindow(kickoffUtc) {
@@ -3250,6 +3626,106 @@ function memePostWindow(kickoffUtc) {
     start: new Date(kickoff - MEME_LOOKBACK_BEFORE_KICKOFF_MS).toISOString(),
     end: new Date(Math.min(Math.max(now, kickoff + MEME_MATCH_MS), contextEnd)).toISOString(),
   };
+}
+
+const MEME_PREVIEW_MS = 14 * 24 * 60 * 60 * 1000;
+
+function memePreviewWindow(kickoffUtc) {
+  const kickoff = Date.parse(kickoffUtc || "");
+  if (isNaN(kickoff) || kickoff <= Date.now()) return null;
+  return {
+    start: new Date(Math.max(Date.now() - 86400000, kickoff - MEME_PREVIEW_MS)).toISOString(),
+    end: new Date(kickoff + 15 * 60 * 1000).toISOString(),
+  };
+}
+
+function inferMemeStatusFromKickoff(kickoffUtc, explicitStatus) {
+  if (explicitStatus === "live" || explicitStatus === "ended" || explicitStatus === "upcoming") {
+    return explicitStatus;
+  }
+  const kickoff = Date.parse(kickoffUtc || "");
+  if (isNaN(kickoff)) return explicitStatus || "ended";
+  const now = Date.now();
+  if (kickoff > now + 5 * 60 * 1000) return "upcoming";
+  if (kickoff + MEME_MATCH_MS < now) return "ended";
+  return "live";
+}
+
+function memeWindowForStatus(kickoffUtc, status) {
+  return status === "upcoming" ? memePreviewWindow(kickoffUtc) : memePostWindow(kickoffUtc);
+}
+
+function resolveMemeTarget(text, matches, universalTerms) {
+  const universal = memeUniversalHits(text, { universalTerms });
+  const ranked = (matches || [])
+    .filter((m) => m?.home && m?.away)
+    .map((m) => {
+      const s = memeCaptionScoreDetailed(text, m.home, m.away, m);
+      const status = inferMemeStatusFromKickoff(m.kickoffUtc, m.status);
+      return { key: highlightPairKeyMemes(m.home, m.away), score: s.total, ...s, match: m, status };
+    })
+    .filter((r) => r.total >= 0.8)
+    .sort((a, b) => b.score - a.score || (Date.parse(b.match.kickoffUtc || "") - Date.parse(a.match.kickoffUtc || "")));
+
+  const top = ranked[0];
+  const second = ranked[1];
+  if (top && memeMatchUnambiguous(top, second)) {
+    const m = top.match;
+    const status = top.status;
+    return {
+      matchKey: top.key,
+      scope: status === "upcoming" ? "upcoming" : "match",
+      home: m.home,
+      away: m.away,
+      score: status === "ended" || status === "live" ? m.score || null : null,
+      kickoffUtc: m.kickoffUtc || null,
+      status,
+    };
+  }
+
+  if (universal) {
+    return {
+      matchKey: "worldcup",
+      scope: "worldcup",
+      home: null,
+      away: null,
+      score: null,
+      kickoffUtc: null,
+      status: null,
+    };
+  }
+
+  return null;
+}
+
+function memeMatchUnambiguous(top, second) {
+  if (!top) return false;
+  if (top.homeHit && top.awayHit) return true;
+  if (top.player >= 0.8 && (!second || top.player > second.player + 0.1)) return true;
+  if (top.teams >= 1 && (!second || top.total >= second.total + 0.45)) return true;
+  if (top.moment && top.teams >= 1 && (!second || top.total >= second.total + 0.35)) return true;
+  return false;
+}
+
+function bestMemeMatchKey(text, matches) {
+  return resolveMemeTarget(text, matches, [])?.matchKey || null;
+}
+
+function orderMemesByPostedAt(memes) {
+  return [...(memes || [])]
+    .map((m, i) => ({ ...m, _order: i }))
+    .sort((a, b) => {
+      const ta = Date.parse(a.postedAt || "") || 0;
+      const tb = Date.parse(b.postedAt || "") || 0;
+      if (tb !== ta) return tb - ta;
+      return (a._order || 0) - (b._order || 0);
+    })
+    .map(({ _order, ...m }) => m);
+}
+
+function memeEngagement(m) {
+  const x = m || {};
+  return (x.like_count || 0) + (x.retweet_count || 0) * 2 + (x.quote_count || 0) * 2;
 }
 
 function memeInWindow(createdAt, window) {
@@ -3542,7 +4018,8 @@ async function enrichMemesMedia(memes, bearer) {
 }
 
 async function searchCuratedMemesSyndication(home, away, kickoffUtc, match, memeConfig, timelineCache, seenIds) {
-  const window = memePostWindow(kickoffUtc);
+  const status = inferMemeStatusFromKickoff(kickoffUtc, match?.status);
+  const window = memeWindowForStatus(kickoffUtc, status);
   if (!window) return [];
   const out = [];
   const config = memeConfig || { accounts: [], topPerAccount: 3 };
@@ -3563,6 +4040,40 @@ async function searchCuratedMemesSyndication(home, away, kickoffUtc, match, meme
       .filter((t) => memeInWindow(t.created_at, window) && memeCaptionHits(t.text, home, away, match))
       .map((t) => memeToEntry(t, acct.username, {}));
     out.push(...pickTopMediaMemes(hits, config.topPerAccount || 3));
+  }
+  return out;
+}
+
+async function searchResolvedTimelineMemes(matches, memeConfig, timelineCache, sinceMs, seenIds) {
+  const out = [];
+  const config = memeConfig || { accounts: [], universalTerms: [] };
+  const allMatches = matches || [];
+  for (const acct of config.accounts || []) {
+    let tweets;
+    try {
+      if (timelineCache && timelineCache.has(acct.username)) {
+        tweets = timelineCache.get(acct.username);
+      } else {
+        tweets = await fetchSyndicationTimeline(acct.username, 100);
+        if (timelineCache) timelineCache.set(acct.username, tweets);
+      }
+    } catch {
+      continue;
+    }
+    for (const t of tweets) {
+      if (seenIds && seenIds.has(String(t.id))) continue;
+      if (!tweetPostedRecently(t.created_at, sinceMs)) continue;
+      const target = resolveMemeTarget(t.text, allMatches, config.universalTerms);
+      if (!target) continue;
+      if (target.scope !== "worldcup") {
+        const w = memeWindowForStatus(target.kickoffUtc, target.status);
+        if (w && !memeInWindow(t.created_at, w)) continue;
+      }
+      out.push({
+        entry: memeToEntry(t, acct.username, {}),
+        target,
+      });
+    }
   }
   return out;
 }
@@ -3593,7 +4104,8 @@ async function searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache
 }
 
 async function searchCuratedMemes(bearer, home, away, kickoffUtc, match, memeConfig) {
-  const window = memePostWindow(kickoffUtc);
+  const status = inferMemeStatusFromKickoff(kickoffUtc, match?.status);
+  const window = memeWindowForStatus(kickoffUtc, status);
   if (!window) return [];
   const out = [];
   const config = memeConfig || { accounts: [], topPerAccount: 3 };
@@ -3633,39 +4145,116 @@ async function loadMemeSources(env, origin) {
     _memeSourcesCache = {
       accounts: Array.isArray(json.accounts) ? json.accounts.filter((a) => a?.key && a?.username) : [],
       topPerAccount: Number(json.topPerAccount) || 3,
+      homeAccounts: Array.isArray(json.homeAccounts) ? json.homeAccounts.filter(Boolean) : ["TrollFootball", "memesvsfootball"],
+      homeFetchLimit: Number(json.homeFetchLimit) || 50,
+      homeKeepFraction: Number(json.homeKeepFraction) || 0.75,
+      matchFetchLimit: Number(json.matchFetchLimit) || 50,
       universalTerms: Array.isArray(json.universalTerms) ? json.universalTerms.filter(Boolean) : [],
     };
   } catch {
-    _memeSourcesCache = { accounts: [], topPerAccount: 3, universalTerms: [] };
+    _memeSourcesCache = {
+      accounts: [],
+      topPerAccount: 3,
+      homeAccounts: ["TrollFootball", "memesvsfootball"],
+      homeFetchLimit: 50,
+      homeKeepFraction: 0.75,
+      matchFetchLimit: 50,
+      universalTerms: [],
+    };
   }
   return _memeSourcesCache;
 }
 
-function pruneRecentMemesRuntimeCache(sinceMs) {
-  const kept = (_recentMemesRuntimeCache.memes || [])
-    .filter((m) => tweetPostedRecently(m.postedAt, sinceMs));
-  _recentMemesRuntimeCache.memes = kept;
-  _recentMemesRuntimeCache.seenIds = new Set(
-    kept.map((m) => String(m.tweetId || m.url || "")).filter(Boolean)
-  );
-}
-
-function recentMemesRuntimeFresh(sinceMs) {
-  pruneRecentMemesRuntimeCache(sinceMs);
+function recentMemesRuntimeFresh() {
   return _recentMemesRuntimeCache.memes.length &&
     Date.now() - _recentMemesRuntimeCache.at < RECENT_MEMES_SCAN_CACHE_MS;
 }
 
-function updateRecentMemesRuntimeCache(memes, sinceMs) {
-  const merged = mergeMemeLists(_recentMemesRuntimeCache.memes, memes)
-    .filter((m) => tweetPostedRecently(m.postedAt, sinceMs))
-    .slice(0, RECENT_MEMES_LIMIT);
+function updateRecentMemesRuntimeCache(memes) {
+  const merged = orderMemesByPostedAt(memes).slice(0, RECENT_MEMES_LIMIT);
   _recentMemesRuntimeCache = {
     at: Date.now(),
     memes: merged,
     seenIds: new Set(merged.map((m) => String(m.tweetId || m.url || "")).filter(Boolean)),
   };
   return merged;
+}
+
+/** Minimum likes to keep the top `keepFraction` of tweets (e.g. 0.75 → drop bottom 25%). */
+function likesThresholdForTopFraction(entries, keepFraction = 0.75) {
+  const sorted = (entries || []).map((e) => Number(e.likes) || 0).sort((a, b) => a - b);
+  if (!sorted.length) return 0;
+  const drop = Math.floor(sorted.length * (1 - keepFraction));
+  const idx = Math.min(Math.max(drop, 0), sorted.length - 1);
+  return sorted[idx];
+}
+
+function filterEntriesByLikesThreshold(entries, keepFraction = 0.75) {
+  const threshold = likesThresholdForTopFraction(entries, keepFraction);
+  return {
+    threshold,
+    entries: (entries || []).filter((e) => (Number(e.likes) || 0) >= threshold),
+  };
+}
+
+async function fetchHomeViralMemes(memeConfig, timelineCache) {
+  const config = memeConfig || {};
+  const homeKeys = config.homeAccounts || ["TrollFootball", "memesvsfootball"];
+  const limit = config.homeFetchLimit || 50;
+  const keepFraction = config.homeKeepFraction ?? 0.75;
+  const accounts = (config.accounts || []).filter((a) => homeKeys.includes(a.key));
+  const out = [];
+  const thresholds = {};
+
+  for (const acct of accounts) {
+    let tweets;
+    try {
+      if (timelineCache && timelineCache.has(acct.username)) {
+        tweets = timelineCache.get(acct.username);
+      } else {
+        tweets = await fetchSyndicationTimeline(acct.username, limit);
+        if (timelineCache) timelineCache.set(acct.username, tweets);
+      }
+    } catch {
+      continue;
+    }
+
+    const entries = tweets
+      .slice(0, limit)
+      .map((t) => memeToEntry(t, acct.username, {}))
+      .filter(memeHasMedia);
+    const { threshold, entries: kept } = filterEntriesByLikesThreshold(entries, keepFraction);
+    thresholds[acct.username] = threshold;
+    out.push(...kept.map((e) => ({ ...e, likesThreshold: threshold })));
+  }
+
+  return { memes: orderMemesByPostedAt(out), thresholds };
+}
+
+async function searchMatchMemesSyndication(home, away, match, memeConfig, timelineCache, seenIds) {
+  const config = memeConfig || { accounts: [], matchFetchLimit: 50 };
+  const limit = config.matchFetchLimit || 50;
+  const out = [];
+  for (const acct of config.accounts || []) {
+    let tweets;
+    try {
+      if (timelineCache && timelineCache.has(acct.username)) {
+        tweets = timelineCache.get(acct.username);
+      } else {
+        tweets = await fetchSyndicationTimeline(acct.username, limit);
+        if (timelineCache) timelineCache.set(acct.username, tweets);
+      }
+    } catch {
+      continue;
+    }
+    const hits = tweets
+      .slice(0, limit)
+      .filter((t) => !seenIds || !seenIds.has(String(t.id)))
+      .filter((t) => memeCaptionRelates(t.text, home, away, match))
+      .map((t) => memeToEntry(t, acct.username, {}));
+    out.push(...hits);
+  }
+  return filterMemesWithMedia(out);
 }
 
 async function loadMemesIndex(env, origin) {
@@ -3715,19 +4304,21 @@ async function proxyMatchMemesApi(request, env) {
     return new Response(JSON.stringify({ error: "home and away required" }), { status: 400, headers });
   }
   const key = highlightPairKeyMemes(home, away);
-  const [idx, pinned, todayMatches, memeConfig] = await Promise.all([
+  const [idx, pinned, todayMatches, archiveMatches, memeConfig] = await Promise.all([
     loadMemesIndex(env, url.origin),
     loadPinnedMemes(env, url.origin),
     loadTodayMatches(env, url.origin),
+    loadTournamentArchiveMatches(env, url.origin),
     loadMemeSources(env, url.origin),
   ]);
-  const match = todayMatches.find((m) => highlightPairKeyMemes(m.home, m.away) === key) ||
+  const matchMeta = findMatchMeta(home, away, todayMatches, archiveMatches) ||
     { home, away, kickoffUtc: kickoff };
+  const match = { ...matchMeta, home, away, kickoffUtc: kickoff || matchMeta.kickoffUtc };
   let memes = idx[key] || pinned[key] || [];
   let source = memes.length ? (pinned[key]?.length && !idx[key]?.length ? "pinned" : "archive") : "none";
 
   try {
-    const synd = await searchCuratedMemesSyndication(home, away, kickoff, match, memeConfig);
+    const synd = await searchMatchMemesSyndication(home, away, match, memeConfig);
     if (synd.length) {
       memes = mergeMemeLists(memes, synd);
       source = source === "none" ? "twitter-syndication" : `${source}+twitter-syndication`;
@@ -3759,6 +4350,15 @@ async function proxyMatchMemesApi(request, env) {
       if (source === "archive" || source === "pinned") source = "archive+media";
     } catch { /* text-only fallback */ }
     memes = filterMemesWithMedia(memes);
+    const status = inferMemeStatusFromKickoff(match.kickoffUtc, match.status);
+    memes = orderMemesByPostedAt(memes).map((meme) => ({
+      ...meme,
+      home: match.home,
+      away: match.away,
+      score: status === "upcoming" ? null : (match.score || meme.score || null),
+      kickoffUtc: match.kickoffUtc || meme.kickoffUtc || null,
+      status,
+    }));
   }
 
   return new Response(JSON.stringify({ key, memes }), {
@@ -3776,6 +4376,35 @@ async function loadTodayMatches(env, origin) {
   } catch {
     return [];
   }
+}
+
+let _archiveMatchesCache = null;
+let _archiveMatchesAt = 0;
+
+async function loadTournamentArchiveMatches(env, origin) {
+  if (_archiveMatchesCache && Date.now() - _archiveMatchesAt < 5 * 60 * 1000) return _archiveMatchesCache;
+  try {
+    const res = await env.ASSETS.fetch(`${origin}/assets/data/tournament-archive.json`);
+    if (!res.ok) {
+      _archiveMatchesCache = [];
+    } else {
+      const json = await res.json();
+      _archiveMatchesCache = Array.isArray(json.matches) ? json.matches : [];
+    }
+  } catch {
+    _archiveMatchesCache = [];
+  }
+  _archiveMatchesAt = Date.now();
+  return _archiveMatchesCache;
+}
+
+function findMatchMeta(home, away, todayMatches, archiveMatches) {
+  const key = highlightPairKeyMemes(home, away);
+  return (
+    todayMatches.find((m) => highlightPairKeyMemes(m.home, m.away) === key) ||
+    archiveMatches.find((m) => highlightPairKeyMemes(m.home, m.away) === key) ||
+    null
+  );
 }
 
 function tweetPostedRecently(postedAt, sinceMs) {
@@ -3797,166 +4426,64 @@ async function proxyRecentMemesApi(request, env) {
     "Cache-Control": "public, max-age=600",
     "X-KZ-Proxy": "recent-memes-api",
   };
-  const sinceMs = Date.now() - RECENT_MEMES_MS;
-  const matchSinceMs = Date.now() - RECENT_MATCH_MEME_CONTEXT_MS;
   const responseCacheKey = new Request(`${origin}/api/recent-memes/__response-cache`);
-  const seenCacheKey = new Request(`${origin}/api/recent-memes/__seen-cache`);
   const forceLive = url.searchParams.get("live") === "1";
   if (!forceLive) {
     try {
       const cached = await caches.default.match(responseCacheKey);
       if (cached) {
         const h = new Headers(cached.headers);
-        h.set("X-KZ-Meme-Source", "runtime-cache");
+        h.set("X-KZ-Meme-Source", "edge-cache");
         return new Response(cached.body, { status: 200, headers: h });
       }
     } catch { /* cache optional */ }
-  }
-  const [idx, pinned, todayMatches, memeConfig] = await Promise.all([
-    loadMemesIndex(env, origin),
-    loadPinnedMemes(env, origin),
-    loadTodayMatches(env, origin),
-    loadMemeSources(env, origin),
-  ]);
-
-  const matchByKey = new Map();
-  const recentMatchKeys = new Set();
-  for (const m of todayMatches) {
-    if (!m.home || !m.away) continue;
-    const key = highlightPairKeyMemes(m.home, m.away);
-    matchByKey.set(key, m);
-    if (matchKickoffRecently(m.kickoffUtc, matchSinceMs)) recentMatchKeys.add(key);
-  }
-
-  if (recentMemesRuntimeFresh(sinceMs)) {
-    const cachedMemes = filterMemesWithMedia(_recentMemesRuntimeCache.memes)
-      .slice(0, RECENT_MEMES_LIMIT);
-    return new Response(JSON.stringify({
-      memes: cachedMemes,
-      count: cachedMemes.length,
-      windowHours: 24,
-      matchCount: recentMatchKeys.size,
-      cached: true,
-    }), {
-      status: 200,
-      headers: { ...headers, "X-KZ-Meme-Source": "runtime-cache" },
-    });
-  }
-
-  const byTweetId = new Map();
-  const hasMemeForKey = (matchKey) => [...byTweetId.values()].some((m) => m.matchKey === matchKey);
-  const scannerSeenIds = new Set(_recentMemesRuntimeCache.seenIds || []);
-  let cacheSeedMemes = [];
-  try {
-    const seenCached = await caches.default.match(seenCacheKey);
-    if (seenCached) {
-      const seenJson = await seenCached.json();
-      for (const id of seenJson.seenIds || []) scannerSeenIds.add(String(id));
-      cacheSeedMemes = Array.isArray(seenJson.memes) ? seenJson.memes : [];
-    }
-  } catch { /* cache optional */ }
-  const ingest = (matchKey, meme) => {
-    if (!meme || meme.type !== "tweet") return;
-    const meta = matchByKey.get(matchKey);
-    const postedOk = tweetPostedRecently(meme.postedAt, sinceMs);
-    const matchOk = recentMatchKeys.has(matchKey);
-    if (!postedOk && !matchOk) return;
-    const id = String(meme.tweetId || meme.url || "");
-    if (!id) return;
-    scannerSeenIds.add(id);
-    const row = {
-      ...meme,
-      matchKey,
-      home: meta?.home || meme.home || null,
-      away: meta?.away || meme.away || null,
-      score: meta?.score || meme.score || null,
-      kickoffUtc: meta?.kickoffUtc || meme.kickoffUtc || null,
-    };
-    const prev = byTweetId.get(id);
-    if (!prev || (row.engagement || 0) > (prev.engagement || 0)) byTweetId.set(id, row);
-  };
-
-  for (const meme of cacheSeedMemes) {
-    ingest(meme.matchKey || "worldcup", meme);
-  }
-  for (const meme of _recentMemesRuntimeCache.memes || []) {
-    ingest(meme.matchKey || "worldcup", meme);
-  }
-  for (const [key, list] of Object.entries(idx)) {
-    for (const meme of list || []) ingest(key, meme);
-  }
-  for (const [key, list] of Object.entries(pinned)) {
-    for (const meme of list || []) ingest(key, meme);
-  }
-
-  const timelineCache = new Map();
-  try {
-    const universal = await searchUniversalWorldCupMemesSyndication(memeConfig, timelineCache, sinceMs, scannerSeenIds);
-    for (const meme of universal) {
-      const matchKey = bestMemeMatchKey(meme.text, [...matchByKey.values()]);
-      ingest(matchKey || "worldcup", {
-        ...meme,
-        scope: matchKey ? "match" : "worldcup",
+    if (recentMemesRuntimeFresh()) {
+      const cachedMemes = filterMemesWithMedia(_recentMemesRuntimeCache.memes)
+        .slice(0, RECENT_MEMES_LIMIT);
+      return new Response(JSON.stringify({
+        memes: cachedMemes,
+        count: cachedMemes.length,
+        accounts: ["TrollFootball", "memesvsfootball"],
+        cached: true,
+      }), {
+        status: 200,
+        headers: { ...headers, "X-KZ-Meme-Source": "runtime-cache" },
       });
     }
-  } catch { /* universal timeline optional */ }
-
-  const syndicateCandidates = [...recentMatchKeys]
-    .map((key) => ({ key, m: matchByKey.get(key) }))
-    .filter((x) => x.m)
-    .sort((a, b) => Date.parse(b.m.kickoffUtc) - Date.parse(a.m.kickoffUtc));
-  await Promise.all(syndicateCandidates.map(async ({ key, m }) => {
-    try {
-      const hits = await searchCuratedMemesSyndication(m.home, m.away, m.kickoffUtc, m, memeConfig, timelineCache, scannerSeenIds);
-      for (const meme of hits) ingest(key, meme);
-    } catch { /* syndication optional */ }
-  }));
-
-  const bearer = env && env.TWITTER_BEARER_TOKEN;
-  if (bearer) {
-    for (const { key, m } of syndicateCandidates) {
-      if (hasMemeForKey(key)) continue;
-      try {
-        const hits = await searchCuratedMemes(bearer, m.home, m.away, m.kickoffUtc, m, memeConfig);
-        for (const meme of hits) ingest(key, meme);
-      } catch { /* live API optional */ }
-    }
   }
 
-  let memes = [...byTweetId.values()]
-    .sort((a, b) => (b.engagement || 0) - (a.engagement || 0))
-    .slice(0, RECENT_MEMES_LIMIT);
+  const memeConfig = await loadMemeSources(env, origin);
+  const bearer = env && env.TWITTER_BEARER_TOKEN;
+  let source = "twitter-syndication";
+  let thresholds = {};
+
+  let memes = [];
+  try {
+    const pack = await fetchHomeViralMemes(memeConfig);
+    memes = pack.memes;
+    thresholds = pack.thresholds;
+  } catch { /* syndication optional */ }
 
   if (memes.length) {
     try {
       memes = await enrichMemesMedia(memes, bearer);
     } catch { /* static */ }
-    memes = filterMemesWithMedia(memes);
+    memes = filterMemesWithMedia(memes).slice(0, RECENT_MEMES_LIMIT);
   }
-  memes = updateRecentMemesRuntimeCache(memes, sinceMs);
+
+  memes = updateRecentMemesRuntimeCache(memes);
 
   const body = JSON.stringify({
     memes,
     count: memes.length,
-    windowHours: 24,
-    matchCount: recentMatchKeys.size,
+    accounts: memeConfig.homeAccounts || ["TrollFootball", "memesvsfootball"],
+    thresholds,
+    keepFraction: memeConfig.homeKeepFraction ?? 0.75,
+    fetchLimit: memeConfig.homeFetchLimit || 50,
   });
-  const response = new Response(body, {
-    status: 200,
-    headers,
-  });
+  const response = new Response(body, { status: 200, headers });
   try {
     await caches.default.put(responseCacheKey, response.clone());
-    await caches.default.put(seenCacheKey, new Response(JSON.stringify({
-      at: Date.now(),
-      seenIds: [...scannerSeenIds],
-      memes,
-    }), {
-      headers: {
-        "Content-Type": "application/json; charset=utf-8",
-        "Cache-Control": "public, max-age=21600",
-      },
-    }));
   } catch { /* cache optional */ }
   return response;
 }
@@ -4538,6 +5065,9 @@ export default {
     }
     if (SIRTV_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxySirTv(request, env);
+    }
+    if (KOORACITY_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxyKooraCity(request, env);
     }
     if (NTV_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyNtv(request, env);

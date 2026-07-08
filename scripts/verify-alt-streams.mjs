@@ -31,23 +31,26 @@ function ts() {
   await page.goto(WATCH_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
 
   await page.waitForSelector("#alt-streams:not([hidden])", { timeout: 60000 }).catch(() => {});
-  await page.waitForTimeout(8000);
+  await page.waitForTimeout(3000);
+
+  const activeCount = await page.evaluate(() =>
+    document.querySelectorAll(".alt-stream-stage .alt-stream-frame").length
+  );
+  if (activeCount !== 1) {
+    throw new Error(`Expected exactly 1 active alt-stream iframe, got ${activeCount}`);
+  }
+
+  await page.click('.alt-stream-tab[data-alt-kind="ntv"]');
+  await page.waitForTimeout(5000);
 
   const iframes = await page.evaluate(() => {
-    const frames = [...document.querySelectorAll(".alt-stream-frame")];
-    return frames.map((f) => {
-      const pane = f.closest(".alt-stream-pane");
-      return {
-        kind: pane?.classList.contains("alt-stream-pane--ntv")
-          ? "ntv"
-          : pane?.classList.contains("alt-stream-pane--sirtv")
-            ? "sirTv"
-            : "unknown",
-        src: f.src,
-        sandbox: f.getAttribute("sandbox"),
-        hasSandbox: f.hasAttribute("sandbox"),
-      };
-    });
+    const frames = [...document.querySelectorAll(".alt-stream-stage .alt-stream-frame")];
+    return frames.map((f) => ({
+      kind: f.dataset.altKind || "unknown",
+      src: f.src,
+      sandbox: f.getAttribute("sandbox"),
+      hasSandbox: f.hasAttribute("sandbox"),
+    }));
   });
 
   console.log("alt-stream iframes:", JSON.stringify(iframes, null, 2));
