@@ -10,6 +10,7 @@
     "classify:sample": "SAMPLE_LIMIT=50000 node classify-trips.js",
     "classify:json": "node classify-trips.js --format json",
     "classify:parquet": "python3 classify-parquet.py",
+    "q1": "python3 q1-table.py",
     "calibrate": "node calibrate-rates.js"
   }
 }
