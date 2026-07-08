@@ -139,6 +139,57 @@ async function fetchYouTubeHighlight(match) {
   return null;
 }
 
+/** Keep goals/full/clips when refresh only re-attaches a single highlight pin. */
+function mergeReplayFields(out, prev) {
+  if (!prev) return out;
+  if (!out.summaryAr && prev.summaryAr) out.summaryAr = prev.summaryAr;
+  if (prev.highlights) {
+    out.highlights = { ...(prev.highlights || {}), ...(out.highlights || {}) };
+    if (!out.highlights.goals && prev.highlights.goals) out.highlights.goals = prev.highlights.goals;
+    if (!out.highlights.full && prev.highlights.full) out.highlights.full = prev.highlights.full;
+  }
+  if (!out.highlight && prev.highlight) out.highlight = prev.highlight;
+  if (!(out.clips && out.clips.length) && prev.clips?.length) {
+    out.clips = prev.clips;
+  } else if (prev.clips?.length) {
+    const seen = new Set((out.clips || []).map((c) => c.btolatId || c.videoUrl || c.embedId));
+    out.clips = [...(out.clips || [])];
+    for (const clip of prev.clips) {
+      const id = clip.btolatId || clip.videoUrl || clip.embedId;
+      if (id && seen.has(id)) continue;
+      if (id) seen.add(id);
+      out.clips.push(clip);
+    }
+  }
+  if (!out.highlight && out.highlights) {
+    out.highlight = pickPrimaryHighlight(out.highlights) || out.highlights.full || out.highlights.goals || null;
+  }
+  return out;
+}
+
+function buildPreviousMatchMap(previousPayload) {
+  const map = new Map();
+  for (const m of (previousPayload && previousPayload.matches) || []) {
+    map.set(pairKey(m.home, m.away), m);
+  }
+  return map;
+}
+
+function mergeReplayFromPrevious(matches, previousPayload) {
+  const prevByKey = buildPreviousMatchMap(previousPayload);
+  let restored = 0;
+  for (const m of matches) {
+    if (m.status !== "ended") continue;
+    const prev = prevByKey.get(pairKey(m.home, m.away));
+    if (!prev) continue;
+    const beforeClips = (m.clips || []).length;
+    const beforeHl = !!(m.highlights && (m.highlights.goals || m.highlights.full));
+    mergeReplayFields(m, prev);
+    if ((m.clips || []).length > beforeClips || (!beforeHl && m.highlights)) restored++;
+  }
+  return restored;
+}
+
 (async () => {
   const dates = [shiftDate(centerDate, -1), centerDate, shiftDate(centerDate, 1)];
   const seen = new Set();
@@ -300,6 +351,8 @@ async function fetchYouTubeHighlight(match) {
       console.warn(`youtube highlight search failed for ${m.home} vs ${m.away}:`, err.message);
     }
   }
+  const replayRestored = mergeReplayFromPrevious(matches, previousPayload);
+  if (replayRestored) console.log(`replay merge: restored goals/clips on ${replayRestored} ended matches`);
   const highlightsIndex = Array.from(highlightsByKey.values());
 
   function buildHighlightsBanners(endedMatches) {

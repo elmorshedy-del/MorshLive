@@ -4316,26 +4316,29 @@ function computeAccountLikesThreshold(pool, memeConfig) {
   };
 }
 
-/** Softer bar for tweets from the last ~2 days — likes haven't had time to accumulate. */
-function computeRecentAccountThreshold(recentPool, memeConfig) {
+/** Softer bar for tweets from the last ~2 days — top N by likes, never above WC bar. */
+function computeRecentAccountThreshold(recentPool, memeConfig, standardStats) {
   const entries = (recentPool || []).filter(memeHasMedia);
   const recentDays = memeConfig.homeRecentDays || 2;
+  const targetTotal = (memeConfig.homeRecentTargetPerDay ?? memeConfig.homeTargetPerDay ?? 4) * recentDays;
   if (!entries.length) {
-    return { threshold: 0, keepFraction: 1, estimatedPerDay: 0, poolSize: 0, passing: 0, recentDays };
+    return { threshold: 0, keepFraction: 1, estimatedPerDay: 0, poolSize: 0, passing: 0, recentDays, targetTotal };
   }
-  const targetPerDay = memeConfig.homeRecentTargetPerDay ?? memeConfig.homeTargetPerDay ?? 4;
-  const minK = memeConfig.homeRecentMinKeepFraction ?? 0.5;
-  const maxK = memeConfig.homeRecentMaxKeepFraction ?? 0.85;
-  const keepFraction = Math.min(maxK, Math.max(minK, (targetPerDay * recentDays) / entries.length));
-  const threshold = likesThresholdForTopFraction(entries.map((c) => ({ likes: c.likes })), keepFraction);
+  const sorted = entries.map((c) => Number(c.likes) || 0).sort((a, b) => a - b);
+  const keep = Math.min(Math.max(targetTotal, 1), sorted.length);
+  const idx = Math.max(0, sorted.length - keep);
+  let threshold = sorted[idx] || 0;
+  const standardCap = Number(standardStats?.threshold) || threshold;
+  threshold = Math.min(threshold, standardCap);
   const passing = entries.filter((c) => (Number(c.likes) || 0) >= threshold).length;
   return {
     threshold,
-    keepFraction,
+    keepFraction: keep / sorted.length,
     estimatedPerDay: passing / recentDays,
     poolSize: entries.length,
     passing,
     recentDays,
+    targetTotal,
   };
 }
 
@@ -4359,7 +4362,9 @@ function refreshMemesFromPool(entries, pool) {
 function classifyHomeMeme(m, stats, recentStats, config, tz, displayDays) {
   if (!memeInRecentDays(m.postedAt, tz, displayDays)) return null;
   const isRecent = memeIsRecent(m.postedAt, tz, config.homeRecentDays || 2);
-  const threshold = isRecent ? recentStats.threshold : stats.threshold;
+  const threshold = isRecent
+    ? Math.min(recentStats.threshold, stats.threshold)
+    : stats.threshold;
   const passing = (Number(m.likes) || 0) >= threshold;
   return {
     isRecent,
@@ -4431,7 +4436,7 @@ async function fetchHomeViralMemes(memeConfig, bearer, timelineCache) {
       const pool = await collectAccountHomePool(acct, config, bearer, timelineCache);
       const stats = computeAccountLikesThreshold(pool, config);
       const recentPool = pool.filter((m) => memeIsRecent(m.postedAt, tz, recentDays));
-      const recentStats = computeRecentAccountThreshold(recentPool, config);
+      const recentStats = computeRecentAccountThreshold(recentPool, config, stats);
       const hits = [];
       const waiting = [];
       for (const m of pool) {
@@ -4496,7 +4501,7 @@ async function recheckPendingHomeMemes(pending, memeConfig, bearer, timelineCach
     const pool = poolsByAuthor.get(authorKey) || [];
     const stats = computeAccountLikesThreshold(pool, config);
     const recentPool = pool.filter((m) => memeIsRecent(m.postedAt, tz, recentDays));
-    const recentStats = computeRecentAccountThreshold(recentPool, config);
+    const recentStats = computeRecentAccountThreshold(recentPool, config, stats);
     const refreshed = refreshMemesFromPool(acctPending, pool);
     for (const m of refreshed) {
       const row = classifyHomeMeme(m, stats, recentStats, config, tz, displayDays);
