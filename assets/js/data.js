@@ -533,8 +533,11 @@ async function loadHighlightsIndex() {
 function applyHighlights(matches, idx) {
   return matches.map((m) => {
     if (m.status !== "ended") return m;
-    const out = m.summaryAr ? m : { ...m, summaryAr: buildArabicSummary(m) };
-    if (out.highlight) return out;
+    const out = {
+      ...m,
+      summaryAr: m.summaryAr || buildArabicSummary(m),
+    };
+    if (out.highlight || out.highlights || out.clips?.length) return out;
     const entry = idx && idx[commentaryKey(m.home, m.away)];
     if (!entry) return out;
     return {
@@ -562,7 +565,12 @@ async function fetchHighlightFromApi(m) {
       const res = await fetch(`/api/highlight?${params.toString()}`);
       if (!res.ok) return null;
       const data = await res.json();
-      return data && data.videoUrl ? data : null;
+      if (!data || (!data.videoUrl && !data.highlight?.videoUrl)) return null;
+      return {
+        highlight: data.highlight || (data.videoUrl ? data : null),
+        highlights: data.highlights || null,
+        clips: data.clips || [],
+      };
     } catch {
       return null;
     }
@@ -571,25 +579,29 @@ async function fetchHighlightFromApi(m) {
   return promise;
 }
 
-/** Fill missing replay clips for ended matches via /api/highlight (YouTube, server-side). */
+/** Fill missing replay clips for ended matches via /api/highlight (archive first, then vortex/YouTube). */
 async function ensureHighlightsFromApi(matches) {
-  const pending = matches.filter((m) => m.status === "ended" && !m.highlight);
+  const pending = matches.filter(
+    (m) => m.status === "ended" && !m.highlight && !m.highlights && !(m.clips && m.clips.length)
+  );
   if (!pending.length) return matches;
   const results = await Promise.all(
     pending.map(async (m) => {
-      const h = await fetchHighlightFromApi(m);
-      return h ? { key: commentaryKey(m.home, m.away), highlight: h } : null;
+      const bundle = await fetchHighlightFromApi(m);
+      return bundle ? { key: commentaryKey(m.home, m.away), bundle } : null;
     })
   );
-  const byKey = new Map(results.filter(Boolean).map((r) => [r.key, r.highlight]));
+  const byKey = new Map(results.filter(Boolean).map((r) => [r.key, r.bundle]));
   if (!byKey.size) return matches;
   return matches.map((m) => {
-    const h = byKey.get(commentaryKey(m.home, m.away));
-    if (!h) return m;
+    const bundle = byKey.get(commentaryKey(m.home, m.away));
+    if (!bundle) return m;
     return {
       ...m,
       summaryAr: m.summaryAr || buildArabicSummary(m),
-      highlight: h,
+      highlight: bundle.highlight || m.highlight,
+      highlights: bundle.highlights || m.highlights,
+      clips: bundle.clips?.length ? bundle.clips : m.clips,
     };
   });
 }

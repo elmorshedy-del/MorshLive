@@ -36,10 +36,10 @@
   "homepage": "https://github.com/elmorshedy-del/MorshLive#readme",
   "dependencies": {
     "@ghostery/adblocker": "^2.18.1",
+    "crawlee": "^3.17.0",
     "playwright-core": "^1.61.1"
   },
   "devDependencies": {
-    "crawlee": "^3.17.0",
     "patchright": "^1.52.0",
     "playwright": "^1.61.1"
   }

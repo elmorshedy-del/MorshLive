@@ -8,7 +8,7 @@
  * ==========================================================================*/
 const VORTEX_EMBED_BASE = "https://nvtboo.vortexvisionworks.com/embed";
 const UA = "Mozilla/5.0 (compatible; MorshLive/1.0)";
-const { normalizeArabic, levenshtein } = require("./arabic-team-resolver");
+const { resolveFixtureKey, titleTeams: parseTitleTeams, scoreTitleMentions } = require("./lib/highlight-match-lib");
 
 /** League page + main videos feed (goals clips often only on /videos). */
 const BTOLAT_VIDEO_FEEDS = [
@@ -53,114 +53,20 @@ function isPrimaryKind(kind) {
 }
 
 function titleTeams(title) {
-  const t = String(title || "").replace(/\s+/g, " ").trim();
-  const m = /(?:اهداف|أهداف|ملخص)\s+مباراة\s+(.+?)(?:\s*\(|\s+ك[اأ]س)/i.exec(t);
-  if (!m) return null;
-  const chunk = m[1].replace(/[()]/g, " ").trim();
-  const parts = chunk.split(/\s+و\s*/);
-  if (parts.length < 2) return null;
-  return { a: parts[0].trim(), b: parts[1].trim() };
+  return parseTitleTeams(title);
 }
 
-function arabicSimilarity(a, b) {
-  const x = normalizeArabic(a);
-  const y = normalizeArabic(b);
-  if (!x || !y) return 0;
-  if (x === y) return 1;
-  if (x.includes(y) || y.includes(x)) {
-    return Math.min(x.length, y.length) / Math.max(x.length, y.length);
-  }
-  const max = Math.max(x.length, y.length);
-  return Math.max(0, 1 - levenshtein(x, y) / max);
-}
-
-function uniqueTruthy(items) {
-  return [...new Set(items.filter(Boolean))];
-}
-
-function teamArabicCandidates(match, side, arabicTeam) {
-  const name = match && match[side];
-  const ar = arabicTeam ? arabicTeam(name) : "";
-  return uniqueTruthy([ar, name]);
-}
-
-function sideScore(titleTeam, candidates) {
-  return Math.max(0, ...candidates.map((c) => arabicSimilarity(titleTeam, c)));
-}
-
-function buildContextualPairKey(teams, opts) {
-  const matches = Array.isArray(opts?.matches) ? opts.matches : [];
-  if (!matches.length || !opts?.pairKeyFn) return null;
-
-  let best = null;
-  for (const m of matches) {
-    if (!m?.home || !m?.away) continue;
-    const homeNames = teamArabicCandidates(m, "home", opts.arabicTeam);
-    const awayNames = teamArabicCandidates(m, "away", opts.arabicTeam);
-    const direct =
-      sideScore(teams.a, homeNames) + sideScore(teams.b, awayNames);
-    const reverse =
-      sideScore(teams.a, awayNames) + sideScore(teams.b, homeNames);
-    const score = Math.max(direct, reverse);
-    if (!best || score > best.score) {
-      best = { score, key: m.key || opts.pairKeyFn(m.home, m.away), match: m };
-    }
-  }
-
-  // Two team names give a max score of 2.0. This accepts typo/hamza variants
-  // while still requiring both sides of the title to resemble the same fixture.
-  return best && best.score >= 1.45 ? best.key : null;
-}
-
-function scoreContextualPairKeyFromTitle(title, opts) {
-  const matches = Array.isArray(opts?.matches) ? opts.matches : [];
-  if (!matches.length || !opts?.pairKeyFn) return null;
-  const normTitle = normalizeArabic(title);
-  if (!normTitle) return null;
-
-  const scored = [];
-  for (const m of matches) {
-    if (!m?.home || !m?.away) continue;
-    const homeScore = Math.max(
-      0,
-      ...teamArabicCandidates(m, "home", opts.arabicTeam)
-        .map((n) => normalizeArabic(n))
-        .filter(Boolean)
-        .map((n) => (normTitle.includes(n) ? Math.min(1, n.length / 4) : 0))
-    );
-    const awayScore = Math.max(
-      0,
-      ...teamArabicCandidates(m, "away", opts.arabicTeam)
-        .map((n) => normalizeArabic(n))
-        .filter(Boolean)
-        .map((n) => (normTitle.includes(n) ? Math.min(1, n.length / 4) : 0))
-    );
-    const score = homeScore + awayScore;
-    if (score > 0) scored.push({ score, key: m.key || opts.pairKeyFn(m.home, m.away), match: m });
-  }
-
-  scored.sort((a, b) => b.score - a.score);
-  return scored[0] || null;
-}
-
-function buildContextualPairKeyFromTitle(title, opts) {
-  const best = scoreContextualPairKeyFromTitle(title, opts);
-  if (!best) return null;
-  // Extra clips often mention only the opponent ("Saka chance vs Mexico").
-  // A single-team hit is ambiguous across a full tournament archive; use the
-  // Btolat feed group instead of guessing unless both teams are present.
-  return best.score >= 1.45 ? best.key : null;
-}
-
-function candidatePairKey(video, opts, pairKeyFn, activeKey) {
-  const teams = titleTeams(video.title);
-  const contextualOpts = { ...opts, pairKeyFn };
-  if (teams) {
-    return buildContextualPairKey(teams, contextualOpts) || pairKeyFn(teams.a, teams.b);
-  }
-  const key = buildContextualPairKeyFromTitle(video.title, contextualOpts);
+function candidatePairKey(video, opts, activeKey) {
+  const teams = parseTitleTeams(video.title);
+  const contextualOpts = { ...opts, pairKeyFn: opts.pairKeyFn, minScore: 1.85 };
+  const key = resolveFixtureKey(video.title, teams, opts.matches, contextualOpts);
   if (key) return key;
-  return isPrimaryKind(video.kind) ? null : activeKey;
+  if (isPrimaryKind(video.kind)) return null;
+  if (!activeKey) return null;
+  const activeMatch = (opts.matches || []).find((m) => (m.key || opts.pairKeyFn?.(m.home, m.away)) === activeKey);
+  if (!activeMatch) return null;
+  const mention = scoreTitleMentions(video.title, activeMatch, opts.arabicTeam);
+  return mention >= 1.0 ? activeKey : null;
 }
 
 async function fetchBtolatEmbedId(btolatId) {
@@ -186,27 +92,56 @@ function clipFromEmbed(embedId, meta) {
  * Approximate durations are editorial on btolat; we classify by title only.
  */
 async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
+  let feedVideos = [];
+  if (opts.useCrawler !== false) {
+    try {
+      const { crawlBtolatVideos } = await import("./lib/btolat-crawler.mjs");
+      const crawled = await crawlBtolatVideos({ maxVideos: opts.maxVideos || 120 });
+      feedVideos = crawled.map((v) => ({
+        btolatId: v.btolatId,
+        title: v.title,
+        embedId: v.embedId,
+        publishedAt: v.publishedAt,
+        kind: classifyBtolatTitle(v.title),
+      })).filter((v) => v.kind);
+    } catch (err) {
+      console.warn("btolat Crawlee fallback to fetch:", err.message);
+    }
+  }
+
   const seenIds = new Set();
   const candidates = [];
-  for (const feed of BTOLAT_VIDEO_FEEDS) {
-    const html = await fetchText(feed);
+
+  if (!feedVideos.length) {
+    for (const feed of BTOLAT_VIDEO_FEEDS) {
+      const html = await fetchText(feed);
+      let activeKey = null;
+      for (const v of parseBtolatVideos(html)) {
+        const kind = classifyBtolatTitle(v.title);
+        if (!kind) continue;
+        const video = { ...v, kind };
+        const key = candidatePairKey(video, { ...opts, pairKeyFn }, activeKey);
+        if (key && isPrimaryKind(kind)) activeKey = key;
+        if (seenIds.has(v.btolatId)) continue;
+        seenIds.add(v.btolatId);
+        candidates.push({ ...video, key, order: candidates.length });
+      }
+    }
+  } else {
     let activeKey = null;
-    for (const v of parseBtolatVideos(html)) {
-      const kind = classifyBtolatTitle(v.title);
-      if (!kind) continue;
-      const video = { ...v, kind };
-      const key = candidatePairKey(video, opts, pairKeyFn, activeKey);
-      if (key && isPrimaryKind(kind)) activeKey = key;
+    for (const v of feedVideos) {
+      const key = candidatePairKey(v, { ...opts, pairKeyFn }, activeKey);
+      if (key && isPrimaryKind(v.kind)) activeKey = key;
       if (seenIds.has(v.btolatId)) continue;
       seenIds.add(v.btolatId);
-      candidates.push({ ...video, key });
+      candidates.push({ ...v, key, order: candidates.length });
     }
   }
 
   const out = new Map();
   for (const v of candidates) {
     if (!v.key) continue;
-    const embedId = await fetchBtolatEmbedId(v.btolatId);
+    const embedId = v.embedId || (await fetchBtolatEmbedId(v.btolatId));
     if (!embedId) continue;
 
     let thumbnail = "";
@@ -222,6 +157,8 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
       btolatId: v.btolatId,
       thumbnail,
       kind: v.kind,
+      publishedAt: v.publishedAt || null,
+      order: v.order,
     });
 
     if (!out.has(v.key)) out.set(v.key, {});
@@ -233,6 +170,12 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
       if (!bucket.clips.some((c) => c.btolatId === clip.btolatId || c.videoUrl === clip.videoUrl)) {
         bucket.clips.push(clip);
       }
+    }
+  }
+
+  for (const bucket of out.values()) {
+    if (Array.isArray(bucket.clips)) {
+      bucket.clips.sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
     }
   }
   return out;
@@ -268,6 +211,5 @@ module.exports = {
   pickPrimaryFromBucket,
   parseBtolatVideos,
   classifyBtolatTitle,
-  buildContextualPairKeyFromTitle,
   titleTeams,
 };

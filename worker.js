@@ -3330,6 +3330,28 @@ async function searchYouTubeHighlight(apiKey, queries, kickoffUtc) {
   return null;
 }
 
+async function lookupStaticHighlights(env, origin, home, away) {
+  const key = highlightPairKey(home, away);
+  const today = await loadTodayMatches(env, origin);
+  let m = today.find((x) => highlightPairKey(x.home, x.away) === key);
+  if (!m?.highlight && !m?.highlights && !(m?.clips?.length)) {
+    const archive = await loadTournamentArchiveMatches(env, origin);
+    m = archive.find((x) => highlightPairKey(x.home, x.away) === key) || m;
+  }
+  if (!m) return null;
+  const primary = m.highlight || m.highlights?.full || m.highlights?.goals || null;
+  if (!primary?.videoUrl && !m.highlights && !(m.clips?.length)) return null;
+  return {
+    highlight: primary,
+    highlights: m.highlights || null,
+    clips: m.clips || [],
+    videoUrl: primary?.videoUrl,
+    title: primary?.title,
+    thumbnail: primary?.thumbnail,
+    source: primary?.source || "archive",
+  };
+}
+
 async function proxyHighlightApi(request, env) {
   const url = new URL(request.url);
   const home = (url.searchParams.get("home") || "").trim();
@@ -3345,6 +3367,14 @@ async function proxyHighlightApi(request, env) {
     return new Response(JSON.stringify({ error: "home and away required" }), { status: 400, headers });
   }
   try {
+    const staticHit = await lookupStaticHighlights(env, url.origin, home, away);
+    if (staticHit) {
+      return new Response(JSON.stringify(staticHit), {
+        status: 200,
+        headers: { ...headers, "X-KZ-Highlight-Source": "archive" },
+      });
+    }
+
     const teamAr = await loadTeamAr(env, url.origin);
     const knownVortex = await loadKnownVortex(env, url.origin);
 
@@ -3514,14 +3544,33 @@ function memePlayerTerms(match) {
 }
 
 function memeCaptionHits(text, home, away, match) {
-  return memeCaptionScore(text, home, away, match) > 0;
+  return memeCaptionScore(text, home, away, match) >= 2;
 }
 
 function memeCaptionScore(text, home, away, match) {
-  const t = String(text || "").toLowerCase();
-  return [home, away, ...memePlayerTerms(match)]
-    .filter(Boolean)
-    .reduce((score, n) => score + (t.includes(n.toLowerCase()) ? 1 : 0), 0);
+  const t = String(text || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  let score = 0;
+  const homeNorm = String(home || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  const awayNorm = String(away || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+  if (homeNorm.length > 2 && t.includes(homeNorm)) score += 1;
+  if (awayNorm.length > 2 && t.includes(awayNorm)) score += 1;
+  for (const n of memePlayerTerms(match)) {
+    const pn = String(n || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+    if (pn.length > 3 && t.includes(pn)) score += 0.25;
+  }
+  return score;
 }
 
 function memeUniversalHits(text, memeConfig) {
@@ -3534,11 +3583,26 @@ function bestMemeMatchKey(text, matches) {
   let best = null;
   for (const m of matches || []) {
     const score = memeCaptionScore(text, m.home, m.away, m);
-    if (score > 0 && (!best || score > best.score)) {
-      best = { key: highlightPairKeyMemes(m.home, m.away), score };
+    if (score < 2) continue;
+    const kickoff = Date.parse(m.kickoffUtc || "");
+    const tieBreak = isNaN(kickoff) ? 0 : kickoff;
+    if (!best || score > best.score || (score === best.score && tieBreak > best.tieBreak)) {
+      best = { key: highlightPairKeyMemes(m.home, m.away), score, tieBreak };
     }
   }
   return best?.key || null;
+}
+
+function orderMemesByPostedAt(memes) {
+  return [...(memes || [])]
+    .map((m, i) => ({ ...m, _order: i }))
+    .sort((a, b) => {
+      const ta = Date.parse(a.postedAt || "") || 0;
+      const tb = Date.parse(b.postedAt || "") || 0;
+      if (tb !== ta) return tb - ta;
+      return (a._order || 0) - (b._order || 0);
+    })
+    .map(({ _order, ...m }) => m);
 }
 
 function memeEngagement(m) {
@@ -4020,14 +4084,16 @@ async function proxyMatchMemesApi(request, env) {
     return new Response(JSON.stringify({ error: "home and away required" }), { status: 400, headers });
   }
   const key = highlightPairKeyMemes(home, away);
-  const [idx, pinned, todayMatches, memeConfig] = await Promise.all([
+  const [idx, pinned, todayMatches, archiveMatches, memeConfig] = await Promise.all([
     loadMemesIndex(env, url.origin),
     loadPinnedMemes(env, url.origin),
     loadTodayMatches(env, url.origin),
+    loadTournamentArchiveMatches(env, url.origin),
     loadMemeSources(env, url.origin),
   ]);
-  const match = todayMatches.find((m) => highlightPairKeyMemes(m.home, m.away) === key) ||
+  const matchMeta = findMatchMeta(home, away, todayMatches, archiveMatches) ||
     { home, away, kickoffUtc: kickoff };
+  const match = { ...matchMeta, home, away, kickoffUtc: kickoff || matchMeta.kickoffUtc };
   let memes = idx[key] || pinned[key] || [];
   let source = memes.length ? (pinned[key]?.length && !idx[key]?.length ? "pinned" : "archive") : "none";
 
@@ -4064,6 +4130,13 @@ async function proxyMatchMemesApi(request, env) {
       if (source === "archive" || source === "pinned") source = "archive+media";
     } catch { /* text-only fallback */ }
     memes = filterMemesWithMedia(memes);
+    memes = orderMemesByPostedAt(memes).map((meme) => ({
+      ...meme,
+      home: match.home,
+      away: match.away,
+      score: match.score || meme.score || null,
+      kickoffUtc: match.kickoffUtc || meme.kickoffUtc || null,
+    }));
   }
 
   return new Response(JSON.stringify({ key, memes }), {
@@ -4081,6 +4154,35 @@ async function loadTodayMatches(env, origin) {
   } catch {
     return [];
   }
+}
+
+let _archiveMatchesCache = null;
+let _archiveMatchesAt = 0;
+
+async function loadTournamentArchiveMatches(env, origin) {
+  if (_archiveMatchesCache && Date.now() - _archiveMatchesAt < 5 * 60 * 1000) return _archiveMatchesCache;
+  try {
+    const res = await env.ASSETS.fetch(`${origin}/assets/data/tournament-archive.json`);
+    if (!res.ok) {
+      _archiveMatchesCache = [];
+    } else {
+      const json = await res.json();
+      _archiveMatchesCache = Array.isArray(json.matches) ? json.matches : [];
+    }
+  } catch {
+    _archiveMatchesCache = [];
+  }
+  _archiveMatchesAt = Date.now();
+  return _archiveMatchesCache;
+}
+
+function findMatchMeta(home, away, todayMatches, archiveMatches) {
+  const key = highlightPairKeyMemes(home, away);
+  return (
+    todayMatches.find((m) => highlightPairKeyMemes(m.home, m.away) === key) ||
+    archiveMatches.find((m) => highlightPairKeyMemes(m.home, m.away) === key) ||
+    null
+  );
 }
 
 function tweetPostedRecently(postedAt, sinceMs) {
@@ -4117,19 +4219,20 @@ async function proxyRecentMemesApi(request, env) {
       }
     } catch { /* cache optional */ }
   }
-  const [idx, pinned, todayMatches, memeConfig] = await Promise.all([
+  const [idx, pinned, todayMatches, archiveMatches, memeConfig] = await Promise.all([
     loadMemesIndex(env, origin),
     loadPinnedMemes(env, origin),
     loadTodayMatches(env, origin),
+    loadTournamentArchiveMatches(env, origin),
     loadMemeSources(env, origin),
   ]);
 
   const matchByKey = new Map();
   const recentMatchKeys = new Set();
-  for (const m of todayMatches) {
+  for (const m of [...todayMatches, ...archiveMatches]) {
     if (!m.home || !m.away) continue;
     const key = highlightPairKeyMemes(m.home, m.away);
-    matchByKey.set(key, m);
+    if (!matchByKey.has(key)) matchByKey.set(key, m);
     if (matchKickoffRecently(m.kickoffUtc, matchSinceMs)) recentMatchKeys.add(key);
   }
 
@@ -4228,9 +4331,7 @@ async function proxyRecentMemesApi(request, env) {
     }
   }
 
-  let memes = [...byTweetId.values()]
-    .sort((a, b) => (b.engagement || 0) - (a.engagement || 0))
-    .slice(0, RECENT_MEMES_LIMIT);
+  let memes = orderMemesByPostedAt([...byTweetId.values()]).slice(0, RECENT_MEMES_LIMIT);
 
   if (memes.length) {
     try {

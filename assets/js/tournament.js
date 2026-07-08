@@ -175,6 +175,30 @@
       </div>`;
   }
 
+  function memesForMatch(m) {
+    if (!archive?.memes || !m?.key) return [];
+    const list = archive.memes[m.key] || [];
+    return list.map((meme) => ({
+      ...meme,
+      home: m.home,
+      away: m.away,
+      score: m.score || meme.score || null,
+      kickoffUtc: m.kickoffUtc || meme.kickoffUtc || null,
+    }));
+  }
+
+  function memesBlock(m, mode) {
+    if (!window.KZTweets) return "";
+    const memes = window.KZTweets.mediaMemes(memesForMatch(m));
+    if (!memes.length) return "";
+    const cls = mode === "hero" ? "tournament-memes-block tournament-memes-block--hero" : "tournament-memes-block";
+    return `
+      <div class="${cls}">
+        ${sectionHead("𝕏", "memes", t("tournament.memesTitle"), memes.length)}
+        ${window.KZTweets.railHtml(memes, { showMatch: true, railClass: "kz-tweet-rail kz-tweet-rail--tournament" })}
+      </div>`;
+  }
+
   function scoreboardHtml(m) {
     return `
       <div class="tournament-scoreboard">
@@ -202,6 +226,7 @@
         ${scoreboardHtml(m)}
         ${m.summaryAr ? `<div class="tournament-recap"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
         ${highlightsBlock(m, "hero")}
+        ${memesBlock(m, "hero")}
       </article>`;
   }
 
@@ -228,6 +253,7 @@
     wrap.hidden = false;
     card.innerHTML = featuredHeroHtml(latest);
     bindVideoLaunch(card);
+    if (window.KZTweets) window.KZTweets.bindVideoPlayers(card);
   }
 
   function matchDetailHtml(m) {
@@ -236,6 +262,7 @@
         ${m.summaryAr ? `<div class="tournament-recap tournament-recap--compact"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
         ${highlightsBlock(m, "card")}
         ${notableClipsBlock(m)}
+        ${memesBlock(m, "card")}
       </div>`;
   }
 
@@ -395,6 +422,7 @@
     if (empty) empty.hidden = !!list.length;
     if (count) count.textContent = t("tournament.matchesCount", { n: list.length });
     bindVideoLaunch(grid);
+    if (window.KZTweets) window.KZTweets.bindVideoPlayers(grid);
   }
 
   async function loadArchive() {

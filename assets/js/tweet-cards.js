@@ -64,8 +64,22 @@
     return [...(memes || [])].sort((a, b) => (b.engagement || 0) - (a.engagement || 0));
   }
 
-  function mediaMemes(memes) {
-    return sortedMemes(memes).filter(memeHasMedia);
+  /** Display order: syndication fetch order / postedAt (newest first). */
+  function chronologicalMemes(memes) {
+    return [...(memes || [])]
+      .map((m, i) => ({ ...m, _order: i }))
+      .sort((a, b) => {
+        const ta = Date.parse(a.postedAt || "") || 0;
+        const tb = Date.parse(b.postedAt || "") || 0;
+        if (tb !== ta) return tb - ta;
+        return (a._order || 0) - (b._order || 0);
+      })
+      .map(({ _order, ...m }) => m);
+  }
+
+  function mediaMemes(memes, opts) {
+    const sortFn = opts && opts.byEngagement ? sortedMemes : chronologicalMemes;
+    return sortFn(memes).filter(memeHasMedia);
   }
 
   function matchLabel(meme) {
@@ -177,6 +191,7 @@
     memeHasMedia,
     mediaMemes,
     sortedMemes,
+    chronologicalMemes,
     memeHtml,
     railHtml,
     bindVideoPlayers,
