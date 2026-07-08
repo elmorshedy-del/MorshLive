@@ -221,7 +221,8 @@
     const frame = modal.querySelector(".tournament-video-modal__frame");
     frame.innerHTML = `
       <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="eager"
-        allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen
+        allow="autoplay; fullscreen; encrypted-media; picture-in-picture; accelerometer; gyroscope"
+        allowfullscreen
         sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>`;
     modal.hidden = false;
     document.body.classList.add("tournament-video-modal-open");
@@ -237,7 +238,11 @@
       btn.addEventListener("pointerenter", warm, { once: true });
       btn.addEventListener("focus", warm, { once: true });
       btn.addEventListener("touchstart", warm, { once: true, passive: true });
-      btn.addEventListener("click", () => openVideoModal(embedForBtn()));
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        openVideoModal(embedForBtn());
+      });
     });
   }
 

@@ -3418,7 +3418,6 @@ function sanitizeReplayEmbedHtml(html, id, origin) {
   let out = String(html || "");
   out = out
     .replace(/<script[^>]+src=["'][^"']*(?:googletagmanager|cloudflareinsights|google-analytics|doubleclick|googlesyndication|imasdk)[^"']*["'][^>]*>\s*<\/script>/gi, "")
-    .replace(/<script\b[^>]*>[\s\S]*?(?:gtag\(|google-analytics|googletagmanager|cloudflareinsights)[\s\S]*?<\/script>/gi, "")
     .replace(/ads\s*:\s*true/gi, "ads:false")
     .replace(/adSchedule\s*:\s*\{[\s\S]*?\}\s*,\s*adBlockerDetectedPreventPlayback/gi, "adSchedule:{},adBlockerDetectedPreventPlayback")
     .replace(/adBlockerDetectedPreventPlayback\s*:\s*true/gi, "adBlockerDetectedPreventPlayback:false")
@@ -3445,7 +3444,8 @@ function sanitizeReplayEmbedHtml(html, id, origin) {
   out = out.replace(/(["'])https:\/\/(hls[^"']+flashframenetwork\.com[^"']+)(["'])/gi, (all, q1, rest, q2) =>
     `${q1}${replayAssetProxyUrl(`https://${rest}`, replayResourceType(`https://${rest}`, "media"), origin, base)}${q2}`
   );
-  out = out.replace(/<\/head>/i, `<base href="${VORTEX_BASE}/" /></head>`);
+  const gtagStub = `<script>window.dataLayer=window.dataLayer||[];window.gtag=window.gtag||function(){window.dataLayer.push(arguments);};</script>`;
+  out = out.replace(/<\/head>/i, `${gtagStub}<base href="${VORTEX_BASE}/" /></head>`);
   return out;
 }
 
