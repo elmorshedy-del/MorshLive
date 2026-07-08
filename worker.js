@@ -1,4 +1,14 @@
 import { FiltersEngine, Request as AdblockRequest } from "@ghostery/adblocker";
+import {
+  homeMemeLikesThreshold,
+  likesThresholdForTopFraction,
+  memeInRecentDays,
+  memeIsRecent,
+  memeIsToday,
+  recentMemeDayKeys,
+  todayMemeDayKey,
+} from "./lib/meme-threshold.js";
+import { resolveStreamUrl, rewriteReplayM3u8 as rewriteReplayM3u8Lines } from "./lib/replay-hls.js";
 
 /**
  * morshlive worker — static site + worldkoora vip proxy without preroll ads.
@@ -408,22 +418,6 @@ async function withEdgeCache(request, ttlSeconds, producer) {
   const cached = new Response(res.body, { status: 200, headers });
   await cache.put(request, cached.clone());
   return cached;
-}
-
-function resolveStreamUrl(relative, base) {
-  try {
-    const abs = new URL(relative, base);
-    const baseUrl = new URL(base);
-    // dlhd (and similar) sign only the master URL — child playlists inherit its ?md5… params.
-    if (baseUrl.search && !abs.search) {
-      for (const [key, value] of baseUrl.searchParams.entries()) {
-        abs.searchParams.set(key, value);
-      }
-    }
-    return abs.toString();
-  } catch {
-    return relative;
-  }
 }
 
 function manifestIsStale(text) {
@@ -3418,35 +3412,10 @@ function replayManifestIsM3u8(target, contentType) {
     || /mpegurl|m3u8/i.test(String(contentType || ""));
 }
 
-function replayShouldProxyAsset(abs, origin) {
-  if (!/^https?:\/\//i.test(abs)) return false;
-  try {
-    const host = new URL(abs).hostname;
-    if (/flashframenetwork\.com$/i.test(host)) return true;
-    if (host === VORTEX_HOST) return true;
-    return new URL(abs).origin !== origin;
-  } catch {
-    return false;
-  }
-}
-
 function rewriteReplayM3u8(body, manifestUrl, origin) {
-  const lines = String(body || "").split("\n");
-  const rewritten = lines.map((line) => {
-    const trimmed = line.trim();
-    if (!trimmed) return line;
-    if (trimmed.startsWith("#")) {
-      return line.replace(/URI="([^"]+)"/gi, (all, uri) => {
-        const abs = resolveStreamUrl(uri, manifestUrl);
-        if (!replayShouldProxyAsset(abs, origin)) return all;
-        return `URI="${replayAssetProxyUrl(abs, replayResourceType(abs, "media"), origin)}"`;
-      });
-    }
-    const abs = resolveStreamUrl(trimmed, manifestUrl);
-    if (!replayShouldProxyAsset(abs, origin)) return trimmed;
-    return replayAssetProxyUrl(abs, replayResourceType(abs, "media"), origin);
-  });
-  return rewritten.join("\n");
+  return rewriteReplayM3u8Lines(body, manifestUrl, origin, (abs) =>
+    replayAssetProxyUrl(abs, replayResourceType(abs, "media"), origin)
+  );
 }
 
 function sanitizeReplayEmbedHtml(html, id, origin) {
@@ -4299,81 +4268,10 @@ function updateRecentMemesRuntimeCache(memes, pending, dayKey) {
 }
 
 /** Minimum likes to keep the top `keepFraction` of tweets (e.g. 0.75 → drop bottom 25%). */
-function likesThresholdForTopFraction(entries, keepFraction = 0.75) {
-  const sorted = (entries || []).map((e) => Number(e.likes) || 0).sort((a, b) => a - b);
-  if (!sorted.length) return 0;
-  const drop = Math.floor(sorted.length * (1 - keepFraction));
-  const idx = Math.min(Math.max(drop, 0), sorted.length - 1);
-  return sorted[idx];
-}
-
 function tweetSinceUtc(postedAt, sinceUtc) {
   const t = Date.parse(postedAt || "");
   const since = Date.parse(sinceUtc || "");
   return !isNaN(t) && !isNaN(since) && t >= since;
-}
-
-function memeDayKey(postedAt, tzOffsetHours = 3) {
-  const t = Date.parse(postedAt || "");
-  if (isNaN(t)) return "";
-  return new Date(t + tzOffsetHours * 60 * 60 * 1000).toISOString().slice(0, 10);
-}
-
-function todayMemeDayKey(tzOffsetHours = 3) {
-  return memeDayKey(new Date().toISOString(), tzOffsetHours);
-}
-
-function recentMemeDayKeys(tzOffsetHours = 3, dayCount = 3) {
-  const keys = [];
-  const now = Date.now() + tzOffsetHours * 60 * 60 * 1000;
-  for (let i = dayCount - 1; i >= 0; i--) {
-    keys.push(new Date(now - i * 86400000).toISOString().slice(0, 10));
-  }
-  return keys;
-}
-
-function memeInRecentDays(postedAt, tzOffsetHours = 3, dayCount = 3) {
-  const key = memeDayKey(postedAt, tzOffsetHours);
-  return key && recentMemeDayKeys(tzOffsetHours, dayCount).includes(key);
-}
-
-/** Posted within the last N calendar days (Arabia offset) — gets a softer likes bar. */
-function memeIsRecent(postedAt, tzOffsetHours = 3, recentDays = 2) {
-  const key = memeDayKey(postedAt, tzOffsetHours);
-  return key && recentMemeDayKeys(tzOffsetHours, recentDays).includes(key);
-}
-
-function memeIsToday(postedAt, tzOffsetHours = 3) {
-  return memeDayKey(postedAt, tzOffsetHours) === todayMemeDayKey(tzOffsetHours);
-}
-
-function memeAgeHours(postedAt) {
-  const t = Date.parse(postedAt || "");
-  if (isNaN(t)) return 24;
-  return Math.max(0, (Date.now() - t) / 3600000);
-}
-
-/** Scale the likes bar by upload age — fresh today tweets need fewer likes. */
-function computeTodayTweetThreshold(postedAt, capThreshold, memeConfig) {
-  const cap = Math.max(0, Number(capThreshold) || 0);
-  if (!cap) return 0;
-  const rampHours = Number(memeConfig.homeTodayRampHours) || 18;
-  const minLikes = Number(memeConfig.homeTodayMinLikes) || 0;
-  const minFactor = Number(memeConfig.homeTodayMinAgeFactor) || 0.05;
-  const ageHours = memeAgeHours(postedAt);
-  if (ageHours >= rampHours) return cap;
-  const factor = Math.max(minFactor, ageHours / rampHours);
-  return Math.max(minLikes, Math.ceil(cap * factor));
-}
-
-function homeMemeLikesThreshold(m, stats, recentStats, config, tz) {
-  const standard = Number(stats?.threshold) || 0;
-  const recentCap = Math.min(Number(recentStats?.threshold) || standard, standard);
-  if (memeIsToday(m.postedAt, tz)) {
-    return computeTodayTweetThreshold(m.postedAt, recentCap, config);
-  }
-  if (memeIsRecent(m.postedAt, tz, config.homeRecentDays || 2)) return recentCap;
-  return standard;
 }
 
 /** Per-account likes bar from WC pool — targets ~N viral memes/day for that account. */
