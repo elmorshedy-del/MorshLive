@@ -35,7 +35,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=20260706ui2" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20260708meme" />
   <!-- i18n must run before paint so dir/lang is correct with no flash -->
   <script src="assets/js/i18n.js?v=20260706ui2"></script>
   <!-- GSAP 3 — industry-standard animation engine -->
@@ -326,15 +326,10 @@
     </div>
   </section>
 
-  <!-- Trending X posts — last 24h, all recent matches, media only -->
+  <!-- Top X memes today -->
   <section class="section home-tweets-section" id="recent-tweets" hidden>
     <div class="container">
-      <div class="section-head">
-        <span class="tournament-section-icon tournament-section-icon--x" aria-hidden="true">𝕏</span>
-        <h2 data-i18n="home.recentTweetsTitle">ترند X — اليوم</h2>
-        <span class="count" id="recent-tweets-count"></span>
-      </div>
-      <p class="home-tweets-lede" data-i18n="home.recentTweetsLede">آخر 50 تغريدة لكل حساب — نعرض أعلى 75٪ حسب الإعجابات فقط (صور وفيديو)، مرتبة من الأحدث.</p>
+      <h2 class="home-tweets-title" data-i18n="home.recentTweetsTitle">ترند X</h2>
       <div id="recent-tweets-rail"></div>
     </div>
   </section>

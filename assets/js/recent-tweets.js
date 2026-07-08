@@ -1,8 +1,6 @@
-/* recent-tweets.js — home page: trending X media from last 24h, all recent matches */
+/* recent-tweets.js — home: title + top meme media strip */
 (function () {
   "use strict";
-
-  const t = (k, vars) => (window.I18N && window.I18N.t(k, vars)) || k;
 
   async function fetchRecentTweets() {
     try {
@@ -18,19 +16,17 @@
   function renderRecentTweets(memes) {
     const section = document.getElementById("recent-tweets");
     const rail = document.getElementById("recent-tweets-rail");
-    const count = document.getElementById("recent-tweets-count");
     if (!section || !rail || !window.KZTweets) return;
 
-    const list = window.KZTweets.mediaMemes(memes);
+    const list = window.KZTweets.mediaMemes(memes, { byEngagement: true });
     if (!list.length) {
       section.hidden = true;
       return;
     }
 
     section.hidden = false;
-    if (count) count.textContent = t("home.recentTweetsCount", { n: list.length });
     rail.innerHTML = window.KZTweets.railHtml(list, {
-      showMatch: false,
+      compact: true,
       railClass: "kz-tweet-rail kz-tweet-rail--home",
     });
     window.KZTweets.bindVideoPlayers(rail);

@@ -113,13 +113,20 @@
 
   function memeHtml(meme, opts) {
     if (!meme || meme.type !== "tweet" || !meme.url || !memeHasMedia(meme)) return "";
-    const showMatch = opts && opts.showMatch;
-    const likes = meme.likes != null ? meme.likes : 0;
-    const rts = meme.retweets != null ? meme.retweets : 0;
     const item = meme.media[0];
+    if (opts && opts.compact) {
+      return `
+      <article class="kz-tweet kz-tweet--compact">
+        <a class="kz-tweet__link" href="${escapeHtml(meme.url)}" target="_blank" rel="noopener noreferrer" aria-label="@${escapeHtml(meme.author || "X")}"></a>
+        ${mediaHtml(item)}
+      </article>`;
+    }
+    const showMatch = opts && opts.showMatch;
     const avatar = meme.avatarUrl
       ? `<img class="kz-tweet__avatar kz-tweet__avatar--img" src="${assetUrl(meme.avatarUrl)}" alt="" loading="lazy" />`
       : `<span class="kz-tweet__avatar" aria-hidden="true">${authorInitial(meme.author)}</span>`;
+    const likes = meme.likes != null ? meme.likes : 0;
+    const rts = meme.retweets != null ? meme.retweets : 0;
     return `
       <article class="kz-tweet">
         ${showMatch && matchLabel(meme) ? `<span class="kz-tweet__match">${escapeHtml(matchLabel(meme))}</span>` : ""}
