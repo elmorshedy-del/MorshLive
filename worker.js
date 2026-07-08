@@ -3528,6 +3528,7 @@ const RECENT_MEMES_SCAN_CACHE_MS = 10 * 60 * 1000;
 const TWITTER_API_BASE = "https://api.twitter.com/2";
 const MEME_MATCH_MS = 105 * 60 * 1000;
 const MEME_LOOKBACK_BEFORE_KICKOFF_MS = 15 * 60 * 1000;
+const WC_HOME_SINCE_UTC = "2026-06-11T00:00:00Z";
 
 function memePlayerTerms(match) {
   const names = [];
@@ -3723,6 +3724,18 @@ function orderMemesByPostedAt(memes) {
     .map(({ _order, ...m }) => m);
 }
 
+function orderMemesOldestFirst(memes) {
+  return [...(memes || [])]
+    .map((m, i) => ({ ...m, _order: i }))
+    .sort((a, b) => {
+      const ta = Date.parse(a.postedAt || "") || 0;
+      const tb = Date.parse(b.postedAt || "") || 0;
+      if (ta !== tb) return ta - tb;
+      return (a._order || 0) - (b._order || 0);
+    })
+    .map(({ _order, ...m }) => m);
+}
+
 function memeEngagement(m) {
   const x = m || {};
   return (x.like_count || 0) + (x.retweet_count || 0) * 2 + (x.quote_count || 0) * 2;
@@ -3750,6 +3763,36 @@ async function fetchAccountTweets(bearer, userId, startTime, endTime) {
   if (!res.ok) return { tweets: [], includes: {} };
   const json = await res.json();
   return { tweets: json.data || [], includes: json.includes || {} };
+}
+
+async function fetchAccountTweetsSince(bearer, userId, startTime, endTime, maxPages = 4) {
+  const tweets = [];
+  const includes = { media: [], users: [] };
+  let nextToken = null;
+  for (let page = 0; page < maxPages; page++) {
+    const params = new URLSearchParams({
+      max_results: "100",
+      "tweet.fields": "created_at,public_metrics,attachments,author_id",
+      expansions: "attachments.media_keys,author_id",
+      "media.fields": "preview_image_url,url,type,variants,width,height",
+      "user.fields": "profile_image_url,username",
+      start_time: startTime,
+      end_time: endTime,
+      exclude: "retweets,replies",
+    });
+    if (nextToken) params.set("pagination_token", nextToken);
+    const res = await fetch(`${TWITTER_API_BASE}/users/${userId}/tweets?${params}`, {
+      headers: { Authorization: `Bearer ${bearer}` },
+    });
+    if (!res.ok) break;
+    const json = await res.json();
+    tweets.push(...(json.data || []));
+    if (json.includes?.media) includes.media.push(...json.includes.media);
+    if (json.includes?.users) includes.users.push(...json.includes.users);
+    nextToken = json.meta?.next_token;
+    if (!nextToken || !(json.data || []).length) break;
+  }
+  return { tweets, includes };
 }
 
 const SYNDICATION_BASE = "https://syndication.twitter.com/srv/timeline-profile/screen-name";
@@ -4133,6 +4176,7 @@ let _pinnedMemesCache = null;
 let _memeSourcesCache = null;
 let _recentMemesRuntimeCache = {
   at: 0,
+  dayKey: null,
   memes: [],
   seenIds: new Set(),
 };
@@ -4146,8 +4190,13 @@ async function loadMemeSources(env, origin) {
       accounts: Array.isArray(json.accounts) ? json.accounts.filter((a) => a?.key && a?.username) : [],
       topPerAccount: Number(json.topPerAccount) || 3,
       homeAccounts: Array.isArray(json.homeAccounts) ? json.homeAccounts.filter(Boolean) : ["TrollFootball", "memesvsfootball"],
-      homeFetchLimit: Number(json.homeFetchLimit) || 50,
-      homeKeepFraction: Number(json.homeKeepFraction) || 0.75,
+      homeSinceUtc: json.homeSinceUtc || WC_HOME_SINCE_UTC,
+      homeSyndicationLimit: Number(json.homeSyndicationLimit) || 100,
+      homeTargetPerDay: Number(json.homeTargetPerDay) || 4,
+      homeMinKeepFraction: Number(json.homeMinKeepFraction) || 0.7,
+      homeMaxKeepFraction: Number(json.homeMaxKeepFraction) || 0.9,
+      homeDayTzOffsetHours: Number(json.homeDayTzOffsetHours) || 3,
+      homeDisplayDays: Number(json.homeDisplayDays) || 3,
       matchFetchLimit: Number(json.matchFetchLimit) || 50,
       universalTerms: Array.isArray(json.universalTerms) ? json.universalTerms.filter(Boolean) : [],
     };
@@ -4156,8 +4205,13 @@ async function loadMemeSources(env, origin) {
       accounts: [],
       topPerAccount: 3,
       homeAccounts: ["TrollFootball", "memesvsfootball"],
-      homeFetchLimit: 50,
-      homeKeepFraction: 0.75,
+      homeSinceUtc: WC_HOME_SINCE_UTC,
+      homeSyndicationLimit: 100,
+      homeTargetPerDay: 4,
+      homeMinKeepFraction: 0.7,
+      homeMaxKeepFraction: 0.9,
+      homeDayTzOffsetHours: 3,
+      homeDisplayDays: 3,
       matchFetchLimit: 50,
       universalTerms: [],
     };
@@ -4165,15 +4219,17 @@ async function loadMemeSources(env, origin) {
   return _memeSourcesCache;
 }
 
-function recentMemesRuntimeFresh() {
+function recentMemesRuntimeFresh(dayKey) {
   return _recentMemesRuntimeCache.memes.length &&
+    _recentMemesRuntimeCache.dayKey === dayKey &&
     Date.now() - _recentMemesRuntimeCache.at < RECENT_MEMES_SCAN_CACHE_MS;
 }
 
-function updateRecentMemesRuntimeCache(memes) {
-  const merged = orderMemesByPostedAt(memes).slice(0, RECENT_MEMES_LIMIT);
+function updateRecentMemesRuntimeCache(memes, dayKey) {
+  const merged = orderMemesOldestFirst(memes).slice(0, RECENT_MEMES_LIMIT);
   _recentMemesRuntimeCache = {
     at: Date.now(),
+    dayKey,
     memes: merged,
     seenIds: new Set(merged.map((m) => String(m.tweetId || m.url || "")).filter(Boolean)),
   };
@@ -4189,46 +4245,141 @@ function likesThresholdForTopFraction(entries, keepFraction = 0.75) {
   return sorted[idx];
 }
 
-function filterEntriesByLikesThreshold(entries, keepFraction = 0.75) {
-  const threshold = likesThresholdForTopFraction(entries, keepFraction);
+function tweetSinceUtc(postedAt, sinceUtc) {
+  const t = Date.parse(postedAt || "");
+  const since = Date.parse(sinceUtc || "");
+  return !isNaN(t) && !isNaN(since) && t >= since;
+}
+
+function memeDayKey(postedAt, tzOffsetHours = 3) {
+  const t = Date.parse(postedAt || "");
+  if (isNaN(t)) return "";
+  return new Date(t + tzOffsetHours * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
+
+function todayMemeDayKey(tzOffsetHours = 3) {
+  return memeDayKey(new Date().toISOString(), tzOffsetHours);
+}
+
+function recentMemeDayKeys(tzOffsetHours = 3, dayCount = 3) {
+  const keys = [];
+  const now = Date.now() + tzOffsetHours * 60 * 60 * 1000;
+  for (let i = dayCount - 1; i >= 0; i--) {
+    keys.push(new Date(now - i * 86400000).toISOString().slice(0, 10));
+  }
+  return keys;
+}
+
+function memeInRecentDays(postedAt, tzOffsetHours = 3, dayCount = 3) {
+  const key = memeDayKey(postedAt, tzOffsetHours);
+  return key && recentMemeDayKeys(tzOffsetHours, dayCount).includes(key);
+}
+
+/** Per-account likes bar from WC pool — targets ~N viral memes/day for that account. */
+function computeAccountLikesThreshold(pool, memeConfig) {
+  const entries = (pool || []).filter(memeHasMedia);
+  if (!entries.length) {
+    return { threshold: 0, keepFraction: 1, estimatedPerDay: 0, poolSize: 0, passing: 0, daysSinceWc: 0 };
+  }
+  let sinceMs = Date.parse(memeConfig.homeSinceUtc || WC_HOME_SINCE_UTC);
+  if (isNaN(sinceMs)) sinceMs = Date.parse(WC_HOME_SINCE_UTC);
+  const days = Math.max(1, (Date.now() - sinceMs) / 86400000);
+  const targetPerDay = memeConfig.homeTargetPerDay || 4;
+  const minK = memeConfig.homeMinKeepFraction ?? 0.7;
+  const maxK = memeConfig.homeMaxKeepFraction ?? 0.9;
+  const keepFraction = Math.min(maxK, Math.max(minK, (targetPerDay * days) / entries.length));
+  const threshold = likesThresholdForTopFraction(entries.map((c) => ({ likes: c.likes })), keepFraction);
+  const passing = entries.filter((c) => (Number(c.likes) || 0) >= threshold).length;
   return {
     threshold,
-    entries: (entries || []).filter((e) => (Number(e.likes) || 0) >= threshold),
+    keepFraction,
+    estimatedPerDay: passing / days,
+    poolSize: entries.length,
+    passing,
+    daysSinceWc: Math.round(days),
   };
 }
 
-async function fetchHomeViralMemes(memeConfig, timelineCache) {
-  const config = memeConfig || {};
-  const homeKeys = config.homeAccounts || ["TrollFootball", "memesvsfootball"];
-  const limit = config.homeFetchLimit || 50;
-  const keepFraction = config.homeKeepFraction ?? 0.75;
-  const accounts = (config.accounts || []).filter((a) => homeKeys.includes(a.key));
-  const out = [];
-  const thresholds = {};
+async function collectAccountHomePool(acct, memeConfig, bearer, timelineCache) {
+  const sinceUtc = memeConfig.homeSinceUtc || WC_HOME_SINCE_UTC;
+  const syndLimit = memeConfig.homeSyndicationLimit || 100;
+  const byId = new Map();
+  const mergeEntry = (m) => {
+    const id = String(m.tweetId || m.url || "");
+    if (!id || !memeHasMedia(m) || !tweetSinceUtc(m.postedAt, sinceUtc)) return;
+    if (String(m.author || "").toLowerCase() !== String(acct.username || "").toLowerCase()) return;
+    const prev = byId.get(id);
+    if (!prev || (Number(m.likes) || 0) > (Number(prev.likes) || 0)) byId.set(id, m);
+  };
 
-  for (const acct of accounts) {
-    let tweets;
+  if (bearer && acct.id) {
     try {
-      if (timelineCache && timelineCache.has(acct.username)) {
-        tweets = timelineCache.get(acct.username);
-      } else {
-        tweets = await fetchSyndicationTimeline(acct.username, limit);
-        if (timelineCache) timelineCache.set(acct.username, tweets);
+      const pack = await fetchAccountTweetsSince(
+        bearer,
+        acct.id,
+        sinceUtc,
+        new Date().toISOString()
+      );
+      for (const t of pack.tweets) {
+        mergeEntry(memeToEntry(t, acct.username, pack.includes));
       }
-    } catch {
-      continue;
-    }
-
-    const entries = tweets
-      .slice(0, limit)
-      .map((t) => memeToEntry(t, acct.username, {}))
-      .filter(memeHasMedia);
-    const { threshold, entries: kept } = filterEntriesByLikesThreshold(entries, keepFraction);
-    thresholds[acct.username] = threshold;
-    out.push(...kept.map((e) => ({ ...e, likesThreshold: threshold })));
+    } catch { /* syndication supplements */ }
   }
 
-  return { memes: orderMemesByPostedAt(out), thresholds };
+  try {
+    let tweets;
+    if (timelineCache && timelineCache.has(acct.username)) {
+      tweets = timelineCache.get(acct.username);
+    } else {
+      tweets = await fetchSyndicationTimeline(acct.username, syndLimit);
+      if (timelineCache) timelineCache.set(acct.username, tweets);
+    }
+    for (const t of tweets) {
+      mergeEntry(memeToEntry(t, acct.username, {}));
+    }
+  } catch { /* optional */ }
+
+  return [...byId.values()];
+}
+
+async function fetchHomeViralMemes(memeConfig, bearer, timelineCache) {
+  const config = memeConfig || {};
+  const tz = config.homeDayTzOffsetHours ?? 3;
+  const displayDays = config.homeDisplayDays || 3;
+  const dayKeys = recentMemeDayKeys(tz, displayDays);
+  const homeKeys = config.homeAccounts || ["TrollFootball", "memesvsfootball"];
+  const accounts = (config.accounts || []).filter((a) => homeKeys.includes(a.key));
+  const thresholds = {};
+  const accountStats = {};
+  const memes = [];
+
+  const accountRows = await Promise.all(
+    accounts.map(async (acct) => {
+      const pool = await collectAccountHomePool(acct, config, bearer, timelineCache);
+      const stats = computeAccountLikesThreshold(pool, config);
+      const hits = [];
+      for (const m of pool) {
+        if (!memeInRecentDays(m.postedAt, tz, displayDays)) continue;
+        if ((Number(m.likes) || 0) < stats.threshold) continue;
+        hits.push({ ...m, likesThreshold: stats.threshold });
+      }
+      return { username: acct.username, stats, hits };
+    })
+  );
+
+  for (const row of accountRows) {
+    thresholds[row.username] = row.stats.threshold;
+    accountStats[row.username] = row.stats;
+    memes.push(...row.hits);
+  }
+
+  return {
+    memes: orderMemesOldestFirst(memes),
+    thresholds,
+    accountStats,
+    displayDays,
+    dayKeys,
+  };
 }
 
 async function searchMatchMemesSyndication(home, away, match, memeConfig, timelineCache, seenIds) {
@@ -4426,7 +4577,10 @@ async function proxyRecentMemesApi(request, env) {
     "Cache-Control": "public, max-age=600",
     "X-KZ-Proxy": "recent-memes-api",
   };
-  const responseCacheKey = new Request(`${origin}/api/recent-memes/__response-cache`);
+  const memeConfig = await loadMemeSources(env, origin);
+  const tz = memeConfig.homeDayTzOffsetHours ?? 3;
+  const today = todayMemeDayKey(tz);
+  const responseCacheKey = new Request(`${origin}/api/recent-memes/__response-cache/${today}`);
   const forceLive = url.searchParams.get("live") === "1";
   if (!forceLive) {
     try {
@@ -4437,13 +4591,15 @@ async function proxyRecentMemesApi(request, env) {
         return new Response(cached.body, { status: 200, headers: h });
       }
     } catch { /* cache optional */ }
-    if (recentMemesRuntimeFresh()) {
+    if (recentMemesRuntimeFresh(today)) {
       const cachedMemes = filterMemesWithMedia(_recentMemesRuntimeCache.memes)
         .slice(0, RECENT_MEMES_LIMIT);
       return new Response(JSON.stringify({
         memes: cachedMemes,
         count: cachedMemes.length,
-        accounts: ["TrollFootball", "memesvsfootball"],
+        day: today,
+        displayDays: memeConfig.homeDisplayDays || 3,
+        accounts: memeConfig.homeAccounts || ["TrollFootball", "memesvsfootball"],
         cached: true,
       }), {
         status: 200,
@@ -4452,16 +4608,16 @@ async function proxyRecentMemesApi(request, env) {
     }
   }
 
-  const memeConfig = await loadMemeSources(env, origin);
   const bearer = env && env.TWITTER_BEARER_TOKEN;
-  let source = "twitter-syndication";
   let thresholds = {};
+  let accountStats = {};
 
   let memes = [];
   try {
-    const pack = await fetchHomeViralMemes(memeConfig);
+    const pack = await fetchHomeViralMemes(memeConfig, bearer);
     memes = pack.memes;
-    thresholds = pack.thresholds;
+    thresholds = pack.thresholds || {};
+    accountStats = pack.accountStats || {};
   } catch { /* syndication optional */ }
 
   if (memes.length) {
@@ -4471,15 +4627,19 @@ async function proxyRecentMemesApi(request, env) {
     memes = filterMemesWithMedia(memes).slice(0, RECENT_MEMES_LIMIT);
   }
 
-  memes = updateRecentMemesRuntimeCache(memes);
+  memes = updateRecentMemesRuntimeCache(memes, today);
 
   const body = JSON.stringify({
     memes,
     count: memes.length,
+    day: today,
+    displayDays: memeConfig.homeDisplayDays || 3,
+    dayKeys: recentMemeDayKeys(tz, memeConfig.homeDisplayDays || 3),
     accounts: memeConfig.homeAccounts || ["TrollFootball", "memesvsfootball"],
     thresholds,
-    keepFraction: memeConfig.homeKeepFraction ?? 0.75,
-    fetchLimit: memeConfig.homeFetchLimit || 50,
+    accountStats,
+    sinceUtc: memeConfig.homeSinceUtc || WC_HOME_SINCE_UTC,
+    targetPerDay: memeConfig.homeTargetPerDay || 4,
   });
   const response = new Response(body, { status: 200, headers });
   try {

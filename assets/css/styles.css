@@ -2158,6 +2158,14 @@ body.tournament-video-modal-open { overflow: hidden; }
 .kz-tweet__open {
   margin-inline-start: auto; font-size: .72rem; font-weight: 700; color: #1da1f2;
 }
+.kz-tweet__match {
+  align-self: flex-start; max-width: 100%;
+  font-size: .68rem; font-weight: 700; line-height: 1.35;
+  padding: 4px 10px; border-radius: 999px;
+  color: var(--accent); background: rgba(24,226,154,.1);
+  border: 1px solid rgba(24,226,154,.28);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
 @media (min-width: 720px) {
   .kz-tweet-rail--hero {
     flex-direction: row; overflow-x: auto; padding: 2px 2px 10px;
@@ -2238,49 +2246,45 @@ body.tournament-video-modal-open { overflow: hidden; }
 
 .search-submit:hover { filter: brightness(1.07); }
 
-/* Home — trending X rail (last 24h, all recent matches) */
-.home-tweets-section { padding-top: 8px; }
-.home-tweets-section .section-head {
-  display: flex; align-items: center; flex-wrap: wrap; gap: 10px 14px; margin-bottom: 8px;
-}
-.home-tweets-section .section-head h2 {
-  margin: 0; font-size: clamp(1.15rem, 2.4vw, 1.45rem);
-}
-.home-tweets-section .count {
-  margin-inline-start: auto; font-size: .78rem; color: var(--muted); font-weight: 700;
-}
-.home-tweets-lede {
-  margin: 0 0 16px; max-width: 56ch; font-size: .9rem; line-height: 1.65; color: var(--muted);
+/* Home — top X memes (media strip) */
+.home-tweets-section { padding-top: 4px; }
+.home-tweets-title {
+  margin: 0 0 14px;
+  font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+  font-weight: 800;
 }
 .kz-tweet-rail--home {
-  display: flex; gap: 14px; overflow-x: auto; padding: 2px 2px 12px;
+  display: flex; gap: 12px; overflow-x: auto; padding: 0 0 10px;
   scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; scrollbar-width: none;
 }
 .kz-tweet-rail--home::-webkit-scrollbar { display: none; }
-.kz-tweet-rail--home .kz-tweet {
-  flex: 0 0 min(360px, 92vw); width: min(360px, 92vw); scroll-snap-align: start;
+.kz-tweet-rail--home .kz-tweet--compact {
+  position: relative;
+  flex: 0 0 min(340px, 88vw);
+  width: min(340px, 88vw);
+  scroll-snap-align: start;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface);
 }
-.kz-tweet-rail--home .kz-tweet__media {
+.kz-tweet-rail--home .kz-tweet--compact .kz-tweet__link {
+  position: absolute; inset: 0; z-index: 2;
+}
+.kz-tweet-rail--home .kz-tweet--compact .kz-tweet__media {
   aspect-ratio: 1 / 1;
-  min-height: min(360px, 72vw);
+  min-height: min(340px, 88vw);
+  border-radius: 0;
 }
-.kz-tweet-rail--home .kz-tweet__text {
-  -webkit-line-clamp: 2;
-}
-.kz-tweet__match {
-  align-self: flex-start; max-width: 100%;
-  font-size: .68rem; font-weight: 700; line-height: 1.35;
-  padding: 4px 10px; border-radius: 999px;
-  color: var(--accent); background: rgba(24,226,154,.1);
-  border: 1px solid rgba(24,226,154,.28);
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+.kz-tweet-rail--home .kz-tweet--compact .kz-tweet__media--video { z-index: 3; }
+.kz-tweet-rail--home .kz-tweet--compact .kz-tweet__play { z-index: 4; }
 @media (min-width: 900px) {
-  .kz-tweet-rail--home .kz-tweet {
-    flex-basis: min(420px, 32vw);
-    width: min(420px, 32vw);
+  .kz-tweet-rail--home .kz-tweet--compact {
+    flex-basis: min(380px, 28vw);
+    width: min(380px, 28vw);
   }
-  .kz-tweet-rail--home .kz-tweet__media {
+  .kz-tweet-rail--home .kz-tweet--compact .kz-tweet__media {
     min-height: 380px;
   }
 }

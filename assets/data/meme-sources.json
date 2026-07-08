@@ -1,8 +1,13 @@
 {
   "topPerAccount": 3,
   "homeAccounts": ["TrollFootball", "memesvsfootball"],
-  "homeFetchLimit": 50,
-  "homeKeepFraction": 0.75,
+  "homeSinceUtc": "2026-06-11T00:00:00Z",
+  "homeSyndicationLimit": 100,
+  "homeTargetPerDay": 4,
+  "homeMinKeepFraction": 0.7,
+  "homeMaxKeepFraction": 0.9,
+  "homeDayTzOffsetHours": 3,
+  "homeDisplayDays": 3,
   "matchFetchLimit": 50,
   "universalTerms": [
     "World Cup",
