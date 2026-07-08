@@ -1,8 +1,12 @@
 /**
  * Deterministic fixture matching for btolat / vortex titles — name + optional date.
  * No LLM; uses normalized Arabic + Levenshtein (same as arabic-team-resolver).
+ *
+ * Primary reels (goals/full): prefer both teams in title.
+ * Context clips: one team, player, or moment OK when feed/date narrows the fixture.
  */
 const { normalizeArabic, levenshtein } = require("../arabic-team-resolver");
+const { playerHitScore, momentHit } = require("./meme-match-lib");
 
 const AR_MONTHS = {
   يناير: 0,
@@ -50,7 +54,6 @@ function sideScore(titleTeam, candidates) {
   return Math.max(0, ...candidates.map((c) => arabicSimilarity(titleTeam, c)));
 }
 
-/** Parse `(11 يونيو 2026)` or `11-6-2026` from btolat titles. Returns YYYY-MM-DD or null. */
 function parseTitleDate(title) {
   const t = String(title || "");
   const iso = t.match(/\((\d{4})-(\d{1,2})-(\d{1,2})\)/);
@@ -115,10 +118,18 @@ function scoreTitleMentions(title, match, arabicTeam) {
   return homeHit + awayHit;
 }
 
-/**
- * Pick best fixture key for a btolat title. Requires both teams (score >= minScore)
- * and kickoff date when present in title.
- */
+function clipRelatesToMatch(title, match, arabicTeam) {
+  if (!match?.home || !match?.away) return false;
+  const mentions = scoreTitleMentions(title, match, arabicTeam);
+  const player = playerHitScore(title, match);
+  const moment = momentHit(title);
+  if (mentions >= 1.85) return true;
+  if (mentions >= 0.85 && (player >= 0.8 || moment)) return true;
+  if (player >= 0.8) return true;
+  if (moment && mentions >= 0.85) return true;
+  return false;
+}
+
 function resolveFixtureKey(title, teams, matches, opts = {}) {
   const list = Array.isArray(matches) ? matches : [];
   const pairKeyFn = opts.pairKeyFn;
@@ -137,14 +148,20 @@ function resolveFixtureKey(title, teams, matches, opts = {}) {
   } else if (title) {
     for (const m of list) {
       const score = scoreTitleMentions(title, m, arabicTeam);
-      if (score < minScore) continue;
+      if (score < (opts.minMentionScore ?? 0.85)) continue;
       if (!dateMatchesFixture(title, m, opts.toleranceDays ?? 1)) continue;
       scored.push({ score, key: m.key || pairKeyFn(m.home, m.away), match: m });
     }
   }
 
   scored.sort((a, b) => b.score - a.score);
-  return scored[0]?.key || null;
+  const top = scored[0];
+  const second = scored[1];
+  if (!top) return null;
+  if (teams?.a && teams?.b) return top.key;
+  if (top.score >= 1.85) return top.key;
+  if (top.score >= 0.85 && (!second || top.score - second.score >= 0.35)) return top.key;
+  return null;
 }
 
 function titleTeams(title) {
@@ -163,6 +180,7 @@ module.exports = {
   dateMatchesFixture,
   scoreFixtureMatch,
   scoreTitleMentions,
+  clipRelatesToMatch,
   titleTeams,
   arabicSimilarity,
 };

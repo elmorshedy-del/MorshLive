@@ -1,13 +1,41 @@
 /**
  * Deterministic meme ↔ fixture matching (name + kickoff window). No LLM.
+ * Allows one team, player, or moment caption when the match is unambiguous.
  */
 
-function normTeam(s) {
+const MOMENT_TERMS = [
+  "referee",
+  "var",
+  "penalty",
+  "red card",
+  "save",
+  "keeper",
+  "goalkeeper",
+  "highlights",
+  "miss",
+  "chance",
+  "highlights",
+  "ملخص",
+  "هدف",
+  "تصدي",
+  "حارس",
+  "حكم",
+  "طرد",
+  "جزاء",
+  "فرصة",
+  "عارضة",
+];
+
+function normText(s) {
   return String(s || "")
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .trim();
+}
+
+function normTeam(s) {
+  return normText(s);
 }
 
 function playerNamesFromMatch(match) {
@@ -26,24 +54,69 @@ function playerNamesFromMatch(match) {
   return names;
 }
 
-/** Both teams must appear in caption for a confident match (score >= 2). */
-function memeCaptionScore(text, home, away, match) {
-  const t = normTeam(text);
-  if (!t) return 0;
-  let score = 0;
-  const homeNorm = normTeam(home);
-  const awayNorm = normTeam(away);
-  if (homeNorm.length > 2 && t.includes(homeNorm)) score += 1;
-  if (awayNorm.length > 2 && t.includes(awayNorm)) score += 1;
-  for (const p of playerNamesFromMatch(match)) {
-    const pn = normTeam(p);
-    if (pn.length > 3 && t.includes(pn)) score += 0.25;
-  }
-  return score;
+function teamHit(text, name) {
+  const t = normText(text);
+  const n = normTeam(name);
+  if (!t || n.length <= 2) return 0;
+  if (t.includes(n)) return 1;
+  return 0;
 }
 
+function playerHitScore(text, match) {
+  const t = normText(text);
+  if (!t) return 0;
+  let best = 0;
+  for (const p of playerNamesFromMatch(match)) {
+    const pn = normTeam(p);
+    if (pn.length > 3 && t.includes(pn)) best = Math.max(best, 1);
+    const parts = pn.split(/\s+/).filter((w) => w.length >= 4);
+    for (const w of parts) {
+      if (t.includes(w)) best = Math.max(best, 0.8);
+    }
+  }
+  return best;
+}
+
+function momentHit(text) {
+  const t = normText(text);
+  return MOMENT_TERMS.some((term) => t.includes(normText(term)));
+}
+
+/** Rich caption score for one fixture. */
+function memeCaptionScoreDetailed(text, home, away, match) {
+  const homeHit = teamHit(text, home);
+  const awayHit = teamHit(text, away);
+  const player = playerHitScore(text, match);
+  const moment = momentHit(text) ? 0.35 : 0;
+  const teams = homeHit + awayHit;
+  const total = teams + player + moment;
+  return { total, teams, homeHit, awayHit, player, moment };
+}
+
+function memeCaptionScore(text, home, away, match) {
+  return memeCaptionScoreDetailed(text, home, away, match).total;
+}
+
+/**
+ * Match caption to a known fixture (post-match window already applied by caller).
+ * One team, player, or moment + team/player is enough.
+ */
 function memeCaptionMatches(text, home, away, match) {
-  return memeCaptionScore(text, home, away, match) >= 2;
+  const s = memeCaptionScoreDetailed(text, home, away, match);
+  if (s.homeHit && s.awayHit) return true;
+  if (s.homeHit || s.awayHit) return true;
+  if (s.player >= 0.8) return true;
+  if (s.moment && (s.homeHit || s.awayHit || s.player >= 0.8)) return true;
+  return false;
+}
+
+function isUnambiguousWinner(top, second) {
+  if (!top) return false;
+  if (top.homeHit && top.awayHit) return true;
+  if (top.player >= 0.8 && (!second || top.player > second.player + 0.1)) return true;
+  if (top.teams >= 1 && (!second || top.total >= second.total + 0.45)) return true;
+  if (top.moment && top.teams >= 1 && (!second || top.total >= second.total + 0.35)) return true;
+  return false;
 }
 
 function memePostWindow(kickoffUtc, opts = {}) {
@@ -66,19 +139,26 @@ function memeInWindow(createdAt, window) {
   return t >= Date.parse(window.start) && t <= Date.parse(window.end);
 }
 
+function matchPairKey(m) {
+  const norm = (s) => normTeam(s).replace(/[^a-z0-9]/g, "");
+  return m.key || [norm(m.home), norm(m.away)].filter(Boolean).sort().join("~");
+}
+
+/** Pick fixture for universal captions — only when one game clearly wins. */
 function bestMemeMatchKey(text, matches) {
-  let best = null;
-  for (const m of matches || []) {
-    if (!m?.home || !m?.away) continue;
-    const score = memeCaptionScore(text, m.home, m.away, m);
-    if (score < 2) continue;
-    const kickoff = Date.parse(m.kickoffUtc || "");
-    const tieBreak = isNaN(kickoff) ? 0 : kickoff;
-    if (!best || score > best.score || (score === best.score && tieBreak > best.tieBreak)) {
-      best = { key: m.key || `${normTeam(m.home).replace(/\s+/g, "")}~${normTeam(m.away).replace(/\s+/g, "")}`, score, tieBreak, match: m };
-    }
-  }
-  return best?.key || null;
+  const ranked = (matches || [])
+    .filter((m) => m?.home && m?.away)
+    .map((m) => {
+      const s = memeCaptionScoreDetailed(text, m.home, m.away, m);
+      return { key: matchPairKey(m), score: s.total, ...s, match: m };
+    })
+    .filter((r) => r.total >= 0.8)
+    .sort((a, b) => b.score - a.score || (Date.parse(b.match.kickoffUtc || "") - Date.parse(a.match.kickoffUtc || "")));
+
+  if (!ranked.length) return null;
+  const top = ranked[0];
+  const second = ranked[1];
+  return isUnambiguousWinner(top, second) ? top.key : null;
 }
 
 function attachMatchMeta(meme, match) {
@@ -94,7 +174,8 @@ function attachMatchMeta(meme, match) {
 
 /** Preserve syndication fetch order; tie-break by postedAt desc. */
 function orderMemesChronological(memes) {
-  return [...(memes || [])].map((m, i) => ({ ...m, _order: i }))
+  return [...(memes || [])]
+    .map((m, i) => ({ ...m, _order: i }))
     .sort((a, b) => {
       const ta = Date.parse(a.postedAt || "") || 0;
       const tb = Date.parse(b.postedAt || "") || 0;
@@ -106,10 +187,13 @@ function orderMemesChronological(memes) {
 
 module.exports = {
   memeCaptionScore,
+  memeCaptionScoreDetailed,
   memeCaptionMatches,
   memePostWindow,
   memeInWindow,
   bestMemeMatchKey,
   attachMatchMeta,
   orderMemesChronological,
+  playerHitScore,
+  momentHit,
 };

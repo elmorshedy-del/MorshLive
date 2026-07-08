@@ -8,7 +8,7 @@
  * ==========================================================================*/
 const VORTEX_EMBED_BASE = "https://nvtboo.vortexvisionworks.com/embed";
 const UA = "Mozilla/5.0 (compatible; MorshLive/1.0)";
-const { resolveFixtureKey, titleTeams: parseTitleTeams, scoreTitleMentions } = require("./lib/highlight-match-lib");
+const { resolveFixtureKey, titleTeams: parseTitleTeams, clipRelatesToMatch } = require("./lib/highlight-match-lib");
 
 /** League page + main videos feed (goals clips often only on /videos). */
 const BTOLAT_VIDEO_FEEDS = [
@@ -61,12 +61,21 @@ function candidatePairKey(video, opts, activeKey) {
   const contextualOpts = { ...opts, pairKeyFn: opts.pairKeyFn, minScore: 1.85 };
   const key = resolveFixtureKey(video.title, teams, opts.matches, contextualOpts);
   if (key) return key;
-  if (isPrimaryKind(video.kind)) return null;
+
+  if (isPrimaryKind(video.kind)) {
+    return resolveFixtureKey(video.title, null, opts.matches, {
+      ...contextualOpts,
+      minScore: 0.85,
+      minMentionScore: 0.85,
+    });
+  }
+
   if (!activeKey) return null;
-  const activeMatch = (opts.matches || []).find((m) => (m.key || opts.pairKeyFn?.(m.home, m.away)) === activeKey);
+  const activeMatch = (opts.matches || []).find(
+    (m) => (m.key || opts.pairKeyFn?.(m.home, m.away)) === activeKey
+  );
   if (!activeMatch) return null;
-  const mention = scoreTitleMentions(video.title, activeMatch, opts.arabicTeam);
-  return mention >= 1.0 ? activeKey : null;
+  return clipRelatesToMatch(video.title, activeMatch, opts.arabicTeam) ? activeKey : null;
 }
 
 async function fetchBtolatEmbedId(btolatId) {

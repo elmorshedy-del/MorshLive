@@ -3543,34 +3543,64 @@ function memePlayerTerms(match) {
   return names;
 }
 
+const MEME_MOMENT_TERMS = [
+  "referee", "var", "penalty", "red card", "save", "keeper", "goalkeeper",
+  "highlights", "miss", "chance", "ملخص", "هدف", "تصدي", "حارس", "حكم", "طرد", "جزاء", "فرصة", "عارضة",
+];
+
+function memeNormText(s) {
+  return String(s || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function memeTeamHit(text, name) {
+  const t = memeNormText(text);
+  const n = memeNormText(name);
+  return n.length > 2 && t.includes(n) ? 1 : 0;
+}
+
+function memePlayerHitScore(text, match) {
+  const t = memeNormText(text);
+  if (!t) return 0;
+  let best = 0;
+  for (const p of memePlayerTerms(match)) {
+    const pn = memeNormText(p);
+    if (pn.length > 3 && t.includes(pn)) best = Math.max(best, 1);
+    for (const w of pn.split(/\s+/).filter((x) => x.length >= 4)) {
+      if (t.includes(w)) best = Math.max(best, 0.8);
+    }
+  }
+  return best;
+}
+
+function memeMomentHit(text) {
+  const t = memeNormText(text);
+  return MEME_MOMENT_TERMS.some((term) => t.includes(memeNormText(term)));
+}
+
+function memeCaptionScoreDetailed(text, home, away, match) {
+  const homeHit = memeTeamHit(text, home);
+  const awayHit = memeTeamHit(text, away);
+  const player = memePlayerHitScore(text, match);
+  const moment = memeMomentHit(text) ? 0.35 : 0;
+  const teams = homeHit + awayHit;
+  return { total: teams + player + moment, teams, homeHit, awayHit, player, moment };
+}
+
 function memeCaptionHits(text, home, away, match) {
-  return memeCaptionScore(text, home, away, match) >= 2;
+  const s = memeCaptionScoreDetailed(text, home, away, match);
+  if (s.homeHit && s.awayHit) return true;
+  if (s.homeHit || s.awayHit) return true;
+  if (s.player >= 0.8) return true;
+  if (s.moment && (s.homeHit || s.awayHit || s.player >= 0.8)) return true;
+  return false;
 }
 
 function memeCaptionScore(text, home, away, match) {
-  const t = String(text || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-  let score = 0;
-  const homeNorm = String(home || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-  const awayNorm = String(away || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-  if (homeNorm.length > 2 && t.includes(homeNorm)) score += 1;
-  if (awayNorm.length > 2 && t.includes(awayNorm)) score += 1;
-  for (const n of memePlayerTerms(match)) {
-    const pn = String(n || "")
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase();
-    if (pn.length > 3 && t.includes(pn)) score += 0.25;
-  }
-  return score;
+  return memeCaptionScoreDetailed(text, home, away, match).total;
 }
 
 function memeUniversalHits(text, memeConfig) {
@@ -3579,18 +3609,31 @@ function memeUniversalHits(text, memeConfig) {
   return terms.some((term) => t.includes(String(term).toLowerCase()));
 }
 
+function memeMatchUnambiguous(top, second) {
+  if (!top) return false;
+  if (top.homeHit && top.awayHit) return true;
+  if (top.player >= 0.8 && (!second || top.player > second.player + 0.1)) return true;
+  if (top.teams >= 1 && (!second || top.total >= second.total + 0.45)) return true;
+  if (top.moment && top.teams >= 1 && (!second || top.total >= second.total + 0.35)) return true;
+  return false;
+}
+
 function bestMemeMatchKey(text, matches) {
-  let best = null;
-  for (const m of matches || []) {
-    const score = memeCaptionScore(text, m.home, m.away, m);
-    if (score < 2) continue;
-    const kickoff = Date.parse(m.kickoffUtc || "");
-    const tieBreak = isNaN(kickoff) ? 0 : kickoff;
-    if (!best || score > best.score || (score === best.score && tieBreak > best.tieBreak)) {
-      best = { key: highlightPairKeyMemes(m.home, m.away), score, tieBreak };
-    }
-  }
-  return best?.key || null;
+  const ranked = (matches || [])
+    .filter((m) => m?.home && m?.away)
+    .map((m) => {
+      const s = memeCaptionScoreDetailed(text, m.home, m.away, m);
+      return {
+        key: highlightPairKeyMemes(m.home, m.away),
+        score: s.total,
+        ...s,
+        tieBreak: Date.parse(m.kickoffUtc || "") || 0,
+      };
+    })
+    .filter((r) => r.total >= 0.8)
+    .sort((a, b) => b.score - a.score || b.tieBreak - a.tieBreak);
+  if (!ranked.length) return null;
+  return memeMatchUnambiguous(ranked[0], ranked[1]) ? ranked[0].key : null;
 }
 
 function orderMemesByPostedAt(memes) {
