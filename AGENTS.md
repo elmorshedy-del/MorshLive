@@ -5,7 +5,7 @@ KoraZero — Arabic-first sports streaming site (plain HTML/JS + Cloudflare Work
 ## Stack
 
 - **Front-end:** static HTML, vanilla JS (`assets/js/`), CSS. No bundler, no React.
-- **Edge:** Cloudflare Worker (`worker.js` + `lib/`). Wrangler deploy.
+- **Edge:** Cloudflare Worker (`worker.js` → `backend/` + `lib/`). Wrangler deploy.
 - **Data:** Node scripts (`scripts/`) write JSON to `assets/data/`. Runs on CF Builds via `npm run refresh:matches`.
 - **Node 22**, npm, Vitest, Biome.
 
@@ -16,7 +16,7 @@ Run from repo root. Agents may execute these — they must work as-is.
 ```bash
 npm install              # install dependencies
 npm test                 # vitest — must pass before merge
-npm run lint             # biome check lib/ tests/
+npm run lint             # biome check lib/ backend/ tests/
 npm run refresh:matches  # regenerate today.json + banners (needs network)
 npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 ```
@@ -25,8 +25,9 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 
 - **Minimize scope** — one bug, one focused diff. No drive-by refactors.
 - **Match existing style** — IIFEs + `window.*` globals on front-end; ESM in worker.
-- **Pure logic → `lib/`** — import from worker; add Vitest tests in `tests/`.
-- **Biome** is the linter for `lib/` and `tests/` (expand coverage gradually).
+- **New `/api/*` routes → `backend/routes/`** — not inline in `worker.js`.
+- **Pure logic → `lib/`** — import from worker/backend; add Vitest tests in `tests/`.
+- **Biome** is the linter for `lib/`, `backend/`, and `tests/`.
 
 ## Testing
 
@@ -39,7 +40,9 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 | Path | Purpose |
 |------|---------|
 | `*.html`, `assets/js/`, `assets/css/` | Front-end (script load order in HTML matters) |
-| `worker.js` | Edge routes: streams, replay, memes, APIs |
+| `worker.js` | Worker entry; stream/replay legacy — shrink over time |
+| `docs/BACKEND.md` | Layered backend guide + GitHub template references |
+| `backend/` | Edge API layers (routes → services → adapters) — see `backend/AGENTS.md` |
 | `lib/` | Shared pure modules (worker + tests) — see `lib/AGENTS.md` |
 | `scripts/` | Fetch/crawl jobs — see `scripts/AGENTS.md` |
 | `assets/data/*.json` | Generated cache (do not hand-edit without reason) |
@@ -59,7 +62,8 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 - Read nearest `AGENTS.md` (root → subfolder).
 - Preserve merge behavior in `scripts/fetch-matches.js` (clips, highlights, banners).
 - Bump `?v=` on changed JS/CSS in HTML when users must see updates.
-- Put new pure worker logic in `lib/` with tests.
+- Put new `/api/*` handlers in `backend/routes/` with logic in `backend/services/`.
+- Put new pure logic in `lib/` with tests.
 
 **Ask first**
 
@@ -79,3 +83,4 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 - Open standard: https://agents.md/
 - Template cookbook: https://github.com/Taiizor/agents-md-cookbook
 - This repo’s architecture: `docs/ARCHITECTURE.md`
+- Backend layers + template repos: `docs/BACKEND.md`

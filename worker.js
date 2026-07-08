@@ -9,6 +9,8 @@ import {
   todayMemeDayKey,
 } from "./lib/meme-threshold.js";
 import { resolveStreamUrl, rewriteReplayM3u8 as rewriteReplayM3u8Lines } from "./lib/replay-hls.js";
+import { dispatchBackendRoutes } from "./backend/router.js";
+import { backendRoutes } from "./backend/routes/index.js";
 
 /**
  * morshlive worker — static site + worldkoora vip proxy without preroll ads.
@@ -5380,7 +5382,10 @@ async function proxyStreamsLabApi(request, env) {
 
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
+    const routed = await dispatchBackendRoutes(backendRoutes, request, env, ctx);
+    if (routed) return routed;
+
     const url = new URL(request.url);
     const method = request.method;
     const vip = url.pathname.match(VIP_RE);
@@ -5500,12 +5505,6 @@ export default {
     const siirMatch = url.pathname.match(SIIR_MATCH_EMBED_RE);
     if (siirMatch && (method === "GET" || method === "HEAD")) {
       return proxySiirMatchEmbed(request, siirMatch[1], env);
-    }
-    if (method === "GET" && url.pathname.startsWith("/assets/data/") && /\.json$/i.test(url.pathname)) {
-      const res = await env.ASSETS.fetch(request);
-      const headers = new Headers(res.headers);
-      headers.set("Cache-Control", "public, max-age=300, stale-while-revalidate=600");
-      return new Response(res.body, { status: res.status, headers });
     }
     return env.ASSETS.fetch(request);
   },
