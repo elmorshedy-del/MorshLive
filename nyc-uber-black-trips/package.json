@@ -1,0 +1,16 @@
+{
+  "name": "nyc-uber-black-trips",
+  "version": "1.0.0",
+  "description": "Aggregate NYC Uber Black trips per year from TLC Open Data",
+  "type": "module",
+  "scripts": {
+    "fetch": "node fetch-trips.js",
+    "fetch:json": "node fetch-trips.js --format json",
+    "classify": "node classify-trips.js",
+    "classify:sample": "SAMPLE_LIMIT=50000 node classify-trips.js",
+    "classify:json": "node classify-trips.js --format json",
+    "classify:parquet": "python3 classify-parquet.py",
+    "q1": "python3 q1-table.py",
+    "calibrate": "node calibrate-rates.js"
+  }
+}
