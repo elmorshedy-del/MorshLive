@@ -1,0 +1,10 @@
+{
+  "name": "nyc-uber-black-trips",
+  "version": "1.0.0",
+  "description": "Aggregate NYC Uber Black trips per year from TLC Open Data",
+  "type": "module",
+  "scripts": {
+    "fetch": "node fetch-trips.js",
+    "fetch:json": "node fetch-trips.js --format json"
+  }
+}
