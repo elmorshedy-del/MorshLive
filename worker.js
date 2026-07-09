@@ -1903,24 +1903,70 @@ async function resolveKooraCardUrl(request, home, away) {
   return null;
 }
 
-async function resolveKooraCityHls(cardUrl, request) {
-  let page = await fetchAltStreamHtml(cardUrl, request, KOORA_CITY);
+function extractSirTvPageLinks(html) {
+  const out = [];
+  for (const m of String(html || "").matchAll(/https?:\/\/[cs]\.sirtv\.space[^\s"'<>]*/gi)) {
+    out.push(m[0].replace(/&amp;/g, "&"));
+  }
+  return [...new Set(out)].slice(0, 3);
+}
+
+const KOORA_IFRAME_RE =
+  /albaplayer|fluxion|veloqia|yalashot|shootsync|nexalure|sirtv|hesgoal|streams\.center|ok\.ru/i;
+
+async function resolveKooraCityHlsFromPage(startUrl, request) {
+  let page = await fetchAltStreamHtml(startUrl, request, KOORA_CITY);
   if (!page) return null;
   let referer = page.url;
   for (let depth = 0; depth < 6; depth++) {
     for (const c of extractHlsCandidates(page.html)) {
-      if (c.source && isHlsUrl(c.source)) return { source: c.source, referer, cardUrl };
+      if (c.source && isHlsUrl(c.source)) return { source: c.source, referer, cardUrl: startUrl };
     }
     const iframes = extractAnyIframeSrc(page.html, page.url);
-    const next =
-      iframes.find((u) => /albaplayer|fluxion|veloqia|yalashot|shootsync|nexalure/i.test(u)) ||
-      iframes[0];
+    const next = iframes.find((u) => KOORA_IFRAME_RE.test(u)) || iframes[0];
     if (!next) break;
     page = await fetchAltStreamHtml(next, request, referer);
     if (!page) break;
     referer = page.url;
   }
   return null;
+}
+
+async function resolveKooraCityHls(cardUrl, request) {
+  const queue = [cardUrl];
+  const boot = await fetchAltStreamHtml(cardUrl, request, KOORA_CITY);
+  if (boot?.html) {
+    for (const link of extractSirTvPageLinks(boot.html)) {
+      if (!queue.includes(link)) queue.push(link);
+    }
+  }
+  for (const url of queue.slice(0, 5)) {
+    const resolved = await resolveKooraCityHlsFromPage(url, request);
+    if (resolved) return resolved;
+  }
+  return null;
+}
+
+function kooraIframeWrapper(matchRoute, routes, cardsTried) {
+  return (
+    matchRoute?.kooraWrapper ||
+    routes.slots?.kooraCity?.wrapperUrl ||
+    matchRoute?.kooraCard ||
+    (Array.isArray(cardsTried) ? cardsTried.find(Boolean) : cardsTried) ||
+    routes.slots?.kooraCity?.defaultCard ||
+    KOORA_YALASHOT_DEFAULT
+  );
+}
+
+async function pickKooraCards(request, { home, away, cardOverride, routes, matchRoute }) {
+  if (cardOverride) return [cardOverride];
+  const cards = [];
+  const add = (url) => {
+    if (url && !cards.includes(url)) cards.push(url);
+  };
+  if (home && away) add(matchRoute?.kooraCard || (await resolveKooraCardUrl(request, home, away)));
+  add(routes.slots?.kooraCity?.defaultCard || KOORA_YALASHOT_DEFAULT);
+  return cards;
 }
 
 async function resolveKooraCityMirrorPool(request, env, origin, secret) {
@@ -1930,15 +1976,12 @@ async function resolveKooraCityMirrorPool(request, env, origin, secret) {
   const routes = await loadStreamRoutes(env, origin);
   const routeKey = matchRouteKey(home, away);
   const matchRoute = routes.byMatch?.[routeKey];
+  const cards = await pickKooraCards(request, { home, away, cardOverride: "", routes, matchRoute });
 
   let resolved = null;
-  if (home && away) {
-    const card = matchRoute?.kooraCard || (await resolveKooraCardUrl(request, home, away));
-    if (card) resolved = await resolveKooraCityHls(card, request);
-  }
-  if (!resolved) {
-    const fallbackCard = routes.slots?.kooraCity?.defaultCard || KOORA_YALASHOT_DEFAULT;
-    resolved = await resolveKooraCityHls(fallbackCard, request);
+  for (const card of cards) {
+    resolved = await resolveKooraCityHls(card, request);
+    if (resolved) break;
   }
   if (!resolved || !resolved.source) return [];
   const probe = await streamProbe(resolved.source, "plain", request);
@@ -1966,13 +2009,10 @@ async function proxyKooraCity(request, env) {
   const routes = await loadStreamRoutes(env, origin);
   const routeKey = matchRouteKey(home, away);
   const matchRoute = routes.byMatch?.[routeKey];
+  const cards = await pickKooraCards(request, { home, away, cardOverride, routes, matchRoute });
 
   async function iframeFallback(reason) {
-    const wrapperUrl =
-      matchRoute?.kooraWrapper ||
-      routes.slots?.kooraCity?.wrapperUrl ||
-      matchRoute?.kooraCard ||
-      null;
+    const wrapperUrl = kooraIframeWrapper(matchRoute, routes, cards);
     if (!wrapperUrl) return null;
     return new Response(cleanAltEmbedWrapperHtml(wrapperUrl, "Koora City", reason || "koora-iframe"), {
       status: 200,
@@ -1982,15 +2022,9 @@ async function proxyKooraCity(request, env) {
 
   try {
     let resolved = null;
-    if (cardOverride) {
-      resolved = await resolveKooraCityHls(cardOverride, request);
-    } else if (home && away) {
-      const card = matchRoute?.kooraCard || (await resolveKooraCardUrl(request, home, away));
-      if (card) resolved = await resolveKooraCityHls(card, request);
-    }
-    if (!resolved) {
-      const fallbackCard = routes.slots?.kooraCity?.defaultCard || KOORA_YALASHOT_DEFAULT;
-      resolved = await resolveKooraCityHls(fallbackCard, request);
+    for (const card of cards) {
+      resolved = await resolveKooraCityHls(card, request);
+      if (resolved) break;
     }
 
     if (!resolved || !resolved.source) {
