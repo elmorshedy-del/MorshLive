@@ -2016,7 +2016,22 @@ async function proxyKooraCity(request, env) {
   const matchRoute = routes.byMatch?.[routeKey];
   const cards = await pickKooraCards(request, { home, away, cardOverride, routes, matchRoute });
 
+  // The kooora-city crawl (sirtv/shootsync CDNs) geo-blocks the CF edge with a
+  // "Website Access Blocked" page, and the yalashot default card is dead too.
+  // Serve the live dlhd 24/7 pool first so بديل كورة سيتي still plays; only fall
+  // back to the raw iframe when even dlhd is empty.
   async function iframeFallback(reason) {
+    const dlPool = await resolveDlhdFallbackPool(origin, secret, request);
+    if (dlPool.length) {
+      return new Response(cleanHlsPlayerHtml(dlPool.map((m) => m.url), "Koora City"), {
+        status: 200,
+        headers: {
+          ...htmlHeaders,
+          "X-KZ-Mirrors": String(dlPool.length),
+          "X-KZ-Mode": `dlhd-fallback:${reason || "koora"}`,
+        },
+      });
+    }
     const wrapperUrl = kooraIframeWrapper(matchRoute, routes, cards);
     if (!wrapperUrl) return null;
     return new Response(cleanAltEmbedWrapperHtml(wrapperUrl, "Koora City", reason || "koora-iframe"), {
