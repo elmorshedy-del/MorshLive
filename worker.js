@@ -1923,6 +1923,30 @@ async function resolveKooraCityHls(cardUrl, request) {
   return null;
 }
 
+async function resolveKooraCityMirrorPool(request, env, origin, secret) {
+  const incoming = new URL(request.url);
+  const home = incoming.searchParams.get("home") || "";
+  const away = incoming.searchParams.get("away") || "";
+  const routes = await loadStreamRoutes(env, origin);
+  const routeKey = matchRouteKey(home, away);
+  const matchRoute = routes.byMatch?.[routeKey];
+
+  let resolved = null;
+  if (home && away) {
+    const card = matchRoute?.kooraCard || (await resolveKooraCardUrl(request, home, away));
+    if (card) resolved = await resolveKooraCityHls(card, request);
+  }
+  if (!resolved) {
+    const fallbackCard = routes.slots?.kooraCity?.defaultCard || KOORA_YALASHOT_DEFAULT;
+    resolved = await resolveKooraCityHls(fallbackCard, request);
+  }
+  if (!resolved || !resolved.source) return [];
+  const probe = await streamProbe(resolved.source, "plain", request);
+  if (!probe.ok) return [];
+  const sig = await signTarget(resolved.source, secret);
+  return [{ url: hlsProxyUrl(resolved.source, origin, sig), score: probe.score + 800 }];
+}
+
 async function proxyKooraCity(request, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
@@ -2377,6 +2401,14 @@ async function proxyVip(request, slot, env) {
     const proxied = [];
     for (const m of pool) if (!proxied.includes(m.url)) proxied.push(m.url);
 
+    let usedKooraFallback = false;
+    if (!proxied.length) {
+      for (const m of await resolveKooraCityMirrorPool(request, env, origin, secret)) {
+        if (!proxied.includes(m.url)) proxied.push(m.url);
+        usedKooraFallback = true;
+      }
+    }
+
     if (twitchChannel && proxied.length) {
       return dualPlayerResponse(proxied, twitchChannel, origin, htmlHeaders, {
         "X-KZ-Mirrors": String(proxied.length),
@@ -2387,13 +2419,15 @@ async function proxyVip(request, slot, env) {
       return twitchPlayerResponse(twitchChannel, origin, htmlHeaders);
     }
     if (proxied.length) {
+      const headers = {
+        ...htmlHeaders,
+        "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
+        "X-KZ-Mirrors": String(proxied.length),
+      };
+      if (usedKooraFallback) headers["X-KZ-Mode"] = "koora-fallback";
       return new Response(cleanHlsPlayerHtml(proxied, `${slot} بث`), {
         status: 200,
-        headers: {
-          ...htmlHeaders,
-          "X-KZ-Serv": String((candidates && candidates[0] && candidates[0].serv) || ""),
-          "X-KZ-Mirrors": String(proxied.length),
-        },
+        headers,
       });
     }
     if (firstHtml) {

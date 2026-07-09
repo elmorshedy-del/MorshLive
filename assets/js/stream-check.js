@@ -253,9 +253,6 @@
         const active = row.querySelector(".server-btn.active");
         // Respect the user's current pick when it's still live.
         if (active && !active.classList.contains("srv-down")) return { okCount, firstOk };
-        const kind = firstOk.dataset.kind || "reachable";
-        // Never auto-switch cross-origin embeds — it reloads the player mid-stream.
-        if (kind === "reachable") return { okCount, firstOk };
         const needsSwitch = !active || active.classList.contains("srv-down");
         if (needsSwitch && active !== firstOk) firstOk.click();
       }

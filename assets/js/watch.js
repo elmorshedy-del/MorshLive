@@ -37,7 +37,12 @@
   let loadedUrl = "";
 
   function embedQuery(serv) {
-    return { serv, matchId: match && match.id ? match.id : null };
+    return {
+      serv,
+      matchId: match && match.id ? match.id : null,
+      home: match && match.home ? match.home : null,
+      away: match && match.away ? match.away : null,
+    };
   }
 
   function channelEmbedUrl(chId, embedKey, serv) {

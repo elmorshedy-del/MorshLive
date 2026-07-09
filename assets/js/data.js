@@ -96,6 +96,8 @@ function embedUrlFor(embed, serv) {
   if (serv && typeof serv === "object") {
     servNum = serv.serv != null ? serv.serv : (serv.mode ? embed.defaultServer : serv);
     matchId = serv.matchId || null;
+    if (serv.home) u.searchParams.set("home", String(serv.home));
+    if (serv.away) u.searchParams.set("away", String(serv.away));
   }
   if (servNum != null && servNum !== "") u.searchParams.set("serv", String(servNum));
   if (matchId) u.searchParams.set("match", matchId);
