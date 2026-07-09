@@ -2399,6 +2399,23 @@ async function proxyAmine(request, env) {
   }
 }
 
+async function emergencyDlPlayable(channelId, origin, secret) {
+  const ids = [
+    ...(DLHD_CHANNEL_MIRROR_IDS[channelId] || []),
+    ...GLOBAL_DLHD_FALLBACK_IDS,
+  ];
+  const seen = new Set();
+  for (const id of ids) {
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const m3u8 = await resolveDlStream(id);
+    if (!m3u8 || !isHlsUrl(m3u8)) continue;
+    const sig = await signTarget(m3u8, secret);
+    return hlsProxyUrl(m3u8, origin, sig, "/dl/hls");
+  }
+  return null;
+}
+
 async function proxyVip(request, slot, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
@@ -2464,6 +2481,29 @@ async function proxyVip(request, slot, env) {
         headers,
       });
     }
+
+    const dlSrc = await emergencyDlPlayable(channelId, origin, secret);
+    if (dlSrc) {
+      return new Response(cleanHlsPlayerHtml(dlSrc, `${slot} بث`), {
+        status: 200,
+        headers: { ...htmlHeaders, "X-KZ-Mode": "dl-emergency" },
+      });
+    }
+
+    const home = incoming.searchParams.get("home") || "";
+    const away = incoming.searchParams.get("away") || "";
+    const routes = await loadStreamRoutes(env, origin);
+    const routeKey = matchRouteKey(home, away);
+    const matchRoute = routes.byMatch?.[routeKey];
+    const cards = await pickKooraCards(request, { home, away, cardOverride: "", routes, matchRoute });
+    const kooraWrap = kooraIframeWrapper(matchRoute, routes, cards);
+    if (kooraWrap) {
+      return new Response(cleanAltEmbedWrapperHtml(kooraWrap, "Koora City", "vip-koora-fallback"), {
+        status: 200,
+        headers: { ...htmlHeaders, "X-KZ-Mode": "koora-iframe-fallback" },
+      });
+    }
+
     if (firstHtml) {
       return new Response(await cleanWorldkooraHtml(firstHtml, slot, origin, secret, request), {
         status: 200,
@@ -2472,6 +2512,17 @@ async function proxyVip(request, slot, env) {
     }
     return new Response("Upstream unavailable", { status: 502 });
   } catch {
+    try {
+      const dlSrc = await emergencyDlPlayable(channelId, origin, secret);
+      if (dlSrc) {
+        return new Response(cleanHlsPlayerHtml(dlSrc, `${slot} بث`), {
+          status: 200,
+          headers: { ...htmlHeaders, "X-KZ-Mode": "dl-emergency" },
+        });
+      }
+    } catch {
+      // Fall through to 502.
+    }
     return new Response("Upstream unavailable", { status: 502 });
   }
 }

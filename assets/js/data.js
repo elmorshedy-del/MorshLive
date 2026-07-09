@@ -115,6 +115,15 @@ const DLHD_STREAM_IDS = {
   "bein-max-4": { maxAr: 597, sportsAr: 95 },
 };
 
+function dlEmbedUrlFor(channelId) {
+  const ids = DLHD_STREAM_IDS[channelId];
+  if (!ids) return "";
+  const id = ids.sportsAr || ids.backup || ids.maxAr;
+  if (!id) return "";
+  const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
+  return `${base}/dl/${id}`;
+}
+
 function streamOptionUrl(opt, channelId, matchId) {
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   if (opt.path) {
@@ -295,7 +304,7 @@ function resolveWatchSelection(matches, channels, searchParams) {
 window.SITE_DATA = {
   CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor,
   servIndexFromParam, EMBED_BINDING, streamOptionsFor, streamOptionUrl,
-  altStreamsForMatch, altStreamUrl,
+  altStreamsForMatch, altStreamUrl, dlEmbedUrlFor, DLHD_STREAM_IDS,
 };
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;

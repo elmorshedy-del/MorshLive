@@ -60,7 +60,11 @@
 
   function loadPlayer() {
     if (!shell) return;
-    const url = embedUrlFor(currentEmbed(), embedQuery(activeServ));
+    let url = "";
+    if (match && match.status === "live" && window.SITE_DATA.dlEmbedUrlFor) {
+      url = window.SITE_DATA.dlEmbedUrlFor(channel.id) || "";
+    }
+    if (!url) url = embedUrlFor(currentEmbed(), embedQuery(activeServ));
     if (!url || loadedUrl === url) return;
     loadedUrl = url;
     shell.innerHTML =
@@ -77,7 +81,8 @@
   }
 
   function altStreamIframe(url, kind) {
-    const sandbox = kind === "ntv"
+    const noSandbox = kind === "ntv" || kind === "kooraCity";
+    const sandbox = noSandbox
       ? ""
       : 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ';
     return (
