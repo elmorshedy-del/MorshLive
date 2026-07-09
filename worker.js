@@ -210,7 +210,9 @@ const PROBE_TIMEOUT_MS = 5000;
 const VIP_RESOLVE_DEADLINE_MS = 6000;
 
 // dlhd (daddylive) 24/7 source — fully isolated from the worldkoora /wk/ path.
-const DLHD_BASE = "https://dlhd.pk";
+// dlhd.pk 301-redirects to dlhd.st (2026-07 domain move); the old host breaks
+// every stream-{id}.php resolve, so point straight at the live domain.
+const DLHD_BASE = "https://dlhd.st";
 const DL_EMBED_RE = /^\/dl\/(\d{1,6})\/?$/;  // /dl/{channelId} -> clean player page
 const LAB_DL_EMBED_RE = /^\/lab\/dl\/(\d{1,6})\/?$/i;  // experimental lab — dlhd premiumtv iframe
 const DL_HLS_RE = /^\/dl\/hls$/i;            // signed HLS proxy for dlhd streams
@@ -2354,6 +2356,26 @@ function aerozastServerOrder(requestedServ) {
   return order;
 }
 
+// Live dlhd 24/7 feeds, resolved + verified + signed through /dl/hls. Used as
+// the main-player fallback when the yalashot/aerozast chain yields no playable
+// mirror (its CDN goes 403 "Website Access Blocked" from the CF edge). Ordered
+// by smoothness; first entry wins. Isolated from the /wk/ path on purpose.
+async function resolveDlhdFallbackPool(origin, secret, request) {
+  const out = [];
+  const seen = new Set();
+  for (const id of GLOBAL_DLHD_FALLBACK_IDS) {
+    const m3u8 = await resolveDlStream(id);
+    if (!m3u8 || !isHlsUrl(m3u8) || seen.has(m3u8)) continue;
+    const probe = await streamProbe(m3u8, "dl", request);
+    if (!probe.ok) continue;
+    seen.add(m3u8);
+    const sig = await signTarget(m3u8, secret);
+    out.push({ url: hlsProxyUrl(m3u8, origin, sig, "/dl/hls"), score: probe.score, dlhdId: id });
+  }
+  out.sort((a, b) => a.score - b.score);
+  return out;
+}
+
 async function proxyAerozast(request, env) {
   const incoming = new URL(request.url);
   const origin = incoming.origin;
@@ -2400,6 +2422,22 @@ async function proxyAerozast(request, env) {
           ...htmlHeaders,
           "X-KZ-Serv": String((pool[0] && pool[0].serv) ?? ""),
           "X-KZ-Mirrors": String(proxied.length),
+        },
+      });
+    }
+
+    // yalashot/aerozast chain dead (freshfin CDN geo/IP-blocks the CF edge).
+    // Serve the live dlhd 24/7 pool so the main player still plays; self-heals
+    // back to aerozast automatically once its CDN returns.
+    const dlPool = await resolveDlhdFallbackPool(origin, secret, request);
+    if (dlPool.length) {
+      return new Response(cleanHlsPlayerHtml(dlPool.map((m) => m.url), "بث مباشر"), {
+        status: 200,
+        headers: {
+          ...htmlHeaders,
+          "X-KZ-Serv": "dlhd",
+          "X-KZ-Mirrors": String(dlPool.length),
+          "X-KZ-Mode": "dlhd-fallback",
         },
       });
     }
