@@ -31,7 +31,11 @@
     { key: "weshan", servs: [0, 1, 2, 3] },
   ];
 
-  const MAIN_EMBED_URL = "https://tt.yalashot.online/2026/06/ch1.html?m=1";
+  const MAIN_PLAYER_PATH = "/wk/albaplayer/aerozast/?serv=1";
+
+  function mainPlayerUrl() {
+    return new URL(MAIN_PLAYER_PATH, location.origin).toString();
+  }
   let activeServ = params.has("serv") ? Number(params.get("serv")) : 3;
   let activeEmbedKey = params.get("player") || null;
   const shell = document.getElementById("player-shell");
@@ -154,7 +158,7 @@
 
   async function loadPlayer() {
     if (!shell) return;
-    loadIframePlayer(MAIN_EMBED_URL, true);
+    loadIframePlayer(mainPlayerUrl(), true);
   }
 
   function reloadPlayer() {

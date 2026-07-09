@@ -513,6 +513,9 @@ function extractHlsCandidates(html) {
   for (const m of text.matchAll(/<(?:source|video)\b[^>]*\ssrc=(["'])(https?:\/\/[^"']+)["']/gi)) {
     if (isHlsUrl(m[2]) && !isBlockedStreamUrl(m[2])) out.push({ source: m[2], player: "clappr" });
   }
+  for (const m of text.matchAll(/source\s*:\s*["'](https?:\/\/[^"']+\.m3u8[^"']*)["']/gi)) {
+    if (isHlsUrl(m[1]) && !isBlockedStreamUrl(m[1])) out.push({ source: m[1], player: "clappr" });
+  }
   for (const m of text.matchAll(/["'](https?:\/\/[^"']+\.m3u8[^"']*)["']/gi)) {
     if (isHlsUrl(m[1]) && !isBlockedStreamUrl(m[1])) out.push({ source: m[1], player: "clappr" });
   }
@@ -2320,6 +2323,95 @@ async function proxyWeshan(request, env) {
 
 const AMINE = "https://yallashooot.tv/albaplayer/amine/";
 const AMINE_RE = /^\/wk\/albaplayer\/amine\/?$/i;
+const AEROZAST = "https://yallashooot.tv/albaplayer/aerozast/";
+const AEROZAST_RE = /^\/wk\/albaplayer\/aerozast\/?$/i;
+const YALASHOT_CARD = "https://tt.yalashot.online/2026/06/ch1.html?m=1";
+
+async function fetchAerozastHtml(request, serv) {
+  const upstream = new URL(AEROZAST);
+  upstream.searchParams.set("serv", String(serv));
+  try {
+    const res = await fetchWithTimeout(upstream.toString(), {
+      headers: {
+        "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+        Accept: "text/html,application/xhtml+xml",
+        Referer: YALASHOT_CARD,
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return null;
+    return res.text();
+  } catch {
+    return null;
+  }
+}
+
+function aerozastServerOrder(requestedServ) {
+  const order = [];
+  const raw = requestedServ != null && requestedServ !== "" ? Number(requestedServ) : 1;
+  if (Number.isFinite(raw) && raw >= 1 && raw <= 4) order.push(raw);
+  for (let s = 1; s <= 4; s++) if (!order.includes(s)) order.push(s);
+  return order;
+}
+
+async function proxyAerozast(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "aerozast",
+  };
+  const requestedServ = incoming.searchParams.get("serv");
+
+  if (isHead) {
+    return new Response(null, { status: 200, headers: htmlHeaders });
+  }
+
+  try {
+    const seenSources = new Set();
+    const pool = [];
+    for (const serv of aerozastServerOrder(requestedServ)) {
+      const html = await fetchAerozastHtml(request, serv);
+      if (!html) continue;
+      const resolved = await resolvePlayableSourceFromHtml(html, request, 0, new Set());
+      if (!resolved || !isHlsUrl(resolved.source) || seenSources.has(resolved.source)) continue;
+      seenSources.add(resolved.source);
+      const probe = await streamProbe(resolved.source, "plain", request);
+      const sig = await signTarget(resolved.source, secret);
+      pool.push({
+        url: hlsProxyUrl(resolved.source, origin, sig),
+        score: probe.ok ? probe.score : 9500,
+        serv,
+        soft: !probe.ok,
+      });
+    }
+    pool.sort((a, b) => a.score - b.score);
+    const proxied = [];
+    for (const m of pool) if (!proxied.includes(m.url)) proxied.push(m.url);
+
+    if (proxied.length) {
+      return new Response(cleanHlsPlayerHtml(proxied, "بث مباشر"), {
+        status: 200,
+        headers: {
+          ...htmlHeaders,
+          "X-KZ-Serv": String((pool[0] && pool[0].serv) ?? ""),
+          "X-KZ-Mirrors": String(proxied.length),
+        },
+      });
+    }
+
+    return new Response(cleanAltEmbedWrapperHtml(AEROZAST + "?serv=1", "بث مباشر", "aerozast-fallback"), {
+      status: 200,
+      headers: { ...htmlHeaders, "X-KZ-Mode": "iframe-heal" },
+    });
+  } catch {
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  }
+}
 
 async function fetchAmineHtml(request, serv) {
   const upstream = new URL(AMINE);
@@ -5525,6 +5617,9 @@ export default {
     }
     if (AMINE_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyAmine(request, env);
+    }
+    if (AEROZAST_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxyAerozast(request, env);
     }
     if (HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
       if (method === "OPTIONS") {
