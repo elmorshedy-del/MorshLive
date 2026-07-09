@@ -2392,10 +2392,10 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 .page-watch .watch-stage {
   display: flex; flex-direction: column; gap: 12px;
 }
-@media (max-width: 899px) {
-  .page-watch .watch-stage .player-panel.active { order: -2; }
-  .page-watch .watch-stage .match-notice-slot:not([hidden]) { order: -1; }
-  .page-watch .watch-stage .watch-sources-card { order: 1; }
+@media (min-width: 900px) {
+  .page-watch .watch-stage .watch-sources-card { order: -1; }
+  .page-watch .watch-stage .match-notice-slot:not([hidden]) { order: 0; }
+  .page-watch .watch-stage .player-panel.active { order: 1; }
 }
 .page-watch .watch-head {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
