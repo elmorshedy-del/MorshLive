@@ -31,10 +31,137 @@
     { key: "weshan", servs: [0, 1, 2, 3] },
   ];
 
-  let activeServ = params.has("serv") ? Number(params.get("serv")) : 3;
+  const MAIN_EMBED_URL = "https://tt.yalashot.online/2026/06/ch1.html?m=1";
   let activeEmbedKey = params.get("player") || null;
   const shell = document.getElementById("player-shell");
   let loadedUrl = "";
+  let activeHls = null;
+
+  async function fetchDlSources(chId) {
+    const pageUrl = window.SITE_DATA.dlEmbedUrlFor ? window.SITE_DATA.dlEmbedUrlFor(chId) : "";
+    if (!pageUrl) return [];
+    try {
+      const res = await fetch(pageUrl, { cache: "no-store" });
+      if (!res.ok) return [];
+      const html = await res.text();
+      const listMatch = html.match(/sources=(\[[^\]]+\])/);
+      if (listMatch) {
+        try {
+          const list = JSON.parse(listMatch[1]);
+          if (Array.isArray(list) && list.length) return list.filter(Boolean);
+        } catch {
+          /* fall through */
+        }
+      }
+      const one = html.match(/data-kz-src="([^"]+)"/);
+      return one ? [one[1]] : [];
+    } catch {
+      return [];
+    }
+  }
+
+  function destroyInlineHls() {
+    if (!activeHls) return;
+    try {
+      activeHls.destroy();
+    } catch {
+      /* noop */
+    }
+    activeHls = null;
+  }
+
+  function bindUnmuteOverlay(video) {
+    if (!shell || !video) return;
+    let btn = shell.querySelector(".kz-unmute-btn");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "kz-unmute-btn";
+      btn.innerHTML = `<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a9 9 0 0 1 0 14"/></svg> <span>${t("watch.pressPlay")}</span>`;
+      btn.addEventListener("click", () => {
+        video.muted = false;
+        const p = video.play && video.play();
+        if (p && p.catch) p.catch(() => {});
+        btn.hidden = true;
+      });
+      shell.appendChild(btn);
+    }
+    const show = () => {
+      btn.hidden = false;
+    };
+    video.addEventListener("pause", () => {
+      if (!video.ended) show();
+    });
+    video.addEventListener("playing", () => {
+      if (!video.muted) btn.hidden = true;
+    });
+    if (video.paused || video.muted) show();
+  }
+
+  function mountInlineHls(sources) {
+    destroyInlineHls();
+    if (!shell || !sources.length) return false;
+    const src = sources[0];
+    shell.innerHTML = `<video class="kz-main-video" controls autoplay muted playsinline webkit-playsinline></video>`;
+    const video = shell.querySelector(".kz-main-video");
+    if (!video) return false;
+
+    const onError = () => {
+      loadedUrl = "";
+      destroyInlineHls();
+      loadIframePlayer(embedUrlFor(currentEmbed(), embedQuery(activeServ)));
+    };
+
+    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = src;
+      video.addEventListener("error", onError, { once: true });
+    } else if (window.Hls && window.Hls.isSupported()) {
+      activeHls = new window.Hls({ enableWorker: false });
+      activeHls.on(window.Hls.Events.ERROR, (_e, data) => {
+        if (data && data.fatal) onError();
+      });
+      activeHls.loadSource(src);
+      activeHls.attachMedia(video);
+    } else {
+      video.src = src;
+      video.addEventListener("error", onError, { once: true });
+    }
+
+    const playTry = video.play && video.play();
+    if (playTry && playTry.catch) {
+      playTry.catch(() => bindUnmuteOverlay(video));
+    }
+    bindUnmuteOverlay(video);
+    loadedUrl = `inline-dl:${src}`;
+    return true;
+  }
+
+  function loadIframePlayer(url, noSandbox) {
+    if (!shell || !url) return;
+    destroyInlineHls();
+    if (loadedUrl === url) return;
+    loadedUrl = url;
+    const sandbox = noSandbox
+      ? ""
+      : 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ';
+    shell.innerHTML =
+      `<iframe class="embed-frame" src="${url}" ` +
+      `${sandbox}` +
+      `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
+      `referrerpolicy="no-referrer-when-downgrade" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
+  }
+
+  async function loadPlayer() {
+    if (!shell) return;
+    loadIframePlayer(MAIN_EMBED_URL, true);
+  }
+
+  function reloadPlayer() {
+    loadedUrl = "";
+    destroyInlineHls();
+    loadPlayer();
+    reloadAltStreams();
+  }
 
   function embedQuery(serv) {
     return {
@@ -56,28 +183,6 @@
   function currentEmbed() {
     const key = activeEmbedKey || (match && match.embedKey) || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id)) || "vip1";
     return { ...(window.SITE_DATA.embedForKey(key)), channelId: channel.id };
-  }
-
-  function loadPlayer() {
-    if (!shell) return;
-    let url = "";
-    if (match && match.status === "live" && window.SITE_DATA.dlEmbedUrlFor) {
-      url = window.SITE_DATA.dlEmbedUrlFor(channel.id) || "";
-    }
-    if (!url) url = embedUrlFor(currentEmbed(), embedQuery(activeServ));
-    if (!url || loadedUrl === url) return;
-    loadedUrl = url;
-    shell.innerHTML =
-      `<iframe class="embed-frame" src="${url}" ` +
-      `sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ` +
-      `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
-      `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
-  }
-
-  function reloadPlayer() {
-    loadedUrl = "";
-    loadPlayer();
-    reloadAltStreams();
   }
 
   function altStreamIframe(url, kind) {
@@ -262,6 +367,14 @@
   }
 
   function bumpMainPlayer(reason) {
+    const video = shell && shell.querySelector(".kz-main-video");
+    if (video) {
+      loadedUrl = "";
+      destroyInlineHls();
+      loadPlayer();
+      if (reason) console.info("Main player heal:", reason);
+      return;
+    }
     const frame = shell && shell.querySelector(".embed-frame:not(.alt-stream-frame)");
     if (!frame) return;
     bumpIframeHeal(frame);

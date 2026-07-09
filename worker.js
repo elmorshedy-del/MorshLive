@@ -49,7 +49,7 @@ const SIRTV_CH1_PLAYER = "https://we.shootsync.site/albaplayer/sniaer/";
 const SIRTV_CH1_REFERER = "https://s.sirtv.space/2026/02/ch1.html?m=1";
 const SIRTV_RE = /^\/wk\/albaplayer\/sirtv\/?$/i;
 const KOORA_CITY = "https://kooora-city.com/";
-const KOORA_YALASHOT_DEFAULT = "https://s.yalashot.online/2026/06/ch1.html";
+const KOORA_YALASHOT_DEFAULT = "https://tt.yalashot.online/2026/06/ch1.html?m=1";
 const KOORACITY_RE = /^\/wk\/albaplayer\/kooracity\/?$/i;
 const KOORA_TEAM_AR = {
   argentina: "الأرجنتين",
