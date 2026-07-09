@@ -538,6 +538,47 @@
     return key.toUpperCase();
   }
 
+  function renderServerButton(src, serv, defaultKey) {
+    const url = channelEmbedUrl(channel.id, src.key, serv);
+    const isActive = (activeEmbedKey || defaultKey) === src.key && activeServ === serv;
+    const isAlt = src.key === "weshan" || src.key === "amine";
+    return `<button type="button" class="server-btn${isActive ? " active" : ""}${isAlt ? " server-btn--alt" : ""}"
+      data-srv="${serv}" data-embed="${src.key}" data-kind="reachable" data-url="${escapeHtml(url)}"
+      data-label="${sourceLabel(src.key)} ${t("watch.server")} ${serv}"
+      aria-label="${sourceLabel(src.key)} ${t("watch.server")} ${serv}">
+      <span class="srv-label">${serv}</span>
+    </button>`;
+  }
+
+  function renderServerGroup(src, defaultKey) {
+    return `<div class="server-group" data-group="${src.key}">
+      <div class="server-group-label">${sourceLabel(src.key)}</div>
+      <div class="server-group-row">${src.servs.map((serv) => renderServerButton(src, serv, defaultKey)).join("")}</div>
+    </div>`;
+  }
+
+  function bindServerButtons(row) {
+    row.querySelectorAll(".server-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeServ = Number(btn.dataset.srv) || 3;
+        activeEmbedKey = btn.dataset.embed || "vip1";
+        row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        row.dataset.embed = activeEmbedKey;
+        row.dataset.serv = String(activeServ);
+        const altFold = row.querySelector(".server-alt-details");
+        if (altFold && (activeEmbedKey === "amine" || activeEmbedKey === "weshan")) altFold.open = true;
+        const next = new URL(location.href);
+        next.searchParams.set("ch", channel.id);
+        next.searchParams.set("serv", String(activeServ));
+        next.searchParams.set("player", activeEmbedKey);
+        if (match && match.id) next.searchParams.set("match", match.id);
+        history.replaceState(null, "", next.toString());
+        reloadPlayer();
+      });
+    });
+  }
+
   function renderServers({ rebind } = {}) {
     const row = document.getElementById("servers");
     if (!row) return;
@@ -550,40 +591,24 @@
     );
 
     if (needsRebuild) {
-      const buttons = [];
-      for (const src of STREAM_SOURCES) {
-        for (const serv of src.servs) {
-          const url = channelEmbedUrl(channel.id, src.key, serv);
-          const isActive = (activeEmbedKey || defaultKey) === src.key && activeServ === serv;
-          buttons.push(`<button type="button" class="server-btn${isActive ? " active" : ""}${src.key === "weshan" || src.key === "amine" ? " server-btn--alt" : ""}"
-            data-srv="${serv}" data-embed="${src.key}" data-kind="reachable" data-url="${escapeHtml(url)}"
-            data-label="${sourceLabel(src.key)} ${t("watch.server")} ${serv}">
-            <span class="srv-label">${sourceLabel(src.key)} · ${t("watch.server")} ${serv}</span>
-          </button>`);
-        }
-      }
-      row.innerHTML = buttons.join("");
+      const primary = STREAM_SOURCES.filter((src) => src.key === "vip1" || src.key === "vip2");
+      const alt = STREAM_SOURCES.filter((src) => src.key === "amine" || src.key === "weshan");
+      const activeKey = activeEmbedKey || defaultKey;
+      const altOpen = activeKey === "amine" || activeKey === "weshan";
+      row.innerHTML = `<div class="server-groups">
+        ${primary.map((src) => renderServerGroup(src, defaultKey)).join("")}
+        <details class="server-alt-details"${altOpen ? " open" : ""}>
+          <summary class="server-alt-summary" data-i18n="watch.moreServers">${t("watch.moreServers")}</summary>
+          <div class="server-alt-body">
+            ${alt.map((src) => renderServerGroup(src, defaultKey)).join("")}
+          </div>
+        </details>
+      </div>`;
       row.dataset.ch = channel.id;
       row.dataset.embed = activeEmbedKey || defaultKey || "";
       row.dataset.serv = String(activeServ);
 
-      row.querySelectorAll(".server-btn").forEach((btn) => {
-        btn.addEventListener("click", () => {
-          activeServ = Number(btn.dataset.srv) || 3;
-          activeEmbedKey = btn.dataset.embed || "vip1";
-          row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
-          btn.classList.add("active");
-          row.dataset.embed = activeEmbedKey;
-          row.dataset.serv = String(activeServ);
-          const next = new URL(location.href);
-          next.searchParams.set("ch", channel.id);
-          next.searchParams.set("serv", String(activeServ));
-          next.searchParams.set("player", activeEmbedKey);
-          if (match && match.id) next.searchParams.set("match", match.id);
-          history.replaceState(null, "", next.toString());
-          reloadPlayer();
-        });
-      });
+      bindServerButtons(row);
     }
 
     if (window.StreamCheck) {
@@ -601,6 +626,8 @@
           row.dataset.serv = String(activeServ);
           row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
           res.firstOk.classList.add("active");
+          const altFold = row.querySelector(".server-alt-details");
+          if (altFold && (activeEmbedKey === "amine" || activeEmbedKey === "weshan")) altFold.open = true;
           const next = new URL(location.href);
           next.searchParams.set("ch", channel.id);
           next.searchParams.set("serv", String(activeServ));

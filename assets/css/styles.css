@@ -825,7 +825,31 @@ img { max-width: 100%; display: block; }
 .channel-btn.srv-down { opacity: .45; }
 .channel-btn .srv-state { align-self: flex-end; margin-top: 2px; }
 
-.server-row { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 0; }
+.server-row { display: block; margin-top: 0; }
+.server-groups { display: flex; flex-direction: column; gap: 10px; }
+.server-group { display: flex; flex-direction: column; gap: 5px; }
+.server-group-label {
+  font-size: .72rem; font-weight: 800; color: var(--muted);
+  letter-spacing: .03em; text-transform: uppercase;
+}
+.server-group-row {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;
+}
+.server-group-row .server-btn {
+  justify-content: center; padding: 8px 6px; min-width: 0; font-size: .84rem;
+}
+.server-alt-details { margin-top: 2px; }
+.server-alt-summary {
+  cursor: pointer; list-style: none; font-size: .78rem; font-weight: 800;
+  color: var(--muted); padding: 4px 0; user-select: none;
+}
+.server-alt-summary::-webkit-details-marker { display: none; }
+.server-alt-summary::before {
+  content: "▸"; display: inline-block; margin-inline-end: 6px;
+  transition: transform .2s ease; color: var(--brand);
+}
+.server-alt-details[open] > .server-alt-summary::before { transform: rotate(90deg); }
+.server-alt-body { display: flex; flex-direction: column; gap: 10px; padding-top: 8px; }
 .server-btn {
   background: var(--surface-2); border: 1px solid var(--border); color: var(--text);
   padding: 9px 18px; border-radius: 10px; cursor: pointer; font-weight: 700; font-size: .9rem; transition: .2s;
@@ -2365,6 +2389,14 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 
 /* Watch — layout only (all hooks preserved; channels stay visible above player) */
 .page-watch .watch-wrap { padding-top: 12px; }
+.page-watch .watch-stage {
+  display: flex; flex-direction: column; gap: 12px;
+}
+@media (max-width: 899px) {
+  .page-watch .watch-stage .player-panel.active { order: -2; }
+  .page-watch .watch-stage .match-notice-slot:not([hidden]) { order: -1; }
+  .page-watch .watch-stage .watch-sources-card { order: 1; }
+}
 .page-watch .watch-head {
   display: flex; align-items: center; justify-content: space-between; gap: 12px;
   flex-wrap: wrap; margin-bottom: 10px;
@@ -2377,7 +2409,7 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 .page-watch .player-toolbar { margin: 0; }
 .page-watch .no-ads-badge--inline { margin-bottom: 0; font-size: .78rem; padding: 5px 12px; }
 .page-watch .watch-sources-card {
-  margin-bottom: 12px; padding: 12px 14px; border-radius: 14px;
+  margin-bottom: 0; padding: 12px 14px; border-radius: 14px;
   border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.02);
 }
 .page-watch .watch-sources { margin: 0; }
@@ -2391,4 +2423,11 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
     display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start;
   }
   .page-watch .wc2026-banner { padding: 12px 0; }
+}
+@media (max-width: 520px) {
+  .page-watch .channel-row {
+    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;
+  }
+  .page-watch .channel-btn { font-size: .78rem; padding: 8px 6px; }
+  .page-watch .watch-sources-card { padding: 10px 12px; }
 }
