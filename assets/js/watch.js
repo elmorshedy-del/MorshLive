@@ -32,6 +32,7 @@
   ];
 
   const MAIN_EMBED_URL = "https://tt.yalashot.online/2026/06/ch1.html?m=1";
+  let activeServ = params.has("serv") ? Number(params.get("serv")) : 3;
   let activeEmbedKey = params.get("player") || null;
   const shell = document.getElementById("player-shell");
   let loadedUrl = "";
@@ -871,6 +872,7 @@
     initNav();
     initAltStreamHeal();
     initReloadButton();
+    loadPlayer();
     try {
       await refreshMatches({ force: false });
     } catch (e) {
