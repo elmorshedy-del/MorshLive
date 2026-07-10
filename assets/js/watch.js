@@ -231,6 +231,26 @@
       `referrerpolicy="no-referrer-when-downgrade" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
   }
 
+  // hls.js's default ABR starts from a conservative bandwidth guess (~500kbps)
+  // and ramps up slowly, which reads as "stuck on low quality" on these master
+  // playlists (144p-720p). Force the highest rendition as soon as the manifest
+  // is known instead of waiting on the estimator.
+  function forceHighestHlsLevel(hls) {
+    hls.on(window.Hls.Events.MANIFEST_PARSED, (_e, data) => {
+      const levels = data && data.levels;
+      if (!levels || !levels.length) return;
+      let best = 0;
+      let bestBitrate = -1;
+      levels.forEach((lvl, i) => {
+        if (lvl.bitrate > bestBitrate) {
+          bestBitrate = lvl.bitrate;
+          best = i;
+        }
+      });
+      hls.currentLevel = best;
+    });
+  }
+
   // Pinned main-player mirror for a specific match (see MANUAL_MIRROR_MATCHES).
   // Auto-loads in the main shell — unlike mountInlineHls, its only fallback is
   // the same-content mirror URL, never the generic vip/amine embed system, so
@@ -260,6 +280,7 @@
         activeHls.on(window.Hls.Events.ERROR, (_e, data) => {
           if (data && data.fatal) onError();
         });
+        forceHighestHlsLevel(activeHls);
         activeHls.loadSource(src);
         activeHls.attachMedia(video);
       } else {
@@ -591,6 +612,7 @@
       manualMirrorHls.on(window.Hls.Events.ERROR, (_e, data) => {
         if (data && data.fatal) onFatalError();
       });
+      forceHighestHlsLevel(manualMirrorHls);
       manualMirrorHls.loadSource(url);
       manualMirrorHls.attachMedia(video);
     } else {
