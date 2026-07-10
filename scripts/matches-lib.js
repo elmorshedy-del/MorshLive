@@ -133,6 +133,24 @@ function normalizeEspnEvent(e, league) {
   };
 }
 
+// The site is Arabic-first for a MENA audience, so "today" is the day in Gulf
+// time (UTC+3), not UTC. Bucketing a match by its raw UTC date put late-night
+// games (e.g. a 22:00 UTC kickoff = 01:00 next day in MENA) on the wrong day —
+// they showed up under "yesterday". Anchor every "which day" decision here.
+const ARABIA_TZ_OFFSET_HOURS = 3;
+
+/** ISO day (YYYY-MM-DD) of a UTC kickoff in MENA time. "" for invalid input. */
+function arabiaDayIso(utcIso, offsetHours = ARABIA_TZ_OFFSET_HOURS) {
+  const ms = Date.parse(utcIso);
+  if (Number.isNaN(ms)) return "";
+  return new Date(ms + offsetHours * 3600000).toISOString().slice(0, 10);
+}
+
+/** Today's ISO day in MENA time. */
+function arabiaTodayIso(nowMs = Date.now(), offsetHours = ARABIA_TZ_OFFSET_HOURS) {
+  return new Date(nowMs + offsetHours * 3600000).toISOString().slice(0, 10);
+}
+
 function canonical(text) {
   return (text || "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
 }
@@ -205,6 +223,9 @@ function sortMatches(matches) {
 }
 
 module.exports = {
+  arabiaDayIso,
+  arabiaTodayIso,
+  ARABIA_TZ_OFFSET_HOURS,
   filterDisplayMatches,
   mergeMatches,
   normalizeEspnEvent,

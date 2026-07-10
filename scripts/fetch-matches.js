@@ -10,6 +10,8 @@ const fs = require("fs");
 const path = require("path");
 const https = require("https");
 const {
+  arabiaDayIso,
+  arabiaTodayIso,
   filterDisplayMatches,
   mergeMatches,
   normalizeEspnEvent,
@@ -35,7 +37,7 @@ const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
 const YOUTUBE_SEARCH_URL = "https://www.googleapis.com/youtube/v3/search";
 
 const KEY = process.env.SPORTSDB_KEY || "3";
-const centerDate = process.argv[2] || new Date().toISOString().slice(0, 10);
+const centerDate = process.argv[2] || arabiaTodayIso();
 const OUT = path.join(__dirname, "..", "assets", "data", "today.json");
 const BANNERS_OUT = path.join(__dirname, "..", "assets", "data", "highlights-banners.json");
 const TEAM_AR = path.join(__dirname, "..", "assets", "data", "team-names-ar.json");
@@ -385,7 +387,7 @@ function mergeReplayFromPrevious(matches, previousPayload) {
       if (m.status !== "ended") continue;
       const media = resolveBannerMedia(m, lookup);
       if (!media) continue;
-      const day = String(m.kickoffUtc || "").slice(0, 10);
+      const day = arabiaDayIso(m.kickoffUtc);
       if (!day) continue;
       if (!daysMap.has(day)) daysMap.set(day, []);
       daysMap.get(day).push({
@@ -409,10 +411,6 @@ function mergeReplayFromPrevious(matches, previousPayload) {
   }
 
   const HIGHLIGHT_BANNER_DAYS = 3;
-
-  function arabiaTodayIso() {
-    return new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  }
 
   function rollingBannerDates(refDay, count) {
     const out = [];

@@ -113,13 +113,20 @@
     return isoDate(d);
   }
 
+  // "Today" in MENA time (UTC+3), matching the server pipeline (matches-lib
+  // arabiaTodayIso) so client and today.json agree on the day around the UTC
+  // midnight boundary — late-night games don't slip a day.
+  function arabiaToday() {
+    return isoDate(new Date(Date.now() + 3 * 60 * 60 * 1000));
+  }
+
   function datesToFetch() {
-    const today = isoDate(new Date());
+    const today = arabiaToday();
     return [shiftDate(today, -1), today, shiftDate(today, 1)];
   }
 
   function espnDateRange() {
-    const today = isoDate(new Date());
+    const today = arabiaToday();
     return `${shiftDate(today, -1).replace(/-/g, "")}-${shiftDate(today, 1).replace(/-/g, "")}`;
   }
 
