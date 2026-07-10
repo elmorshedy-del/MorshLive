@@ -315,7 +315,13 @@
   }
 
   function pairKey(home, away) {
-    return [canonical(home), canonical(away)].sort().join("~");
+    // Collapse name variants (USA/United States, …) so live ESPN scores merge
+    // onto the cached match regardless of which name variant each feed uses.
+    const token = (n) =>
+      (window.TeamNames && window.TeamNames.canonicalToken)
+        ? window.TeamNames.canonicalToken(n)
+        : canonical(n);
+    return [token(home), token(away)].sort().join("~");
   }
 
   /** Merge live score/minute from ESPN when cached today.json is stale. */

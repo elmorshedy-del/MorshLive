@@ -413,9 +413,25 @@ window.getMatchTimeZones = function getMatchTimeZones(m) {
 
 /* Commentators (المعلّق) — joined from the cached commentaryIndex so that live
    API results (which lack commentator data) still show them. */
+// Canonical team token \u2014 collapses name variants (USA/United States,
+// Korea Republic/South Korea, T\u00fcrkiye/Turkey) so a live-feed name matches the
+// stored meme/highlight/clip key regardless of which variant each side used.
+// Delegates to TeamNames when loaded; falls back to plain normalization.
+function canonTeamToken(s) {
+  if (window.TeamNames && window.TeamNames.canonicalToken) {
+    return window.TeamNames.canonicalToken(s);
+  }
+  return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
 function commentaryKey(home, away) {
-  const norm = (s) => (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
-  return [norm(home), norm(away)].sort().join("~");
+  return [canonTeamToken(home), canonTeamToken(away)].sort().join("~");
+}
+
+// Re-key a stored "home~away" index key through the same canonical tokens so it
+// matches a lookup key, even when the two were built from different name variants.
+function canonicalizeKey(rawKey) {
+  return String(rawKey || "").split("~").map(canonTeamToken).sort().join("~");
 }
 
 let _commentaryIdx = null;
@@ -441,7 +457,7 @@ async function loadCommentaryIndex() {
   try {
     const data = await loadTodayData();
     const idx = {};
-    (data.commentaryIndex || []).forEach((c) => { idx[c.key] = c; });
+    (data.commentaryIndex || []).forEach((c) => { idx[canonicalizeKey(c.key)] = c; });
     _commentaryIdx = idx;
     _commentaryAt = Date.now();
   } catch (e) {
@@ -532,7 +548,7 @@ async function loadHighlightsIndex() {
   try {
     const data = await loadTodayData();
     const idx = {};
-    (data.highlightsIndex || []).forEach((h) => { idx[h.key] = h; });
+    (data.highlightsIndex || []).forEach((h) => { idx[canonicalizeKey(h.key)] = h; });
     _highlightsIdx = idx;
     _highlightsAt = Date.now();
   } catch (e) {
@@ -1035,7 +1051,7 @@ async function loadMatchDetailIndex() {
   try {
     const data = await loadTodayData();
     const idx = {};
-    (data.matchDetailIndex || []).forEach((d) => { idx[d.key] = d; });
+    (data.matchDetailIndex || []).forEach((d) => { idx[canonicalizeKey(d.key)] = d; });
     _matchDetailIdx = idx;
     _matchDetailAt = Date.now();
   } catch (e) {
@@ -1087,11 +1103,11 @@ window.getMatches = async function getMatches({ force } = {}) {
       if (live.matches && live.matches.length) {
         const data = await loadTodayData();
         const idx = {};
-        (data.commentaryIndex || []).forEach((c) => { idx[c.key] = c; });
+        (data.commentaryIndex || []).forEach((c) => { idx[canonicalizeKey(c.key)] = c; });
         const hidx = {};
-        (data.highlightsIndex || []).forEach((h) => { hidx[h.key] = h; });
+        (data.highlightsIndex || []).forEach((h) => { hidx[canonicalizeKey(h.key)] = h; });
         const didx = {};
-        (data.matchDetailIndex || []).forEach((d) => { didx[d.key] = d; });
+        (data.matchDetailIndex || []).forEach((d) => { didx[canonicalizeKey(d.key)] = d; });
         const withCommentary = applyCommentary(live.matches, idx);
         const withChannels = applyTodayChannelIds(withCommentary, data.matches);
         const withHighlights = applyHighlights(withChannels, hidx);

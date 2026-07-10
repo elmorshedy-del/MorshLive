@@ -111,5 +111,30 @@
     return out;
   }
 
-  global.TeamNames = { localize, aliases, arabicFor };
+  // Canonical identity token for a team name. Anchored on the Arabic name because
+  // the alias table collapses every English variant of a team to one Arabic
+  // string ("USA" and "United States" both -> "الولايات المتحدة"), so variant
+  // English feeds and Arabic-sourced clips resolve to the SAME token. Unknown
+  // teams fall back to their normalized English name (identity — no regression).
+  // Accepts a raw name OR an already-normalized token (arabicFor normalizes).
+  function canonicalToken(name) {
+    return arabicFor(name) || norm(name);
+  }
+
+  // Stable pair key for matching a fixture to its memes/highlights/clips.
+  function canonicalKey(home, away) {
+    return [canonicalToken(home), canonicalToken(away)].sort().join("~");
+  }
+
+  // Re-key a stored "home~away" key through the canonical tokens, so a key built
+  // from one name variant still matches a lookup built from another.
+  function canonicalizeKey(rawKey) {
+    return String(rawKey || "")
+      .split("~")
+      .map(canonicalToken)
+      .sort()
+      .join("~");
+  }
+
+  global.TeamNames = { localize, aliases, arabicFor, canonicalToken, canonicalKey, canonicalizeKey };
 })(typeof window !== "undefined" ? window : this);
