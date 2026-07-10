@@ -24,12 +24,6 @@
   let lastStreamHealAt = 0;
   const ALT_STREAM_ORDER = ["ntv", "amineAlt", "kooraCity", "sirTv"];
   const STREAM_HEAL_MIN_MS = 8000;
-  const STREAM_SOURCES = [
-    { key: "vip1", servs: [1, 2, 3, 4] },
-    { key: "vip2", servs: [1, 2, 3, 4] },
-    { key: "amine", servs: [0, 1, 2, 3] },
-    { key: "weshan", servs: [0, 1, 2, 3] },
-  ];
 
   // Pinned main-player override + manual click-to-play cards for a specific
   // match. `mainPlayer` auto-loads in the primary player shell on page load
@@ -331,7 +325,7 @@
   }
 
   function channelEmbedUrl(chId, embedKey, serv) {
-    const key = embedKey || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(chId)) || "vip1";
+    const key = embedKey || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(chId)) || "koraplus";
     const embed = { ...(window.SITE_DATA.embedForKey(key)), channelId: chId };
     const q = typeof serv === "object" ? serv : embedQuery(serv);
     if (q.serv == null) q.serv = serv;
@@ -339,7 +333,7 @@
   }
 
   function currentEmbed() {
-    const key = activeEmbedKey || (match && match.embedKey) || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id)) || "vip1";
+    const key = activeEmbedKey || (match && match.embedKey) || (window.SITE_DATA && window.SITE_DATA.embedKeyFor(channel.id)) || "koraplus";
     return { ...(window.SITE_DATA.embedForKey(key)), channelId: channel.id };
   }
 
@@ -932,111 +926,28 @@
   }
 
   function sourceLabel(key) {
-    if (key === "weshan") return t("watch.weshan");
-    if (key === "amine") return t("watch.amine");
-    return key.toUpperCase();
-  }
-
-  function renderServerButton(src, serv, defaultKey) {
-    const url = channelEmbedUrl(channel.id, src.key, serv);
-    const isActive = (activeEmbedKey || defaultKey) === src.key && activeServ === serv;
-    const isAlt = src.key === "weshan" || src.key === "amine";
-    return `<button type="button" class="server-btn${isActive ? " active" : ""}${isAlt ? " server-btn--alt" : ""}"
-      data-srv="${serv}" data-embed="${src.key}" data-kind="reachable" data-url="${escapeHtml(url)}"
-      data-label="${sourceLabel(src.key)} ${t("watch.server")} ${serv}"
-      aria-label="${sourceLabel(src.key)} ${t("watch.server")} ${serv}">
-      <span class="srv-label">${serv}</span>
-    </button>`;
-  }
-
-  function renderServerGroup(src, defaultKey) {
-    return `<div class="server-group" data-group="${src.key}">
-      <div class="server-group-label">${sourceLabel(src.key)}</div>
-      <div class="server-group-row">${src.servs.map((serv) => renderServerButton(src, serv, defaultKey)).join("")}</div>
-    </div>`;
-  }
-
-  function bindServerButtons(row) {
-    row.querySelectorAll(".server-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        activeServ = Number(btn.dataset.srv) || 3;
-        activeEmbedKey = btn.dataset.embed || "vip1";
-        row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        row.dataset.embed = activeEmbedKey;
-        row.dataset.serv = String(activeServ);
-        const altFold = row.querySelector(".server-alt-details");
-        if (altFold && (activeEmbedKey === "amine" || activeEmbedKey === "weshan")) altFold.open = true;
-        const next = new URL(location.href);
-        next.searchParams.set("ch", channel.id);
-        next.searchParams.set("serv", String(activeServ));
-        next.searchParams.set("player", activeEmbedKey);
-        if (match && match.id) next.searchParams.set("match", match.id);
-        history.replaceState(null, "", next.toString());
-        reloadPlayer();
-      });
-    });
+    if (key === "koraplus") return "KoraPlus";
+    if (key === "kooracity") return "Koora City";
+    if (key === "sirtv") return "Sir TV";
+    if (key === "ntv") return "NTV";
+    return String(key || "").toUpperCase();
   }
 
   function renderServers({ rebind } = {}) {
     const row = document.getElementById("servers");
     if (!row) return;
-    const defaultKey = (match && match.embedKey) || window.SITE_DATA.embedKeyFor(channel.id);
-    const needsRebuild = rebind !== false && (
-      !row.querySelector(".server-btn") ||
-      row.dataset.ch !== channel.id ||
-      row.dataset.embed !== (activeEmbedKey || defaultKey || "") ||
-      row.dataset.serv !== String(activeServ)
-    );
-
-    if (needsRebuild) {
-      const primary = STREAM_SOURCES.filter((src) => src.key === "vip1" || src.key === "vip2");
-      const alt = STREAM_SOURCES.filter((src) => src.key === "amine" || src.key === "weshan");
-      const activeKey = activeEmbedKey || defaultKey;
-      const altOpen = activeKey === "amine" || activeKey === "weshan";
-      row.innerHTML = `<div class="server-groups">
-        ${primary.map((src) => renderServerGroup(src, defaultKey)).join("")}
-        <details class="server-alt-details"${altOpen ? " open" : ""}>
-          <summary class="server-alt-summary" data-i18n="watch.moreServers">${t("watch.moreServers")}</summary>
-          <div class="server-alt-body">
-            ${alt.map((src) => renderServerGroup(src, defaultKey)).join("")}
-          </div>
-        </details>
-      </div>`;
-      row.dataset.ch = channel.id;
-      row.dataset.embed = activeEmbedKey || defaultKey || "";
-      row.dataset.serv = String(activeServ);
-
-      bindServerButtons(row);
-    }
-
-    if (window.StreamCheck) {
-      window.StreamCheck.autoHighlight(row, { autoSelect: true }).then((res) => {
-        if (!res || !res.firstOk || res.firstOk.classList.contains("srv-down")) return;
-        const active = row.querySelector(".server-btn.active");
-        // Keep the user's working pick — only auto-switch when nothing is active or it died.
-        if (active && !active.classList.contains("srv-down")) return;
-        const srv = Number(res.firstOk.dataset.srv);
-        const emb = res.firstOk.dataset.embed;
-        if (emb && !Number.isNaN(srv) && (srv !== activeServ || emb !== activeEmbedKey)) {
-          activeServ = srv;
-          activeEmbedKey = emb;
-          row.dataset.embed = activeEmbedKey;
-          row.dataset.serv = String(activeServ);
-          row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
-          res.firstOk.classList.add("active");
-          const altFold = row.querySelector(".server-alt-details");
-          if (altFold && (activeEmbedKey === "amine" || activeEmbedKey === "weshan")) altFold.open = true;
-          const next = new URL(location.href);
-          next.searchParams.set("ch", channel.id);
-          next.searchParams.set("serv", String(activeServ));
-          next.searchParams.set("player", activeEmbedKey);
-          if (match && match.id) next.searchParams.set("match", match.id);
-          history.replaceState(null, "", next.toString());
-          reloadPlayer();
-        }
-      }).catch(() => {});
-    }
+    const defaultKey = (match && match.embedKey) || window.SITE_DATA.embedKeyFor(channel.id) || "koraplus";
+    row.innerHTML = `<div class="server-groups server-groups--clean">
+      <div class="server-group" data-group="${escapeHtml(defaultKey)}">
+        <div class="server-group-label">${sourceLabel(defaultKey)}</div>
+        <div class="server-group-row">
+          <span class="server-status-pill srv-ok">${sourceLabel(defaultKey)} ← ${escapeHtml(channel.name || channel.id)}</span>
+        </div>
+      </div>
+    </div>`;
+    row.dataset.ch = channel.id;
+    row.dataset.embed = defaultKey;
+    row.dataset.serv = "primary";
   }
 
   function renderSidebar() {
