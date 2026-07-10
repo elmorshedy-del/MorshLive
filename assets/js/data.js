@@ -19,21 +19,9 @@
 // ones contain direct HLS, nested iframes, or blank/preroll-only loaders.
 // Same-origin /wk/ proxy (worker.js) serves worldkoora vip pages without preroll ads.
 const EMBEDS = {
-  vip1: { url: "/wk/albaplayer/vip1/" },
-  vip2: { url: "/wk/albaplayer/vip2/" },
-  weshan: {
-    url: "/wk/albaplayer/weshan/",
-    servStart: 0,
-    defaultServer: 0,
-    servers: 4,
-  },
-  amine: {
-    url: "/wk/albaplayer/amine/",
-    servStart: 0,
-    defaultServer: 0,
-    servers: 4,
-  },
-  // Alternative backup players — proxied ad-free on /wk/albaplayer/{sirtv,ntv,kooracity}/.
+  // Primary embeds — KoraPlus (go4score edge CDN) for beIN MAX 24/7
+  koraplus: { url: "/wk/albaplayer/koraplus/" },
+  // Backup players — proxied ad-free on /wk/albaplayer/{sirtv,ntv,kooracity}/
   sirtv: { url: "/wk/albaplayer/sirtv/", defaultServer: 1, servers: 1 },
   ntv: { url: "/wk/albaplayer/ntv/", defaultServer: 1, servers: 1 },
   kooracity: { url: "/wk/albaplayer/kooracity/", defaultServer: 1, servers: 1 },
@@ -43,7 +31,6 @@ const ALT_STREAM_DEFS = {
   sirTv: { key: "sirTv", path: "/wk/albaplayer/sirtv/", labelKey: "watch.altSirTv" },
   ntv: { key: "ntv", path: "/wk/albaplayer/ntv/", labelKey: "watch.altNtv" },
   kooraCity: { key: "kooraCity", path: "/wk/albaplayer/kooracity/", labelKey: "watch.altKooraCity" },
-  amineAlt: { key: "amineAlt", path: "/wk/albaplayer/amine/", labelKey: "watch.altAmine", serv: 0 },
 };
 
 // Show backup panel for live, upcoming, and recently ended matches.
@@ -138,7 +125,7 @@ function streamOptionUrl(opt, channelId, matchId) {
 // Labeled stream sources for the watch page — honest about MAX vs Sports Arabic fallbacks.
 function streamOptionsFor(channelId, match, embedKey) {
   const primaryKey = embedKey || embedKeyFor(channelId);
-  const altKey = primaryKey === "vip1" ? "vip2" : "vip1";
+  const altKey = "kooracity";
   const isMax = /^bein-max-/.test(channelId || "");
   const dlhd = DLHD_STREAM_IDS[channelId] || null;
 
@@ -230,16 +217,16 @@ function servIndexFromParam(embed, raw) {
 // Embed routing — loaded from channel-bindings.js (synced from channel-bindings.json).
 const BINDING_DOC = window.KZ_CHANNEL_BINDINGS || {
   embedBinding: {
-    "bein-max-1": "vip1",
-    "bein-max-2": "vip2",
-    "bein-max-3": "vip2",
-    "bein-max-4": "vip1",
-    "bein-sports-1": "vip1",
-    "bein-sports-2": "vip1",
+    "bein-max-1": "koraplus",
+    "bein-max-2": "koraplus",
+    "bein-max-3": "koraplus",
+    "bein-max-4": "koraplus",
+    "bein-sports-1": "koraplus",
+    "bein-sports-2": "koraplus",
   },
 };
 const EMBED_BINDING = BINDING_DOC.embedBinding;
-const DEFAULT_EMBED = "vip1";
+const DEFAULT_EMBED = "koraplus";
 
 function embedKeyFor(channelId) {
   return EMBED_BINDING[channelId] || DEFAULT_EMBED;
