@@ -260,7 +260,7 @@
     if (!shell || !url) return;
 
     if (isIframe) {
-      loadIframePlayer(url, true);
+      loadIframePlayer(url, false);
       loadedUrl = `pinned-mirror-iframe:${url}`;
       return;
     }
