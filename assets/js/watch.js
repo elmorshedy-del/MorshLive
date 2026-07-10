@@ -31,6 +31,70 @@
     { key: "weshan", servs: [0, 1, 2, 3] },
   ];
 
+  // Manual, click-to-play mirror cards for a specific match. No auto-select on
+  // load and no auto-switching between cards — the user picks one explicitly.
+  // Within a card, `fallback` is a same-content mirror on a different CDN and
+  // is tried once if the primary URL errors; that is not cross-card fallback.
+  const MANUAL_MIRROR_MATCHES = [
+    {
+      teams: ["spain", "belgium"],
+      cards: [
+        {
+          id: "mirror-a",
+          label: "Mirror A",
+          url: "https://3.simokora.com/my-hls/h9asfma10d5/master.m3u8",
+          fallback: "https://2.simokora.com/my-hls/h9asfma10d5/master.m3u8",
+        },
+        {
+          id: "mirror-b",
+          label: "Mirror B",
+          url: "https://3.simokora.com/my-hls/0wo68p0w54v/master.m3u8",
+          fallback: "https://2.simokora.com/my-hls/0wo68p0w54v/master.m3u8",
+        },
+        {
+          id: "mirror-c",
+          label: "Mirror C",
+          url: "https://3.simokora.com/my-hls/uktmlo48gga/master.m3u8",
+        },
+        {
+          id: "mirror-d",
+          label: "Mirror D",
+          url: "https://3.simokora.com/my-hls/4v561xgucp9/master.m3u8",
+          fallback: "https://2.simokora.com/my-hls/4v561xgucp9/master.m3u8",
+        },
+        {
+          id: "mirror-ir",
+          label: "Iran CDN",
+          url: "https://edge22.776740.ir.cdn.ir/hls2/sport.m3u8",
+        },
+        {
+          id: "mirror-adab",
+          label: "AdabMedia",
+          url: "https://cp11.adabmedia.com/hls2/sport.m3u8",
+        },
+      ],
+    },
+  ];
+
+  function normalizeTeamName(s) {
+    return String(s || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  }
+
+  function manualMirrorsForMatch(m) {
+    if (!m || !m.home || !m.away) return null;
+    const a = normalizeTeamName(m.home);
+    const b = normalizeTeamName(m.away);
+    const entry = MANUAL_MIRROR_MATCHES.find((e) => {
+      const [x, y] = e.teams;
+      return (a === x && b === y) || (a === y && b === x);
+    });
+    return entry ? entry.cards : null;
+  }
+
   const MAIN_PLAYER_PATH = "/wk/albaplayer/aerozast/?serv=1";
 
   function mainPlayerUrl() {
@@ -411,6 +475,123 @@
     const card = document.getElementById("alt-streams");
     if (card) card.dataset.altTabsBound = "";
     renderAltStreams();
+  }
+
+  // ---------------------------------------------------------------------
+  // Manual mirror cards (see MANUAL_MIRROR_MATCHES above). Fully separate
+  // from the alt-stream tabs: nothing here is wired into healAllStreams,
+  // initAltStreamHeal's postMessage listener, or STREAM_HEAL_MIN_MS. Nothing
+  // plays until the user clicks a card; a card only retries its own
+  // same-content `fallback` mirror on error, never a different card.
+  // ---------------------------------------------------------------------
+  let manualMirrorHls = null;
+  let activeManualMirrorId = "";
+
+  function destroyManualMirrorHls() {
+    if (!manualMirrorHls) return;
+    try {
+      manualMirrorHls.destroy();
+    } catch {
+      /* noop */
+    }
+    manualMirrorHls = null;
+  }
+
+  function manualMirrorCardHtml(cardDef, isActive) {
+    const activeClass = isActive ? " is-active" : "";
+    return (
+      `<button type="button" class="alt-stream-tab${activeClass}" ` +
+      `data-mirror-id="${escapeHtml(cardDef.id)}" aria-pressed="${isActive ? "true" : "false"}">` +
+      `<span class="alt-stream-name">${escapeHtml(cardDef.label)}</span>` +
+      `</button>`
+    );
+  }
+
+  function playManualMirrorUrl(stage, url, cardDef, isFallbackAttempt) {
+    stage.innerHTML = `<video class="kz-main-video" controls autoplay muted playsinline webkit-playsinline></video>`;
+    const video = stage.querySelector("video");
+    if (!video) return;
+
+    const onFatalError = () => {
+      destroyManualMirrorHls();
+      if (!isFallbackAttempt && cardDef.fallback) {
+        playManualMirrorUrl(stage, cardDef.fallback, cardDef, true);
+        return;
+      }
+      stage.innerHTML = `<div class="manual-mirror-error">${escapeHtml(t("watch.manualMirrorFailed"))}</div>`;
+    };
+
+    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      video.src = url;
+      video.addEventListener("error", onFatalError, { once: true });
+    } else if (window.Hls && window.Hls.isSupported()) {
+      manualMirrorHls = new window.Hls({ enableWorker: false });
+      manualMirrorHls.on(window.Hls.Events.ERROR, (_e, data) => {
+        if (data && data.fatal) onFatalError();
+      });
+      manualMirrorHls.loadSource(url);
+      manualMirrorHls.attachMedia(video);
+    } else {
+      video.src = url;
+      video.addEventListener("error", onFatalError, { once: true });
+    }
+
+    const playTry = video.play && video.play();
+    if (playTry && playTry.catch) {
+      playTry.catch(() => bindUnmuteOverlay(video));
+    }
+    bindUnmuteOverlay(video);
+  }
+
+  function selectManualMirrorCard(cardId, cards) {
+    const cardDef = cards.find((c) => c.id === cardId);
+    if (!cardDef) return;
+    activeManualMirrorId = cardId;
+    const wrap = document.getElementById("manual-mirrors");
+    if (!wrap) return;
+    wrap.querySelectorAll(".alt-stream-tab").forEach((btn) => {
+      const active = btn.dataset.mirrorId === cardId;
+      btn.classList.toggle("is-active", active);
+      btn.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+    const stage = wrap.querySelector(".alt-stream-stage");
+    if (!stage) return;
+    destroyManualMirrorHls();
+    playManualMirrorUrl(stage, cardDef.url, cardDef, false);
+  }
+
+  function renderManualMirrors() {
+    const wrap = document.getElementById("manual-mirrors");
+    if (!wrap) return;
+    const cards = manualMirrorsForMatch(match);
+    if (!cards || !cards.length) {
+      wrap.hidden = true;
+      wrap.innerHTML = "";
+      wrap.dataset.mirrorsBound = "";
+      activeManualMirrorId = "";
+      destroyManualMirrorHls();
+      return;
+    }
+    if (wrap.dataset.mirrorsBound === "1") {
+      wrap.hidden = false;
+      return; // already rendered for this match; clicks are user-driven only
+    }
+    wrap.dataset.mirrorsBound = "1";
+    activeManualMirrorId = "";
+    const tabs = cards.map((c) => manualMirrorCardHtml(c, false)).join("");
+    wrap.hidden = false;
+    wrap.innerHTML =
+      `<div class="alt-streams-head">
+        <h3 class="alt-streams-title">${escapeHtml(t("watch.manualMirrorsTitle"))}</h3>
+        <p class="alt-streams-note">${escapeHtml(t("watch.manualMirrorsNote"))}</p>
+      </div>
+      <div class="alt-stream-tabs" role="tablist">${tabs}</div>
+      <div class="alt-stream-stage"><div class="manual-mirror-empty">${escapeHtml(t("watch.manualMirrorsPick"))}</div></div>`;
+    wrap.addEventListener("click", (ev) => {
+      const btn = ev.target.closest("[data-mirror-id]");
+      if (!btn) return;
+      selectManualMirrorCard(btn.dataset.mirrorId, cards);
+    });
   }
 
   function timeZoneHtml(m) {
@@ -851,6 +1032,7 @@
     resolveSelection();
     fillInfo();
     renderAltStreams();
+    renderManualMirrors();
     const channelChanged = channel.id !== previousChannelId;
     const matchChanged = (match && match.id) !== previousMatchId;
     if (!matchesReady) {
@@ -888,6 +1070,7 @@
       renderSidebar();
       loadPlayer();
       renderAltStreams();
+      renderManualMirrors();
     }
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(() => refreshMatchDetail().catch((e) => console.warn("Detail refresh failed:", e.message)), 60 * 1000);
