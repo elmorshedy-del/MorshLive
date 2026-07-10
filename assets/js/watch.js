@@ -31,20 +31,20 @@
     { key: "weshan", servs: [0, 1, 2, 3] },
   ];
 
-  // Manual, click-to-play mirror cards for a specific match. No auto-select on
-  // load and no auto-switching between cards — the user picks one explicitly.
-  // Within a card, `fallback` is a same-content mirror on a different CDN and
-  // is tried once if the primary URL errors; that is not cross-card fallback.
+  // Pinned main-player override + manual click-to-play cards for a specific
+  // match. `mainPlayer` auto-loads in the primary player shell on page load
+  // (its `fallback` is a same-content mirror on a different CDN, tried once
+  // on error — not a switch to a different source/embed). `cards` are
+  // separate, secondary options: no auto-select, no auto-switching between
+  // them — the user picks one explicitly.
   const MANUAL_MIRROR_MATCHES = [
     {
       teams: ["spain", "belgium"],
+      mainPlayer: {
+        url: "https://3.simokora.com/my-hls/h9asfma10d5/master.m3u8",
+        fallback: "https://2.simokora.com/my-hls/h9asfma10d5/master.m3u8",
+      },
       cards: [
-        {
-          id: "mirror-a",
-          label: "Mirror A",
-          url: "https://3.simokora.com/my-hls/h9asfma10d5/master.m3u8",
-          fallback: "https://2.simokora.com/my-hls/h9asfma10d5/master.m3u8",
-        },
         {
           id: "mirror-b",
           label: "Mirror B",
@@ -84,15 +84,26 @@
       .trim();
   }
 
-  function manualMirrorsForMatch(m) {
+  function manualMirrorEntryForMatch(m) {
     if (!m || !m.home || !m.away) return null;
     const a = normalizeTeamName(m.home);
     const b = normalizeTeamName(m.away);
-    const entry = MANUAL_MIRROR_MATCHES.find((e) => {
-      const [x, y] = e.teams;
-      return (a === x && b === y) || (a === y && b === x);
-    });
-    return entry ? entry.cards : null;
+    return (
+      MANUAL_MIRROR_MATCHES.find((e) => {
+        const [x, y] = e.teams;
+        return (a === x && b === y) || (a === y && b === x);
+      }) || null
+    );
+  }
+
+  function mainPlayerOverrideForMatch(m) {
+    const entry = manualMirrorEntryForMatch(m);
+    return entry ? entry.mainPlayer || null : null;
+  }
+
+  function manualMirrorsForMatch(m) {
+    const entry = manualMirrorEntryForMatch(m);
+    return entry ? entry.cards || null : null;
   }
 
   const MAIN_PLAYER_PATH = "/wk/albaplayer/aerozast/?serv=1";
@@ -220,8 +231,59 @@
       `referrerpolicy="no-referrer-when-downgrade" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
   }
 
+  // Pinned main-player mirror for a specific match (see MANUAL_MIRROR_MATCHES).
+  // Auto-loads in the main shell — unlike mountInlineHls, its only fallback is
+  // the same-content mirror URL, never the generic vip/amine embed system, so
+  // nothing else can silently switch this match away from the pinned source.
+  function mountPinnedMainMirror(url, fallbackUrl) {
+    destroyInlineHls();
+    if (!shell || !url) return;
+    shell.innerHTML = `<video class="kz-main-video" controls autoplay muted playsinline webkit-playsinline></video>`;
+    const video = shell.querySelector(".kz-main-video");
+    if (!video) return;
+
+    const mount = (src, isFallbackAttempt) => {
+      const onError = () => {
+        destroyInlineHls();
+        if (!isFallbackAttempt && fallbackUrl) {
+          mount(fallbackUrl, true);
+          return;
+        }
+        shell.innerHTML = `<div class="manual-mirror-error">${escapeHtml(t("watch.manualMirrorFailed"))}</div>`;
+      };
+
+      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = src;
+        video.addEventListener("error", onError, { once: true });
+      } else if (window.Hls && window.Hls.isSupported()) {
+        activeHls = new window.Hls({ enableWorker: false });
+        activeHls.on(window.Hls.Events.ERROR, (_e, data) => {
+          if (data && data.fatal) onError();
+        });
+        activeHls.loadSource(src);
+        activeHls.attachMedia(video);
+      } else {
+        video.src = src;
+        video.addEventListener("error", onError, { once: true });
+      }
+    };
+
+    mount(url, false);
+    const playTry = video.play && video.play();
+    if (playTry && playTry.catch) {
+      playTry.catch(() => bindUnmuteOverlay(video));
+    }
+    bindUnmuteOverlay(video);
+    loadedUrl = `pinned-mirror:${url}`;
+  }
+
   async function loadPlayer() {
     if (!shell) return;
+    const override = mainPlayerOverrideForMatch(match);
+    if (override) {
+      mountPinnedMainMirror(override.url, override.fallback);
+      return;
+    }
     loadIframePlayer(mainPlayerUrl(), true);
   }
 
