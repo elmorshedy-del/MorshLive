@@ -2501,28 +2501,18 @@ function amineServerOrder(requestedServ) {
   return order;
 }
 
-// ── KoraPlus proxy — Clappr player from go4score's edge CDN ────────────────
-// Fetches frame.php from a random kora-plus.app edge, strips ad/tracker scripts,
-// keeps the Clappr player + token renewal logic intact. Channel is passed as ?ch=
-// from the embed URL (e.g. /wk/albaplayer/koraplus/?ch=max1). When _json=1 is set
-// the edge returns a fresh HLS URL before the current token expires.
+// ── KoraPlus proxy — iframe to go4score's edge CDN Clappr player ─────────────
+// CF Workers strip Sec-Fetch-* headers, so we can't proxy frame.php server-side
+// (the edge gates on Sec-Fetch-Dest: iframe). Instead, serve a lightweight
+// iframe wrapper pointing directly to the kora-plus.app edge CDN. The user's
+// browser loads it with real headers, so the Clappr player works.
+// Channel is passed as ?ch= (e.g. /wk/albaplayer/koraplus/?ch=bein-max-1).
 function koraPlusFrameUrl(channel, token, kt, edge) {
   const e = edge || KORAPLUS_EDGES[Math.floor(Math.random() * KORAPLUS_EDGES.length)];
   const qs = new URLSearchParams({ ch: channel || "max1", p: "12" });
   if (token) qs.set("token", token);
   if (kt) qs.set("kt", String(kt));
   return `https://${e}.${KORAPLUS_EDGE_DOMAIN}/frame.php?${qs.toString()}`;
-}
-
-function sanitizeKoraPlusHtml(html) {
-  let out = String(html || "");
-  // Strip ad/tracker scripts from upstream Clappr frame
-  out = out.replace(/<script\b[^>]*src=["']\/\/nj\.throwaflaunt\.com[^"']*["'][^>]*>\s*<\/script>/gi, "");
-  out = out.replace(/<script\b[^>]*src=["'][^"']*fiscalexplanation\.com[^"']*["'][^>]*>\s*<\/script>/gi, "");
-  out = out.replace(/<script\b[^>]*src=["'][^"']*acscdn\.com[^"']*["'][^>]*>\s*<\/script>/gi, "");
-  out = out.replace(/<script\b[^>]*>[\s\S]*?aclib\.runPop[\s\S]*?<\/script>/gi, "");
-  out = out.replace(/<\!--[\s\S]*?bvtpk\.com[\s\S]*?-->/gi, "");
-  return out;
 }
 
 async function proxyKoraPlus(request, env) {
@@ -2546,70 +2536,39 @@ async function proxyKoraPlus(request, env) {
     "bein-max-4": "max4",
     "bein-sports-1": "b1",
     "bein-sports-2": "b2",
-    "bein-sports-3": "b3",
   };
   const rawCh = incoming.searchParams.get("ch") || "bein-max-1";
   const channel = KZ_TO_KP[rawCh] || rawCh;
-  const jsonOnly = incoming.searchParams.get("_json") === "1";
-  const token = incoming.searchParams.get("token") || "";
-  const kt = incoming.searchParams.get("kt") || String(Math.floor(Date.now() / 1000));
 
-  // JSON mode — relay the token refresh request to the edge
-  if (jsonOnly) {
-    const edgeUrl = koraPlusFrameUrl(channel, token, kt);
-    try {
-      const edgeRes = await fetchWithTimeout(edgeUrl + "&_json=1", {
-        headers: {
-          "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
-          Accept: "application/json",
-          Referer: origin + "/",
-          Origin: origin,
-        },
-        redirect: "follow",
-      });
-      if (edgeRes.ok) {
-        const data = await edgeRes.json();
-        return new Response(JSON.stringify(data), {
-          status: 200,
-          headers: { ...htmlHeaders, "Content-Type": "application/json" },
-        });
-      }
-    } catch {}
-    return new Response("{}", { status: 200, headers: { ...htmlHeaders, "Content-Type": "application/json" } });
-  }
-
-  // HTML mode — fetch the player frame, sanitize, and serve
+  const token = (typeof crypto !== "undefined" && crypto.randomUUID)
+    ? crypto.randomUUID()
+    : "kz-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+  const kt = String(Math.floor(Date.now() / 1000));
   const edgeUrl = koraPlusFrameUrl(channel, token, kt);
-  try {
-    const res = await fetchWithTimeout(edgeUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-        Accept: "text/html,application/xhtml+xml",
-        Referer: origin + "/",
-        Origin: origin,
-        "Sec-Fetch-Dest": "iframe",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "cross-site",
-        "Upgrade-Insecure-Requests": "1",
-      },
-      redirect: "follow",
-    });
-    if (!res.ok) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
 
-    const rawHtml = await res.text();
-    if (!rawHtml || rawHtml.length < 1000) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
-
-    // Rewrite the token renewal fetch to go through our proxy
-    let cleaned = sanitizeKoraPlusHtml(rawHtml);
-    cleaned = cleaned.replace(
-      /fetch\(`\/frame\.php\?ch=\$\{encodeURIComponent\(CONFIG\.channel\)\}&_json=1`/g,
-      `fetch(\`/wk/albaplayer/koraplus/?ch=\${encodeURIComponent(CONFIG.channel)}&_json=1&token=\${encodeURIComponent(typeof CONFIG._kpToken !== 'undefined' ? CONFIG._kpToken : '')}&kt=\${encodeURIComponent(String(Math.floor(Date.now()/1000)))}\``
-    );
-
-    return new Response(cleaned, { status: 200, headers: htmlHeaders });
-  } catch {
-    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  // Simple iframe wrapper — browser loads the edge CDN directly with real headers
+  const html = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>KoraZero</title>
+<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#f{width:100vw;height:100vh;border:0;display:block}</style>
+</head><body>
+${/* eslint-disable-next-line no-script-url */ ""}
+<iframe id="f" src="${edgeUrl.replace(/"/g, "&quot;")}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
+<script>
+(function(){
+  var f=document.getElementById('f'), lastAt=0;
+  function heal(){
+    var now=Date.now(); if(now-lastAt<30000) return; lastAt=now;
+    try{ var u=new URL(f.src); u.searchParams.set('_heal',String(now)); f.src=u.toString(); }catch(e){}
+    try{ window.parent.postMessage({type:'kz-alt-reload',reason:'koraplus-heal'},'*'); }catch(e){}
   }
+  f.addEventListener('error',function(){ heal(); });
+  setInterval(function(){ heal(); }, 90000);
+})();
+</script>
+</body></html>`;
+
+  return new Response(html, { status: 200, headers: htmlHeaders });
 }
 
 async function proxyAmine(request, env) {
