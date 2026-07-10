@@ -125,7 +125,7 @@ function streamOptionUrl(opt, channelId, matchId) {
 // Labeled stream sources for the watch page — honest about MAX vs Sports Arabic fallbacks.
 function streamOptionsFor(channelId, match, embedKey) {
   const primaryKey = embedKey || embedKeyFor(channelId);
-  const altKey = "kooracity";
+  const altKey = primaryKey === "kooracity" ? "sirtv" : "kooracity";
   const isMax = /^bein-max-/.test(channelId || "");
   const dlhd = DLHD_STREAM_IDS[channelId] || null;
 
