@@ -10,6 +10,7 @@ import {
   computeRecentAccountThreshold,
   filterMemesWithMedia,
   memeHasMedia,
+  selectHomeScrollMemes,
   WC_HOME_SINCE_UTC,
 } from "./lib/meme-select.js";
 import { resolveStreamUrl, rewriteReplayM3u8 as rewriteReplayM3u8Lines } from "./lib/replay-hls.js";
@@ -4891,13 +4892,13 @@ function matchKickoffRecently(kickoffUtc, sinceMs) {
   return !isNaN(t) && t >= sinceMs;
 }
 
-// Home meme scroll fallback. The scroll originally aggregated memes across
-// recent matches (match-memes.json); b4eb565 switched it to the viral-account
-// timelines, but the free X profile-timeline syndication has since gone stale
-// (returns years-old posts) and both configured accounts are dead/empty, so the
-// scroll went blank. Rebuild it from the per-match memes we already have —
-// prefer matches within the recent window, fall back to all keyed matches — so
-// the scroll shows real data instead of nothing.
+// Home meme scroll source. The scroll originally aggregated memes across recent
+// matches (match-memes.json); b4eb565 switched it to the viral-account timelines,
+// but the free X profile-timeline syndication has since gone stale (years-old
+// posts) and both configured accounts are dead/empty, so the scroll went blank.
+// Rebuild it from the per-match memes we already have: gather every keyed match's
+// memes (dedup, keep highest engagement), then hand to selectHomeScrollMemes,
+// which takes the best of the last ~3 days and orders them newest-first.
 async function collectRecentMatchMemes(env, origin) {
   const [idx, pinned, todayMatches, archiveMatches] = await Promise.all([
     loadMemesIndex(env, origin),
@@ -4906,27 +4907,21 @@ async function collectRecentMatchMemes(env, origin) {
     loadTournamentArchiveMatches(env, origin),
   ]);
   const matches = [...todayMatches, ...archiveMatches].filter((m) => m.home && m.away);
-  const gather = (recentOnly) => {
-    const sinceMs = Date.now() - RECENT_MATCH_MEME_CONTEXT_MS;
-    const byId = new Map();
-    for (const m of matches) {
-      if (recentOnly && !matchKickoffRecently(m.kickoffUtc, sinceMs)) continue;
-      const key = highlightPairKeyMemes(m.home, m.away);
-      for (const meme of [...(idx[key] || []), ...(pinned[key] || [])]) {
-        const id = String(meme.tweetId || meme.url || "");
-        if (!id) continue;
-        const prev = byId.get(id);
-        if (!prev || (Number(meme.likes) || 0) > (Number(prev.likes) || 0)) {
-          byId.set(id, { ...meme, matchKey: key, matchHome: m.home, matchAway: m.away });
-        }
+  const byId = new Map();
+  for (const m of matches) {
+    const key = highlightPairKeyMemes(m.home, m.away);
+    for (const meme of [...(idx[key] || []), ...(pinned[key] || [])]) {
+      const id = String(meme.tweetId || meme.url || "");
+      if (!id) continue;
+      const prev = byId.get(id);
+      const better = (Number(meme.engagement) || Number(meme.likes) || 0);
+      const prevScore = prev ? (Number(prev.engagement) || Number(prev.likes) || 0) : -1;
+      if (!prev || better > prevScore) {
+        byId.set(id, { ...meme, matchKey: key, matchHome: m.home, matchAway: m.away });
       }
     }
-    return filterMemesWithMedia([...byId.values()])
-      .sort((a, b) => (Date.parse(b.postedAt) || 0) - (Date.parse(a.postedAt) || 0))
-      .slice(0, RECENT_MEMES_LIMIT);
-  };
-  const recent = gather(true);
-  return recent.length ? recent : gather(false);
+  }
+  return selectHomeScrollMemes(filterMemesWithMedia([...byId.values()]));
 }
 
 async function proxyRecentMemesApi(request, env) {

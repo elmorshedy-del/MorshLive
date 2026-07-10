@@ -5,6 +5,7 @@ import {
   computeRecentAccountThreshold,
   filterMemesWithMedia,
   memeHasMedia,
+  selectHomeScrollMemes,
 } from "../lib/meme-select.js";
 
 const withMedia = (likes, postedAt) => ({
@@ -59,5 +60,39 @@ describe("classifyHomeMeme", () => {
     const res = classifyHomeMeme(fresh, { threshold: 21000 }, { threshold: 8000 }, config, 3, 3, now);
     expect(res.isToday).toBe(true);
     expect(res.passing).toBe(true); // 2000 likes clears the 2h-old ramped bar
+  });
+});
+
+describe("selectHomeScrollMemes", () => {
+  const now = Date.parse("2026-07-10T12:00:00Z");
+  const meme = (likes, ageDays, id) => ({
+    tweetId: id,
+    likes,
+    media: [{ url: `https://pbs.twimg.com/${id}.jpg` }],
+    postedAt: new Date(now - ageDays * 86400000).toISOString(),
+  });
+
+  it("pools the last 3 days, keeps the best, and orders by recency", () => {
+    const memes = [
+      meme(100, 0.2, "a"), // fresh, low engagement
+      meme(9000, 1, "b"), // best, 1 day old
+      meme(5000, 2, "c"), // 2 days old
+      meme(99999, 20, "old"), // huge but 20 days old — outside the 3-day pool
+    ];
+    const out = selectHomeScrollMemes(memes, { limit: 2, nowMs: now });
+    // top-2 BEST within the 3-day pool are b (9000) and c (5000); 'old' excluded
+    expect(out.map((m) => m.tweetId)).toEqual(["b", "c"]); // then ordered newest-first
+    expect(out.find((m) => m.tweetId === "old")).toBeUndefined();
+  });
+
+  it("caps the scroll at the limit", () => {
+    const memes = Array.from({ length: 40 }, (_, i) => meme(1000 + i, 1, `m${i}`));
+    expect(selectHomeScrollMemes(memes, { limit: 20, nowMs: now })).toHaveLength(20);
+  });
+
+  it("widens the pool when the last 3 days are empty (stale data never blanks)", () => {
+    const stale = [meme(3000, 12, "x"), meme(8000, 9, "y")];
+    const out = selectHomeScrollMemes(stale, { limit: 20, nowMs: now });
+    expect(out.map((m) => m.tweetId)).toEqual(["y", "x"]); // newest-first of the widened pool
   });
 });
