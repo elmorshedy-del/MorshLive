@@ -4891,6 +4891,44 @@ function matchKickoffRecently(kickoffUtc, sinceMs) {
   return !isNaN(t) && t >= sinceMs;
 }
 
+// Home meme scroll fallback. The scroll originally aggregated memes across
+// recent matches (match-memes.json); b4eb565 switched it to the viral-account
+// timelines, but the free X profile-timeline syndication has since gone stale
+// (returns years-old posts) and both configured accounts are dead/empty, so the
+// scroll went blank. Rebuild it from the per-match memes we already have —
+// prefer matches within the recent window, fall back to all keyed matches — so
+// the scroll shows real data instead of nothing.
+async function collectRecentMatchMemes(env, origin) {
+  const [idx, pinned, todayMatches, archiveMatches] = await Promise.all([
+    loadMemesIndex(env, origin),
+    loadPinnedMemes(env, origin),
+    loadTodayMatches(env, origin),
+    loadTournamentArchiveMatches(env, origin),
+  ]);
+  const matches = [...todayMatches, ...archiveMatches].filter((m) => m.home && m.away);
+  const gather = (recentOnly) => {
+    const sinceMs = Date.now() - RECENT_MATCH_MEME_CONTEXT_MS;
+    const byId = new Map();
+    for (const m of matches) {
+      if (recentOnly && !matchKickoffRecently(m.kickoffUtc, sinceMs)) continue;
+      const key = highlightPairKeyMemes(m.home, m.away);
+      for (const meme of [...(idx[key] || []), ...(pinned[key] || [])]) {
+        const id = String(meme.tweetId || meme.url || "");
+        if (!id) continue;
+        const prev = byId.get(id);
+        if (!prev || (Number(meme.likes) || 0) > (Number(prev.likes) || 0)) {
+          byId.set(id, { ...meme, matchKey: key, matchHome: m.home, matchAway: m.away });
+        }
+      }
+    }
+    return filterMemesWithMedia([...byId.values()])
+      .sort((a, b) => (Date.parse(b.postedAt) || 0) - (Date.parse(a.postedAt) || 0))
+      .slice(0, RECENT_MEMES_LIMIT);
+  };
+  const recent = gather(true);
+  return recent.length ? recent : gather(false);
+}
+
 async function proxyRecentMemesApi(request, env) {
   const url = new URL(request.url);
   const origin = url.origin;
@@ -4991,6 +5029,20 @@ async function proxyRecentMemesApi(request, env) {
     memes = filterMemesWithMedia(memes).slice(0, RECENT_MEMES_LIMIT);
   }
 
+  // When the viral-account pool is empty, populate the scroll from recent-match
+  // memes (see collectRecentMatchMemes) so the home rail is never blank while a
+  // live source is unavailable.
+  let source = "home-viral-threshold";
+  if (!memes.length) {
+    try {
+      const matchMemes = await collectRecentMatchMemes(env, origin);
+      if (matchMemes.length) {
+        memes = matchMemes;
+        source = "recent-match-memes";
+      }
+    } catch { /* nothing to fall back to */ }
+  }
+
   memes = updateRecentMemesRuntimeCache(memes, pending, today);
 
   const response = buildResponse(memes, {
@@ -5000,7 +5052,7 @@ async function proxyRecentMemesApi(request, env) {
     recentAccountStats,
     pendingCount: pending.length,
     cached: false,
-  }, "home-viral-threshold");
+  }, source);
   if (!pending.length) {
     try {
       await caches.default.put(responseCacheKey, response.clone());
