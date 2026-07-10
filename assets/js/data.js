@@ -48,14 +48,11 @@ const ALT_STREAM_DEFS = {
 
 // Show backup panel for live, upcoming, and recently ended matches.
 function altStreamsForMatch(m) {
-  // Always keep the backup strip visible on the watch page. When the main
-  // player is pinned to a match-specific embed (for example fabor), these four
-  // alternates are still useful as manual fallbacks under بثوث بديلة.
+  // Keep the backup strip visible, but only expose sources that resolve right
+  // now. NTV, Amine, and Sir TV currently return upstream unavailable for this
+  // match; Koora City resolves to an active player wrapper.
   return {
-    ntv: ALT_STREAM_DEFS.ntv,
-    amineAlt: ALT_STREAM_DEFS.amineAlt,
     kooraCity: ALT_STREAM_DEFS.kooraCity,
-    sirTv: ALT_STREAM_DEFS.sirTv,
   };
 }
 

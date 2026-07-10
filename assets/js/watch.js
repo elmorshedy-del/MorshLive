@@ -40,10 +40,9 @@
   const MANUAL_MIRROR_MATCHES = [
     {
       teams: ["spain", "belgium"],
-      mainPlayer: {
-        url: "https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4761484&key=9f39972b67d6ce22189507d008acwc26",
-        iframe: true,
-      },
+      // Fabor disabled embeds during World Cup 2026. Do not pin it as main;
+      // let the normal proxied player and backup panel handle playback.
+      mainPlayer: null,
       cards: [
         {
           id: "mirror-b",
