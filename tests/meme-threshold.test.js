@@ -42,4 +42,16 @@ describe("homeMemeLikesThreshold", () => {
     const m = { postedAt: new Date(now - 26 * 3600000).toISOString() };
     expect(homeMemeLikesThreshold(m, stats, recentStats, config, 3, now)).toBe(8000);
   });
+
+  it("age-ramps a fresh meme that crossed local midnight instead of the full recent bar", () => {
+    // now = 05:00 local (tz+3); a 7h-old post lands on the previous local day,
+    // so memeIsToday is false, but it's still fresh (7h < 18h ramp window) and
+    // must not be judged against the full recent cap.
+    const midnightNow = Date.parse("2026-07-08T02:00:00Z");
+    const m = { postedAt: new Date(midnightNow - 7 * 3600000).toISOString() };
+    expect(memeIsToday(m.postedAt, 3, midnightNow)).toBe(false);
+    const bar = homeMemeLikesThreshold(m, stats, recentStats, config, 3, midnightNow);
+    expect(bar).toBeLessThan(8000);
+    expect(bar).toBe(computeTodayTweetThreshold(m.postedAt, 8000, config, midnightNow));
+  });
 });
