@@ -90,9 +90,15 @@ describe("selectHomeScrollMemes", () => {
     expect(selectHomeScrollMemes(memes, { limit: 20, nowMs: now })).toHaveLength(20);
   });
 
-  it("widens the pool when the last 3 days are empty (stale data never blanks)", () => {
-    const stale = [meme(3000, 12, "x"), meme(8000, 9, "y")];
-    const out = selectHomeScrollMemes(stale, { limit: 20, nowMs: now });
-    expect(out.map((m) => m.tweetId)).toEqual(["y", "x"]); // newest-first of the widened pool
+  it("widens to the 7-day ceiling when the last 3 days are short", () => {
+    const memes = [meme(8000, 5, "y"), meme(3000, 6, "x")]; // both within 7 days
+    const out = selectHomeScrollMemes(memes, { limit: 20, nowMs: now });
+    expect(out.map((m) => m.tweetId)).toEqual(["y", "x"]); // newest-first
+  });
+
+  it("does NOT reach past the ceiling to fill the count (no stale June padding)", () => {
+    const memes = [meme(9000, 2, "fresh"), meme(500000, 20, "viralButOld")];
+    const out = selectHomeScrollMemes(memes, { limit: 20, nowMs: now });
+    expect(out.map((m) => m.tweetId)).toEqual(["fresh"]); // old viral meme excluded
   });
 });
