@@ -99,11 +99,6 @@
     return entry ? entry.cards || null : null;
   }
 
-  const MAIN_PLAYER_PATH = "/wk/albaplayer/aerozast/?serv=1";
-
-  function mainPlayerUrl() {
-    return new URL(MAIN_PLAYER_PATH, location.origin).toString();
-  }
   let activeServ = params.has("serv") ? Number(params.get("serv")) : 3;
   let activeEmbedKey = params.get("player") || null;
   const shell = document.getElementById("player-shell");
@@ -305,7 +300,7 @@
       mountPinnedMainMirror(override.url, override.fallback, override.iframe);
       return;
     }
-    loadIframePlayer(mainPlayerUrl(), true);
+    loadIframePlayer(embedUrlFor(currentEmbed(), embedQuery(activeServ)), false);
   }
 
   function reloadPlayer() {
