@@ -2554,62 +2554,64 @@ async function proxyKoraPlus(request, env) {
   const token = incoming.searchParams.get("token") || "";
   const kt = incoming.searchParams.get("kt") || String(Math.floor(Date.now() / 1000));
 
-  // JSON mode — relay the token refresh request to the edge
+  // Shuffle edges so a single down host doesn't fail the whole request.
+  const edgeOrder = [...KORAPLUS_EDGES].sort(() => Math.random() - 0.5);
+
+  // JSON mode — relay the token refresh request, retrying across edges
   if (jsonOnly) {
-    const edgeUrl = koraPlusFrameUrl(channel, token, kt);
-    try {
-      const edgeRes = await fetchWithTimeout(edgeUrl + "&_json=1", {
-        headers: {
-          "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
-          Accept: "application/json",
-          Referer: origin + "/",
-          Origin: origin,
-        },
-        redirect: "follow",
-      });
-      if (edgeRes.ok) {
-        const data = await edgeRes.json();
-        return new Response(JSON.stringify(data), {
-          status: 200,
-          headers: { ...htmlHeaders, "Content-Type": "application/json" },
+    for (const edge of edgeOrder) {
+      const edgeUrl = koraPlusFrameUrl(channel, token, kt, edge);
+      try {
+        const edgeRes = await fetchWithTimeout(edgeUrl + "&_json=1", {
+          headers: {
+            "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+            Accept: "application/json",
+            Referer: origin + "/",
+            Origin: origin,
+          },
+          redirect: "follow",
         });
-      }
-    } catch {}
+        if (edgeRes.ok) {
+          const data = await edgeRes.json();
+          return new Response(JSON.stringify(data), {
+            status: 200,
+            headers: { ...htmlHeaders, "Content-Type": "application/json" },
+          });
+        }
+      } catch {}
+    }
     return new Response("{}", { status: 200, headers: { ...htmlHeaders, "Content-Type": "application/json" } });
   }
 
-  // HTML mode — fetch the player frame, sanitize, and serve
-  const edgeUrl = koraPlusFrameUrl(channel, token, kt);
-  try {
-    const res = await fetchWithTimeout(edgeUrl, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-        Accept: "text/html,application/xhtml+xml",
-        Referer: origin + "/",
-        Origin: origin,
-        "Sec-Fetch-Dest": "iframe",
-        "Sec-Fetch-Mode": "navigate",
-        "Sec-Fetch-Site": "cross-site",
-        "Upgrade-Insecure-Requests": "1",
-      },
-      redirect: "follow",
-    });
-    if (!res.ok) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  // HTML mode — fetch the player frame, retrying across edges
+  const fetchHeaders = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+    Accept: "text/html,application/xhtml+xml",
+    Referer: origin + "/",
+    Origin: origin,
+    "Sec-Fetch-Dest": "iframe",
+    "Sec-Fetch-Mode": "navigate",
+    "Sec-Fetch-Site": "cross-site",
+    "Upgrade-Insecure-Requests": "1",
+  };
 
-    const rawHtml = await res.text();
-    if (!rawHtml || rawHtml.length < 1000) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  for (const edge of edgeOrder) {
+    const edgeUrl = koraPlusFrameUrl(channel, token, kt, edge);
+    try {
+      const res = await fetchWithTimeout(edgeUrl, { headers: fetchHeaders, redirect: "follow" });
+      if (!res.ok) continue;
+      const rawHtml = await res.text();
+      if (!rawHtml || rawHtml.length < 1000) continue;
 
-    // Rewrite the token renewal fetch to go through our proxy
-    let cleaned = sanitizeKoraPlusHtml(rawHtml);
-    cleaned = cleaned.replace(
-      /fetch\(`\/frame\.php\?ch=\$\{encodeURIComponent\(CONFIG\.channel\)\}&_json=1`/g,
-      `fetch(\`/wk/albaplayer/koraplus/?ch=\${encodeURIComponent(CONFIG.channel)}&_json=1&token=\${encodeURIComponent(typeof CONFIG._kpToken !== 'undefined' ? CONFIG._kpToken : '')}&kt=\${encodeURIComponent(String(Math.floor(Date.now()/1000)))}\``
-    );
-
-    return new Response(cleaned, { status: 200, headers: htmlHeaders });
-  } catch {
-    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+      let cleaned = sanitizeKoraPlusHtml(rawHtml);
+      cleaned = cleaned.replace(
+        /fetch\(`\/frame\.php\?ch=\$\{encodeURIComponent\(CONFIG\.channel\)\}&_json=1`/g,
+        `fetch(\`/wk/albaplayer/koraplus/?ch=\${encodeURIComponent(CONFIG.channel)}&_json=1&token=\${encodeURIComponent(typeof CONFIG._kpToken !== 'undefined' ? CONFIG._kpToken : '')}&kt=\${encodeURIComponent(String(Math.floor(Date.now()/1000)))}\``
+      );
+      return new Response(cleaned, { status: 200, headers: htmlHeaders });
+    } catch {}
   }
+  return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
 }
 
 async function proxyAmine(request, env) {
