@@ -48,13 +48,14 @@ const ALT_STREAM_DEFS = {
 
 // Show backup panel for live, upcoming, and recently ended matches.
 function altStreamsForMatch(m) {
-  if (!m) return null;
-  if (m.status !== "live" && m.status !== "upcoming" && m.status !== "ended") return null;
+  // Always keep the backup strip visible on the watch page. When the main
+  // player is pinned to a match-specific embed (for example fabor), these four
+  // alternates are still useful as manual fallbacks under بثوث بديلة.
   return {
-    sirTv: ALT_STREAM_DEFS.sirTv,
     ntv: ALT_STREAM_DEFS.ntv,
-    kooraCity: ALT_STREAM_DEFS.kooraCity,
     amineAlt: ALT_STREAM_DEFS.amineAlt,
+    kooraCity: ALT_STREAM_DEFS.kooraCity,
+    sirTv: ALT_STREAM_DEFS.sirTv,
   };
 }
 

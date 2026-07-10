@@ -22,7 +22,7 @@
   let activeAltStreamKind = "kooraCity";
   let altStreamEntries = [];
   let lastStreamHealAt = 0;
-  const ALT_STREAM_ORDER = ["kooraCity", "amineAlt", "sirTv", "ntv"];
+  const ALT_STREAM_ORDER = ["ntv", "amineAlt", "kooraCity", "sirTv"];
   const STREAM_HEAL_MIN_MS = 8000;
   const STREAM_SOURCES = [
     { key: "vip1", servs: [1, 2, 3, 4] },
