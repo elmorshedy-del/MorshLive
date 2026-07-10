@@ -2345,6 +2345,9 @@ async function proxyWeshan(request, env) {
 
 const AMINE = "https://yallashooot.tv/albaplayer/amine/";
 const AMINE_RE = /^\/wk\/albaplayer\/amine\/?$/i;
+const KORAPLUS_RE = /^\/wk\/albaplayer\/koraplus\/?$/i;
+const KORAPLUS_EDGES = ["a4", "a11", "a12", "a13", "a14", "a15", "a16", "a17", "a18", "a19", "a20"];
+const KORAPLUS_EDGE_DOMAIN = "kora-plus.app";
 const AEROZAST = "https://yallashooot.tv/albaplayer/aerozast/";
 const AEROZAST_RE = /^\/wk\/albaplayer\/aerozast\/?$/i;
 const YALASHOT_CARD = "https://tt.yalashot.online/2026/06/ch1.html?m=1";
@@ -2496,6 +2499,117 @@ function amineServerOrder(requestedServ) {
   if (Number.isFinite(raw) && raw >= 0 && raw <= 3) order.push(raw);
   for (let s = 0; s <= 3; s++) if (!order.includes(s)) order.push(s);
   return order;
+}
+
+// ── KoraPlus proxy — Clappr player from go4score's edge CDN ────────────────
+// Fetches frame.php from a random kora-plus.app edge, strips ad/tracker scripts,
+// keeps the Clappr player + token renewal logic intact. Channel is passed as ?ch=
+// from the embed URL (e.g. /wk/albaplayer/koraplus/?ch=max1). When _json=1 is set
+// the edge returns a fresh HLS URL before the current token expires.
+function koraPlusFrameUrl(channel, token, kt, edge) {
+  const e = edge || KORAPLUS_EDGES[Math.floor(Math.random() * KORAPLUS_EDGES.length)];
+  const qs = new URLSearchParams({ ch: channel || "max1", p: "12" });
+  if (token) qs.set("token", token);
+  if (kt) qs.set("kt", String(kt));
+  return `https://${e}.${KORAPLUS_EDGE_DOMAIN}/frame.php?${qs.toString()}`;
+}
+
+function sanitizeKoraPlusHtml(html) {
+  let out = String(html || "");
+  // Strip ad/tracker scripts from upstream Clappr frame
+  out = out.replace(/<script\b[^>]*src=["']\/\/nj\.throwaflaunt\.com[^"']*["'][^>]*>\s*<\/script>/gi, "");
+  out = out.replace(/<script\b[^>]*src=["'][^"']*fiscalexplanation\.com[^"']*["'][^>]*>\s*<\/script>/gi, "");
+  out = out.replace(/<script\b[^>]*src=["'][^"']*acscdn\.com[^"']*["'][^>]*>\s*<\/script>/gi, "");
+  out = out.replace(/<script\b[^>]*>[\s\S]*?aclib\.runPop[\s\S]*?<\/script>/gi, "");
+  out = out.replace(/<\!--[\s\S]*?bvtpk\.com[\s\S]*?-->/gi, "");
+  return out;
+}
+
+async function proxyKoraPlus(request, env) {
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
+  const isHead = request.method === "HEAD";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "koraplus",
+  };
+
+  if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
+
+  // Map KZ channel IDs to koraplus channel slugs
+  const KZ_TO_KP = {
+    "bein-max-1": "max1",
+    "bein-max-2": "max2",
+    "bein-max-3": "max3",
+    "bein-max-4": "max4",
+    "bein-sports-1": "b1",
+    "bein-sports-2": "b2",
+    "bein-sports-3": "b3",
+  };
+  const rawCh = incoming.searchParams.get("ch") || "bein-max-1";
+  const channel = KZ_TO_KP[rawCh] || rawCh;
+  const jsonOnly = incoming.searchParams.get("_json") === "1";
+  const token = incoming.searchParams.get("token") || "";
+  const kt = incoming.searchParams.get("kt") || String(Math.floor(Date.now() / 1000));
+
+  // JSON mode — relay the token refresh request to the edge
+  if (jsonOnly) {
+    const edgeUrl = koraPlusFrameUrl(channel, token, kt);
+    try {
+      const edgeRes = await fetchWithTimeout(edgeUrl + "&_json=1", {
+        headers: {
+          "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
+          Accept: "application/json",
+          Referer: origin + "/",
+          Origin: origin,
+        },
+        redirect: "follow",
+      });
+      if (edgeRes.ok) {
+        const data = await edgeRes.json();
+        return new Response(JSON.stringify(data), {
+          status: 200,
+          headers: { ...htmlHeaders, "Content-Type": "application/json" },
+        });
+      }
+    } catch {}
+    return new Response("{}", { status: 200, headers: { ...htmlHeaders, "Content-Type": "application/json" } });
+  }
+
+  // HTML mode — fetch the player frame, sanitize, and serve
+  const edgeUrl = koraPlusFrameUrl(channel, token, kt);
+  try {
+    const res = await fetchWithTimeout(edgeUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        Accept: "text/html,application/xhtml+xml",
+        Referer: origin + "/",
+        Origin: origin,
+        "Sec-Fetch-Dest": "iframe",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "cross-site",
+        "Upgrade-Insecure-Requests": "1",
+      },
+      redirect: "follow",
+    });
+    if (!res.ok) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+
+    const rawHtml = await res.text();
+    if (!rawHtml || rawHtml.length < 1000) return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+
+    // Rewrite the token renewal fetch to go through our proxy
+    let cleaned = sanitizeKoraPlusHtml(rawHtml);
+    cleaned = cleaned.replace(
+      /fetch\(`\/frame\.php\?ch=\$\{encodeURIComponent\(CONFIG\.channel\)\}&_json=1`/g,
+      `fetch(\`/wk/albaplayer/koraplus/?ch=\${encodeURIComponent(CONFIG.channel)}&_json=1&token=\${encodeURIComponent(typeof CONFIG._kpToken !== 'undefined' ? CONFIG._kpToken : '')}&kt=\${encodeURIComponent(String(Math.floor(Date.now()/1000)))}\``
+    );
+
+    return new Response(cleaned, { status: 200, headers: htmlHeaders });
+  } catch {
+    return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
+  }
 }
 
 async function proxyAmine(request, env) {
@@ -5705,6 +5819,9 @@ export default {
     }
     if (AMINE_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyAmine(request, env);
+    }
+    if (KORAPLUS_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxyKoraPlus(request, env);
     }
     if (AEROZAST_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyAerozast(request, env);
