@@ -4031,6 +4031,15 @@ function memeInWindow(createdAt, window) {
   return t >= Date.parse(window.start) && t <= Date.parse(window.end);
 }
 
+// Wrangler secrets often arrive with a trailing newline; the worker sends the
+// token raw in the Authorization header, so an untrimmed value yields a 401 and
+// a silently empty meme pool. Normalize (and drop an accidental "Bearer " prefix).
+function readBearer(env) {
+  const raw = env && env.TWITTER_BEARER_TOKEN;
+  if (!raw) return null;
+  return String(raw).trim().replace(/^Bearer\s+/i, "") || null;
+}
+
 async function fetchAccountTweets(bearer, userId, startTime, endTime) {
   const params = new URLSearchParams({
     max_results: "30",
@@ -4808,7 +4817,7 @@ async function proxyMatchMemesApi(request, env) {
   // Worker TWITTER_BEARER_TOKEN — no GitHub secret needed. Runs when archive +
   // syndication are empty; edge-cached 30 min (withEdgeCache). ?live=1 forces refresh.
   const forceLive = url.searchParams.get("live") === "1";
-  const bearer = env && env.TWITTER_BEARER_TOKEN;
+  const bearer = readBearer(env);
   if (bearer && (forceLive || !memes.length)) {
     try {
       const live = await searchCuratedMemes(bearer, home, away, kickoff, match, memeConfig);
@@ -4924,6 +4933,54 @@ async function collectRecentMatchMemes(env, origin) {
   return selectHomeScrollMemes(filterMemesWithMedia([...byId.values()]));
 }
 
+// Safe live diagnostic (?diag=1): reveals whether the bearer reaches the worker
+// and what X's API actually returns to it — status, error title, tweet count —
+// without ever echoing the token. Used to tell "no token" / "bad token" /
+// "wrong tier" / "rate limited" apart when the meme pool comes back empty.
+async function recentMemesDiag(bearer, memeConfig) {
+  const accounts = memeConfig.accounts || [];
+  const acct = accounts.find((a) => a.id) || accounts[0] || null;
+  const out = {
+    bearerPresent: !!bearer,
+    bearerLen: bearer ? bearer.length : 0,
+    account: acct ? { username: acct.username, id: acct.id } : null,
+  };
+  if (bearer && acct && acct.id) {
+    const params = new URLSearchParams({
+      max_results: "10",
+      "tweet.fields": "created_at,public_metrics",
+      start_time: new Date(Date.now() - 7 * 86400000).toISOString(),
+      exclude: "retweets,replies",
+    });
+    try {
+      const res = await fetch(`${TWITTER_API_BASE}/users/${acct.id}/tweets?${params}`, {
+        headers: { Authorization: `Bearer ${bearer}` },
+      });
+      out.apiStatus = res.status;
+      const text = await res.text();
+      try {
+        const j = JSON.parse(text);
+        out.tweetCount = (j.data || []).length;
+        out.newestTweet = j.data?.[0]?.created_at || null;
+        out.apiTitle = j.title || j.detail || j.reason || null;
+      } catch {
+        out.apiBodySnippet = text.slice(0, 200);
+      }
+    } catch (e) {
+      out.apiError = String((e && e.message) || e);
+    }
+  }
+  return new Response(JSON.stringify(out, null, 2), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Access-Control-Allow-Origin": "*",
+      "Cache-Control": "no-store",
+      "X-KZ-Proxy": "recent-memes-diag",
+    },
+  });
+}
+
 async function proxyRecentMemesApi(request, env) {
   const url = new URL(request.url);
   const origin = url.origin;
@@ -4938,7 +4995,10 @@ async function proxyRecentMemesApi(request, env) {
   const today = todayMemeDayKey(tz);
   const responseCacheKey = new Request(`${origin}/api/recent-memes/__response-cache/${today}`);
   const forceLive = url.searchParams.get("live") === "1";
-  const bearer = env && env.TWITTER_BEARER_TOKEN;
+  const bearer = readBearer(env);
+  if (url.searchParams.get("diag") === "1") {
+    return recentMemesDiag(bearer, memeConfig);
+  }
   const timelineCache = new Map();
   const runtimePending = (_recentMemesRuntimeCache.pending || []).length;
   const runtimeReady = recentMemesRuntimeFresh(today) &&
