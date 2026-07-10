@@ -1,13 +1,17 @@
 import { FiltersEngine, Request as AdblockRequest } from "@ghostery/adblocker";
 import {
-  homeMemeLikesThreshold,
-  likesThresholdForTopFraction,
-  memeInRecentDays,
   memeIsRecent,
-  memeIsToday,
   recentMemeDayKeys,
   todayMemeDayKey,
 } from "./lib/meme-threshold.js";
+import {
+  classifyHomeMeme,
+  computeAccountLikesThreshold,
+  computeRecentAccountThreshold,
+  filterMemesWithMedia,
+  memeHasMedia,
+  WC_HOME_SINCE_UTC,
+} from "./lib/meme-select.js";
 import { resolveStreamUrl, rewriteReplayM3u8 as rewriteReplayM3u8Lines } from "./lib/replay-hls.js";
 import { dispatchBackendRoutes } from "./backend/router.js";
 import { backendRoutes } from "./backend/routes/index.js";
@@ -3809,7 +3813,6 @@ const RECENT_MEMES_SCAN_CACHE_MS = 10 * 60 * 1000;
 const TWITTER_API_BASE = "https://api.twitter.com/2";
 const MEME_MATCH_MS = 105 * 60 * 1000;
 const MEME_LOOKBACK_BEFORE_KICKOFF_MS = 15 * 60 * 1000;
-const WC_HOME_SINCE_UTC = "2026-06-11T00:00:00Z";
 
 function memePlayerTerms(match) {
   const names = [];
@@ -4181,15 +4184,6 @@ function memeFromSyndicationTweet(meme, synd) {
   };
 }
 
-function memeHasMedia(meme) {
-  const item = (meme?.media || [])[0];
-  return !!(item && (item.previewUrl || item.url));
-}
-
-function filterMemesWithMedia(memes) {
-  return (memes || []).filter(memeHasMedia);
-}
-
 function allowedXMediaUrl(raw) {
   try {
     const url = new URL(raw);
@@ -4540,57 +4534,6 @@ function tweetSinceUtc(postedAt, sinceUtc) {
   return !isNaN(t) && !isNaN(since) && t >= since;
 }
 
-/** Per-account likes bar from WC pool — targets ~N viral memes/day for that account. */
-function computeAccountLikesThreshold(pool, memeConfig) {
-  const entries = (pool || []).filter(memeHasMedia);
-  if (!entries.length) {
-    return { threshold: 0, keepFraction: 1, estimatedPerDay: 0, poolSize: 0, passing: 0, daysSinceWc: 0 };
-  }
-  let sinceMs = Date.parse(memeConfig.homeSinceUtc || WC_HOME_SINCE_UTC);
-  if (isNaN(sinceMs)) sinceMs = Date.parse(WC_HOME_SINCE_UTC);
-  const days = Math.max(1, (Date.now() - sinceMs) / 86400000);
-  const targetPerDay = memeConfig.homeTargetPerDay || 4;
-  const minK = memeConfig.homeMinKeepFraction ?? 0.7;
-  const maxK = memeConfig.homeMaxKeepFraction ?? 0.9;
-  const keepFraction = Math.min(maxK, Math.max(minK, (targetPerDay * days) / entries.length));
-  const threshold = likesThresholdForTopFraction(entries.map((c) => ({ likes: c.likes })), keepFraction);
-  const passing = entries.filter((c) => (Number(c.likes) || 0) >= threshold).length;
-  return {
-    threshold,
-    keepFraction,
-    estimatedPerDay: passing / days,
-    poolSize: entries.length,
-    passing,
-    daysSinceWc: Math.round(days),
-  };
-}
-
-/** Softer bar for tweets from the last ~2 days — top N by likes, never above WC bar. */
-function computeRecentAccountThreshold(recentPool, memeConfig, standardStats) {
-  const entries = (recentPool || []).filter(memeHasMedia);
-  const recentDays = memeConfig.homeRecentDays || 2;
-  const targetTotal = (memeConfig.homeRecentTargetPerDay ?? memeConfig.homeTargetPerDay ?? 4) * recentDays;
-  if (!entries.length) {
-    return { threshold: 0, keepFraction: 1, estimatedPerDay: 0, poolSize: 0, passing: 0, recentDays, targetTotal };
-  }
-  const sorted = entries.map((c) => Number(c.likes) || 0).sort((a, b) => a - b);
-  const keep = Math.min(Math.max(targetTotal, 1), sorted.length);
-  const idx = Math.max(0, sorted.length - keep);
-  let threshold = sorted[idx] || 0;
-  const standardCap = Number(standardStats?.threshold) || threshold;
-  threshold = Math.min(threshold, standardCap);
-  const passing = entries.filter((c) => (Number(c.likes) || 0) >= threshold).length;
-  return {
-    threshold,
-    keepFraction: keep / sorted.length,
-    estimatedPerDay: passing / recentDays,
-    poolSize: entries.length,
-    passing,
-    recentDays,
-    targetTotal,
-  };
-}
-
 function refreshMemesFromPool(entries, pool) {
   const byId = new Map(pool.map((m) => [String(m.tweetId || m.url || ""), m]));
   return (entries || []).map((m) => {
@@ -4606,21 +4549,6 @@ function refreshMemesFromPool(entries, pool) {
       postedAt: fresh.postedAt || m.postedAt,
     };
   });
-}
-
-function classifyHomeMeme(m, stats, recentStats, config, tz, displayDays) {
-  if (!memeInRecentDays(m.postedAt, tz, displayDays)) return null;
-  const isToday = memeIsToday(m.postedAt, tz);
-  const isRecent = isToday || memeIsRecent(m.postedAt, tz, config.homeRecentDays || 2);
-  const threshold = homeMemeLikesThreshold(m, stats, recentStats, config, tz);
-  const passing = (Number(m.likes) || 0) >= threshold;
-  return {
-    isRecent,
-    isToday,
-    threshold,
-    passing,
-    entry: { ...m, likesThreshold: threshold, recent: isRecent, today: isToday },
-  };
 }
 
 async function collectAccountHomePool(acct, memeConfig, bearer, timelineCache) {
