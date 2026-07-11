@@ -10,7 +10,6 @@ function publicPortal(portal) {
   return {
     id: portal.id,
     label: portal.label,
-    url: portal.url,
     usernameMasked: mask(portal.username),
     passwordMasked: mask(portal.password),
     expiry: portal.expiry,
