@@ -70,7 +70,7 @@
     if (!frame) return;
     const next = embedUrl(serverIndex);
     if (embedLoadedUrl === next) return;
-    frame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation allow-forms allow-popups-to-escape-sandbox");
+    frame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation allow-forms");
     frame.setAttribute("referrerpolicy", EMBED_REFERRER);
     frame.src = next;
     embedLoadedUrl = next;

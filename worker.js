@@ -287,23 +287,52 @@ const LAST_KNOWN_TWITCH_CHANNELS = {};
 const HIDE_OVERLAY_STYLE = `<style id="kz-no-ads">
 .aplr-fxd-bnr,#aplr-fixedban,.aplr-menu,ul.aplr-menu,.aplr-action,.aplr-exbtns,
 [class^="agl-"],[class*=" agl-"],[id^="agl-"],
-.aplr-ad,.aplr-preroll,.video-ad,.vjs-ad,.ima-ad-container,
-.aplr-embed-holder,.aplr-embed-visible,.aplr-site-name{display:none!important;visibility:hidden!important;pointer-events:none!important}
+.aplr-ad,.aplr-preroll,.video-ad,.vjs-ad,.ima-ad-container,.google-ad,.ad-container,
+[id*="ad" i],[class*="ad-" i],[class*="-ad" i],[class*="ads" i],[class*="popup" i],[id*="popup" i],
+a[target="_blank"],iframe[src*="doubleclick"],iframe[src*="googlesyndication"],iframe[src*="popads"],iframe[src*="propeller"],iframe[src*="adsterra"],
+.aplr-embed-holder,.aplr-embed-visible,.aplr-site-name{display:none!important;visibility:hidden!important;pointer-events:none!important;opacity:0!important}
 </style>`;
 
 const EMBED_SHIM = `<script id="kz-embed-shim">
 (function(){
+  var AD_RE=/cosetengarb|corruptioneasiest|histats|acscdn|aclib|doubleclick|googlesyndication|popads|propeller|exoclick|adsterra|mgid|taboola|outbrain|cloudflareinsights|pubads|googletagmanager|google-analytics|imasdk|advertising|\/ads\//i;
+  function noop(){return null;}
+  try{window.open=noop;}catch(e){}
+  try{Object.defineProperty(window,'open',{configurable:true,writable:false,value:noop});}catch(e){}
   window.AplrDevprotocol='0';
   window.AplrDevredirect='';
-  window.AplrPopUp=function(){};
+  window.AplrPopUp=noop;
+  window.openLink=noop; window.PopUp=noop; window.popunder=noop;
+  function badUrl(u){u=String(u||'');return !u||AD_RE.test(u)||/^javascript:/i.test(u);}
+  function kill(el){try{el.remove();}catch(e){try{el.style.setProperty('display','none','important');el.style.setProperty('pointer-events','none','important');}catch(_){}}}
+  function clean(){
+    try{
+      document.querySelectorAll('script[src],iframe[src],img[src],a[href]').forEach(function(el){
+        var u=el.getAttribute('src')||el.getAttribute('href')||'';
+        if(badUrl(u)) kill(el);
+      });
+      document.querySelectorAll('a[target="_blank"],[onclick*="open" i],[onclick*="popup" i],[class*="popup" i],[id*="popup" i]').forEach(kill);
+      document.querySelectorAll('body > div, body > a').forEach(function(el){
+        var cs=getComputedStyle(el), zi=parseInt(cs.zIndex||'0',10), r=el.getBoundingClientRect();
+        if((cs.position==='fixed'||cs.position==='absolute')&&zi>=999&&(r.width>innerWidth*.35||r.height>innerHeight*.25)&&!el.querySelector('video,.clappr-container,.jwplayer')) kill(el);
+      });
+    }catch(e){}
+  }
+  document.addEventListener('click',function(ev){
+    var a=ev.target&&ev.target.closest&&ev.target.closest('a');
+    if(a&&(a.target==='_blank'||badUrl(a.href)||/open|popup/i.test(a.getAttribute('onclick')||''))){ev.preventDefault();ev.stopImmediatePropagation();return false;}
+  },true);
+  document.addEventListener('DOMContentLoaded',clean);
+  setInterval(clean,800);
   function wrapPlayer(Orig){
     if(!Orig||Orig.__kzPatched)return Orig;
     function Patched(opts){
       opts=opts||{};
       var src=String(opts.source||'');
-      if(src&&!opts.mimeType&&(/\\/wk\\/(hls|stream\\.m3u8)/.test(src)||/\\.m3u8/i.test(src.split('?')[0]))){
+      if(src&&!opts.mimeType&&(/\/wk\/(hls|stream\.m3u8)/.test(src)||/\.m3u8/i.test(src.split('?')[0]))){
         opts.mimeType='application/vnd.apple.mpegurl';
       }
+      opts.ads=false; opts.adSchedule={}; opts.advertising={};
       return new Orig(opts);
     }
     Patched.__kzPatched=true;
@@ -1328,7 +1357,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden}
 </head><body>
 <div class="kz-twitch-shell">
   <iframe class="kz-twitch-frame" src="${src}" title="Twitch — ${ch}"
-    allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen loading="eager"></iframe>
+    allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" loading="eager"></iframe>
 </div>
 </body></html>`;
 }
@@ -1548,7 +1577,7 @@ html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:syste
     <div class="kz-twitch-side">
       <span class="kz-label kz-label--tw">Twitch</span>
       <iframe class="kz-twitch-frame" src="${twitchSrc}" title="Twitch — ${ch}"
-        allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen loading="lazy"></iframe>
+        allow="autoplay; fullscreen; picture-in-picture; encrypted-media" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" loading="lazy"></iframe>
     </div>
   </div>
 </div>
@@ -2218,7 +2247,7 @@ function cleanAltEmbedWrapperHtml(embedUrl, title, healTag) {
 <title>${label}</title>
 <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#f{width:100vw;height:100vh;border:0;display:block;background:#000}</style>
 </head><body>
-<iframe id="f" src="${safe}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+<iframe id="f" src="${safe}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" referrerpolicy="no-referrer"></iframe>
 <script>
 (function(){
   var f=document.getElementById('f'), lastAt=0, tag='${tag}';
@@ -2610,7 +2639,7 @@ async function proxyDaddy(request, env) {
 <title>KoraZero · DaddyLive</title>
 <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#f{width:100vw;height:100vh;border:0;display:block;background:#000}</style>
 </head><body>
-<iframe id="f" src="${safe}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade" loading="eager"></iframe>
+<iframe id="f" src="${safe}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" referrerpolicy="no-referrer" loading="eager"></iframe>
 <script>
 (function(){
   var f=document.getElementById('f'), lastAt=0;
@@ -5690,7 +5719,7 @@ async function proxySiirMatchEmbed(request, postId, env) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>siir-tv.live — مباراة ${postId}</title>
 <style>html,body{margin:0;height:100%;background:#000}iframe{width:100%;height:100%;border:0;display:block}</style>
-</head><body><iframe src="${playerUrl}" allow="autoplay;encrypted-media;fullscreen;picture-in-picture" allowfullscreen referrerpolicy="no-referrer"></iframe></body></html>`;
+</head><body><iframe src="${playerUrl}" allow="autoplay;encrypted-media;fullscreen;picture-in-picture" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" referrerpolicy="no-referrer"></iframe></body></html>`;
   return new Response(frame, { status: 200, headers: htmlHeaders });
 }
 

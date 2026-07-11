@@ -207,10 +207,8 @@
     return true;
   }
 
-  function iframeSandboxAttr(noSandbox) {
-    return noSandbox
-      ? ""
-      : 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms allow-popups-to-escape-sandbox" ';
+  function iframeSandboxAttr(_noSandbox) {
+    return 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ';
   }
 
   function removeFrameRecovery(frame, role) {
