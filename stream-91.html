@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>MorshLive — Stream 91</title>
-<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' blob: data:; frame-src https://dlhd.st/ https://*.dlhd.st/; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' blob: data:; frame-src 'self' https://dlhd.st/ https://*.dlhd.st/; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
 <style>
   :root {
     --bg: #0a0a0f;
@@ -340,19 +340,19 @@
 
 <script>
 const STREAMS = [
-  { id: 'stream',   label: 'Stream',   path: 'stream/stream-91.php' },
-  { id: 'cast',     label: 'Cast',     path: 'cast/stream-91.php' },
-  { id: 'watch',    label: 'Watch',    path: 'watch/stream-91.php' },
-  { id: 'plus',     label: 'Plus',     path: 'plus/stream-91.php' },
-  { id: 'casting',  label: 'Casting',  path: 'casting/stream-91.php' },
-  { id: 'player',   label: 'Player',   path: 'player/stream-91.php' },
+  { id: 'stream',   label: 'Stream',   variant: 'stream' },
+  { id: 'cast',     label: 'Cast',     variant: 'cast' },
+  { id: 'watch',    label: 'Watch',    variant: 'watch' },
+  { id: 'plus',     label: 'Plus',     variant: 'plus' },
+  { id: 'casting',  label: 'Casting',  variant: 'casting' },
+  { id: 'player',   label: 'Player',   variant: 'player' },
 ];
 
-const BASE = 'https://dlhd.st/';
+const CHANNEL_ID = '91';
 let activeStreamId = localStorage.getItem('morshlive_active') || null;
 let layout = localStorage.getItem('morshlive_layout') || 'grid';
 
-function getUrl(s) { return BASE + s.path; }
+function getUrl(s) { return `/dl/${CHANNEL_ID}/?variant=${encodeURIComponent(s.variant)}&_kz=stream91clean1`; }
 
 function buildGrid() {
   const grid = document.getElementById('streamGrid');

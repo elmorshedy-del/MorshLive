@@ -221,6 +221,11 @@ const DLHD_BASE = "https://dlhd.st";
 const DL_EMBED_RE = /^\/dl\/(\d{1,6})\/?$/;  // /dl/{channelId} -> clean player page
 const LAB_DL_EMBED_RE = /^\/lab\/dl\/(\d{1,6})\/?$/i;  // experimental lab — dlhd premiumtv iframe
 const DL_HLS_RE = /^\/dl\/hls$/i;            // signed HLS proxy for dlhd streams
+const DLHD_PAGE_VARIANTS = new Set(["stream", "cast", "watch", "plus", "casting", "player"]);
+function dlhdPageVariant(raw) {
+  const v = String(raw || "stream").toLowerCase().trim();
+  return DLHD_PAGE_VARIANTS.has(v) ? v : "stream";
+}
 
 // Stable dlhd.pk 24/7 channel ids, keyed by our channel id. Each entry is an
 // ordered list of dlhd stream-{id}.php sources to probe — first live mirror wins
@@ -2621,39 +2626,9 @@ function daddyChannelId(rawCh) {
 
 async function proxyDaddy(request, env) {
   const incoming = new URL(request.url);
-  const isHead = request.method === "HEAD";
-  const htmlHeaders = {
-    "Content-Type": "text/html; charset=utf-8",
-    "Cache-Control": "no-store, no-cache, must-revalidate",
-    "Pragma": "no-cache",
-    "X-KZ-Proxy": "daddy-direct",
-  };
-  if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
-
   const rawCh = incoming.searchParams.get("ch") || "bein-max-1";
   const id = daddyChannelId(rawCh);
-  const upstream = `${DLHD_BASE}/stream/stream-${id}.php`;
-  const safe = upstream.replace(/"/g, "&quot;");
-  const html = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KoraZero · DaddyLive</title>
-<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#f{width:100vw;height:100vh;border:0;display:block;background:#000}</style>
-</head><body>
-<iframe id="f" src="${safe}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" referrerpolicy="no-referrer" loading="eager"></iframe>
-<script>
-(function(){
-  var f=document.getElementById('f'), lastAt=0;
-  function heal(reason){
-    var now=Date.now(); if(now-lastAt<30000) return; lastAt=now;
-    try{ var u=new URL(f.src); u.searchParams.set('_heal', String(now)); f.src=u.toString(); }catch(e){}
-    try{ window.parent.postMessage({type:'kz-alt-reload', reason:reason||'daddy-heal'}, '*'); }catch(e){}
-  }
-  if(f) f.addEventListener('error', function(){ heal('daddy-error'); });
-  setInterval(function(){ heal('daddy-periodic'); }, 90000);
-})();
-</script>
-</body></html>`;
-  return new Response(html, { status: 200, headers: htmlHeaders });
+  return proxyDlEmbed(request, id, env);
 }
 
 
@@ -2855,10 +2830,11 @@ async function resolveDlPremiumTvEmbed(id) {
   }
 }
 
-async function resolveDlStream(id) {
+async function resolveDlStream(id, variant = "stream") {
+  const pageVariant = dlhdPageVariant(variant);
   const headers = { "User-Agent": "Mozilla/5.0", Referer: `${DLHD_BASE}/` };
   try {
-    const sTxt = await (await fetchWithTimeout(`${DLHD_BASE}/stream/stream-${id}.php`, { headers })).text();
+    const sTxt = await (await fetchWithTimeout(`${DLHD_BASE}/${pageVariant}/stream-${id}.php`, { headers })).text();
     const embed = sTxt.match(/<iframe[^>]+src="([^"]+\/premiumtv\/[^"]+)"/i);
     if (!embed) return null;
     const eTxt = await (await fetchWithTimeout(embed[1], { headers })).text();
@@ -2902,10 +2878,12 @@ async function proxyLabDlEmbed(request, id, env) {
 }
 
 async function proxyDlEmbed(request, id, env) {
-  const origin = new URL(request.url).origin;
+  const incoming = new URL(request.url);
+  const origin = incoming.origin;
   const secret = env && env.STREAM_SIGNING_SECRET;
-  const htmlHeaders = { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-KZ-Proxy": "dlhd-embed" };
-  const m3u8 = await resolveDlStream(id);
+  const variant = dlhdPageVariant(incoming.searchParams.get("variant"));
+  const htmlHeaders = { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-KZ-Proxy": "dlhd-embed", "X-KZ-DLHD-Variant": variant };
+  const m3u8 = await resolveDlStream(id, variant);
   if (!m3u8) {
     return new Response(
       `<!doctype html><meta charset="utf-8"><body style="margin:0;background:#000;color:#fff;font-family:sans-serif;display:grid;place-items:center;height:100vh;text-align:center"><div>البث غير متاح حالياً — أعد المحاولة<br><small>channel ${id}</small></div></body>`,
