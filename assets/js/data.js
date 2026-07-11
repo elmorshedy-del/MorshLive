@@ -51,7 +51,7 @@ function altStreamUrl(kind, match) {
   if (!def) return "";
   const base = typeof location !== "undefined" ? location.origin : "https://korazero.com";
   const u = new URL(def.path, base);
-  u.searchParams.set("_kz", "15");
+  u.searchParams.set("_kz", "14");
   if (def.serv != null && def.serv !== "") u.searchParams.set("serv", String(def.serv));
   if (match && match.channelId) u.searchParams.set("ch", match.channelId);
   if (match && match.home) u.searchParams.set("home", match.home);
@@ -89,7 +89,7 @@ function embedUrlFor(embed, serv) {
   }
   if (servNum != null && servNum !== "") u.searchParams.set("serv", String(servNum));
   if (matchId) u.searchParams.set("match", matchId);
-  u.searchParams.set("_kz", "11");
+  u.searchParams.set("_kz", "10");
   return u.toString();
 }
 
@@ -118,7 +118,7 @@ function streamOptionUrl(opt, channelId, matchId) {
     const u = new URL(opt.path, base);
     u.searchParams.set("ch", channelId);
     if (matchId) u.searchParams.set("match", matchId);
-    u.searchParams.set("_kz", "15");
+    u.searchParams.set("_kz", "14");
     return u.toString();
   }
   const embed = { ...embedForKey(opt.embedKey), channelId };
