@@ -15,7 +15,7 @@
     (window.SITE_DATA && window.SITE_DATA.servIndexFromParam)
       ? window.SITE_DATA.servIndexFromParam(embed, raw)
       : 0;
-  const EMBED_REFERRER = "strict-origin-when-cross-origin";
+  const EMBED_REFERRER = "no-referrer";
 
   const { CHANNELS } = window.SITE_DATA;
   const params = new URLSearchParams(location.search);
@@ -31,13 +31,50 @@
   }
 
   let embedLoadedUrl = "";
+  let watchdogTimers = [];
+
+  function bumpFrame() {
+    if (!frame || !frame.src) return;
+    try {
+      const u = new URL(frame.src);
+      u.searchParams.set("_heal", String(Date.now()));
+      frame.src = u.toString();
+      embedLoadedUrl = frame.src;
+    } catch {
+      frame.src = embedLoadedUrl;
+    }
+  }
+
+  function clearWatchdog() {
+    watchdogTimers.forEach(clearTimeout);
+    watchdogTimers = [];
+  }
+
+  function armWatchdog() {
+    if (!frame) return;
+    clearWatchdog();
+    let loaded = false;
+    frame.addEventListener("load", () => {
+      loaded = true;
+      clearWatchdog();
+    }, { once: true });
+    watchdogTimers.push(setTimeout(() => {
+      if (!loaded) bumpFrame();
+    }, 14000));
+    watchdogTimers.push(setTimeout(() => {
+      if (!loaded) bumpFrame();
+    }, 28000));
+  }
 
   function loadEmbed(serverIndex) {
     if (!frame) return;
     const next = embedUrl(serverIndex);
     if (embedLoadedUrl === next) return;
+    frame.setAttribute("sandbox", "allow-scripts allow-same-origin allow-presentation allow-forms allow-popups-to-escape-sandbox");
+    frame.setAttribute("referrerpolicy", EMBED_REFERRER);
     frame.src = next;
     embedLoadedUrl = next;
+    armWatchdog();
   }
 
   function timeZoneHtml(m) {
