@@ -1,0 +1,51 @@
+import { proxyXtreamMedia } from "../adapters/xtream.js";
+import { corsPreflightResponse, errorResponse, jsonResponse } from "../http/response.js";
+import { getXtreamCategories, getXtreamLive, getXtreamStatus } from "../services/xtream.js";
+
+const API_RE = /^\/api\/xtream\/(status|categories|live)\/?$/i;
+const MEDIA_RE = /^\/api\/xtream\/media\/([A-Za-z0-9_-]+)\/?$/;
+
+export const xtreamRoute = {
+  name: "xtream",
+  methods: ["GET", "HEAD", "OPTIONS"],
+  test: (url) => API_RE.test(url.pathname) || MEDIA_RE.test(url.pathname),
+  async handle({ request, env, url, method }) {
+    if (method === "OPTIONS") return corsPreflightResponse();
+
+    const media = url.pathname.match(MEDIA_RE);
+    if (media) {
+      try {
+        return await proxyXtreamMedia(request, env, media[1]);
+      } catch (error) {
+        const message = String(error.message || error);
+        const status = /expired|invalid/i.test(message) ? 403 : 502;
+        return errorResponse(message, status, "xtream-media");
+      }
+    }
+
+    if (method === "HEAD") {
+      return new Response(null, {
+        status: 200,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Cache-Control": "no-store",
+          "X-KZ-Proxy": "xtream",
+        },
+      });
+    }
+
+    const action = url.pathname.match(API_RE)[1].toLowerCase();
+    const result =
+      action === "status"
+        ? await getXtreamStatus(env, url.searchParams)
+        : action === "categories"
+          ? await getXtreamCategories(env, url.searchParams)
+          : await getXtreamLive(env, url.searchParams);
+
+    return jsonResponse(result.body, {
+      status: result.status,
+      cacheSeconds: 0,
+      proxyTag: "xtream",
+    });
+  },
+};

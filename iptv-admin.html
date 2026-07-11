@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <title>إدارة قنوات IPTV | KoraZero</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.13/dist/hls.min.js"></script>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #080b12;
+      --surface: #0e1420;
+      --surface-2: #151d2b;
+      --line: #263247;
+      --text: #eef2f8;
+      --muted: #91a0b8;
+      --green: #18e29a;
+      --purple: #a855f7;
+      --danger: #ff667d;
+      --warning: #ffc857;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font-family: "Tajawal", system-ui, sans-serif; }
+    button, input, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    .topbar { position: sticky; top: 0; z-index: 30; border-bottom: 1px solid var(--line); background: rgba(8,11,18,.92); backdrop-filter: blur(18px); }
+    .topbar-inner { width: min(1440px, 92vw); min-height: 68px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand { color: var(--text); text-decoration: none; font-weight: 800; font-size: 1.18rem; letter-spacing: -.02em; }
+    .brand b { color: var(--green); }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .link-btn, .action-btn { min-height: 40px; padding: 0 15px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface-2); color: var(--text); text-decoration: none; cursor: pointer; font-weight: 700; }
+    .link-btn { display: inline-flex; align-items: center; }
+    .action-btn:hover, .link-btn:hover { border-color: var(--green); }
+    .action-btn.primary { color: #05120d; border-color: var(--green); background: var(--green); }
+    main { width: min(1440px, 92vw); margin: 0 auto; padding: 36px 0 70px; }
+    .intro { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 22px; align-items: end; margin-bottom: 24px; }
+    .eyebrow { color: var(--green); font-size: .78rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+    h1 { margin: 7px 0 8px; font-size: clamp(1.7rem, 4vw, 3rem); line-height: 1.05; }
+    .intro p { margin: 0; color: var(--muted); max-width: 760px; line-height: 1.75; }
+    .status-strip { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; }
+    .status-chip { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; border-radius: 999px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); font-size: .78rem; }
+    .status-chip::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--warning); }
+    .status-chip.ok::before { background: var(--green); }
+    .status-chip.down::before { background: var(--danger); }
+    .workspace { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(350px, .65fr); gap: 18px; align-items: start; }
+    .panel { border: 1px solid var(--line); border-radius: 16px; background: var(--surface); overflow: hidden; }
+    .panel-head { padding: 16px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .panel-head h2 { margin: 0; font-size: 1.05rem; }
+    .count { color: var(--muted); font-size: .8rem; }
+    .filters { display: grid; grid-template-columns: minmax(180px,1fr) minmax(150px,.45fr) minmax(150px,.55fr) auto; gap: 9px; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+    .control { width: 100%; min-height: 44px; border-radius: 10px; border: 1px solid var(--line); background: #0a101a; color: var(--text); padding: 0 12px; outline: none; }
+    .control:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(24,226,154,.12); }
+    .channels { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; padding: 14px; max-height: 690px; overflow: auto; }
+    .channel { width: 100%; min-height: 94px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); color: var(--text); padding: 13px; display: grid; grid-template-columns: 50px minmax(0,1fr); gap: 12px; text-align: right; cursor: pointer; }
+    .channel:hover, .channel.active { border-color: var(--green); background: rgba(24,226,154,.07); }
+    .channel-logo { width: 50px; height: 50px; border-radius: 10px; background: #080b12; display: grid; place-items: center; object-fit: contain; border: 1px solid rgba(255,255,255,.08); }
+    .channel-fallback { font-size: .72rem; color: var(--green); font-weight: 800; }
+    .channel-name { display: block; font-weight: 800; line-height: 1.35; overflow-wrap: anywhere; }
+    .channel-meta { display: flex; flex-wrap: wrap; gap: 5px 9px; margin-top: 7px; color: var(--muted); font-size: .74rem; }
+    .empty { grid-column: 1 / -1; min-height: 220px; display: grid; place-items: center; color: var(--muted); text-align: center; padding: 30px; }
+    .preview { position: sticky; top: 86px; }
+    .player { position: relative; aspect-ratio: 16/9; background: #000; }
+    .player video { width: 100%; height: 100%; display: block; background: #000; }
+    .player-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); text-align: center; padding: 24px; }
+    .player-state { position: absolute; top: 12px; right: 12px; z-index: 3; padding: 6px 9px; border-radius: 999px; background: rgba(8,11,18,.86); color: var(--muted); font-size: .72rem; }
+    .preview-body { padding: 17px; }
+    .preview-body h2 { margin: 0 0 7px; font-size: 1.15rem; overflow-wrap: anywhere; }
+    .preview-body p { margin: 0; color: var(--muted); font-size: .83rem; line-height: 1.6; }
+    .preview-actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; margin-top: 15px; }
+    .preview-actions .action-btn { width: 100%; }
+    .security-note { margin-top: 14px; padding: 12px; border: 1px solid rgba(24,226,154,.2); border-radius: 10px; color: var(--muted); background: rgba(24,226,154,.05); font-size: .75rem; line-height: 1.65; }
+    .error-box { margin: 14px; padding: 13px; border: 1px solid rgba(255,102,125,.35); border-radius: 11px; color: #ff98a8; background: rgba(255,102,125,.07); }
+    @media (max-width: 980px) { .workspace { grid-template-columns: 1fr; } .preview { position: static; } .intro { grid-template-columns: 1fr; } .status-strip { justify-content: flex-start; } }
+    @media (max-width: 700px) { .topbar-inner, main { width: min(94vw, 100%); } .topbar-inner { min-height: 60px; } main { padding-top: 22px; } .filters { grid-template-columns: 1fr 1fr; } .filters .search { grid-column: 1 / -1; } .channels { grid-template-columns: 1fr; max-height: none; } .top-actions .link-btn { display: none; } }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <a class="brand" href="index.html">Kora<b>Zero</b> / IPTV</a>
+      <div class="top-actions">
+        <a class="link-btn" href="watch.html?ch=live">صفحة المشاهدة</a>
+        <button class="action-btn" id="refreshBtn" type="button">تحديث البيانات</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro" aria-labelledby="pageTitle">
+      <div>
+        <div class="eyebrow">Private channel workspace</div>
+        <h1 id="pageTitle">إدارة قنوات IPTV</h1>
+        <p>ابحث في القنوات المصرّح بها، عاين البث، ثم افتحه داخل صفحة المشاهدة. بيانات الدخول تبقى داخل Cloudflare ولا تصل إلى المتصفح.</p>
+      </div>
+      <div class="status-strip" id="portalStatus" aria-live="polite"></div>
+    </section>
+
+    <div class="workspace">
+      <section class="panel" aria-labelledby="channelsTitle">
+        <div class="panel-head">
+          <h2 id="channelsTitle">القنوات المتاحة</h2>
+          <span class="count" id="resultCount">جارٍ التحميل…</span>
+        </div>
+        <form class="filters" id="filterForm">
+          <input class="control search" id="searchInput" name="q" type="search" value="bein" placeholder="ابحث عن قناة…" autocomplete="off" />
+          <select class="control" id="portalSelect" name="portal" aria-label="البوابة"><option value="">كل البوابات</option></select>
+          <select class="control" id="categorySelect" name="category" aria-label="الفئة"><option value="">كل الفئات</option></select>
+          <button class="action-btn primary" type="submit">بحث</button>
+        </form>
+        <div id="errorBox" class="error-box" hidden></div>
+        <div class="channels" id="channelGrid"><div class="empty">جارٍ تحميل القنوات…</div></div>
+      </section>
+
+      <aside class="panel preview" aria-labelledby="previewTitle">
+        <div class="panel-head"><h2 id="previewTitle">المعاينة</h2><span class="count" id="selectedPortal">لم تُحدد قناة</span></div>
+        <div class="player" id="playerBox">
+          <video id="previewVideo" controls playsinline></video>
+          <div class="player-empty" id="playerEmpty">اختر قناة من القائمة لبدء المعاينة</div>
+          <span class="player-state" id="playerState">جاهز</span>
+        </div>
+        <div class="preview-body">
+          <h2 id="selectedName">لا توجد قناة محددة</h2>
+          <p id="selectedMeta">سيظهر اسم البوابة والفئة هنا.</p>
+          <div class="preview-actions">
+            <button class="action-btn primary" id="openWatchBtn" type="button" disabled>فتح في صفحة المشاهدة</button>
+            <button class="action-btn" id="reloadPreviewBtn" type="button" disabled>إعادة تحميل</button>
+          </div>
+          <div class="security-note">المشغّل يستخدم رابطاً مؤقتاً مشفّراً من KoraZero. لا يحتوي عنوان الصفحة على اسم المستخدم أو كلمة المرور الخاصة بالبوابة.</div>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <script src="assets/js/iptv-admin.js?v=20260711a"></script>
+</body>
+</html>
