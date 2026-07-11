@@ -231,14 +231,15 @@ export async function getXtreamStatus(env, searchParams) {
     selected.portals.map(async (portal) => {
       const safe = publicPortal(portal);
       try {
+        const directAllowed = allowedDirectPortals.has(portal.id);
         const [info, media] = await Promise.all([
           fetchXtreamJson(portal, null, 10000),
-          includeMedia ? getPortalMediaStatus(portal) : Promise.resolve(null),
+          includeMedia && !directAllowed ? getPortalMediaStatus(portal) : Promise.resolve(null),
         ]);
         return {
           ...safe,
           ok: true,
-          directAllowed: allowedDirectPortals.has(portal.id),
+          directAllowed,
           account: accountInfo(info),
           ...(media ? { media } : {}),
         };
