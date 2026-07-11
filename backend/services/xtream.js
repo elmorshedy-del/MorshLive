@@ -162,9 +162,14 @@ async function getPortalMediaStatus(portal) {
       tsPlaylistCount: sources.tsEntries.length,
       tested: [],
     };
+    const probes = await Promise.all(
+      candidates.map(async (row) => ({
+        row,
+        probe: await probeXtreamPlayback(portal, row.stream_id, sources),
+      })),
+    );
     let desktopFallback = null;
-    for (const row of candidates) {
-      const probe = await probeXtreamPlayback(portal, row.stream_id, sources);
+    for (const { row, probe } of probes) {
       diagnostics.tested.push({
         streamId: row.stream_id,
         hlsStatus: probe.ok && probe.protocol === "hls" ? probe.status : probe.hls?.status || null,
