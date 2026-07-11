@@ -202,7 +202,8 @@
     const onError = () => {
       loadedUrl = "";
       destroyInlineHls();
-      loadIframePlayer(embedUrlFor(currentEmbed(), embedQuery(activeServ)));
+      const embed = currentEmbed();
+      loadIframePlayer(embedUrlFor(embed, embedQuery(activeServ)), !!embed.noSandbox);
     };
 
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
@@ -360,7 +361,13 @@
     renderSidebar();
   }
 
-  function iframeSandboxAttr(_noSandbox) {
+  function iframeSandboxAttr(noSandbox) {
+    // noSandbox → emit NO sandbox attribute at all, so the frame is truly
+    // unsandboxed (this is how go4score.app loads frame.php). Note: sandbox=""
+    // is the MOST restrictive value, not the least — so "unsandboxed" must be
+    // an omitted attribute, never an empty one. Returning "" here means no
+    // sandbox=... token is written into the iframe markup.
+    if (noSandbox) return "";
     return 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ';
   }
 
@@ -532,7 +539,8 @@
       mountPinnedMainMirror(override.url, override.fallback, override.iframe);
       return;
     }
-    loadIframePlayer(embedUrlFor(currentEmbed(), embedQuery(activeServ)), false);
+    const embed = currentEmbed();
+    loadIframePlayer(embedUrlFor(embed, embedQuery(activeServ)), !!embed.noSandbox);
   }
 
   function reloadPlayer() {

@@ -19,8 +19,12 @@
 // ones contain direct HLS, nested iframes, or blank/preroll-only loaders.
 // Same-origin /wk/ proxy (worker.js) serves worldkoora vip pages without preroll ads.
 const EMBEDS = {
-  // Primary embeds — KoraPlus (go4score edge CDN) for beIN MAX 24/7
-  koraplus: { url: "/wk/albaplayer/koraplus/" },
+  // Primary embeds — KoraPlus (go4score edge CDN) for beIN MAX 24/7.
+  // noSandbox: the koraplus route now 302-redirects the outer iframe straight
+  // to the kora-plus.app frame.php edge, so the watch shell must load it
+  // UNSANDBOXED — exactly the way go4score.app embeds frame.php. A sandbox on
+  // the outer frame propagates into frame.php and breaks the Clappr player.
+  koraplus: { url: "/wk/albaplayer/koraplus/", noSandbox: true },
   daddy: { url: "/wk/albaplayer/daddy/" },
   // Backup players — proxied ad-free on /wk/albaplayer/{sirtv,ntv,kooracity}/
   sirtv: { url: "/wk/albaplayer/sirtv/", defaultServer: 1, servers: 1 },

@@ -241,7 +241,9 @@ async function verifyMatch(browser, match, cfg, outDir) {
   // Main player — watch page first, then rotate direct embeds if lag/no video.
   report.layers.main = await verifyLayer(mainPage, {
     label: "main",
-    framePattern: /\/wk\/albaplayer\//,
+    // koraplus now 302s to the kora-plus.app frame.php edge; accept both the
+    // proxied /wk/albaplayer/ slots and the koraplus edge frame URL.
+    framePattern: /\/wk\/albaplayer\/|\.kora-plus\.app\/frame\.php/i,
     stressSeconds: cfg.stress,
     screenshotPath: path.join(shotDir, "main.png"),
   });
@@ -261,7 +263,9 @@ async function verifyMatch(browser, match, cfg, outDir) {
         const attempt = await verifyLayer(rotPage, {
           label: "main",
           directUrl: direct,
-          framePattern: new RegExp(`/wk/albaplayer/${key}/`, "i"),
+          framePattern: key === "koraplus"
+            ? /\.kora-plus\.app\/frame\.php/i
+            : new RegExp(`/wk/albaplayer/${key}/`, "i"),
           stressSeconds: Math.min(30, cfg.stress),
           screenshotPath: path.join(shotDir, `main-${key}-${serv}.png`),
         });
