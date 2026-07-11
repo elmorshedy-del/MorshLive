@@ -102,6 +102,7 @@ describe("Xtream service", () => {
       categoryName: "Sports",
     });
     expect(stream.playbackUrl).toMatch(/^\/api\/xtream\/media\//);
+    expect(stream.tsPlaybackUrl).toMatch(/^\/api\/xtream\/media\//);
     expect(JSON.stringify(result.body)).not.toContain("owner");
     expect(JSON.stringify(result.body)).not.toContain("secret");
   });

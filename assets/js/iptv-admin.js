@@ -23,6 +23,7 @@
   let channels = [];
   let selected = null;
   let hls = null;
+  let mpegTsPlayer = null;
   let loadController = null;
 
   function setError(message) {
@@ -174,6 +175,15 @@
       try { hls.destroy(); } catch (_) { /* noop */ }
       hls = null;
     }
+    if (mpegTsPlayer) {
+      try {
+        mpegTsPlayer.pause();
+        mpegTsPlayer.unload();
+        mpegTsPlayer.detachMediaElement();
+        mpegTsPlayer.destroy();
+      } catch (_) { /* noop */ }
+      mpegTsPlayer = null;
+    }
     video.pause();
     video.removeAttribute("src");
     video.load();
@@ -183,35 +193,59 @@
     destroyPlayer();
     playerEmpty.hidden = true;
     playerState.textContent = "جارٍ التحميل";
-    const onPlaying = () => { playerState.textContent = "يعمل"; };
+    let usingTsFallback = false;
+    const onPlaying = () => { playerState.textContent = usingTsFallback ? "يعمل · TS" : "يعمل · HLS"; };
     const onError = () => { playerState.textContent = "تعذر التشغيل"; };
-    video.addEventListener("playing", onPlaying, { once: true });
-    video.addEventListener("error", onError, { once: true });
+    video.addEventListener("playing", onPlaying, { once: false });
+
+    const playTsFallback = () => {
+      if (usingTsFallback || !channel.tsPlaybackUrl || !window.mpegts?.isSupported()) {
+        onError();
+        return;
+      }
+      usingTsFallback = true;
+      if (hls) {
+        try { hls.destroy(); } catch (_) { /* noop */ }
+        hls = null;
+      }
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+      playerState.textContent = "جارٍ تجربة TS";
+      mpegTsPlayer = window.mpegts.createPlayer(
+        { type: "mpegts", isLive: true, url: channel.tsPlaybackUrl },
+        { enableWorker: true, enableStashBuffer: false, stashInitialSize: 128 },
+      );
+      mpegTsPlayer.attachMediaElement(video);
+      mpegTsPlayer.on(window.mpegts.Events.ERROR, onError);
+      mpegTsPlayer.load();
+      const attempt = mpegTsPlayer.play();
+      if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
+    };
 
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = channel.playbackUrl;
+      video.addEventListener("error", playTsFallback, { once: true });
     } else if (window.Hls && window.Hls.isSupported()) {
       hls = new window.Hls({
         enableWorker: true,
-        manifestLoadingMaxRetry: 4,
-        levelLoadingMaxRetry: 4,
-        fragLoadingMaxRetry: 5,
+        manifestLoadingMaxRetry: 3,
+        levelLoadingMaxRetry: 3,
+        fragLoadingMaxRetry: 4,
         liveSyncDurationCount: 3,
       });
       hls.on(window.Hls.Events.ERROR, (_event, data) => {
         if (!data?.fatal) return;
-        if (data.type === window.Hls.ErrorTypes.NETWORK_ERROR) {
-          try { hls.startLoad(); } catch (_) { onError(); }
-        } else if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR) {
-          try { hls.recoverMediaError(); } catch (_) { onError(); }
-        } else {
-          onError();
+        if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR) {
+          try { hls.recoverMediaError(); return; } catch (_) { /* use TS below */ }
         }
+        playTsFallback();
       });
       hls.loadSource(channel.playbackUrl);
       hls.attachMedia(video);
     } else {
-      video.src = channel.playbackUrl;
+      playTsFallback();
+      return;
     }
     const attempt = video.play();
     if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });

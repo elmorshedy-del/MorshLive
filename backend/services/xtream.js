@@ -47,8 +47,10 @@ function categoryRow(row, portal) {
 
 async function liveRow(row, portal, categoryMap, env) {
   const categoryId = String(row.category_id || "");
-  const upstream = streamUrl(portal, row.stream_id, "m3u8");
-  const token = await createMediaToken(env, upstream);
+  const [hlsToken, tsToken] = await Promise.all([
+    createMediaToken(env, streamUrl(portal, row.stream_id, "m3u8")),
+    createMediaToken(env, streamUrl(portal, row.stream_id, "ts")),
+  ]);
   return {
     portalId: portal.id,
     portalLabel: portal.label,
@@ -61,7 +63,8 @@ async function liveRow(row, portal, categoryMap, env) {
     added: row.added || null,
     num: row.num || null,
     tvArchive: row.tv_archive || 0,
-    playbackUrl: `/api/xtream/media/${token}`,
+    playbackUrl: `/api/xtream/media/${hlsToken}`,
+    tsPlaybackUrl: `/api/xtream/media/${tsToken}`,
   };
 }
 

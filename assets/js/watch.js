@@ -110,6 +110,7 @@
   const shell = document.getElementById("player-shell");
   let loadedUrl = "";
   let activeHls = null;
+  let activeMpegTs = null;
   let activeXtreamChannel = null;
   let xtreamRecoveryCount = 0;
 
@@ -137,13 +138,25 @@
   }
 
   function destroyInlineHls() {
-    if (!activeHls) return;
-    try {
-      activeHls.destroy();
-    } catch {
-      /* noop */
+    if (activeHls) {
+      try {
+        activeHls.destroy();
+      } catch {
+        /* noop */
+      }
+      activeHls = null;
     }
-    activeHls = null;
+    if (activeMpegTs) {
+      try {
+        activeMpegTs.pause();
+        activeMpegTs.unload();
+        activeMpegTs.detachMediaElement();
+        activeMpegTs.destroy();
+      } catch {
+        /* noop */
+      }
+      activeMpegTs = null;
+    }
   }
 
   function bindUnmuteOverlay(video) {
@@ -244,6 +257,7 @@
     const video = shell.querySelector(".kz-main-video");
     if (!video) return;
     let localRecoveries = 0;
+    let usingTsFallback = false;
 
     const refreshToken = () => {
       if (xtreamRecoveryCount >= 1) {
@@ -254,23 +268,47 @@
       loadXtreamChannel().catch((error) => showXtreamError(error.message || error));
     };
 
+    const playTsFallback = () => {
+      if (usingTsFallback || !selected.tsPlaybackUrl || !window.mpegts?.isSupported()) {
+        refreshToken();
+        return;
+      }
+      usingTsFallback = true;
+      if (activeHls) {
+        try { activeHls.destroy(); } catch (_) { /* noop */ }
+        activeHls = null;
+      }
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+      activeMpegTs = window.mpegts.createPlayer(
+        { type: "mpegts", isLive: true, url: selected.tsPlaybackUrl },
+        { enableWorker: true, enableStashBuffer: false, stashInitialSize: 128 },
+      );
+      activeMpegTs.attachMediaElement(video);
+      activeMpegTs.on(window.mpegts.Events.ERROR, refreshToken);
+      activeMpegTs.load();
+      const playTry = activeMpegTs.play();
+      if (playTry?.catch) playTry.catch(() => bindUnmuteOverlay(video));
+    };
+
     const onFatal = () => {
       localRecoveries += 1;
       if (activeHls && localRecoveries <= 2) {
-        try { activeHls.startLoad(); return; } catch (_) { /* refresh token below */ }
+        try { activeHls.startLoad(); return; } catch (_) { /* use TS below */ }
       }
-      refreshToken();
+      playTsFallback();
     };
 
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = selected.playbackUrl;
-      video.addEventListener("error", refreshToken, { once: true });
+      video.addEventListener("error", playTsFallback, { once: true });
     } else if (window.Hls && window.Hls.isSupported()) {
       activeHls = new window.Hls({
         enableWorker: true,
-        manifestLoadingMaxRetry: 4,
-        levelLoadingMaxRetry: 4,
-        fragLoadingMaxRetry: 5,
+        manifestLoadingMaxRetry: 3,
+        levelLoadingMaxRetry: 3,
+        fragLoadingMaxRetry: 4,
         liveSyncDurationCount: 3,
       });
       activeHls.on(window.Hls.Events.ERROR, (_event, data) => {
@@ -278,17 +316,22 @@
         if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR) {
           try { activeHls.recoverMediaError(); return; } catch (_) { /* use fatal recovery */ }
         }
+        if (Number(data.response?.code || 0) >= 400) {
+          playTsFallback();
+          return;
+        }
         onFatal();
       });
       activeHls.loadSource(selected.playbackUrl);
       activeHls.attachMedia(video);
     } else {
-      video.src = selected.playbackUrl;
-      video.addEventListener("error", refreshToken, { once: true });
+      playTsFallback();
     }
 
-    const playTry = video.play && video.play();
-    if (playTry && playTry.catch) playTry.catch(() => bindUnmuteOverlay(video));
+    if (!usingTsFallback) {
+      const playTry = video.play && video.play();
+      if (playTry?.catch) playTry.catch(() => bindUnmuteOverlay(video));
+    }
     bindUnmuteOverlay(video);
     loadedUrl = `xtream:${selected.portalId}:${selected.streamId}`;
   }
