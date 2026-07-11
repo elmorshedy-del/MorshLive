@@ -156,9 +156,20 @@ async function getPortalMediaStatus(portal) {
     const all = apiRows.length ? apiRows : rowsFromPlaylists(sources);
     const preferred = all.filter((row) => /bein|sport/i.test(String(row.name || "")));
     const candidates = [...preferred, ...all.filter((row) => !preferred.includes(row))].slice(0, 8);
+    const diagnostics = {
+      catalogCount: all.length,
+      hlsPlaylistCount: sources.hlsEntries.length,
+      tsPlaylistCount: sources.tsEntries.length,
+      tested: [],
+    };
     let desktopFallback = null;
     for (const row of candidates) {
       const probe = await probeXtreamPlayback(portal, row.stream_id, sources);
+      diagnostics.tested.push({
+        streamId: row.stream_id,
+        hlsStatus: probe.ok && probe.protocol === "hls" ? probe.status : probe.hls?.status || null,
+        tsStatus: probe.ok && probe.protocol === "ts" ? probe.status : probe.ts?.status || null,
+      });
       if (!probe.ok) continue;
       const result = {
         playable: true,
@@ -167,11 +178,12 @@ async function getPortalMediaStatus(portal) {
         codecs: probe.codecs || null,
         sampleStreamId: row.stream_id,
         sampleName: row.name || null,
+        diagnostics,
       };
       if (probe.mobileCompatible) return result;
       if (!desktopFallback) desktopFallback = result;
     }
-    return desktopFallback || { playable: false, protocol: null, mobileCompatible: false };
+    return desktopFallback || { playable: false, protocol: null, mobileCompatible: false, diagnostics };
   } catch (error) {
     return { playable: false, protocol: null, mobileCompatible: false, error: safeError(error) };
   }
