@@ -4,6 +4,7 @@ import {
   decodeMediaToken,
   inspectMpegTsCodecs,
   loadXtreamPortals,
+  parseXtreamPlaylist,
   probeXtreamPlayback,
   proxyXtreamMedia,
 } from "../backend/adapters/xtream.js";
@@ -53,6 +54,22 @@ describe("Xtream adapter", () => {
       audio: "aac",
       mobileCompatible: true,
     });
+  });
+
+  it("parses exact source URLs from Xtream M3U playlists", () => {
+    const rows = parseXtreamPlaylist(
+      '#EXTM3U\n#EXTINF:-1 tvg-id="bein1" tvg-logo="logo.png" group-title="Sports",beIN 1\nhttp://example.test:8080/live/u/p/123.ts\n',
+    );
+    expect(rows).toEqual([
+      {
+        streamId: "123",
+        name: "beIN 1",
+        icon: "logo.png",
+        epgChannelId: "bein1",
+        group: "Sports",
+        url: "http://example.test:8080/live/u/p/123.ts",
+      },
+    ]);
   });
 
   it("loads authorized portals from the secret", () => {

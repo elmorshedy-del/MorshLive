@@ -1,5 +1,7 @@
 const TOKEN_TTL_SECONDS = 6 * 60 * 60;
+const PLAYLIST_CACHE_MS = 60 * 1000;
 const keyCache = new Map();
+const playlistCache = new Map();
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();
 
@@ -93,6 +95,89 @@ export function streamUrl(portal, streamId, extension = "m3u8") {
   if (!safeId) throw new Error("Invalid Xtream stream id");
   const ext = extension === "ts" ? "ts" : "m3u8";
   return `${portal.url}/live/${encodeURIComponent(portal.username)}/${encodeURIComponent(portal.password)}/${safeId}.${ext}`;
+}
+
+function playlistUrl(portal, output) {
+  const url = new URL(`${portal.url}/get.php`);
+  url.searchParams.set("username", portal.username);
+  url.searchParams.set("password", portal.password);
+  url.searchParams.set("type", "m3u_plus");
+  url.searchParams.set("output", output === "ts" ? "ts" : "m3u8");
+  return url.toString();
+}
+
+function playlistStreamId(rawUrl) {
+  try {
+    const url = new URL(rawUrl);
+    const match = url.pathname.match(/\/(\d+)(?:\.(?:m3u8|ts))?\/?$/i);
+    return match ? match[1] : "";
+  } catch {
+    return "";
+  }
+}
+
+function parseM3uAttributes(line) {
+  const attributes = {};
+  for (const match of line.matchAll(/([\w-]+)="([^"]*)"/g)) attributes[match[1]] = match[2];
+  return attributes;
+}
+
+export function parseXtreamPlaylist(text) {
+  const lines = String(text || "").split(/\r?\n/);
+  const entries = [];
+  let info = null;
+  for (const raw of lines) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (line.startsWith("#EXTINF:")) {
+      const comma = line.indexOf(",");
+      const attrs = parseM3uAttributes(comma >= 0 ? line.slice(0, comma) : line);
+      info = {
+        name: comma >= 0 ? line.slice(comma + 1).trim() : attrs["tvg-name"] || "Untitled channel",
+        icon: attrs["tvg-logo"] || null,
+        epgChannelId: attrs["tvg-id"] || null,
+        group: attrs["group-title"] || "Uncategorized",
+      };
+      continue;
+    }
+    if (!line.startsWith("#") && info) {
+      const streamId = playlistStreamId(line);
+      if (streamId) entries.push({ ...info, streamId, url: line });
+      info = null;
+    }
+  }
+  return entries;
+}
+
+export async function fetchXtreamSourceMaps(portal) {
+  const cacheKey = `${portal.id}:${portal.url}:${portal.username}`;
+  const cached = playlistCache.get(cacheKey);
+  if (cached && Date.now() - cached.at < PLAYLIST_CACHE_MS) return cached.value;
+
+  const fetchPlaylist = async (output) => {
+    const response = await fetch(playlistUrl(portal, output), {
+      headers: {
+        Accept: "application/x-mpegURL,text/plain,*/*",
+        "User-Agent": "Mozilla/5.0 (KoraZero Xtream Playlist)",
+      },
+      redirect: "follow",
+    });
+    if (!response.ok) throw new Error(`Playlist HTTP ${response.status}`);
+    return parseXtreamPlaylist(await response.text());
+  };
+
+  const [hlsEntries, tsEntries] = await Promise.all([
+    fetchPlaylist("m3u8").catch(() => []),
+    fetchPlaylist("ts").catch(() => []),
+  ]);
+  const value = {
+    hlsEntries,
+    tsEntries,
+    hls: new Map(hlsEntries.map((entry) => [String(entry.streamId), entry.url])),
+    ts: new Map(tsEntries.map((entry) => [String(entry.streamId), entry.url])),
+  };
+  playlistCache.set(cacheKey, { at: Date.now(), value });
+  return value;
 }
 
 export function inspectMpegTsCodecs(bytes) {
@@ -234,10 +319,13 @@ async function probeMediaUrl(url, kind, timeoutMs = 8000) {
   }
 }
 
-export async function probeXtreamPlayback(portal, streamId) {
-  const hls = await probeMediaUrl(streamUrl(portal, streamId, "m3u8"), "hls");
+export async function probeXtreamPlayback(portal, streamId, sources = {}) {
+  const id = String(streamId || "");
+  const hlsUrl = sources.hls?.get(id) || streamUrl(portal, streamId, "m3u8");
+  const tsUrl = sources.ts?.get(id) || streamUrl(portal, streamId, "ts");
+  const hls = await probeMediaUrl(hlsUrl, "hls");
   if (hls.ok) return hls;
-  const ts = await probeMediaUrl(streamUrl(portal, streamId, "ts"), "ts");
+  const ts = await probeMediaUrl(tsUrl, "ts");
   return ts.ok ? ts : { ok: false, hls, ts };
 }
 

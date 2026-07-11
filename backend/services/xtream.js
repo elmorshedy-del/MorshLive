@@ -1,6 +1,7 @@
 import {
   createMediaToken,
   fetchXtreamJson,
+  fetchXtreamSourceMaps,
   loadXtreamPortals,
   probeXtreamPlayback,
   streamUrl,
@@ -50,11 +51,14 @@ function categoryRow(row, portal) {
   };
 }
 
-async function liveRow(row, portal, categoryMap, env) {
-  const categoryId = String(row.category_id || "");
+async function liveRow(row, portal, categoryMap, env, sources) {
+  const categoryId = String(row.category_id || row._playlistGroup || "");
+  const id = String(row.stream_id || "");
+  const hlsSource = sources.hls.get(id) || streamUrl(portal, row.stream_id, "m3u8");
+  const tsSource = sources.ts.get(id) || streamUrl(portal, row.stream_id, "ts");
   const [hlsToken, tsToken] = await Promise.all([
-    createMediaToken(env, streamUrl(portal, row.stream_id, "m3u8")),
-    createMediaToken(env, streamUrl(portal, row.stream_id, "ts")),
+    createMediaToken(env, hlsSource),
+    createMediaToken(env, tsSource),
   ]);
   return {
     portalId: portal.id,
@@ -62,15 +66,32 @@ async function liveRow(row, portal, categoryMap, env) {
     streamId: row.stream_id,
     name: row.name || "Untitled channel",
     categoryId,
-    categoryName: categoryMap.get(categoryId) || null,
-    icon: row.stream_icon || null,
-    epgChannelId: row.epg_channel_id || null,
+    categoryName: categoryMap.get(categoryId) || row._playlistGroup || null,
+    icon: row.stream_icon || row._playlistIcon || null,
+    epgChannelId: row.epg_channel_id || row._playlistEpgId || null,
     added: row.added || null,
     num: row.num || null,
     tvArchive: row.tv_archive || 0,
     playbackUrl: `/api/xtream/media/${hlsToken}`,
     tsPlaybackUrl: `/api/xtream/media/${tsToken}`,
   };
+}
+
+function rowsFromPlaylists(sources) {
+  const byId = new Map();
+  for (const entry of [...sources.hlsEntries, ...sources.tsEntries]) {
+    const id = String(entry.streamId || "");
+    if (!id || byId.has(id)) continue;
+    byId.set(id, {
+      stream_id: id,
+      name: entry.name,
+      category_id: entry.group,
+      _playlistGroup: entry.group,
+      _playlistIcon: entry.icon,
+      _playlistEpgId: entry.epgChannelId,
+    });
+  }
+  return [...byId.values()];
 }
 
 function selectPortals(env, searchParams) {
@@ -108,7 +129,8 @@ export async function probeXtreamChannel(env, searchParams) {
     return { body: { ok: false, playable: false, error: "stream is required" }, status: 400 };
   }
   const portal = selected.portals[0];
-  const result = await probeXtreamPlayback(portal, streamId);
+  const sources = await fetchXtreamSourceMaps(portal);
+  const result = await probeXtreamPlayback(portal, streamId, sources);
   return {
     body: {
       ok: true,
@@ -126,13 +148,17 @@ export async function probeXtreamChannel(env, searchParams) {
 
 async function getPortalMediaStatus(portal) {
   try {
-    const rows = await fetchXtreamJson(portal, "get_live_streams", 20000);
-    const all = Array.isArray(rows) ? rows : [];
+    const [rows, sources] = await Promise.all([
+      fetchXtreamJson(portal, "get_live_streams", 20000).catch(() => []),
+      fetchXtreamSourceMaps(portal),
+    ]);
+    const apiRows = Array.isArray(rows) ? rows : [];
+    const all = apiRows.length ? apiRows : rowsFromPlaylists(sources);
     const preferred = all.filter((row) => /bein|sport/i.test(String(row.name || "")));
     const candidates = [...preferred, ...all.filter((row) => !preferred.includes(row))].slice(0, 8);
     let desktopFallback = null;
     for (const row of candidates) {
-      const probe = await probeXtreamPlayback(portal, row.stream_id);
+      const probe = await probeXtreamPlayback(portal, row.stream_id, sources);
       if (!probe.ok) continue;
       const result = {
         playable: true,
@@ -195,8 +221,23 @@ export async function getXtreamCategories(env, searchParams) {
     selected.portals.map(async (portal) => {
       const safe = publicPortal(portal);
       try {
-        const rows = await fetchXtreamJson(portal, "get_live_categories", 14000);
-        const categories = Array.isArray(rows) ? rows.map((row) => categoryRow(row, portal)) : [];
+        const [rows, sources] = await Promise.all([
+          fetchXtreamJson(portal, "get_live_categories", 14000).catch(() => []),
+          fetchXtreamSourceMaps(portal),
+        ]);
+        let categories = Array.isArray(rows) ? rows.map((row) => categoryRow(row, portal)) : [];
+        if (!categories.length) {
+          const groups = [
+            ...new Set([...sources.hlsEntries, ...sources.tsEntries].map((entry) => entry.group)),
+          ];
+          categories = groups.map((name) => ({
+            portalId: portal.id,
+            portalLabel: portal.label,
+            categoryId: name,
+            name,
+            parentId: null,
+          }));
+        }
         return { portal: safe, ok: true, count: categories.length, categories };
       } catch (error) {
         return { portal: safe, ok: false, error: safeError(error), categories: [] };
@@ -233,9 +274,10 @@ export async function getXtreamLive(env, searchParams) {
     selected.portals.map(async (portal) => {
       const safe = publicPortal(portal);
       try {
-        const [categoryRows, streamRows] = await Promise.all([
+        const [categoryRows, streamRows, sources] = await Promise.all([
           fetchXtreamJson(portal, "get_live_categories", 14000).catch(() => []),
-          fetchXtreamJson(portal, "get_live_streams", 20000),
+          fetchXtreamJson(portal, "get_live_streams", 20000).catch(() => []),
+          fetchXtreamSourceMaps(portal),
         ]);
         const categoryMap = new Map(
           (Array.isArray(categoryRows) ? categoryRows : []).map((row) => [
@@ -243,7 +285,11 @@ export async function getXtreamLive(env, searchParams) {
             String(row.category_name || row.name || "Uncategorized"),
           ]),
         );
-        let rows = Array.isArray(streamRows) ? streamRows : [];
+        for (const entry of [...sources.hlsEntries, ...sources.tsEntries]) {
+          if (!categoryMap.has(entry.group)) categoryMap.set(entry.group, entry.group);
+        }
+        const apiRows = Array.isArray(streamRows) ? streamRows : [];
+        let rows = apiRows.length ? apiRows : rowsFromPlaylists(sources);
         if (streamId) rows = rows.filter((row) => String(row.stream_id || "") === streamId);
         if (category) {
           rows = rows.filter((row) => {
@@ -259,7 +305,7 @@ export async function getXtreamLive(env, searchParams) {
           );
         }
         rows = rows.slice(0, limit);
-        const streams = await Promise.all(rows.map((row) => liveRow(row, portal, categoryMap, env)));
+        const streams = await Promise.all(rows.map((row) => liveRow(row, portal, categoryMap, env, sources)));
         return { portal: safe, ok: true, count: streams.length, streams };
       } catch (error) {
         return { portal: safe, ok: false, error: safeError(error), streams: [] };
