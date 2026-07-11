@@ -2349,7 +2349,6 @@ const KORAPLUS_RE = /^\/wk\/albaplayer\/koraplus\/?$/i;
 const KORAPLUS_EDGES = ["a4", "a11", "a12", "a13", "a14", "a15", "a16", "a17", "a18", "a19", "a20"];
 const KORAPLUS_EDGE_DOMAIN = "kora-plus.app";
 const DADDY_RE = /^\/wk\/albaplayer\/daddy\/?$/i;
-const DADDY_RE = /^\/wk\/albaplayer\/daddy\/?$/i;
 const AEROZAST = "https://yallashooot.tv/albaplayer/aerozast/";
 const AEROZAST_RE = /^\/wk\/albaplayer\/aerozast\/?$/i;
 const YALASHOT_CARD = "https://tt.yalashot.online/2026/06/ch1.html?m=1";
@@ -2626,58 +2625,7 @@ async function proxyDaddy(request, env) {
   return new Response(html, { status: 200, headers: htmlHeaders });
 }
 
-function daddyChannelId(rawCh) {
-  const map = {
-    "bein-max-1": 597,
-    "bein-max-2": 92,
-    "bein-max-3": 94,
-    "bein-max-4": 95,
-    "bein-sports-1": 91,
-    "bein-sports-2": 92,
-    "bein-sports-3": 93,
-    "bein-sports-4": 94,
-    "bein-sports-5": 95,
-  };
-  if (/^\d{1,6}$/.test(String(rawCh || ""))) return String(rawCh);
-  return String(map[rawCh] || 597);
-}
 
-async function proxyDaddy(request, env) {
-  const incoming = new URL(request.url);
-  const isHead = request.method === "HEAD";
-  const htmlHeaders = {
-    "Content-Type": "text/html; charset=utf-8",
-    "Cache-Control": "no-store, no-cache, must-revalidate",
-    "Pragma": "no-cache",
-    "X-KZ-Proxy": "daddy-direct",
-  };
-  if (isHead) return new Response(null, { status: 200, headers: htmlHeaders });
-
-  const rawCh = incoming.searchParams.get("ch") || "bein-max-1";
-  const id = daddyChannelId(rawCh);
-  const upstream = `${DLHD_BASE}/stream/stream-${id}.php`;
-  const safe = upstream.replace(/"/g, "&quot;");
-  const html = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>KoraZero · DaddyLive</title>
-<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#f{width:100vw;height:100vh;border:0;display:block;background:#000}</style>
-</head><body>
-<iframe id="f" src="${safe}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen referrerpolicy="no-referrer-when-downgrade" loading="eager"></iframe>
-<script>
-(function(){
-  var f=document.getElementById('f'), lastAt=0;
-  function heal(reason){
-    var now=Date.now(); if(now-lastAt<30000) return; lastAt=now;
-    try{ var u=new URL(f.src); u.searchParams.set('_heal', String(now)); f.src=u.toString(); }catch(e){}
-    try{ window.parent.postMessage({type:'kz-alt-reload', reason:reason||'daddy-heal'}, '*'); }catch(e){}
-  }
-  if(f) f.addEventListener('error', function(){ heal('daddy-error'); });
-  setInterval(function(){ heal('daddy-periodic'); }, 90000);
-})();
-</script>
-</body></html>`;
-  return new Response(html, { status: 200, headers: htmlHeaders });
-}
 
 async function proxyAmine(request, env) {
   const incoming = new URL(request.url);
