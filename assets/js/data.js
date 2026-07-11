@@ -21,6 +21,7 @@
 const EMBEDS = {
   // Primary embeds — KoraPlus (go4score edge CDN) for beIN MAX 24/7
   koraplus: { url: "/wk/albaplayer/koraplus/" },
+  daddy: { url: "/wk/albaplayer/daddy/" },
   // Backup players — proxied ad-free on /wk/albaplayer/{sirtv,ntv,kooracity}/
   sirtv: { url: "/wk/albaplayer/sirtv/", defaultServer: 1, servers: 1 },
   ntv: { url: "/wk/albaplayer/ntv/", defaultServer: 1, servers: 1 },
@@ -28,6 +29,7 @@ const EMBEDS = {
 };
 
 const ALT_STREAM_DEFS = {
+  daddyLive: { key: "daddyLive", path: "/wk/albaplayer/daddy/", labelKey: "DaddyLive" },
   sirTv: { key: "sirTv", path: "/wk/albaplayer/sirtv/", labelKey: "watch.altSirTv" },
   ntv: { key: "ntv", path: "/wk/albaplayer/ntv/", labelKey: "watch.altNtv" },
   kooraCity: { key: "kooraCity", path: "/wk/albaplayer/kooracity/", labelKey: "watch.altKooraCity" },
@@ -39,6 +41,7 @@ function altStreamsForMatch(m) {
   // now. NTV, Amine, and Sir TV currently return upstream unavailable for this
   // match; Koora City resolves to an active player wrapper.
   return {
+    daddyLive: ALT_STREAM_DEFS.daddyLive,
     kooraCity: ALT_STREAM_DEFS.kooraCity,
   };
 }
