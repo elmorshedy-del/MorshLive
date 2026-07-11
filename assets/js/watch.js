@@ -15,7 +15,10 @@
   const xtreamMode = params.get("source") === "xtream";
   const xtreamDirect = params.get("direct") === "1";
   const xtreamPortalId = params.get("portal") || "";
-  const xtreamStreamId = String(params.get("stream") || "").replace(/[^0-9]/g, "");
+  const rawXtreamStreamId = String(params.get("stream") || "");
+  const xtreamStreamId = xtreamPortalId === "direct"
+    ? rawXtreamStreamId.replace(/[^a-z0-9_-]/gi, "")
+    : rawXtreamStreamId.replace(/[^0-9]/g, "");
   const teamLabel = (n) => (window.TeamNames ? window.TeamNames.localize(n) : n);
 
   let MATCHES = [];
@@ -228,12 +231,20 @@
 
   async function fetchXtreamChannel() {
     if (!xtreamPortalId || !xtreamStreamId) throw new Error("بيانات قناة IPTV غير مكتملة");
-    const query = new URLSearchParams({ portal: xtreamPortalId, stream: xtreamStreamId, limit: "1" });
-    if (xtreamDirect) query.set("direct", "1");
-    const response = await fetch(`/api/xtream/live?${query}`, { cache: "no-store" });
+    const isConfiguredDirect = xtreamPortalId === "direct";
+    const query = new URLSearchParams(
+      isConfiguredDirect
+        ? { id: xtreamStreamId }
+        : { portal: xtreamPortalId, stream: xtreamStreamId, limit: "1" },
+    );
+    if (xtreamDirect && !isConfiguredDirect) query.set("direct", "1");
+    const endpoint = isConfiguredDirect ? "/api/xtream/direct-streams" : "/api/xtream/live";
+    const response = await fetch(`${endpoint}?${query}`, { cache: "no-store" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || data.ok === false) throw new Error(data.error || `HTTP ${response.status}`);
-    const selected = (data.portals || []).flatMap((block) => block.streams || [])[0];
+    const selected = isConfiguredDirect
+      ? (data.streams || [])[0]
+      : (data.portals || []).flatMap((block) => block.streams || [])[0];
     if (!selected) throw new Error("قناة IPTV غير متاحة حالياً");
     activeXtreamChannel = selected;
     channel = {

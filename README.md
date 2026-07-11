@@ -161,6 +161,8 @@ The proxied API never returns usernames, passwords, or raw portal credentials to
 
 If an authorized provider blocks Cloudflare media egress, an owner can explicitly enable client-direct fallback with the `XTREAM_DIRECT_PORTALS` secret (comma-separated portal IDs such as `p2`). Direct fallback is opt-in because the browser follows a redirect to the provider URL, making the portal credentials visible in that device’s network inspector. Never enable it for portals you do not own.
 
+Owner-provided one-off direct URLs can be stored in the `DIRECT_STREAMS_JSON` secret and appear as a separate `Direct` source in `iptv-admin.html`. The raw URL stays out of GitHub and HTML; the browser receives an encrypted KoraZero redirect token only after selecting the channel.
+
 ## Deploy (korazero + Cloudflare)
 
 **Merge to `main` on GitHub → Cloudflare Workers Builds deploys** (no GitHub Actions billing).

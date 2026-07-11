@@ -1,13 +1,14 @@
 import { proxyXtreamMedia, redirectXtreamMedia } from "../adapters/xtream.js";
 import { corsPreflightResponse, errorResponse, jsonResponse } from "../http/response.js";
 import {
+  getDirectStreams,
   getXtreamCategories,
   getXtreamLive,
   getXtreamStatus,
   probeXtreamChannel,
 } from "../services/xtream.js";
 
-const API_RE = /^\/api\/xtream\/(status|categories|live|probe)\/?$/i;
+const API_RE = /^\/api\/xtream\/(status|categories|live|probe|direct-streams)\/?$/i;
 const MEDIA_RE = /^\/api\/xtream\/media\/([A-Za-z0-9_-]+)\/?$/;
 const DIRECT_RE = /^\/api\/xtream\/direct\/([A-Za-z0-9_-]+)\/?$/;
 
@@ -57,7 +58,9 @@ export const xtreamRoute = {
           ? await getXtreamCategories(env, url.searchParams)
           : action === "probe"
             ? await probeXtreamChannel(env, url.searchParams)
-            : await getXtreamLive(env, url.searchParams);
+            : action === "direct-streams"
+              ? await getDirectStreams(env, url.searchParams)
+              : await getXtreamLive(env, url.searchParams);
 
     return jsonResponse(result.body, {
       status: result.status,

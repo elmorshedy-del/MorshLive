@@ -2,6 +2,7 @@ import {
   createMediaToken,
   fetchXtreamJson,
   fetchXtreamSourceMaps,
+  loadDirectStreams,
   loadXtreamPortals,
   probeXtreamPlayback,
   streamUrl,
@@ -129,6 +130,31 @@ function selectPortals(env, searchParams) {
 
 function safeError(error) {
   return error && error.name === "AbortError" ? "timeout" : String(error.message || error);
+}
+
+export async function getDirectStreams(env, searchParams) {
+  const requested = String(searchParams.get("id") || "").trim();
+  const streams = loadDirectStreams(env).filter((stream) => !requested || stream.id === requested);
+  const rows = await Promise.all(
+    streams.map(async (stream) => {
+      const token = await createMediaToken(env, stream.url);
+      return {
+        portalId: "direct",
+        portalLabel: "Direct",
+        streamId: stream.id,
+        name: stream.name,
+        categoryId: stream.category,
+        categoryName: stream.category,
+        icon: null,
+        directPlaybackUrl: `/api/xtream/direct/${token}`,
+        directTsPlaybackUrl: `/api/xtream/direct/${token}`,
+      };
+    }),
+  );
+  return {
+    body: { ok: true, count: rows.length, streams: rows },
+    status: 200,
+  };
 }
 
 export async function probeXtreamChannel(env, searchParams) {

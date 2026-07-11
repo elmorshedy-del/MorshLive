@@ -21,6 +21,7 @@
 
   let categories = [];
   let channels = [];
+  let directChannels = [];
   let selected = null;
   let hls = null;
   let mpegTsPlayer = null;
@@ -67,7 +68,14 @@
         addOption(portalSelect, portal.id, `${portal.label} · ${mediaWorks ? "هاتف" : "مباشر"}`);
       }
     });
-    if (playable.length === 1) portalSelect.value = playable[0].id;
+    if (directChannels.length) {
+      const chip = document.createElement("span");
+      chip.className = "status-chip ok";
+      chip.textContent = "Direct: رابط جاهز";
+      statusEl.appendChild(chip);
+      addOption(portalSelect, "direct", "Direct · الرابط المرسل");
+    }
+    if (playable.length === 1 && !directChannels.length) portalSelect.value = playable[0].id;
   }
 
   async function loadCategories() {
@@ -76,13 +84,26 @@
     renderCategoryOptions();
   }
 
+  async function loadDirectChannels() {
+    const data = await getJson("/api/xtream/direct-streams");
+    directChannels = data.streams || [];
+    if (!directChannels.length) return;
+    preferredStreams.set("direct", String(directChannels[0].streamId));
+  }
+
   function renderCategoryOptions() {
     const selectedValue = categorySelect.value;
     const portalId = portalSelect.value;
     categorySelect.replaceChildren();
     addOption(categorySelect, "", "كل الفئات");
     const seen = new Set();
-    categories
+    const directCategories = directChannels.map((channel) => ({
+      portalId: "direct",
+      portalLabel: "Direct",
+      categoryId: channel.categoryId || "Direct",
+      name: channel.categoryName || "Direct",
+    }));
+    [...categories, ...directCategories]
       .filter((category) => !portalId || category.portalId === portalId)
       .sort((a, b) => a.name.localeCompare(b.name, "ar"))
       .forEach((category) => {
@@ -163,15 +184,28 @@
     setError("");
     resultCount.textContent = "جارٍ البحث…";
     channelGrid.innerHTML = '<div class="empty">جارٍ تحميل القنوات…</div>';
+    const query = searchInput.value.trim().toLowerCase();
+    const selectedPortal = portalSelect.value;
+    const selectedCategory = categorySelect.value;
+    const matchingDirect = directChannels.filter((channel) =>
+      (!query || channel.name.toLowerCase().includes(query)) &&
+      (!selectedCategory || channel.categoryId === selectedCategory || channel.categoryName === selectedCategory),
+    );
+    if (selectedPortal === "direct") {
+      channels = matchingDirect;
+      renderChannels();
+      return;
+    }
     const params = new URLSearchParams({ limit: "120", direct: "1" });
-    if (searchInput.value.trim()) params.set("q", searchInput.value.trim());
-    if (portalSelect.value) params.set("portal", portalSelect.value);
-    if (categorySelect.value) params.set("category", categorySelect.value);
+    if (query) params.set("q", query);
+    if (selectedPortal) params.set("portal", selectedPortal);
+    if (selectedCategory) params.set("category", selectedCategory);
     try {
       const response = await fetch(`/api/xtream/live?${params}`, { cache: "no-store", signal: loadController.signal });
       const data = await response.json();
       if (!response.ok || data.ok === false) throw new Error(data.error || `HTTP ${response.status}`);
       channels = data.portals.flatMap((block) => block.streams || []);
+      if (!selectedPortal) channels.push(...matchingDirect);
       channels.sort((a, b) => {
         const aPreferred = preferredStreams.get(a.portalId) === String(a.streamId);
         const bPreferred = preferredStreams.get(b.portalId) === String(b.streamId);
@@ -369,6 +403,9 @@
     loadChannels();
   });
   portalSelect.addEventListener("change", () => {
+    if (portalSelect.value === "direct" && searchInput.value.trim().toLowerCase() === "bein") {
+      searchInput.value = "";
+    }
     renderCategoryOptions();
     loadChannels();
   });
@@ -376,6 +413,7 @@
   refreshBtn.addEventListener("click", async () => {
     refreshBtn.disabled = true;
     try {
+      await loadDirectChannels();
       await Promise.all([loadStatus(), loadCategories()]);
       renderCategoryOptions();
       await loadChannels();
@@ -390,6 +428,7 @@
 
   document.addEventListener("DOMContentLoaded", async () => {
     try {
+      await loadDirectChannels();
       await Promise.all([loadStatus(), loadCategories()]);
       renderCategoryOptions();
       await loadChannels();

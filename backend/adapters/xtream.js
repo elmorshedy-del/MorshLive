@@ -49,6 +49,34 @@ export function safePortalUrl(raw) {
   }
 }
 
+export function loadDirectStreams(env) {
+  const raw = env?.DIRECT_STREAMS_JSON;
+  if (!raw) return [];
+  try {
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    const list = Array.isArray(parsed) ? parsed : Array.isArray(parsed.streams) ? parsed.streams : [];
+    return list.flatMap((item, index) => {
+      try {
+        const url = new URL(String(item.url || ""));
+        if (url.protocol !== "http:" && url.protocol !== "https:") return [];
+        return [
+          {
+            id: String(item.id || `direct-${index + 1}`).replace(/[^a-z0-9_-]/gi, "-"),
+            name: String(item.name || `Direct stream ${index + 1}`),
+            category: String(item.category || "Direct"),
+            protocol: item.protocol === "hls" ? "hls" : "ts",
+            url: url.toString(),
+          },
+        ];
+      } catch {
+        return [];
+      }
+    });
+  } catch {
+    return [];
+  }
+}
+
 export function loadXtreamPortals(env) {
   const raw = env && (env.XTREAM_PORTALS_JSON || env.IPTV_PORTALS_JSON);
   if (!raw) return { portals: [], error: "XTREAM_PORTALS_JSON secret is not configured" };

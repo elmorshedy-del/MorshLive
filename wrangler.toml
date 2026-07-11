@@ -19,6 +19,7 @@ account_id = "f06dda0c02d25976dcda319e942e432c" # pragma: allowlist secret
 #   npx wrangler secret put XTREAM_PORTALS_JSON      # authorized Xtream portal export JSON
 #   npx wrangler secret put XTREAM_TOKEN_SECRET      # optional dedicated IPTV media-token key
 #   npx wrangler secret put XTREAM_DIRECT_PORTALS    # explicit comma-separated direct fallback IDs, e.g. p2
+#   npx wrangler secret put DIRECT_STREAMS_JSON      # owner-provided direct URLs; never commit them
 # Use any long random string, e.g.:  openssl rand -hex 32
 
 [assets]

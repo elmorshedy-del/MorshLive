@@ -3,6 +3,7 @@ import {
   createMediaToken,
   decodeMediaToken,
   inspectMpegTsCodecs,
+  loadDirectStreams,
   loadXtreamPortals,
   parseXtreamPlaylist,
   probeXtreamPlayback,
@@ -69,6 +70,23 @@ describe("Xtream adapter", () => {
         epgChannelId: "bein1",
         group: "Sports",
         url: "http://example.test:8080/live/u/p/123.ts",
+      },
+    ]);
+  });
+
+  it("loads configured direct streams without exposing them in source files", () => {
+    const streams = loadDirectStreams({
+      DIRECT_STREAMS_JSON: JSON.stringify({
+        streams: [{ id: "manual-1", name: "Manual", protocol: "ts", url: "http://direct.test/live" }],
+      }),
+    });
+    expect(streams).toEqual([
+      {
+        id: "manual-1",
+        name: "Manual",
+        category: "Direct",
+        protocol: "ts",
+        url: "http://direct.test/live",
       },
     ]);
   });
