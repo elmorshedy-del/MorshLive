@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MorshLive — Stream 91</title>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' blob: data:; frame-src https://dlhd.st/ https://*.dlhd.st/; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --border: #1e1e2e;
+    --text: #e0e0e8;
+    --muted: #5a5a72;
+    --accent: #6c5ce7;
+    --accent-glow: rgba(108, 92, 231, 0.3);
+    --live: #00e676;
+    --dead: #2a2a3a;
+    --dead-overlay: rgba(10, 10, 15, 0.82);
+    --radius: 10px;
+    --header-h: 56px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  header {
+    position: fixed; top: 0; left: 0; right: 0;
+    height: var(--header-h);
+    background: rgba(10, 10, 15, 0.92);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 24px;
+    z-index: 1000;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    background: linear-gradient(135deg, var(--accent), #a29bfe);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .logo span { font-weight: 400; opacity: 0.7; -webkit-text-fill-color: var(--muted); }
+
+  .header-actions { display: flex; gap: 10px; align-items: center; }
+
+  .btn {
+    padding: 7px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { border-color: var(--accent); background: rgba(108, 92, 231, 0.1); }
+  .btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+  .live-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: 20px;
+    background: rgba(0, 230, 118, 0.12);
+    color: var(--live);
+    font-size: 0.75rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .live-badge .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: var(--live);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  main {
+    margin-top: var(--header-h);
+    padding: 16px;
+  }
+
+  .stream-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    max-width: 1800px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 1200px) { .stream-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 768px) { .stream-grid { grid-template-columns: 1fr; } }
+
+  .stream-card {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: all 0.35s ease;
+    aspect-ratio: 16 / 10;
+  }
+
+  .stream-card:hover { border-color: rgba(108, 92, 231, 0.4); }
+
+  .stream-card.active-stream {
+    border-color: var(--live);
+    box-shadow: 0 0 20px rgba(0, 230, 118, 0.15), inset 0 0 0 1px rgba(0, 230, 118, 0.2);
+  }
+
+  .stream-card.greyed-out {
+    filter: grayscale(1) brightness(0.3);
+    pointer-events: none;
+    opacity: 0.4;
+  }
+
+  .stream-card.greyed-out::after {
+    content: 'OFFLINE';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+    color: var(--muted);
+    z-index: 5;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+  }
+
+  .iframe-wrap {
+    position: relative;
+    width: 100%; height: 100%;
+  }
+
+  .iframe-wrap iframe {
+    width: 100%; height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  .ad-shield {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  .stream-card.active-stream .ad-shield,
+  .stream-card:not(.greyed-out):not(.active-stream) .ad-shield {
+    pointer-events: none;
+  }
+
+  .card-label {
+    position: absolute;
+    top: 8px; left: 8px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    background: rgba(10, 10, 15, 0.85);
+    backdrop-filter: blur(8px);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    z-index: 4;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .card-label .src-tag { color: var(--muted); }
+
+  .stream-card.active-stream .card-label {
+    background: rgba(0, 230, 118, 0.15);
+    color: var(--live);
+  }
+
+  .admin-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .admin-overlay.open { display: flex; }
+
+  .admin-panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    width: 90%;
+    max-width: 640px;
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+
+  .admin-panel h2 {
+    font-size: 1.3rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+  }
+
+  .admin-panel .subtitle {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+  }
+
+  .admin-stream-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .admin-stream-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    transition: all 0.2s;
+  }
+  .admin-stream-row:hover { border-color: rgba(108, 92, 231, 0.3); }
+
+  .admin-stream-row .info { display: flex; flex-direction: column; gap: 2px; }
+  .admin-stream-row .info .name { font-weight: 700; font-size: 0.9rem; }
+  .admin-stream-row .info .url { font-size: 0.72rem; color: var(--muted); font-family: 'SF Mono', monospace; }
+
+  .admin-stream-row .status {
+    padding: 4px 12px; border-radius: 20px;
+    font-size: 0.72rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .admin-stream-row .status.live { background: rgba(0,230,118,0.12); color: var(--live); }
+  .admin-stream-row .status.off { background: rgba(255,255,255,0.05); color: var(--muted); }
+
+  .admin-stream-row .toggle-btn {
+    padding: 6px 14px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-left: 12px;
+  }
+  .admin-stream-row .toggle-btn:hover { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .admin-stream-row .toggle-btn.set-active { background: var(--live); border-color: var(--live); color: #000; }
+
+  .admin-footer {
+    margin-top: 24px;
+    display: flex; gap: 10px; justify-content: flex-end;
+  }
+
+  .admin-footer .btn-close {
+    padding: 10px 24px;
+    border-radius: 10px;
+    border: none;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+
+  .admin-footer .btn-reset {
+    padding: 10px 24px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 0.85rem;
+    cursor: pointer;
+  }
+  .admin-footer .btn-reset:hover { color: var(--text); border-color: var(--text); }
+
+  body.focus-mode .stream-grid {
+    grid-template-columns: 1fr;
+    max-width: 1200px;
+  }
+  body.focus-mode .stream-card { aspect-ratio: 16/9; }
+  body.focus-mode .stream-card.greyed-out { display: none; }
+  body.focus-mode .stream-card.active-stream {
+    aspect-ratio: 16/9;
+    max-height: calc(100vh - var(--header-h) - 32px);
+  }
+
+  .layout-toggle { display: flex; gap: 4px; }
+  .layout-toggle .btn { padding: 7px 10px; font-size: 0.75rem; }
+
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="display:flex;align-items:center;gap:16px;">
+    <div class="logo">MorshLive <span>/ Stream 91</span></div>
+    <div class="live-badge" id="liveBadge" style="display:none;"><div class="dot"></div> LIVE</div>
+  </div>
+  <div class="header-actions">
+    <div class="layout-toggle">
+      <button class="btn active" id="btnGrid" onclick="setLayout('grid')" title="Grid view">⊞ Grid</button>
+      <button class="btn" id="btnFocus" onclick="setLayout('focus')" title="Focus on active stream">◉ Focus</button>
+    </div>
+    <button class="btn" id="btnAdmin" onclick="toggleAdmin()">⚙ Admin</button>
+  </div>
+</header>
+
+<main>
+  <div class="stream-grid" id="streamGrid"></div>
+</main>
+
+<div class="admin-overlay" id="adminOverlay" onclick="if(event.target===this)toggleAdmin()">
+  <div class="admin-panel">
+    <h2>⚙ Stream Admin</h2>
+    <p class="subtitle">Select which stream is displaying the game. All others will be greyed out.</p>
+    <div class="admin-stream-list" id="adminList"></div>
+    <div class="admin-footer">
+      <button class="btn-reset" onclick="resetAll()">Show All</button>
+      <button class="btn-close" onclick="toggleAdmin()">Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STREAMS = [
+  { id: 'stream',   label: 'Stream',   path: 'stream/stream-91.php' },
+  { id: 'cast',     label: 'Cast',     path: 'cast/stream-91.php' },
+  { id: 'watch',    label: 'Watch',    path: 'watch/stream-91.php' },
+  { id: 'plus',     label: 'Plus',     path: 'plus/stream-91.php' },
+  { id: 'casting',  label: 'Casting',  path: 'casting/stream-91.php' },
+  { id: 'player',   label: 'Player',   path: 'player/stream-91.php' },
+];
+
+const BASE = 'https://dlhd.st/';
+let activeStreamId = localStorage.getItem('morshlive_active') || null;
+let layout = localStorage.getItem('morshlive_layout') || 'grid';
+
+function getUrl(s) { return BASE + s.path; }
+
+function buildGrid() {
+  const grid = document.getElementById('streamGrid');
+  grid.innerHTML = '';
+
+  STREAMS.forEach(s => {
+    const card = document.createElement('div');
+    card.className = 'stream-card';
+    card.id = 'card-' + s.id;
+    card.dataset.streamId = s.id;
+
+    if (activeStreamId === s.id) card.classList.add('active-stream');
+    else if (activeStreamId && activeStreamId !== s.id) card.classList.add('greyed-out');
+
+    card.innerHTML = `
+      <div class="card-label">
+        <span class="src-tag">${s.label}</span>
+      </div>
+      <div class="iframe-wrap">
+        <iframe
+          src="${getUrl(s)}"
+          sandbox="allow-scripts allow-same-origin allow-presentation allow-popups-to-escape-sandbox"
+          allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+          allowfullscreen
+          loading="lazy"
+          referrerpolicy="no-referrer"
+        ></iframe>
+        <div class="ad-shield"></div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+
+  const badge = document.getElementById('liveBadge');
+  badge.style.display = activeStreamId ? 'flex' : 'none';
+}
+
+function buildAdmin() {
+  const list = document.getElementById('adminList');
+  list.innerHTML = '';
+
+  STREAMS.forEach(s => {
+    const isActive = activeStreamId === s.id;
+    const row = document.createElement('div');
+    row.className = 'admin-stream-row';
+    row.innerHTML = `
+      <div class="info">
+        <div class="name">${s.label}</div>
+        <div class="url">${getUrl(s)}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="status ${isActive ? 'live' : 'off'}">${isActive ? '● Active' : 'Off'}</span>
+        <button class="toggle-btn ${isActive ? 'set-active' : ''}" onclick="setActive('${s.id}')">
+          ${isActive ? '✓ Active' : 'Set Active'}
+        </button>
+      </div>
+    `;
+    list.appendChild(row);
+  });
+}
+
+function setActive(id) {
+  if (activeStreamId === id) {
+    activeStreamId = null;
+  } else {
+    activeStreamId = id;
+  }
+  localStorage.setItem('morshlive_active', activeStreamId || '');
+  buildGrid();
+  buildAdmin();
+}
+
+function resetAll() {
+  activeStreamId = null;
+  localStorage.setItem('morshlive_active', '');
+  buildGrid();
+  buildAdmin();
+}
+
+function toggleAdmin() {
+  const overlay = document.getElementById('adminOverlay');
+  overlay.classList.toggle('open');
+  if (overlay.classList.contains('open')) buildAdmin();
+}
+
+function setLayout(mode) {
+  layout = mode;
+  localStorage.setItem('morshlive_layout', mode);
+  document.body.classList.toggle('focus-mode', mode === 'focus');
+  document.getElementById('btnGrid').classList.toggle('active', mode === 'grid');
+  document.getElementById('btnFocus').classList.toggle('active', mode === 'focus');
+}
+
+window.addEventListener('message', function(e) {
+  if (e.origin.includes('dlhd')) return;
+});
+
+const _origOpen = window.open;
+window.open = function() { return null; };
+
+setInterval(() => {
+  document.querySelectorAll('a[target="_blank"]').forEach(a => {
+    if (!a.closest('.stream-card')) a.remove();
+  });
+}, 2000);
+
+buildGrid();
+setLayout(layout);
+</script>
+</body>
+</html>
