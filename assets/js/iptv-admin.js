@@ -55,14 +55,16 @@
     preferredStreams.clear();
     data.portals.forEach((portal) => {
       const mediaWorks = Boolean(portal.ok && portal.media?.playable && portal.media?.mobileCompatible);
+      const directWorks = Boolean(portal.ok && portal.directAllowed);
+      const available = mediaWorks || directWorks;
       const chip = document.createElement("span");
-      chip.className = `status-chip ${mediaWorks ? "ok" : "down"}`;
-      chip.textContent = `${portal.label}: ${mediaWorks ? `يعمل على الهاتف · ${portal.media.protocol.toUpperCase()}` : "غير مناسب للهاتف"}`;
+      chip.className = `status-chip ${mediaWorks ? "ok" : directWorks ? "" : "down"}`;
+      chip.textContent = `${portal.label}: ${mediaWorks ? `يعمل على الهاتف · ${portal.media.protocol.toUpperCase()}` : directWorks ? "تشغيل مباشر" : "غير مناسب للهاتف"}`;
       statusEl.appendChild(chip);
-      if (mediaWorks) {
+      if (available) {
         playable.push(portal);
-        preferredStreams.set(portal.id, String(portal.media.sampleStreamId || ""));
-        addOption(portalSelect, portal.id, `${portal.label} · هاتف`);
+        if (mediaWorks) preferredStreams.set(portal.id, String(portal.media.sampleStreamId || ""));
+        addOption(portalSelect, portal.id, `${portal.label} · ${mediaWorks ? "هاتف" : "مباشر"}`);
       }
     });
     if (playable.length === 1) portalSelect.value = playable[0].id;
@@ -161,7 +163,7 @@
     setError("");
     resultCount.textContent = "جارٍ البحث…";
     channelGrid.innerHTML = '<div class="empty">جارٍ تحميل القنوات…</div>';
-    const params = new URLSearchParams({ limit: "120" });
+    const params = new URLSearchParams({ limit: "120", direct: "1" });
     if (searchInput.value.trim()) params.set("q", searchInput.value.trim());
     if (portalSelect.value) params.set("portal", portalSelect.value);
     if (categorySelect.value) params.set("category", categorySelect.value);
@@ -280,6 +282,18 @@
     playerState.textContent = "فحص المصدر";
     document.getElementById("playerBox").scrollIntoView({ behavior: "smooth", block: "center" });
 
+    if (channel.directPlaybackUrl) {
+      button.classList.remove("is-checking", "is-down");
+      button.classList.add("is-working");
+      button.disabled = false;
+      openWatchBtn.disabled = false;
+      reloadPreviewBtn.disabled = false;
+      playerEmpty.textContent = "جارٍ فتح التشغيل المباشر على جهازك…";
+      playerState.textContent = "تشغيل مباشر";
+      setTimeout(openInWatchPage, 150);
+      return;
+    }
+
     try {
       const probe = await getJson(`/api/xtream/probe?portal=${encodeURIComponent(channel.portalId)}&stream=${encodeURIComponent(channel.streamId)}`);
       button.classList.remove("is-checking");
@@ -346,6 +360,7 @@
       name: selected.name,
     });
     if (selected.categoryName) params.set("category", selected.categoryName);
+    if (selected.directPlaybackUrl) params.set("direct", "1");
     location.href = `watch.html?${params}`;
   }
 

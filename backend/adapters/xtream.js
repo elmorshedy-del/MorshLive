@@ -442,6 +442,19 @@ function mediaHeaders(response, extra = {}) {
   return headers;
 }
 
+export async function redirectXtreamMedia(env, token) {
+  const target = await decodeMediaToken(env, token);
+  return new Response(null, {
+    status: 307,
+    headers: {
+      Location: target,
+      "Cache-Control": "no-store",
+      "Referrer-Policy": "no-referrer",
+      "X-KZ-Proxy": "xtream-direct",
+    },
+  });
+}
+
 export async function proxyXtreamMedia(request, env, token) {
   const target = await decodeMediaToken(env, token);
   const upstreamHeaders = {

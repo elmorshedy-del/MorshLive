@@ -1,4 +1,4 @@
-import { proxyXtreamMedia } from "../adapters/xtream.js";
+import { proxyXtreamMedia, redirectXtreamMedia } from "../adapters/xtream.js";
 import { corsPreflightResponse, errorResponse, jsonResponse } from "../http/response.js";
 import {
   getXtreamCategories,
@@ -9,13 +9,23 @@ import {
 
 const API_RE = /^\/api\/xtream\/(status|categories|live|probe)\/?$/i;
 const MEDIA_RE = /^\/api\/xtream\/media\/([A-Za-z0-9_-]+)\/?$/;
+const DIRECT_RE = /^\/api\/xtream\/direct\/([A-Za-z0-9_-]+)\/?$/;
 
 export const xtreamRoute = {
   name: "xtream",
   methods: ["GET", "HEAD", "OPTIONS"],
-  test: (url) => API_RE.test(url.pathname) || MEDIA_RE.test(url.pathname),
+  test: (url) => API_RE.test(url.pathname) || MEDIA_RE.test(url.pathname) || DIRECT_RE.test(url.pathname),
   async handle({ request, env, url, method }) {
     if (method === "OPTIONS") return corsPreflightResponse();
+
+    const direct = url.pathname.match(DIRECT_RE);
+    if (direct) {
+      try {
+        return await redirectXtreamMedia(env, direct[1]);
+      } catch (error) {
+        return errorResponse(String(error.message || error), 403, "xtream-direct");
+      }
+    }
 
     const media = url.pathname.match(MEDIA_RE);
     if (media) {

@@ -13,6 +13,7 @@
   const { CHANNELS } = window.SITE_DATA;
   const params = new URLSearchParams(location.search);
   const xtreamMode = params.get("source") === "xtream";
+  const xtreamDirect = params.get("direct") === "1";
   const xtreamPortalId = params.get("portal") || "";
   const xtreamStreamId = String(params.get("stream") || "").replace(/[^0-9]/g, "");
   const teamLabel = (n) => (window.TeamNames ? window.TeamNames.localize(n) : n);
@@ -228,6 +229,7 @@
   async function fetchXtreamChannel() {
     if (!xtreamPortalId || !xtreamStreamId) throw new Error("بيانات قناة IPTV غير مكتملة");
     const query = new URLSearchParams({ portal: xtreamPortalId, stream: xtreamStreamId, limit: "1" });
+    if (xtreamDirect) query.set("direct", "1");
     const response = await fetch(`/api/xtream/live?${query}`, { cache: "no-store" });
     const data = await response.json().catch(() => ({}));
     if (!response.ok || data.ok === false) throw new Error(data.error || `HTTP ${response.status}`);
@@ -253,6 +255,8 @@
   function mountXtreamPlayer(selected) {
     destroyInlineHls();
     if (!shell || !selected || !selected.playbackUrl) return;
+    const hlsUrl = xtreamDirect && selected.directPlaybackUrl ? selected.directPlaybackUrl : selected.playbackUrl;
+    const tsUrl = xtreamDirect && selected.directTsPlaybackUrl ? selected.directTsPlaybackUrl : selected.tsPlaybackUrl;
     shell.innerHTML = `<video class="kz-main-video" controls autoplay muted playsinline webkit-playsinline></video>`;
     const video = shell.querySelector(".kz-main-video");
     if (!video) return;
@@ -269,7 +273,7 @@
     };
 
     const playTsFallback = () => {
-      if (usingTsFallback || !selected.tsPlaybackUrl || !window.mpegts?.isSupported()) {
+      if (usingTsFallback || !tsUrl || !window.mpegts?.isSupported()) {
         refreshToken();
         return;
       }
@@ -282,7 +286,7 @@
       video.removeAttribute("src");
       video.load();
       activeMpegTs = window.mpegts.createPlayer(
-        { type: "mpegts", isLive: true, url: selected.tsPlaybackUrl },
+        { type: "mpegts", isLive: true, url: tsUrl },
         { enableWorker: true, enableStashBuffer: false, stashInitialSize: 128 },
       );
       activeMpegTs.attachMediaElement(video);
@@ -301,7 +305,7 @@
     };
 
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = selected.playbackUrl;
+      video.src = hlsUrl;
       video.addEventListener("error", playTsFallback, { once: true });
     } else if (window.Hls && window.Hls.isSupported()) {
       activeHls = new window.Hls({
@@ -322,7 +326,7 @@
         }
         onFatal();
       });
-      activeHls.loadSource(selected.playbackUrl);
+      activeHls.loadSource(hlsUrl);
       activeHls.attachMedia(video);
     } else {
       playTsFallback();
@@ -1069,7 +1073,7 @@
       document.getElementById("info-quality").textContent = "Live";
       document.getElementById("info-group").textContent = category;
       const route = document.getElementById("info-route");
-      if (route) route.textContent = `Xtream · ${portalLabel}`;
+      if (route) route.textContent = `${xtreamDirect ? "Xtream Direct" : "Xtream"} · ${portalLabel}`;
       document.getElementById("info-commentator").textContent = "—";
       document.getElementById("info-league").textContent = category;
       const times = document.getElementById("info-times");

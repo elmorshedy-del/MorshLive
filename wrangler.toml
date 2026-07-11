@@ -18,6 +18,7 @@ account_id = "f06dda0c02d25976dcda319e942e432c" # pragma: allowlist secret
 #   npx wrangler secret put TWITCH_CLIENT_SECRET    # (dev.twitch.tv/console → Register App)
 #   npx wrangler secret put XTREAM_PORTALS_JSON      # authorized Xtream portal export JSON
 #   npx wrangler secret put XTREAM_TOKEN_SECRET      # optional dedicated IPTV media-token key
+#   npx wrangler secret put XTREAM_DIRECT_PORTALS    # explicit comma-separated direct fallback IDs, e.g. p2
 # Use any long random string, e.g.:  openssl rand -hex 32
 
 [assets]

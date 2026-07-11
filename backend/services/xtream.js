@@ -7,6 +7,15 @@ import {
   streamUrl,
 } from "../adapters/xtream.js";
 
+function directPortalIds(env) {
+  return new Set(
+    String(env?.XTREAM_DIRECT_PORTALS || "")
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean),
+  );
+}
+
 function mask(value) {
   const text = String(value || "");
   if (text.length <= 4) return "***";
@@ -51,7 +60,7 @@ function categoryRow(row, portal) {
   };
 }
 
-async function liveRow(row, portal, categoryMap, env, sources) {
+async function liveRow(row, portal, categoryMap, env, sources, direct) {
   const categoryId = String(row.category_id || row._playlistGroup || "");
   const id = String(row.stream_id || "");
   const hlsSource = sources.hls.get(id) || streamUrl(portal, row.stream_id, "m3u8");
@@ -74,6 +83,12 @@ async function liveRow(row, portal, categoryMap, env, sources) {
     tvArchive: row.tv_archive || 0,
     playbackUrl: `/api/xtream/media/${hlsToken}`,
     tsPlaybackUrl: `/api/xtream/media/${tsToken}`,
+    ...(direct
+      ? {
+          directPlaybackUrl: `/api/xtream/direct/${hlsToken}`,
+          directTsPlaybackUrl: `/api/xtream/direct/${tsToken}`,
+        }
+      : {}),
   };
 }
 
@@ -211,6 +226,7 @@ export async function getXtreamStatus(env, searchParams) {
   }
 
   const includeMedia = searchParams.get("media") === "1";
+  const allowedDirectPortals = directPortalIds(env);
   const results = await Promise.all(
     selected.portals.map(async (portal) => {
       const safe = publicPortal(portal);
@@ -219,9 +235,20 @@ export async function getXtreamStatus(env, searchParams) {
           fetchXtreamJson(portal, null, 10000),
           includeMedia ? getPortalMediaStatus(portal) : Promise.resolve(null),
         ]);
-        return { ...safe, ok: true, account: accountInfo(info), ...(media ? { media } : {}) };
+        return {
+          ...safe,
+          ok: true,
+          directAllowed: allowedDirectPortals.has(portal.id),
+          account: accountInfo(info),
+          ...(media ? { media } : {}),
+        };
       } catch (error) {
-        return { ...safe, ok: false, error: safeError(error) };
+        return {
+          ...safe,
+          ok: false,
+          directAllowed: allowedDirectPortals.has(portal.id),
+          error: safeError(error),
+        };
       }
     }),
   );
@@ -287,6 +314,8 @@ export async function getXtreamLive(env, searchParams) {
   const category = String(searchParams.get("category") || "").trim();
   const streamId = String(searchParams.get("stream") || "").replace(/[^0-9]/g, "");
   const limit = Math.max(1, Math.min(1000, Number(searchParams.get("limit") || 250)));
+  const directRequested = searchParams.get("direct") === "1";
+  const allowedDirectPortals = directPortalIds(env);
 
   const blocks = await Promise.all(
     selected.portals.map(async (portal) => {
@@ -325,7 +354,10 @@ export async function getXtreamLive(env, searchParams) {
           );
         }
         rows = rows.slice(0, limit);
-        const streams = await Promise.all(rows.map((row) => liveRow(row, portal, categoryMap, env, sources)));
+        const direct = directRequested && allowedDirectPortals.has(portal.id);
+        const streams = await Promise.all(
+          rows.map((row) => liveRow(row, portal, categoryMap, env, sources, direct)),
+        );
         return { portal: safe, ok: true, count: streams.length, streams };
       } catch (error) {
         return { portal: safe, ok: false, error: safeError(error), streams: [] };

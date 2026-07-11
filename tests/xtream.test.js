@@ -7,6 +7,7 @@ import {
   parseXtreamPlaylist,
   probeXtreamPlayback,
   proxyXtreamMedia,
+  redirectXtreamMedia,
 } from "../backend/adapters/xtream.js";
 import { getXtreamLive } from "../backend/services/xtream.js";
 
@@ -91,6 +92,14 @@ describe("Xtream adapter", () => {
     expect(token).not.toContain("owner");
     expect(token).not.toContain("secret");
     await expect(decodeMediaToken(env, token)).resolves.toBe(upstream);
+  });
+
+  it("creates an opt-in direct redirect without putting credentials in the site URL", async () => {
+    const upstream = "http://example.test:8080/live/owner/secret/123.m3u8";
+    const token = await createMediaToken(env, upstream, 60);
+    const response = await redirectXtreamMedia(env, token);
+    expect(response.status).toBe(307);
+    expect(response.headers.get("Location")).toBe(upstream);
   });
 
   it("detects a playable HLS stream", async () => {

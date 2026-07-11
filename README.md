@@ -157,7 +157,9 @@ Available same-origin endpoints:
 
 Open `iptv-admin.html` to search and send a channel to the existing `watch.html` player. The admin page probes real media bytes, restricts mobile choices to H.264/AAC-compatible sources, and opens the dedicated player immediately after a successful check. The watch URL carries only portal and stream identifiers; it fetches a fresh encrypted playback token when loaded.
 
-The API never returns usernames, passwords, or raw portal credentials to the browser. Media tokens use `XTREAM_TOKEN_SECRET` when configured, otherwise the existing `STREAM_SIGNING_SECRET`.
+The proxied API never returns usernames, passwords, or raw portal credentials to the browser. Media tokens use `XTREAM_TOKEN_SECRET` when configured, otherwise the existing `STREAM_SIGNING_SECRET`.
+
+If an authorized provider blocks Cloudflare media egress, an owner can explicitly enable client-direct fallback with the `XTREAM_DIRECT_PORTALS` secret (comma-separated portal IDs such as `p2`). Direct fallback is opt-in because the browser follows a redirect to the provider URL, making the portal credentials visible in that device’s network inspector. Never enable it for portals you do not own.
 
 ## Deploy (korazero + Cloudflare)
 
