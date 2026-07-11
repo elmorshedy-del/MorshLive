@@ -241,12 +241,10 @@ export async function getXtreamCategories(env, searchParams) {
     selected.portals.map(async (portal) => {
       const safe = publicPortal(portal);
       try {
-        const [rows, sources] = await Promise.all([
-          fetchXtreamJson(portal, "get_live_categories", 14000).catch(() => []),
-          fetchXtreamSourceMaps(portal),
-        ]);
+        const rows = await fetchXtreamJson(portal, "get_live_categories", 14000).catch(() => []);
         let categories = Array.isArray(rows) ? rows.map((row) => categoryRow(row, portal)) : [];
         if (!categories.length) {
+          const sources = await fetchXtreamSourceMaps(portal);
           const groups = [
             ...new Set([...sources.hlsEntries, ...sources.tsEntries].map((entry) => entry.group)),
           ];
