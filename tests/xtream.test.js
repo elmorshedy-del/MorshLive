@@ -121,14 +121,27 @@ describe("Xtream adapter", () => {
   });
 
   it("detects a playable HLS stream", async () => {
+    // probeMediaUrl reads the manifest AND fetches its first segment, so the mock
+    // must return a FRESH Response per call — a single shared Response has its
+    // body consumed by the manifest read, leaving the segment probe empty.
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue(
-        new Response("#EXTM3U\n#EXTINF:2,\nsegment.ts\n", {
-          status: 200,
-          headers: { "Content-Type": "application/vnd.apple.mpegurl" },
-        }),
-      ),
+      vi.fn().mockImplementation((url) => {
+        if (/\.ts(\?|$)|segment/i.test(String(url))) {
+          const ts = new Uint8Array(376);
+          ts[0] = 0x47;
+          ts[188] = 0x47; // MPEG-TS sync bytes so the segment probe passes
+          return Promise.resolve(
+            new Response(ts, { status: 200, headers: { "Content-Type": "video/mp2t" } }),
+          );
+        }
+        return Promise.resolve(
+          new Response("#EXTM3U\n#EXTINF:2,\nsegment.ts\n", {
+            status: 200,
+            headers: { "Content-Type": "application/vnd.apple.mpegurl" },
+          }),
+        );
+      }),
     );
     const portal = loadXtreamPortals(env).portals[0];
     await expect(probeXtreamPlayback(portal, 123)).resolves.toMatchObject({
