@@ -2574,7 +2574,9 @@ ${/* eslint-disable-next-line no-script-url */ ""}
 
 function daddyChannelId(rawCh) {
   const map = {
-    "bein-max-1": 597,
+    // Use Daddy's documented Arabic Sports iframe pool for MAX fallbacks.
+    // stream-597 (MAX AR) is often provider-blocked; stream-91 is the published example.
+    "bein-max-1": 91,
     "bein-max-2": 92,
     "bein-max-3": 94,
     "bein-max-4": 95,
@@ -2585,7 +2587,7 @@ function daddyChannelId(rawCh) {
     "bein-sports-5": 95,
   };
   if (/^\d{1,6}$/.test(String(rawCh || ""))) return String(rawCh);
-  return String(map[rawCh] || 597);
+  return String(map[rawCh] || 91);
 }
 
 async function proxyDaddy(request, env) {
