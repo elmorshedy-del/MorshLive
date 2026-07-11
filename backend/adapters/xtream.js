@@ -95,6 +95,54 @@ export function streamUrl(portal, streamId, extension = "m3u8") {
   return `${portal.url}/live/${encodeURIComponent(portal.username)}/${encodeURIComponent(portal.password)}/${safeId}.${ext}`;
 }
 
+async function probeMediaUrl(url, kind, timeoutMs = 8000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, {
+      headers: {
+        Accept: kind === "hls" ? "application/vnd.apple.mpegurl,*/*" : "video/mp2t,*/*",
+        Range: "bytes=0-1879",
+        "User-Agent": "Mozilla/5.0 (KoraZero Xtream Probe)",
+      },
+      redirect: "follow",
+      signal: controller.signal,
+    });
+    if (!response.ok || !response.body) return { ok: false, status: response.status, protocol: kind };
+    const reader = response.body.getReader();
+    const { value } = await reader.read();
+    try {
+      await reader.cancel();
+    } catch {
+      /* noop */
+    }
+    const bytes = value || new Uint8Array();
+    if (kind === "hls") {
+      const text = textDecoder.decode(bytes.slice(0, 4096)).trimStart();
+      return { ok: text.startsWith("#EXTM3U"), status: response.status, protocol: kind, bytes: bytes.length };
+    }
+    const sync = bytes.length > 0 && (bytes[0] === 0x47 || (bytes.length > 188 && bytes[188] === 0x47));
+    return { ok: sync, status: response.status, protocol: kind, bytes: bytes.length };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 0,
+      protocol: kind,
+      error: error.name === "AbortError" ? "timeout" : String(error.message || error),
+    };
+  } finally {
+    clearTimeout(timer);
+    controller.abort();
+  }
+}
+
+export async function probeXtreamPlayback(portal, streamId) {
+  const hls = await probeMediaUrl(streamUrl(portal, streamId, "m3u8"), "hls");
+  if (hls.ok) return hls;
+  const ts = await probeMediaUrl(streamUrl(portal, streamId, "ts"), "ts");
+  return ts.ok ? ts : { ok: false, hls, ts };
+}
+
 export async function fetchXtreamJson(portal, action, timeoutMs = 14000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);

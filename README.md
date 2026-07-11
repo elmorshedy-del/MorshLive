@@ -152,6 +152,7 @@ Available same-origin endpoints:
 - `GET /api/xtream/status` — verifies each configured portal and returns masked account status.
 - `GET /api/xtream/categories` — returns sanitized live-TV categories.
 - `GET /api/xtream/live?limit=1000` — returns sanitized live-channel metadata plus encrypted temporary HLS and MPEG-TS playback URLs. Optional filters: `portal=p1`, `category=<id-or-name>`, `q=<search>`, `stream=<id>`.
+- `GET /api/xtream/probe?portal=p1&stream=123` — reads a small media sample and reports whether the selected source really emits HLS or MPEG-TS video.
 - `GET|HEAD /api/xtream/media/<token>` — validates the encrypted token, fetches the authorized stream server-side, and rewrites HLS manifests so credentials never appear in browser-visible URLs.
 
 Open `iptv-admin.html` to search, preview, and send a channel to the existing `watch.html` player. The watch URL carries only portal and stream identifiers; it fetches a fresh encrypted playback token when loaded.

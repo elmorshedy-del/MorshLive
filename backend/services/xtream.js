@@ -1,4 +1,10 @@
-import { createMediaToken, fetchXtreamJson, loadXtreamPortals, streamUrl } from "../adapters/xtream.js";
+import {
+  createMediaToken,
+  fetchXtreamJson,
+  loadXtreamPortals,
+  probeXtreamPlayback,
+  streamUrl,
+} from "../adapters/xtream.js";
 
 function mask(value) {
   const text = String(value || "");
@@ -89,6 +95,56 @@ function safeError(error) {
   return error && error.name === "AbortError" ? "timeout" : String(error.message || error);
 }
 
+export async function probeXtreamChannel(env, searchParams) {
+  const selected = selectPortals(env, searchParams);
+  if (selected.error) {
+    return {
+      body: { ok: false, playable: false, error: selected.error },
+      status: selected.status || 503,
+    };
+  }
+  const streamId = String(searchParams.get("stream") || "").replace(/[^0-9]/g, "");
+  if (!streamId) {
+    return { body: { ok: false, playable: false, error: "stream is required" }, status: 400 };
+  }
+  const portal = selected.portals[0];
+  const result = await probeXtreamPlayback(portal, streamId);
+  return {
+    body: {
+      ok: true,
+      playable: Boolean(result.ok),
+      portalId: portal.id,
+      streamId,
+      protocol: result.ok ? result.protocol : null,
+      status: result.ok ? result.status : result.ts?.status || result.hls?.status || 0,
+    },
+    status: 200,
+  };
+}
+
+async function getPortalMediaStatus(portal) {
+  try {
+    const rows = await fetchXtreamJson(portal, "get_live_streams", 20000);
+    const all = Array.isArray(rows) ? rows : [];
+    const preferred = all.filter((row) => /bein|sport/i.test(String(row.name || "")));
+    const candidates = [...preferred, ...all.filter((row) => !preferred.includes(row))].slice(0, 4);
+    for (const row of candidates) {
+      const probe = await probeXtreamPlayback(portal, row.stream_id);
+      if (probe.ok) {
+        return {
+          playable: true,
+          protocol: probe.protocol,
+          sampleStreamId: row.stream_id,
+          sampleName: row.name || null,
+        };
+      }
+    }
+    return { playable: false, protocol: null };
+  } catch (error) {
+    return { playable: false, protocol: null, error: safeError(error) };
+  }
+}
+
 export async function getXtreamStatus(env, searchParams) {
   const selected = selectPortals(env, searchParams);
   if (selected.error) {
@@ -102,12 +158,16 @@ export async function getXtreamStatus(env, searchParams) {
     };
   }
 
+  const includeMedia = searchParams.get("media") === "1";
   const results = await Promise.all(
     selected.portals.map(async (portal) => {
       const safe = publicPortal(portal);
       try {
-        const info = await fetchXtreamJson(portal, null, 10000);
-        return { ...safe, ok: true, account: accountInfo(info) };
+        const [info, media] = await Promise.all([
+          fetchXtreamJson(portal, null, 10000),
+          includeMedia ? getPortalMediaStatus(portal) : Promise.resolve(null),
+        ]);
+        return { ...safe, ok: true, account: accountInfo(info), ...(media ? { media } : {}) };
       } catch (error) {
         return { ...safe, ok: false, error: safeError(error) };
       }

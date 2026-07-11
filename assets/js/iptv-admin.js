@@ -46,17 +46,23 @@
   }
 
   async function loadStatus() {
-    const data = await getJson("/api/xtream/status");
+    const data = await getJson("/api/xtream/status?media=1");
     statusEl.replaceChildren();
     portalSelect.replaceChildren();
-    addOption(portalSelect, "", "كل البوابات");
+    addOption(portalSelect, "", "كل المصادر العاملة");
+    const playable = [];
     data.portals.forEach((portal) => {
+      const mediaWorks = Boolean(portal.ok && portal.media?.playable);
       const chip = document.createElement("span");
-      chip.className = `status-chip ${portal.ok ? "ok" : "down"}`;
-      chip.textContent = `${portal.label}: ${portal.ok ? portal.account?.status || "متصل" : "غير متاح"}`;
+      chip.className = `status-chip ${mediaWorks ? "ok" : "down"}`;
+      chip.textContent = `${portal.label}: ${mediaWorks ? `يعمل · ${portal.media.protocol.toUpperCase()}` : "لا يبث"}`;
       statusEl.appendChild(chip);
-      if (portal.ok) addOption(portalSelect, portal.id, portal.label);
+      if (mediaWorks) {
+        playable.push(portal);
+        addOption(portalSelect, portal.id, `${portal.label} · يعمل`);
+      }
     });
+    if (playable.length === 1) portalSelect.value = playable[0].id;
   }
 
   async function loadCategories() {
@@ -251,16 +257,46 @@
     if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
   }
 
-  function selectChannel(channel, button) {
+  async function selectChannel(channel, button) {
     selected = channel;
     channelGrid.querySelectorAll(".channel.active").forEach((node) => node.classList.remove("active"));
-    button.classList.add("active");
+    button.classList.add("active", "is-checking");
+    button.disabled = true;
     selectedName.textContent = channel.name;
     selectedMeta.textContent = `${channel.portalLabel} · ${channel.categoryName || "بدون فئة"} · Stream ${channel.streamId}`;
     selectedPortal.textContent = channel.portalLabel;
-    openWatchBtn.disabled = false;
-    reloadPreviewBtn.disabled = false;
-    playChannel(channel);
+    openWatchBtn.disabled = true;
+    reloadPreviewBtn.disabled = true;
+    playerEmpty.hidden = false;
+    playerEmpty.textContent = "جارٍ فحص البث…";
+    playerState.textContent = "فحص المصدر";
+    document.getElementById("playerBox").scrollIntoView({ behavior: "smooth", block: "center" });
+
+    try {
+      const probe = await getJson(`/api/xtream/probe?portal=${encodeURIComponent(channel.portalId)}&stream=${encodeURIComponent(channel.streamId)}`);
+      button.classList.remove("is-checking");
+      if (!probe.playable) {
+        button.classList.add("is-down");
+        playerEmpty.textContent = "هذا البث غير عامل حالياً. اختر قناة أخرى.";
+        playerState.textContent = "غير عامل";
+        setError(`${channel.name}: المصدر لا يرسل فيديو الآن.`);
+        return;
+      }
+      button.classList.remove("is-down");
+      button.classList.add("is-working");
+      setError("");
+      openWatchBtn.disabled = false;
+      reloadPreviewBtn.disabled = false;
+      playChannel(channel);
+    } catch (error) {
+      button.classList.remove("is-checking");
+      button.classList.add("is-down");
+      playerEmpty.textContent = "تعذر فحص هذا البث.";
+      playerState.textContent = "فشل الفحص";
+      setError(error.message || String(error));
+    } finally {
+      button.disabled = false;
+    }
   }
 
   async function refreshSelected() {
@@ -314,6 +350,7 @@
     refreshBtn.disabled = true;
     try {
       await Promise.all([loadStatus(), loadCategories()]);
+      renderCategoryOptions();
       await loadChannels();
     } catch (error) {
       setError(error.message || String(error));
@@ -327,6 +364,7 @@
   document.addEventListener("DOMContentLoaded", async () => {
     try {
       await Promise.all([loadStatus(), loadCategories()]);
+      renderCategoryOptions();
       await loadChannels();
     } catch (error) {
       setError(`تعذر بدء لوحة IPTV: ${error.message || error}`);

@@ -3,6 +3,7 @@ import {
   createMediaToken,
   decodeMediaToken,
   loadXtreamPortals,
+  probeXtreamPlayback,
   proxyXtreamMedia,
 } from "../backend/adapters/xtream.js";
 import { getXtreamLive } from "../backend/services/xtream.js";
@@ -45,6 +46,23 @@ describe("Xtream adapter", () => {
     expect(token).not.toContain("owner");
     expect(token).not.toContain("secret");
     await expect(decodeMediaToken(env, token)).resolves.toBe(upstream);
+  });
+
+  it("detects a playable HLS stream", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response("#EXTM3U\n#EXTINF:2,\nsegment.ts\n", {
+          status: 200,
+          headers: { "Content-Type": "application/vnd.apple.mpegurl" },
+        }),
+      ),
+    );
+    const portal = loadXtreamPortals(env).portals[0];
+    await expect(probeXtreamPlayback(portal, 123)).resolves.toMatchObject({
+      ok: true,
+      protocol: "hls",
+    });
   });
 
   it("rewrites manifest media URLs to encrypted same-origin routes", async () => {

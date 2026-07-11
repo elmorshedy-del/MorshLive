@@ -58,6 +58,9 @@
     .channels { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; padding: 14px; max-height: 690px; overflow: auto; }
     .channel { width: 100%; min-height: 94px; border: 1px solid var(--line); border-radius: 13px; background: var(--surface-2); color: var(--text); padding: 13px; display: grid; grid-template-columns: 50px minmax(0,1fr); gap: 12px; text-align: right; cursor: pointer; }
     .channel:hover, .channel.active { border-color: var(--green); background: rgba(24,226,154,.07); }
+    .channel.is-checking { border-color: var(--warning); opacity: .72; }
+    .channel.is-down { border-color: rgba(255,102,125,.55); opacity: .55; }
+    .channel.is-working { border-color: var(--green); }
     .channel-logo { width: 50px; height: 50px; border-radius: 10px; background: #080b12; display: grid; place-items: center; object-fit: contain; border: 1px solid rgba(255,255,255,.08); }
     .channel-fallback { font-size: .72rem; color: var(--green); font-weight: 800; }
     .channel-name { display: block; font-weight: 800; line-height: 1.35; overflow-wrap: anywhere; }
@@ -136,6 +139,6 @@
     </div>
   </main>
 
-  <script src="assets/js/iptv-admin.js?v=20260711b"></script>
+  <script src="assets/js/iptv-admin.js?v=20260711c"></script>
 </body>
 </html>
