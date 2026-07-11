@@ -19,10 +19,10 @@
   let match = null;
   let matchesReady = false;
   let altStreamsSignature = "";
-  let activeAltStreamKind = "kooraCity";
+  let activeAltStreamKind = "daddyLive";
   let altStreamEntries = [];
   let lastStreamHealAt = 0;
-  const ALT_STREAM_ORDER = ["ntv", "amineAlt", "kooraCity", "sirTv"];
+  const ALT_STREAM_ORDER = ["daddyLive", "kooraCity", "ntv", "sirTv"];
   const STREAM_HEAL_MIN_MS = 8000;
 
   // Pinned main-player override + manual click-to-play cards for a specific
@@ -346,6 +346,7 @@
   }
 
   function altStreamCssKind(kind) {
+    if (kind === "daddyLive") return "daddy";
     if (kind === "kooraCity") return "kooracity";
     if (kind === "amineAlt") return "amine";
     if (kind === "sirTv") return "sirtv";
