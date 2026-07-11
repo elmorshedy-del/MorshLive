@@ -16,6 +16,7 @@ account_id = "f06dda0c02d25976dcda319e942e432c" # pragma: allowlist secret
 #   npx wrangler secret put TWITTER_BEARER_TOKEN  # viral match memes (X API v2)
 #   npx wrangler secret put TWITCH_CLIENT_ID        # Helix: verify Twitch relay is LIVE
 #   npx wrangler secret put TWITCH_CLIENT_SECRET    # (dev.twitch.tv/console → Register App)
+#   npx wrangler secret put XTREAM_PORTALS_JSON      # authorized Xtream portal export JSON
 # Use any long random string, e.g.:  openssl rand -hex 32
 
 [assets]

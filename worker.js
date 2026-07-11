@@ -3961,6 +3961,7 @@ const RECENT_MEMES_API_RE = /^\/api\/recent-memes\/?$/i;
 const X_MEDIA_API_RE = /^\/api\/x-media\/?$/i;
 const EDGE_API_RE = /^\/api\/edge\/?$/i;
 const STREAM_DIAGNOSE_RE = /^\/api\/stream-diagnose\/?$/i;
+const XTREAM_API_RE = /^\/api\/xtream\/(status|categories|live)\/?$/i;
 const TWITCH_API_RE = /^\/api\/twitch\/?$/i;
 const STREAMS_LAB_RE = /^\/api\/streams-lab\/?$/i;
 const SIIR_MATCHES_RE = /^\/api\/siir-matches\/?$/i;
@@ -3974,6 +3975,237 @@ const RECENT_MEMES_SCAN_CACHE_MS = 10 * 60 * 1000;
 const TWITTER_API_BASE = "https://api.twitter.com/2";
 const MEME_MATCH_MS = 105 * 60 * 1000;
 const MEME_LOOKBACK_BEFORE_KICKOFF_MS = 15 * 60 * 1000;
+
+
+/* ----------------------------------------------- authorized Xtream importer
+ * Reads private portal credentials from Cloudflare env/secret XTREAM_PORTALS_JSON.
+ * Never returns usernames/passwords to the browser. Intended for user-owned,
+ * authorized portals exported from PlayTorrio/IPTV generator.
+ *
+ * Secret format:
+ *   {"portals":[{"url":"http://host:port","username":"...","password":"...","label":"optional"}]}
+ */
+function xtreamJson(payload, status = 200, extra = {}) {
+  return new Response(JSON.stringify(payload), {
+    status,
+    headers: {
+      "Content-Type": "application/json; charset=utf-8",
+      "Cache-Control": "no-store",
+      "Access-Control-Allow-Origin": "*",
+      ...extra,
+    },
+  });
+}
+
+function xtreamMask(value) {
+  const s = String(value || "");
+  if (s.length <= 4) return "***";
+  return `${s.slice(0, 2)}***${s.slice(-2)}`;
+}
+
+function xtreamSafeUrl(raw) {
+  try {
+    const u = new URL(String(raw || "").trim());
+    if (u.protocol !== "http:" && u.protocol !== "https:") return null;
+    u.pathname = u.pathname.replace(/\/+$/, "");
+    u.search = "";
+    u.hash = "";
+    return u.toString().replace(/\/+$/, "");
+  } catch {
+    return null;
+  }
+}
+
+function loadXtreamPortals(env) {
+  const raw = env && (env.XTREAM_PORTALS_JSON || env.IPTV_PORTALS_JSON);
+  if (!raw) return { portals: [], error: "XTREAM_PORTALS_JSON secret is not configured" };
+  try {
+    const parsed = typeof raw === "string" ? JSON.parse(raw) : raw;
+    const list = Array.isArray(parsed) ? parsed : (Array.isArray(parsed.portals) ? parsed.portals : []);
+    const portals = [];
+    list.forEach((item, idx) => {
+      const nested = item && item.portal ? item.portal : item;
+      const url = xtreamSafeUrl(nested.url || nested.portalUrl || nested.host);
+      const username = nested.username || nested.user;
+      const password = nested.password || nested.pass;
+      if (!url || !username || !password) return;
+      portals.push({
+        id: `p${idx + 1}`,
+        label: String(nested.label || nested.name || `Portal ${idx + 1}`),
+        url,
+        username: String(username),
+        password: String(password),
+        expiry: item.expiry || nested.expiry || null,
+        maxConnections: item.maxConnections || nested.maxConnections || null,
+        activeConnections: item.activeConnections || nested.activeConnections || null,
+      });
+    });
+    return { portals };
+  } catch (err) {
+    return { portals: [], error: `Invalid XTREAM_PORTALS_JSON: ${err.message || err}` };
+  }
+}
+
+function sanitizeXtreamPortal(p) {
+  return {
+    id: p.id,
+    label: p.label,
+    url: p.url,
+    usernameMasked: xtreamMask(p.username),
+    passwordMasked: xtreamMask(p.password),
+    expiry: p.expiry,
+    maxConnections: p.maxConnections,
+    activeConnections: p.activeConnections,
+  };
+}
+
+function xtreamApiUrl(p, action) {
+  const u = new URL(`${p.url}/player_api.php`);
+  u.searchParams.set("username", p.username);
+  u.searchParams.set("password", p.password);
+  if (action) u.searchParams.set("action", action);
+  return u.toString();
+}
+
+async function fetchXtreamJson(p, action, timeoutMs = 14000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const res = await fetch(xtreamApiUrl(p, action), {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (KoraZero Xtream Importer)",
+        "Accept": "application/json,text/plain,*/*",
+      },
+      redirect: "follow",
+      signal: ctrl.signal,
+    });
+    const text = await res.text();
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new Error(`Non-JSON response (${text.slice(0, 80).replace(/\s+/g, " ")})`);
+    }
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function sanitizeXtreamAccount(info) {
+  const userInfo = info && info.user_info ? info.user_info : {};
+  const serverInfo = info && info.server_info ? info.server_info : {};
+  return {
+    auth: userInfo.auth,
+    status: userInfo.status,
+    expDate: userInfo.exp_date || null,
+    maxConnections: userInfo.max_connections || null,
+    activeConnections: userInfo.active_cons || null,
+    allowedOutputFormats: userInfo.allowed_output_formats || [],
+    serverProtocol: serverInfo.server_protocol || null,
+    serverPort: serverInfo.port || null,
+    timezone: serverInfo.timezone || null,
+  };
+}
+
+function sanitizeXtreamCategory(row, portal) {
+  return {
+    portalId: portal.id,
+    portalLabel: portal.label,
+    categoryId: String(row.category_id || ""),
+    name: String(row.category_name || row.name || "Uncategorized"),
+    parentId: row.parent_id || null,
+  };
+}
+
+function sanitizeXtreamLive(row, portal, categoryMap) {
+  const categoryId = String(row.category_id || "");
+  return {
+    portalId: portal.id,
+    portalLabel: portal.label,
+    streamId: row.stream_id,
+    name: row.name || "Untitled channel",
+    categoryId,
+    categoryName: categoryMap && categoryMap.get(categoryId) ? categoryMap.get(categoryId) : null,
+    icon: row.stream_icon || null,
+    epgChannelId: row.epg_channel_id || null,
+    added: row.added || null,
+    num: row.num || null,
+    tvArchive: row.tv_archive || 0,
+  };
+}
+
+async function proxyXtreamApi(request, env, action) {
+  if (request.method === "OPTIONS") {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, OPTIONS",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Max-Age": "86400",
+      },
+    });
+  }
+  const incoming = new URL(request.url);
+  const { portals, error } = loadXtreamPortals(env);
+  if (error) return xtreamJson({ ok: false, error, portals: [] }, 503);
+  const selected = incoming.searchParams.get("portal");
+  const usable = selected ? portals.filter((p) => p.id === selected || p.label === selected) : portals;
+  if (!usable.length) return xtreamJson({ ok: false, error: "No matching Xtream portal configured", portals: portals.map(sanitizeXtreamPortal) }, 404);
+
+  if (action === "status") {
+    const results = await Promise.all(usable.map(async (p) => {
+      const safe = sanitizeXtreamPortal(p);
+      try {
+        const info = await fetchXtreamJson(p, null, 10000);
+        return { ...safe, ok: true, account: sanitizeXtreamAccount(info) };
+      } catch (err) {
+        return { ...safe, ok: false, error: err.name === "AbortError" ? "timeout" : String(err.message || err) };
+      }
+    }));
+    return xtreamJson({ ok: true, count: results.length, portals: results });
+  }
+
+  if (action === "categories") {
+    const blocks = await Promise.all(usable.map(async (p) => {
+      const safe = sanitizeXtreamPortal(p);
+      try {
+        const rows = await fetchXtreamJson(p, "get_live_categories", 14000);
+        const categories = Array.isArray(rows) ? rows.map((r) => sanitizeXtreamCategory(r, p)) : [];
+        return { portal: safe, ok: true, count: categories.length, categories };
+      } catch (err) {
+        return { portal: safe, ok: false, error: err.name === "AbortError" ? "timeout" : String(err.message || err), categories: [] };
+      }
+    }));
+    return xtreamJson({ ok: true, count: blocks.reduce((n, b) => n + b.categories.length, 0), portals: blocks });
+  }
+
+  if (action === "live") {
+    const q = String(incoming.searchParams.get("q") || "").trim().toLowerCase();
+    const category = String(incoming.searchParams.get("category") || "").trim();
+    const limit = Math.max(1, Math.min(5000, Number(incoming.searchParams.get("limit") || 1000)));
+    const blocks = await Promise.all(usable.map(async (p) => {
+      const safe = sanitizeXtreamPortal(p);
+      try {
+        const [catRows, streamRows] = await Promise.all([
+          fetchXtreamJson(p, "get_live_categories", 14000).catch(() => []),
+          fetchXtreamJson(p, "get_live_streams", 20000),
+        ]);
+        const categoryMap = new Map((Array.isArray(catRows) ? catRows : []).map((r) => [String(r.category_id || ""), String(r.category_name || r.name || "Uncategorized")]));
+        let streams = Array.isArray(streamRows) ? streamRows.map((r) => sanitizeXtreamLive(r, p, categoryMap)) : [];
+        if (category) streams = streams.filter((s) => s.categoryId === category || (s.categoryName || "").toLowerCase() === category.toLowerCase());
+        if (q) streams = streams.filter((s) => String(s.name || "").toLowerCase().includes(q));
+        streams = streams.slice(0, limit);
+        return { portal: safe, ok: true, count: streams.length, streams };
+      } catch (err) {
+        return { portal: safe, ok: false, error: err.name === "AbortError" ? "timeout" : String(err.message || err), streams: [] };
+      }
+    }));
+    return xtreamJson({ ok: true, count: blocks.reduce((n, b) => n + b.streams.length, 0), portals: blocks });
+  }
+
+  return xtreamJson({ ok: false, error: "Unknown Xtream API action" }, 404);
+}
 
 function memePlayerTerms(match) {
   const names = [];
@@ -5960,6 +6192,10 @@ export default {
     }
     if (STREAM_DIAGNOSE_RE.test(url.pathname) && method === "GET") {
       return proxyStreamDiagnoseApi(request, env);
+    }
+    if (XTREAM_API_RE.test(url.pathname) && (method === "GET" || method === "OPTIONS")) {
+      const action = url.pathname.match(XTREAM_API_RE)[1].toLowerCase();
+      return proxyXtreamApi(request, env, action);
     }
     if (TWITCH_API_RE.test(url.pathname) && method === "GET") {
       return proxyTwitchApi(request, env);
