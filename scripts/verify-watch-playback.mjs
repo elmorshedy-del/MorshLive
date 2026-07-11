@@ -41,7 +41,9 @@ const WATCH_URL =
   const startSrc = shell.iframe;
   let frame = null;
   for (let i = 0; i < 20; i++) {
-    frame = page.frames().find((f) => f.url().includes("/wk/albaplayer/"));
+    // koraplus 302-redirects to the kora-plus.app frame.php edge, so its live
+    // frame URL no longer contains /wk/albaplayer/ — match the edge too.
+    frame = page.frames().find((f) => /\/wk\/albaplayer\/|\.kora-plus\.app\/frame\.php/i.test(f.url()));
     if (frame) break;
     await page.waitForTimeout(1000);
   }
