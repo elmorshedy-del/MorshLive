@@ -25,6 +25,7 @@
   let hls = null;
   let mpegTsPlayer = null;
   let loadController = null;
+  const preferredStreams = new Map();
 
   function setError(message) {
     errorBox.hidden = !message;
@@ -51,15 +52,17 @@
     portalSelect.replaceChildren();
     addOption(portalSelect, "", "كل المصادر العاملة");
     const playable = [];
+    preferredStreams.clear();
     data.portals.forEach((portal) => {
-      const mediaWorks = Boolean(portal.ok && portal.media?.playable);
+      const mediaWorks = Boolean(portal.ok && portal.media?.playable && portal.media?.mobileCompatible);
       const chip = document.createElement("span");
       chip.className = `status-chip ${mediaWorks ? "ok" : "down"}`;
-      chip.textContent = `${portal.label}: ${mediaWorks ? `يعمل · ${portal.media.protocol.toUpperCase()}` : "لا يبث"}`;
+      chip.textContent = `${portal.label}: ${mediaWorks ? `يعمل على الهاتف · ${portal.media.protocol.toUpperCase()}` : "غير مناسب للهاتف"}`;
       statusEl.appendChild(chip);
       if (mediaWorks) {
         playable.push(portal);
-        addOption(portalSelect, portal.id, `${portal.label} · يعمل`);
+        preferredStreams.set(portal.id, String(portal.media.sampleStreamId || ""));
+        addOption(portalSelect, portal.id, `${portal.label} · هاتف`);
       }
     });
     if (playable.length === 1) portalSelect.value = playable[0].id;
@@ -167,6 +170,11 @@
       const data = await response.json();
       if (!response.ok || data.ok === false) throw new Error(data.error || `HTTP ${response.status}`);
       channels = data.portals.flatMap((block) => block.streams || []);
+      channels.sort((a, b) => {
+        const aPreferred = preferredStreams.get(a.portalId) === String(a.streamId);
+        const bPreferred = preferredStreams.get(b.portalId) === String(b.streamId);
+        return Number(bPreferred) - Number(aPreferred);
+      });
       renderChannels();
     } catch (error) {
       if (error.name === "AbortError") return;
@@ -275,11 +283,13 @@
     try {
       const probe = await getJson(`/api/xtream/probe?portal=${encodeURIComponent(channel.portalId)}&stream=${encodeURIComponent(channel.streamId)}`);
       button.classList.remove("is-checking");
-      if (!probe.playable) {
+      if (!probe.playable || !probe.mobileCompatible) {
         button.classList.add("is-down");
-        playerEmpty.textContent = "هذا البث غير عامل حالياً. اختر قناة أخرى.";
-        playerState.textContent = "غير عامل";
-        setError(`${channel.name}: المصدر لا يرسل فيديو الآن.`);
+        playerEmpty.textContent = probe.playable
+          ? "هذا البث يعمل على الكمبيوتر لكنه غير متوافق مع الهاتف. اختر نسخة أخرى."
+          : "هذا البث غير عامل حالياً. اختر قناة أخرى.";
+        playerState.textContent = probe.playable ? "غير متوافق مع الهاتف" : "غير عامل";
+        setError(`${channel.name}: اختر قناة تحمل ترميز H.264 + AAC للهاتف.`);
         return;
       }
       button.classList.remove("is-down");
@@ -287,7 +297,9 @@
       setError("");
       openWatchBtn.disabled = false;
       reloadPreviewBtn.disabled = false;
-      playChannel(channel);
+      playerEmpty.textContent = "البث متوافق. جارٍ فتح صفحة المشاهدة…";
+      playerState.textContent = "فتح المشغّل";
+      setTimeout(openInWatchPage, 150);
     } catch (error) {
       button.classList.remove("is-checking");
       button.classList.add("is-down");

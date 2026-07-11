@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   createMediaToken,
   decodeMediaToken,
+  inspectMpegTsCodecs,
   loadXtreamPortals,
   probeXtreamPlayback,
   proxyXtreamMedia,
@@ -27,6 +28,33 @@ afterEach(() => {
 });
 
 describe("Xtream adapter", () => {
+  it("detects mobile-safe H.264 + AAC transport streams", () => {
+    const bytes = new Uint8Array(188 * 2).fill(0xff);
+    bytes[0] = 0x47;
+    bytes[1] = 0x40;
+    bytes[2] = 0x00;
+    bytes[3] = 0x10;
+    bytes[4] = 0x00;
+    bytes.set([0x00, 0xb0, 0x0d, 0x00, 0x01, 0xc1, 0x00, 0x00, 0x00, 0x01, 0xe1, 0x00], 5);
+    bytes[188] = 0x47;
+    bytes[189] = 0x41;
+    bytes[190] = 0x00;
+    bytes[191] = 0x10;
+    bytes[192] = 0x00;
+    bytes.set(
+      [
+        0x02, 0xb0, 0x17, 0x00, 0x01, 0xc1, 0x00, 0x00, 0xe1, 0x01, 0xf0, 0x00, 0x1b, 0xe1, 0x01, 0xf0, 0x00,
+        0x0f, 0xe1, 0x02, 0xf0, 0x00,
+      ],
+      193,
+    );
+    expect(inspectMpegTsCodecs(bytes)).toMatchObject({
+      video: "h264",
+      audio: "aac",
+      mobileCompatible: true,
+    });
+  });
+
   it("loads authorized portals from the secret", () => {
     const result = loadXtreamPortals(env);
     expect(result.error).toBeUndefined();

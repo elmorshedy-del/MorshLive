@@ -116,6 +116,8 @@ export async function probeXtreamChannel(env, searchParams) {
       portalId: portal.id,
       streamId,
       protocol: result.ok ? result.protocol : null,
+      mobileCompatible: Boolean(result.ok && result.mobileCompatible),
+      codecs: result.ok ? result.codecs || null : null,
       status: result.ok ? result.status : result.ts?.status || result.hls?.status || 0,
     },
     status: 200,
@@ -127,21 +129,25 @@ async function getPortalMediaStatus(portal) {
     const rows = await fetchXtreamJson(portal, "get_live_streams", 20000);
     const all = Array.isArray(rows) ? rows : [];
     const preferred = all.filter((row) => /bein|sport/i.test(String(row.name || "")));
-    const candidates = [...preferred, ...all.filter((row) => !preferred.includes(row))].slice(0, 4);
+    const candidates = [...preferred, ...all.filter((row) => !preferred.includes(row))].slice(0, 8);
+    let desktopFallback = null;
     for (const row of candidates) {
       const probe = await probeXtreamPlayback(portal, row.stream_id);
-      if (probe.ok) {
-        return {
-          playable: true,
-          protocol: probe.protocol,
-          sampleStreamId: row.stream_id,
-          sampleName: row.name || null,
-        };
-      }
+      if (!probe.ok) continue;
+      const result = {
+        playable: true,
+        protocol: probe.protocol,
+        mobileCompatible: Boolean(probe.mobileCompatible),
+        codecs: probe.codecs || null,
+        sampleStreamId: row.stream_id,
+        sampleName: row.name || null,
+      };
+      if (probe.mobileCompatible) return result;
+      if (!desktopFallback) desktopFallback = result;
     }
-    return { playable: false, protocol: null };
+    return desktopFallback || { playable: false, protocol: null, mobileCompatible: false };
   } catch (error) {
-    return { playable: false, protocol: null, error: safeError(error) };
+    return { playable: false, protocol: null, mobileCompatible: false, error: safeError(error) };
   }
 }
 

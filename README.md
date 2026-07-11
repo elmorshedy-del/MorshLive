@@ -155,7 +155,7 @@ Available same-origin endpoints:
 - `GET /api/xtream/probe?portal=p1&stream=123` — reads a small media sample and reports whether the selected source really emits HLS or MPEG-TS video.
 - `GET|HEAD /api/xtream/media/<token>` — validates the encrypted token, fetches the authorized stream server-side, and rewrites HLS manifests so credentials never appear in browser-visible URLs.
 
-Open `iptv-admin.html` to search, preview, and send a channel to the existing `watch.html` player. The watch URL carries only portal and stream identifiers; it fetches a fresh encrypted playback token when loaded.
+Open `iptv-admin.html` to search and send a channel to the existing `watch.html` player. The admin page probes real media bytes, restricts mobile choices to H.264/AAC-compatible sources, and opens the dedicated player immediately after a successful check. The watch URL carries only portal and stream identifiers; it fetches a fresh encrypted playback token when loaded.
 
 The API never returns usernames, passwords, or raw portal credentials to the browser. Media tokens use `XTREAM_TOKEN_SECRET` when configured, otherwise the existing `STREAM_SIGNING_SECRET`.
 

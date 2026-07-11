@@ -95,20 +95,81 @@ export function streamUrl(portal, streamId, extension = "m3u8") {
   return `${portal.url}/live/${encodeURIComponent(portal.username)}/${encodeURIComponent(portal.password)}/${safeId}.${ext}`;
 }
 
-async function probeMediaUrl(url, kind, timeoutMs = 8000) {
+export function inspectMpegTsCodecs(bytes) {
+  const data = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes || []);
+  let pmtPid = -1;
+  const streamTypes = [];
+
+  const payloadStart = (offset) => {
+    if (data[offset] !== 0x47) return -1;
+    const control = (data[offset + 3] >> 4) & 0x03;
+    if (control === 0 || control === 2) return -1;
+    let start = offset + 4;
+    if (control === 3) start += 1 + data[offset + 4];
+    if (start >= offset + 188) return -1;
+    if (data[offset + 1] & 0x40) start += 1 + data[start];
+    return start < offset + 188 ? start : -1;
+  };
+
+  for (let offset = 0; offset + 188 <= data.length; offset += 188) {
+    if (data[offset] !== 0x47) continue;
+    const pid = ((data[offset + 1] & 0x1f) << 8) | data[offset + 2];
+    const start = payloadStart(offset);
+    if (start < 0) continue;
+    if (pid === 0 && data[start] === 0x00) {
+      const sectionLength = ((data[start + 1] & 0x0f) << 8) | data[start + 2];
+      const end = Math.min(start + 3 + sectionLength - 4, offset + 188);
+      for (let pos = start + 8; pos + 4 <= end; pos += 4) {
+        const programNumber = (data[pos] << 8) | data[pos + 1];
+        if (programNumber) {
+          pmtPid = ((data[pos + 2] & 0x1f) << 8) | data[pos + 3];
+          break;
+        }
+      }
+    } else if (pid === pmtPid && data[start] === 0x02) {
+      const sectionLength = ((data[start + 1] & 0x0f) << 8) | data[start + 2];
+      const programInfoLength = ((data[start + 10] & 0x0f) << 8) | data[start + 11];
+      const end = Math.min(start + 3 + sectionLength - 4, offset + 188);
+      let pos = start + 12 + programInfoLength;
+      while (pos + 5 <= end) {
+        const type = data[pos];
+        const infoLength = ((data[pos + 3] & 0x0f) << 8) | data[pos + 4];
+        streamTypes.push(type);
+        pos += 5 + infoLength;
+      }
+      break;
+    }
+  }
+
+  const video = streamTypes.includes(0x1b) ? "h264" : streamTypes.includes(0x24) ? "hevc" : null;
+  const audio = streamTypes.some((type) => type === 0x0f || type === 0x11)
+    ? "aac"
+    : streamTypes.includes(0x81)
+      ? "ac3"
+      : streamTypes.some((type) => type === 0x03 || type === 0x04)
+        ? "mp2"
+        : null;
+  return {
+    video,
+    audio,
+    mobileCompatible: video === "h264" && (audio === "aac" || audio === null),
+  };
+}
+
+async function fetchProbeBytes(url, accept, timeoutMs = 8000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(url, {
       headers: {
-        Accept: kind === "hls" ? "application/vnd.apple.mpegurl,*/*" : "video/mp2t,*/*",
-        Range: "bytes=0-1879",
+        Accept: accept,
+        Range: "bytes=0-13159",
         "User-Agent": "Mozilla/5.0 (KoraZero Xtream Probe)",
       },
       redirect: "follow",
       signal: controller.signal,
     });
-    if (!response.ok || !response.body) return { ok: false, status: response.status, protocol: kind };
+    if (!response.ok || !response.body) return { response, bytes: new Uint8Array() };
     const reader = response.body.getReader();
     const { value } = await reader.read();
     try {
@@ -116,13 +177,53 @@ async function probeMediaUrl(url, kind, timeoutMs = 8000) {
     } catch {
       /* noop */
     }
-    const bytes = value || new Uint8Array();
-    if (kind === "hls") {
-      const text = textDecoder.decode(bytes.slice(0, 4096)).trimStart();
-      return { ok: text.startsWith("#EXTM3U"), status: response.status, protocol: kind, bytes: bytes.length };
+    return { response, bytes: value || new Uint8Array() };
+  } finally {
+    clearTimeout(timer);
+    controller.abort();
+  }
+}
+
+async function probeMediaUrl(url, kind, timeoutMs = 8000) {
+  try {
+    const first = await fetchProbeBytes(
+      url,
+      kind === "hls" ? "application/vnd.apple.mpegurl,*/*" : "video/mp2t,*/*",
+      timeoutMs,
+    );
+    if (!first.response.ok || !first.bytes.length) {
+      return { ok: false, status: first.response.status, protocol: kind };
     }
-    const sync = bytes.length > 0 && (bytes[0] === 0x47 || (bytes.length > 188 && bytes[188] === 0x47));
-    return { ok: sync, status: response.status, protocol: kind, bytes: bytes.length };
+    if (kind === "hls") {
+      const text = textDecoder.decode(first.bytes).trimStart();
+      if (!text.startsWith("#EXTM3U")) {
+        return { ok: false, status: first.response.status, protocol: kind };
+      }
+      const mediaLine = text.split(/\r?\n/).find((line) => line.trim() && !line.trim().startsWith("#"));
+      if (!mediaLine)
+        return { ok: true, status: first.response.status, protocol: kind, mobileCompatible: null };
+      const segmentUrl = new URL(mediaLine.trim(), url).toString();
+      const segment = await fetchProbeBytes(segmentUrl, "video/mp2t,*/*", timeoutMs);
+      const codecs = inspectMpegTsCodecs(segment.bytes);
+      return {
+        ok: segment.response.ok && segment.bytes.length > 0,
+        status: segment.response.status,
+        protocol: kind,
+        bytes: segment.bytes.length,
+        codecs,
+        mobileCompatible: codecs.mobileCompatible,
+      };
+    }
+    const codecs = inspectMpegTsCodecs(first.bytes);
+    const sync = first.bytes[0] === 0x47 || (first.bytes.length > 188 && first.bytes[188] === 0x47);
+    return {
+      ok: sync,
+      status: first.response.status,
+      protocol: kind,
+      bytes: first.bytes.length,
+      codecs,
+      mobileCompatible: codecs.mobileCompatible,
+    };
   } catch (error) {
     return {
       ok: false,
@@ -130,9 +231,6 @@ async function probeMediaUrl(url, kind, timeoutMs = 8000) {
       protocol: kind,
       error: error.name === "AbortError" ? "timeout" : String(error.message || error),
     };
-  } finally {
-    clearTimeout(timer);
-    controller.abort();
   }
 }
 
