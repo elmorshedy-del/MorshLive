@@ -2576,35 +2576,20 @@ async function proxyKoraPlus(request, env) {
   const kt = String(Math.floor(Date.now() / 1000));
   const edgeUrl = koraPlusFrameUrl(channel, token, kt);
 
-  // Simple iframe wrapper — browser loads the edge CDN directly with real headers.
-  // no-referrer (meta + iframe attr) so frame.php sees no korazero.com referer:
-  // it gates its player on the loading origin the way go4score.app loads it, and
-  // a foreign referer makes it serve a decoy/redirect instead of the stream. The
-  // sandbox matches the other koraplus/daddy wrappers (allow-forms) so the
-  // player's own controls work.
-  const html = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="referrer" content="no-referrer">
-<title>KoraZero</title>
-<style>html,body{margin:0;height:100%;background:#000;overflow:hidden}#f{width:100vw;height:100vh;border:0;display:block}</style>
-</head><body>
-${/* eslint-disable-next-line no-script-url */ ""}
-<iframe id="f" src="${edgeUrl.replace(/"/g, "&quot;")}" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" referrerpolicy="no-referrer"></iframe>
-<script>
-(function(){
-  var f=document.getElementById('f'), lastAt=0;
-  function heal(){
-    var now=Date.now(); if(now-lastAt<30000) return; lastAt=now;
-    try{ var u=new URL(f.src); u.searchParams.set('_heal',String(now)); f.src=u.toString(); }catch(e){}
-    try{ window.parent.postMessage({type:'kz-alt-reload',reason:'koraplus-heal'},'*'); }catch(e){}
-  }
-  f.addEventListener('error',function(){ heal(); });
-  setInterval(function(){ heal(); }, 90000);
-})();
-</script>
-</body></html>`;
-
-  return new Response(html, { status: 200, headers: htmlHeaders });
+  // Single-iframe topology: 302 straight to the go4score edge frame.php instead
+  // of nesting it inside a wrapper iframe. go4score.app loads frame.php in ONE
+  // iframe and plays; our extra wrapper hop (plus its sandbox) blocked the player
+  // on mobile. Redirecting collapses us to the same one-hop, unsandboxed embed —
+  // the watch page's iframe loads frame.php directly. Fresh token/kt per request.
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: edgeUrl,
+      "Cache-Control": "no-store, no-cache, must-revalidate",
+      "Pragma": "no-cache",
+      "X-KZ-Proxy": "koraplus",
+    },
+  });
 }
 
 function daddyChannelId(rawCh) {

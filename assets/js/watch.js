@@ -202,7 +202,7 @@
     const onError = () => {
       loadedUrl = "";
       destroyInlineHls();
-      loadIframePlayer(embedUrlFor(currentEmbed(), embedQuery(activeServ)));
+      loadIframePlayer(embedUrlFor(currentEmbed(), embedQuery(activeServ)), true);
     };
 
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
@@ -360,7 +360,12 @@
     renderSidebar();
   }
 
-  function iframeSandboxAttr(_noSandbox) {
+  function iframeSandboxAttr(noSandbox) {
+    // The go4score/koraplus player (and other third-party frame.php players) must
+    // run UNSANDBOXED on mobile: an outer sandbox applies to every descendant
+    // frame, and iOS Safari blocks the player's media/service-worker init inside a
+    // sandbox — go4score.app itself embeds frame.php with no sandbox and plays.
+    if (noSandbox) return "";
     return 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ';
   }
 
@@ -476,7 +481,7 @@
     if (!shell || !url) return;
 
     if (isIframe) {
-      loadIframePlayer(url, false);
+      loadIframePlayer(url, true);
       loadedUrl = `pinned-mirror-iframe:${url}`;
       return;
     }
@@ -532,7 +537,7 @@
       mountPinnedMainMirror(override.url, override.fallback, override.iframe);
       return;
     }
-    loadIframePlayer(embedUrlFor(currentEmbed(), embedQuery(activeServ)), false);
+    loadIframePlayer(embedUrlFor(currentEmbed(), embedQuery(activeServ)), true);
   }
 
   function reloadPlayer() {
