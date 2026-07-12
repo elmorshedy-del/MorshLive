@@ -191,7 +191,7 @@
     if (video.paused || video.muted) show();
   }
 
-  function mountInlineHls(sources) {
+  function mountInlineHls(sources, opts) {
     destroyInlineHls();
     if (!shell || !sources.length) return false;
     const src = sources[0];
@@ -199,11 +199,11 @@
     const video = shell.querySelector(".kz-main-video");
     if (!video) return false;
 
-    const onError = () => {
+    const onError = (opts && opts.onFatal) || (() => {
       loadedUrl = "";
       destroyInlineHls();
       loadIframePlayer(embedUrlFor(currentEmbed(), embedQuery(activeServ)), true);
-    };
+    });
 
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
       video.src = src;
@@ -261,6 +261,26 @@
     destroyInlineHls();
     if (!shell) return;
     shell.innerHTML = `<div class="manual-mirror-error">${escapeHtml(message || "تعذر تشغيل قناة IPTV")}</div>`;
+  }
+
+  function showBridgeFailure() {
+    destroyInlineHls();
+    if (!shell) return;
+    loadedUrl = "bridge:unavailable";
+    shell.innerHTML =
+      `<div class="manual-mirror-error" data-bridge-failure="1">
+        <p>🧪 ${escapeHtml(t("watch.bridgeUnavailable") || "Experimental bridge unavailable.")}</p>
+        <button type="button" class="btn btn-primary" data-bridge-remove="1">
+          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M17 7 7 17M7 7l10 10"/></svg>
+          ${escapeHtml(t("watch.bridgeRemove") || "Switch to normal source")}
+        </button>
+      </div>`;
+    shell.querySelector("[data-bridge-remove]").addEventListener("click", () => {
+      const next = new URL(location.href);
+      next.searchParams.delete("player");
+      next.searchParams.set("serv", String(activeServ));
+      location.href = next.toString();
+    });
   }
 
   function mountXtreamPlayer(selected) {
@@ -536,7 +556,7 @@
     if (activeEmbedKey === "bridge" && window.STREAM_BRIDGE && window.STREAM_BRIDGE.hasStream(channel.id)) {
       var bridgeUrl = window.STREAM_BRIDGE.hlsUrl(channel.id);
       if (bridgeUrl) {
-        mountInlineHls([bridgeUrl]);
+        mountInlineHls([bridgeUrl], { onFatal: showBridgeFailure });
         return;
       }
     }
@@ -1231,18 +1251,47 @@
       row.innerHTML = `<div class="server-groups server-groups--clean"><div class="server-group"><div class="server-group-label">Xtream</div><div class="server-group-row"><span class="server-status-pill srv-ok">${escapeHtml(portal)} ← ${escapeHtml(activeXtreamChannel?.name || "IPTV")}</span></div></div></div>`;
       return;
     }
-    const defaultKey = (match && match.embedKey) || window.SITE_DATA.embedKeyFor(channel.id) || "koraplus";
-    row.innerHTML = `<div class="server-groups server-groups--clean">
-      <div class="server-group" data-group="${escapeHtml(defaultKey)}">
-        <div class="server-group-label">${sourceLabel(defaultKey)}</div>
-        <div class="server-group-row">
-          <span class="server-status-pill srv-ok">${sourceLabel(defaultKey)} ← ${escapeHtml(channel.name || channel.id)}</span>
-        </div>
-      </div>
-    </div>`;
+    var defaultKey = (match && match.embedKey) || window.SITE_DATA.embedKeyFor(channel.id) || "koraplus";
+    var isBridgeActive = activeEmbedKey === "bridge";
+
+    // Build server options from streamOptionsFor
+    var streamOpts = window.streamOptionsFor
+      ? window.streamOptionsFor(channel.id, match, null)
+      : [];
+    var groupsHtml = "";
+
+    // Group: default embed (first non-bridge option)
+    var defaultOpt = streamOpts.find(function (o) { return o.id !== "bridge"; });
+    var defaultLabel = defaultOpt ? sourceLabel(defaultOpt.embedKey) : sourceLabel(defaultKey);
+    groupsHtml += '<div class="server-group"><div class="server-group-label">' + escapeHtml(defaultLabel) + '</div><div class="server-group-row">';
+    groupsHtml += '<span class="server-status-pill srv-ok">' + escapeHtml(defaultLabel) + ' ← ' + escapeHtml(channel.name || channel.id) + '</span>';
+    groupsHtml += '</div></div>';
+
+    // Group: experimental bridge option
+    var bridgeOpt = streamOpts.find(function (o) { return o.id === "bridge"; });
+    if (bridgeOpt) {
+      var bridgePillClass = isBridgeActive ? "srv-ok srv-active" : "srv-exp";
+      groupsHtml += '<div class="server-group server-group--exp" data-group="bridge"><div class="server-group-label">🧪 ' + escapeHtml(t("watch.expSource") || "Experimental") + '</div><div class="server-group-row">';
+      groupsHtml += '<button type="button" class="server-status-pill ' + bridgePillClass + '" data-bridge-btn="1">🧪 Bridge (Experimental)</button>';
+      groupsHtml += '</div></div>';
+    }
+
+    row.innerHTML = '<div class="server-groups server-groups--clean">' + groupsHtml + '</div>';
     row.dataset.ch = channel.id;
     row.dataset.embed = defaultKey;
     row.dataset.serv = "primary";
+
+    // Bind bridge button
+    var bridgeBtn = row.querySelector("[data-bridge-btn]");
+    if (bridgeBtn) {
+      bridgeBtn.addEventListener("click", function () {
+        var next = new URL(location.href);
+        next.searchParams.set("player", "bridge");
+        if (match && match.id) next.searchParams.set("match", match.id);
+        next.searchParams.set("serv", String(activeServ));
+        location.href = next.toString();
+      });
+    }
   }
 
   function renderSidebar() {
