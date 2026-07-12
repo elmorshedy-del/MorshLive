@@ -1,0 +1,40 @@
+# MorshLive Bridge — Experimental headless browser → HLS pipeline
+# Deploy on a separate VPS. Points your bridge HLS URL at korazero.com.
+#
+# Architecture:
+#   go4score.app → Chromium (top-level, no iframe) → Xvfb → ffmpeg → MediaMTX → HLS
+#
+# Once running:
+#   - HLS stream: http://<bridge-ip>/hls/live/<slug>/index.m3u8
+#   - VNC (click server buttons): http://<bridge-ip>/ui/vnc/<slug>/
+#   - Web UI (manage streams): http://<bridge-ip>/ui/
+
+services:
+  bridge:
+    image: ghcr.io/riguettodev/decap-stream:latest
+    container_name: morshlive-bridge
+    restart: unless-stopped
+    shm_size: "1gb"
+    security_opt:
+      - seccomp:unconfined
+    environment:
+      TZ: Africa/Cairo
+    ports:
+      - "127.0.0.1:3000:3000"
+      - "127.0.0.1:6080:6080"
+    volumes:
+      - bridge_data:/app/data/streams
+
+  nginx:
+    image: nginx:alpine
+    container_name: morshlive-bridge-nginx
+    restart: unless-stopped
+    ports:
+      - "${PORT:-80}:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - bridge
+
+volumes:
+  bridge_data:

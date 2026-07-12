@@ -532,6 +532,14 @@
       if (activeXtreamChannel) mountXtreamPlayer(activeXtreamChannel);
       return;
     }
+    // Bridge: direct HLS from headless Chromium bridge — no iframe
+    if (activeEmbedKey === "bridge" && window.STREAM_BRIDGE && window.STREAM_BRIDGE.hasStream(channel.id)) {
+      var bridgeUrl = window.STREAM_BRIDGE.hlsUrl(channel.id);
+      if (bridgeUrl) {
+        mountInlineHls([bridgeUrl]);
+        return;
+      }
+    }
     const override = mainPlayerOverrideForMatch(match);
     if (override) {
       mountPinnedMainMirror(override.url, override.fallback, override.iframe);
@@ -1211,6 +1219,7 @@
     if (key === "kooracity") return "Koora City";
     if (key === "sirtv") return "Sir TV";
     if (key === "ntv") return "NTV";
+    if (key === "bridge") return "🧪 Bridge (Exp)";
     return String(key || "").toUpperCase();
   }
 
