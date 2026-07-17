@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   clampSinceUtc,
   dedupeByContent,
+  median,
   qualityScore,
   rankTrendingMemes,
   weightedEngagement,
@@ -52,6 +53,14 @@ describe("qualityScore", () => {
   });
 });
 
+describe("median", () => {
+  it("handles odd and even lengths and empty", () => {
+    expect(median([3, 1, 2])).toBe(2);
+    expect(median([4, 1, 2, 3])).toBe(2.5);
+    expect(median([])).toBe(0);
+  });
+});
+
 describe("clampSinceUtc", () => {
   it("clamps an old window start to maxDays back", () => {
     const clamped = clampSinceUtc("2026-06-11T00:00:00Z", NOW, 7);
@@ -91,16 +100,46 @@ describe("rankTrendingMemes", () => {
     expect(out[0].trendRank).toBe(1);
   });
 
-  it("keeps only a day's best when that day overflows its share", () => {
-    // 30 posts today, limit 10 → the 10 with the most engagement survive.
-    const today = Array.from({ length: 30 }, (_, i) =>
-      meme(`t${i}`, { likes: 100 + i, ageHours: 3 + (i % 5) }),
-    );
-    const out = rankTrendingMemes(today, { nowMs: NOW, limit: 10 });
-    expect(out).toHaveLength(10);
+  it("drops only the garbage (far below the day's median), keeps the rest", () => {
+    // Same day: a cluster of healthy posts (~1000 likes) plus two duds. The
+    // duds sit below 20% of the day's median and are filtered; everyone else
+    // survives — this is a garbage filter, not a top-K cap.
+    const posts = [
+      meme("good1", { likes: 1000, ageHours: 3 }),
+      meme("good2", { likes: 1100, ageHours: 4 }),
+      meme("good3", { likes: 900, ageHours: 5 }),
+      meme("good4", { likes: 1200, ageHours: 6 }),
+      meme("good5", { likes: 950, ageHours: 7 }),
+      meme("dud1", { likes: 20, ageHours: 8 }),
+      meme("dud2", { likes: 5, ageHours: 9 }),
+    ];
+    const out = rankTrendingMemes(posts, { nowMs: NOW, limit: 30 });
     const kept = new Set(out.map((m) => m.tweetId));
-    // t29..t20 have the highest like counts — exactly those survive.
-    for (let i = 20; i < 30; i++) expect(kept.has(`t${i}`)).toBe(true);
+    expect(kept.has("dud1")).toBe(false);
+    expect(kept.has("dud2")).toBe(false);
+    for (const id of ["good1", "good2", "good3", "good4", "good5"]) {
+      expect(kept.has(id)).toBe(true);
+    }
+  });
+
+  it("does not over-filter: a low-activity day still shows its posts", () => {
+    // Every post is modest; none is far below the median, so nothing is dropped.
+    const posts = [
+      meme("a", { likes: 40, ageHours: 2 }),
+      meme("b", { likes: 55, ageHours: 3 }),
+      meme("c", { likes: 48, ageHours: 4 }),
+    ];
+    const out = rankTrendingMemes(posts, { nowMs: NOW, limit: 30 });
+    expect(out).toHaveLength(3);
+  });
+
+  it("widens the rail toward the limit instead of a tiny top set", () => {
+    // 25 healthy posts across today → all survive the garbage filter, feed shows them.
+    const posts = Array.from({ length: 25 }, (_, i) =>
+      meme(`p${i}`, { likes: 800 + (i % 7) * 50, ageHours: 2 + (i % 6) }),
+    );
+    const out = rankTrendingMemes(posts, { nowMs: NOW, limit: 30 });
+    expect(out.length).toBe(25);
   });
 
   it("never lets yesterday's viral flood push today's events out", () => {

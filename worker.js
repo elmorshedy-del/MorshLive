@@ -4649,7 +4649,7 @@ async function loadMemeSources(env, origin) {
     _memeSourcesCache = {
       accounts: Array.isArray(json.accounts) ? json.accounts.filter((a) => a?.key && a?.username) : [],
       topPerAccount: Number(json.topPerAccount) || 3,
-      homeAccounts: Array.isArray(json.homeAccounts) ? json.homeAccounts.filter(Boolean) : ["TrollFootball", "memesvsfootball"],
+      homeAccounts: Array.isArray(json.homeAccounts) ? json.homeAccounts.filter(Boolean) : ["TrollFootball", "Contxtfootball"],
       homeSinceUtc: json.homeSinceUtc || WC_HOME_SINCE_UTC,
       homeSyndicationLimit: Number(json.homeSyndicationLimit) || 100,
       homeTargetPerDay: Number(json.homeTargetPerDay) || 4,
@@ -4671,7 +4671,7 @@ async function loadMemeSources(env, origin) {
     _memeSourcesCache = {
       accounts: [],
       topPerAccount: 3,
-      homeAccounts: ["TrollFootball", "memesvsfootball"],
+      homeAccounts: ["TrollFootball", "Contxtfootball"],
       homeSinceUtc: WC_HOME_SINCE_UTC,
       homeSyndicationLimit: 100,
       homeTargetPerDay: 4,
@@ -4788,7 +4788,7 @@ async function fetchHomeViralMemes(memeConfig, bearer, timelineCache) {
   const displayDays = config.homeDisplayDays || 3;
   const recentDays = config.homeRecentDays || 2;
   const dayKeys = recentMemeDayKeys(tz, displayDays);
-  const homeKeys = config.homeAccounts || ["TrollFootball", "memesvsfootball"];
+  const homeKeys = config.homeAccounts || ["TrollFootball", "Contxtfootball"];
   const accounts = (config.accounts || []).filter((a) => homeKeys.includes(a.key));
   const thresholds = {};
   const recentThresholds = {};
@@ -4843,7 +4843,7 @@ async function recheckPendingHomeMemes(pending, memeConfig, bearer, timelineCach
   const tz = config.homeDayTzOffsetHours ?? 3;
   const displayDays = config.homeDisplayDays || 3;
   const recentDays = config.homeRecentDays || 2;
-  const homeKeys = config.homeAccounts || ["TrollFootball", "memesvsfootball"];
+  const homeKeys = config.homeAccounts || ["TrollFootball", "Contxtfootball"];
   const accounts = (config.accounts || []).filter((a) => homeKeys.includes(a.key));
   const pendingAuthors = new Set(pending.map((m) => String(m.author || "").toLowerCase()).filter(Boolean));
   const poolsByAuthor = new Map();
@@ -5166,6 +5166,37 @@ async function recentMemesDiag(bearer, memeConfig) {
   });
 }
 
+// Last-good persistence. The free syndication feed is rate-limited and often
+// returns empty when hit repeatedly; rather than collapse to the stale static
+// archive (old matches), keep the last NON-EMPTY live scan in the edge cache
+// for ~48h and re-serve it. This is what keeps fresh daily posts on the rail
+// without hammering X — free, and it cannot deplete the paid API.
+const LAST_GOOD_TTL_S = 48 * 60 * 60;
+function lastGoodMemesKey(origin) {
+  return new Request(`${origin}/api/recent-memes/__last-good`);
+}
+async function readLastGoodMemes(origin) {
+  try {
+    const res = await caches.default.match(lastGoodMemesKey(origin));
+    if (!res) return null;
+    const j = await res.json();
+    return Array.isArray(j.memes) && j.memes.length ? j.memes : null;
+  } catch {
+    return null;
+  }
+}
+async function writeLastGoodMemes(origin, memes) {
+  try {
+    const body = JSON.stringify({ memes, at: Date.now() });
+    await caches.default.put(
+      lastGoodMemesKey(origin),
+      new Response(body, {
+        headers: { "Content-Type": "application/json", "Cache-Control": `max-age=${LAST_GOOD_TTL_S}` },
+      })
+    );
+  } catch { /* cache optional */ }
+}
+
 async function proxyRecentMemesApi(request, env) {
   const url = new URL(request.url);
   const origin = url.origin;
@@ -5202,7 +5233,7 @@ async function proxyRecentMemesApi(request, env) {
       displayDays: memeConfig.homeDisplayDays || 3,
       recentDays: memeConfig.homeRecentDays || 2,
       dayKeys: recentMemeDayKeys(tz, memeConfig.homeDisplayDays || 3),
-      accounts: memeConfig.homeAccounts || ["TrollFootball", "memesvsfootball"],
+      accounts: memeConfig.homeAccounts || ["TrollFootball", "Contxtfootball"],
       thresholds: meta.thresholds || {},
       recentThresholds: meta.recentThresholds || {},
       accountStats: meta.accountStats || {},
@@ -5280,10 +5311,18 @@ async function proxyRecentMemesApi(request, env) {
     memes = rankTrendingMemes(filterMemesWithMedia(memes), { limit: RECENT_MEMES_LIMIT });
   }
 
-  // When the viral-account pool is empty, populate the scroll from recent-match
-  // memes (see collectRecentMatchMemes) so the home rail is never blank while a
-  // live source is unavailable.
+  // Fallback chain when the live viral pool is empty (syndication throttled):
+  //   1. last-good — the most recent non-empty live scan (kept ~48h). Keeps
+  //      fresh daily posts on screen instead of dropping to old matches.
+  //   2. recent-match memes (static archive) — last resort, may be stale.
   let source = "home-viral-threshold";
+  if (!memes.length) {
+    const lastGood = await readLastGoodMemes(origin);
+    if (lastGood) {
+      memes = rankTrendingMemes(filterMemesWithMedia(lastGood), { limit: RECENT_MEMES_LIMIT });
+      if (memes.length) source = "last-good";
+    }
+  }
   if (!memes.length) {
     try {
       const matchMemes = await collectRecentMatchMemes(env, origin);
@@ -5292,6 +5331,12 @@ async function proxyRecentMemesApi(request, env) {
         source = "recent-match-memes";
       }
     } catch { /* nothing to fall back to */ }
+  }
+
+  // Persist a fresh, non-empty LIVE scan as last-good — never the static
+  // archive, so a throttled scan can never pin old matches on the rail.
+  if (memes.length && source === "home-viral-threshold") {
+    await writeLastGoodMemes(origin, memes);
   }
 
   memes = updateRecentMemesRuntimeCache(memes, pending, today);
