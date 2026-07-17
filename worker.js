@@ -5213,9 +5213,15 @@ async function proxyRecentMemesApi(request, env) {
       recentTargetPerDay: memeConfig.homeRecentTargetPerDay ?? memeConfig.homeTargetPerDay ?? 4,
       cached: !!meta.cached,
     });
+    // An empty rail must never be pinned at the edge for the full window — that
+    // is what turns a transient source outage into a 10-minute blank section.
+    // Cache empties briefly so the rail self-heals on the next scan cycle.
+    const cacheControl = memes.length
+      ? "public, max-age=600"
+      : "public, max-age=30";
     return new Response(body, {
       status: 200,
-      headers: { ...headers, "X-KZ-Meme-Source": source },
+      headers: { ...headers, "Cache-Control": cacheControl, "X-KZ-Meme-Source": source },
     });
   };
 
