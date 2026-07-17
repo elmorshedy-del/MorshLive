@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  dedupeByContent,
-  diversifyByAuthor,
-  rankTrendingMemes,
-  trendScore,
-  weightedEngagement,
-} from "../lib/trend-rank.js";
+import { dedupeByContent, rankTrendingMemes, trendScore, weightedEngagement } from "../lib/trend-rank.js";
 
 const NOW = Date.parse("2026-07-17T12:00:00Z");
 
@@ -78,24 +72,14 @@ describe("dedupeByContent", () => {
   });
 });
 
-describe("diversifyByAuthor", () => {
-  const entry = (id, author, score) => ({ meme: meme(id, { author }), score });
-
-  it("caps an author at authorCap while slots can go to others", () => {
-    const scored = [
-      entry("a1", "spam", 10),
-      entry("a2", "spam", 9),
-      entry("a3", "spam", 8),
-      entry("b1", "other", 1),
-    ];
-    const out = diversifyByAuthor(scored, 3, 2);
-    expect(out.map((e) => e.meme.tweetId)).toEqual(["a1", "a2", "b1"]);
-  });
-
-  it("backfills with skipped entries when the pool is too small to fill otherwise", () => {
-    const scored = [entry("a1", "spam", 10), entry("a2", "spam", 9), entry("a3", "spam", 8)];
-    const out = diversifyByAuthor(scored, 3, 2);
-    expect(out.map((e) => e.meme.tweetId)).toEqual(["a1", "a2", "a3"]);
+describe("author neutrality", () => {
+  it("never limits an author — one account's stronger memes beat everyone else's weaker ones", () => {
+    const strong = Array.from({ length: 4 }, (_, i) =>
+      meme(`s${i}`, { likes: 9000 - i, ageHours: 2, author: "OneAccount" }),
+    );
+    const weak = meme("weak", { likes: 50, ageHours: 2, author: "Other" });
+    const out = rankTrendingMemes([...strong, weak], { nowMs: NOW, limit: 4 });
+    expect(out.every((m) => m.author === "OneAccount")).toBe(true);
   });
 });
 
@@ -137,15 +121,5 @@ describe("rankTrendingMemes", () => {
     const out1 = rankTrendingMemes([a, b], { nowMs: NOW });
     const out2 = rankTrendingMemes([b, a], { nowMs: NOW });
     expect(out1.map((m) => m.tweetId)).toEqual(out2.map((m) => m.tweetId));
-  });
-
-  it("keeps one account from flooding the rail", () => {
-    const spam = Array.from({ length: 6 }, (_, i) =>
-      meme(`s${i}`, { likes: 9000 - i, ageHours: 2, author: "MemeFactory" }),
-    );
-    const other = meme("solo", { likes: 50, ageHours: 2, author: "SmallAccount" });
-    const out = rankTrendingMemes([...spam, other], { nowMs: NOW, limit: 3 });
-    expect(out.filter((m) => m.author === "MemeFactory")).toHaveLength(2);
-    expect(out.find((m) => m.author === "SmallAccount")).toBeTruthy();
   });
 });
