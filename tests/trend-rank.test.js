@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { dedupeByContent, qualityScore, rankTrendingMemes, weightedEngagement } from "../lib/trend-rank.js";
+import {
+  clampSinceUtc,
+  dedupeByContent,
+  qualityScore,
+  rankTrendingMemes,
+  weightedEngagement,
+} from "../lib/trend-rank.js";
 
 const NOW = Date.parse("2026-07-17T12:00:00Z");
 
@@ -43,6 +49,22 @@ describe("qualityScore", () => {
     const photo = qualityScore(meme("p", { likes: 1000 }));
     const video = qualityScore(meme("v", { likes: 1000, mediaType: "video" }));
     expect(video).toBeGreaterThan(photo);
+  });
+});
+
+describe("clampSinceUtc", () => {
+  it("clamps an old window start to maxDays back", () => {
+    const clamped = clampSinceUtc("2026-06-11T00:00:00Z", NOW, 7);
+    expect(clamped).toBe(new Date(NOW - 7 * 86400000).toISOString());
+  });
+
+  it("keeps a start already inside the window", () => {
+    const recent = new Date(NOW - 2 * 86400000).toISOString();
+    expect(clampSinceUtc(recent, NOW, 7)).toBe(recent);
+  });
+
+  it("uses the floor when the input is unparseable", () => {
+    expect(clampSinceUtc("garbage", NOW, 7)).toBe(new Date(NOW - 7 * 86400000).toISOString());
   });
 });
 
@@ -101,12 +123,22 @@ describe("rankTrendingMemes", () => {
     expect(rankTrendingMemes(memes, { nowMs: NOW, limit: 20 })).toHaveLength(20);
   });
 
-  it("excludes posts outside the 7-day ceiling even when the rail is short", () => {
+  it("excludes posts outside the 7-day ceiling while anything fresh exists", () => {
     const out = rankTrendingMemes(
       [meme("fresh", { likes: 500, ageHours: 12 }), meme("ancient", { likes: 500000, ageHours: 20 * 24 })],
       { nowMs: NOW },
     );
     expect(out.map((m) => m.tweetId)).toEqual(["fresh"]);
+  });
+
+  it("falls back to the newest available content when the whole ingest is stale", () => {
+    // Nothing within 7 days — the rail must still show something (newest first)
+    // instead of leaving the homepage section blank.
+    const out = rankTrendingMemes(
+      [meme("older", { likes: 900, ageHours: 14 * 24 }), meme("newer", { likes: 400, ageHours: 12 * 24 })],
+      { nowMs: NOW },
+    );
+    expect(out.map((m) => m.tweetId)).toEqual(["newer", "older"]);
   });
 
   it("widens from 3 days to the 7-day ceiling when the 3-day pool is short", () => {

@@ -13,7 +13,7 @@ import {
   selectHomeScrollMemes,
   WC_HOME_SINCE_UTC,
 } from "./lib/meme-select.js";
-import { rankTrendingMemes } from "./lib/trend-rank.js";
+import { clampSinceUtc, rankTrendingMemes } from "./lib/trend-rank.js";
 import { resolveStreamUrl, rewriteReplayM3u8 as rewriteReplayM3u8Lines } from "./lib/replay-hls.js";
 import { dispatchBackendRoutes } from "./backend/router.js";
 import { backendRoutes } from "./backend/routes/index.js";
@@ -4193,6 +4193,33 @@ function readBearer(env) {
   return String(raw).trim().replace(/^Bearer\s+/i, "") || null;
 }
 
+// X API spend guards. Reads are billed against the monthly post cap, so the
+// paid API gets (per isolate) a daily call budget plus a latch that switches
+// it off for hours after 402 Payment Required / 429 Too Many Requests — a
+// depleted or rate-limited account must not be re-hammered every scan cycle.
+// Syndication (free) and the static fallback keep the rail alive meanwhile.
+const XAPI_DAILY_BUDGET = 100;
+const XAPI_LATCH_MS = 6 * 60 * 60 * 1000;
+let _xApiSpend = { day: "", calls: 0, latchedUntil: 0 };
+
+function xApiAllowed(nowMs = Date.now()) {
+  const day = new Date(nowMs).toISOString().slice(0, 10);
+  if (_xApiSpend.day !== day) {
+    _xApiSpend = { day, calls: 0, latchedUntil: _xApiSpend.latchedUntil };
+  }
+  return nowMs >= _xApiSpend.latchedUntil && _xApiSpend.calls < XAPI_DAILY_BUDGET;
+}
+
+async function xApiFetch(url, bearer) {
+  if (!xApiAllowed()) return null;
+  _xApiSpend.calls++;
+  const res = await fetch(url, { headers: { Authorization: `Bearer ${bearer}` } });
+  if (res.status === 402 || res.status === 429) {
+    _xApiSpend.latchedUntil = Date.now() + XAPI_LATCH_MS;
+  }
+  return res;
+}
+
 async function fetchAccountTweets(bearer, userId, startTime, endTime) {
   const params = new URLSearchParams({
     max_results: "30",
@@ -4204,10 +4231,8 @@ async function fetchAccountTweets(bearer, userId, startTime, endTime) {
     end_time: endTime,
     exclude: "retweets,replies",
   });
-  const res = await fetch(`${TWITTER_API_BASE}/users/${userId}/tweets?${params}`, {
-    headers: { Authorization: `Bearer ${bearer}` },
-  });
-  if (!res.ok) return { tweets: [], includes: {} };
+  const res = await xApiFetch(`${TWITTER_API_BASE}/users/${userId}/tweets?${params}`, bearer);
+  if (!res || !res.ok) return { tweets: [], includes: {} };
   const json = await res.json();
   return { tweets: json.data || [], includes: json.includes || {} };
 }
@@ -4228,10 +4253,8 @@ async function fetchAccountTweetsSince(bearer, userId, startTime, endTime, maxPa
       exclude: "retweets,replies",
     });
     if (nextToken) params.set("pagination_token", nextToken);
-    const res = await fetch(`${TWITTER_API_BASE}/users/${userId}/tweets?${params}`, {
-      headers: { Authorization: `Bearer ${bearer}` },
-    });
-    if (!res.ok) break;
+    const res = await xApiFetch(`${TWITTER_API_BASE}/users/${userId}/tweets?${params}`, bearer);
+    if (!res || !res.ok) break;
     const json = await res.json();
     tweets.push(...(json.data || []));
     if (json.includes?.media) includes.media.push(...json.includes.media);
@@ -4447,10 +4470,8 @@ async function fetchTweetsByIds(bearer, ids) {
     "user.fields": "profile_image_url,username",
   });
   try {
-    const res = await fetch(`${TWITTER_API_BASE}/tweets?${params}`, {
-      headers: { Authorization: `Bearer ${bearer}` },
-    });
-    if (!res.ok) return out;
+    const res = await xApiFetch(`${TWITTER_API_BASE}/tweets?${params}`, bearer);
+    if (!res || !res.ok) return out;
     const json = await res.json();
     for (const tweet of json.data || []) {
       out.set(String(tweet.id), { tweet, includes: json.includes || {} });
@@ -4731,10 +4752,12 @@ async function collectAccountHomePool(acct, memeConfig, bearer, timelineCache) {
 
   if (bearer && acct.id) {
     try {
+      // Spend guard: the rail displays ~the last week at most, so never
+      // re-read the whole since-WC window from the paid API on every scan.
       const pack = await fetchAccountTweetsSince(
         bearer,
         acct.id,
-        sinceUtc,
+        clampSinceUtc(sinceUtc),
         new Date().toISOString()
       );
       for (const t of pack.tweets) {
@@ -5100,6 +5123,12 @@ async function recentMemesDiag(bearer, memeConfig) {
     bearerPresent: !!bearer,
     bearerLen: bearer ? bearer.length : 0,
     account: acct ? { username: acct.username, id: acct.id } : null,
+    spendGuard: {
+      callsToday: _xApiSpend.calls,
+      dailyBudget: XAPI_DAILY_BUDGET,
+      latched: Date.now() < _xApiSpend.latchedUntil,
+      latchedUntil: _xApiSpend.latchedUntil ? new Date(_xApiSpend.latchedUntil).toISOString() : null,
+    },
   };
   if (bearer && acct && acct.id) {
     const params = new URLSearchParams({
@@ -5149,7 +5178,12 @@ async function proxyRecentMemesApi(request, env) {
   const memeConfig = await loadMemeSources(env, origin);
   const tz = memeConfig.homeDayTzOffsetHours ?? 3;
   const today = todayMemeDayKey(tz);
-  const responseCacheKey = new Request(`${origin}/api/recent-memes/__response-cache/${today}`);
+  // Key the edge cache by 10-min scan bucket so all isolates in a PoP share one
+  // scan per cycle (single-flight-ish) instead of each hitting X independently.
+  const scanBucket = Math.floor(Date.now() / RECENT_MEMES_SCAN_CACHE_MS);
+  const responseCacheKey = new Request(
+    `${origin}/api/recent-memes/__response-cache/${today}/${scanBucket}`
+  );
   const forceLive = url.searchParams.get("live") === "1";
   const bearer = readBearer(env);
   if (url.searchParams.get("diag") === "1") {
@@ -5264,11 +5298,12 @@ async function proxyRecentMemesApi(request, env) {
     pendingCount: pending.length,
     cached: false,
   }, source);
-  if (!pending.length) {
-    try {
-      await caches.default.put(responseCacheKey, response.clone());
-    } catch { /* cache optional */ }
-  }
+  // Always cache the scan for this bucket — even with pending tweets — so
+  // sibling isolates serve this result instead of re-scanning X themselves.
+  // The per-isolate runtime cache still drives the pending recheck cycle.
+  try {
+    await caches.default.put(responseCacheKey, response.clone());
+  } catch { /* cache optional */ }
   return response;
 }
 
