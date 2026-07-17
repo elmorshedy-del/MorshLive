@@ -27,6 +27,7 @@
     section.hidden = false;
     rail.innerHTML = window.KZTweets.railHtml(list, {
       railClass: "kz-tweet-rail kz-tweet-rail--home",
+      compact: true,
     });
     window.KZTweets.bindVideoPlayers(rail);
   }

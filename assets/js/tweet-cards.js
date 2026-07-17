@@ -129,11 +129,23 @@
     if (!meme || meme.type !== "tweet" || !meme.url || !memeHasMedia(meme)) return "";
     const caption = tweetText(meme.text);
     if (opts && opts.compact) {
+      const avatarC = meme.avatarUrl
+        ? `<img class="kz-tweet__avatar kz-tweet__avatar--img" src="${assetUrl(meme.avatarUrl)}" alt="" loading="lazy" />`
+        : `<span class="kz-tweet__avatar" aria-hidden="true">${authorInitial(meme.author)}</span>`;
       return `
       <article class="kz-tweet kz-tweet--compact">
         <a class="kz-tweet__link" href="${escapeHtml(meme.url)}" target="_blank" rel="noopener noreferrer" aria-label="@${escapeHtml(meme.author || "X")}"></a>
-        ${mediaBlockHtml(meme.media)}
-        ${caption ? `<p class="kz-tweet__text kz-tweet__text--compact" dir="auto">${caption}</p>` : ""}
+        <div class="kz-tweet__media-wrap">
+          ${mediaBlockHtml(meme.media)}
+          <span class="kz-tweet__x-badge" aria-hidden="true">𝕏</span>
+        </div>
+        <div class="kz-tweet__compact-body">
+          <div class="kz-tweet__compact-who">
+            ${avatarC}
+            <b>@${escapeHtml(meme.author || "X")}</b>
+          </div>
+          ${caption ? `<p class="kz-tweet__text kz-tweet__text--compact" dir="auto">${caption}</p>` : ""}
+        </div>
       </article>`;
     }
     const showMatch = opts && opts.showMatch;
