@@ -72,16 +72,15 @@ describe("selectHomeScrollMemes", () => {
     postedAt: new Date(now - ageDays * 86400000).toISOString(),
   });
 
-  it("pools the last 3 days, keeps the best, and orders by recency", () => {
+  it("pools the last 3 days, keeps the hottest by trend score", () => {
     const memes = [
-      meme(100, 0.2, "a"), // fresh, low engagement
-      meme(9000, 1, "b"), // best, 1 day old
-      meme(5000, 2, "c"), // 2 days old
+      meme(100, 0.2, "a"), // fresh but barely liked
+      meme(9000, 1, "b"), // strong and recent — hottest
+      meme(5000, 2, "c"), // decent, cooling off
       meme(99999, 20, "old"), // huge but 20 days old — outside the 3-day pool
     ];
     const out = selectHomeScrollMemes(memes, { limit: 2, nowMs: now });
-    // top-2 BEST within the 3-day pool are b (9000) and c (5000); 'old' excluded
-    expect(out.map((m) => m.tweetId)).toEqual(["b", "c"]); // then ordered newest-first
+    expect(out.map((m) => m.tweetId)).toEqual(["b", "c"]); // hottest first
     expect(out.find((m) => m.tweetId === "old")).toBeUndefined();
   });
 
@@ -93,7 +92,7 @@ describe("selectHomeScrollMemes", () => {
   it("widens to the 7-day ceiling when the last 3 days are short", () => {
     const memes = [meme(8000, 5, "y"), meme(3000, 6, "x")]; // both within 7 days
     const out = selectHomeScrollMemes(memes, { limit: 20, nowMs: now });
-    expect(out.map((m) => m.tweetId)).toEqual(["y", "x"]); // newest-first
+    expect(out.map((m) => m.tweetId)).toEqual(["y", "x"]); // hottest first
   });
 
   it("does NOT reach past the ceiling to fill the count (no stale June padding)", () => {

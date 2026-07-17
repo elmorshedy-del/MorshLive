@@ -13,6 +13,7 @@ import {
   selectHomeScrollMemes,
   WC_HOME_SINCE_UTC,
 } from "./lib/meme-select.js";
+import { rankTrendingMemes } from "./lib/trend-rank.js";
 import { resolveStreamUrl, rewriteReplayM3u8 as rewriteReplayM3u8Lines } from "./lib/replay-hls.js";
 import { dispatchBackendRoutes } from "./backend/router.js";
 import { backendRoutes } from "./backend/routes/index.js";
@@ -4677,7 +4678,10 @@ function recentMemesRuntimeFresh(dayKey) {
 }
 
 function updateRecentMemesRuntimeCache(memes, pending, dayKey) {
-  const merged = orderMemesOldestFirst(memes).slice(0, RECENT_MEMES_LIMIT);
+  // Rank order IS the rail's display order (front-end preserves API order).
+  // The old oldest-first sort here made the home rail lead with the stalest
+  // meme regardless of how well upstream had ranked the list.
+  const merged = rankTrendingMemes(memes, { limit: RECENT_MEMES_LIMIT });
   const pendingList = orderMemesOldestFirst(pending || []).slice(0, RECENT_MEMES_LIMIT);
   _recentMemesRuntimeCache = {
     at: Date.now(),
@@ -5196,7 +5200,7 @@ async function proxyRecentMemesApi(request, env) {
             } catch { /* syndication counts enough */ }
           }
           pending = recheck.pending;
-          updateRecentMemesRuntimeCache(memes, pending, today);
+          memes = updateRecentMemesRuntimeCache(memes, pending, today);
         } catch { /* keep cached memes */ }
       }
       return buildResponse(memes, { pendingCount: pending.length, cached: true }, runtimePending ? "runtime-recheck" : "runtime-cache");
@@ -5233,7 +5237,7 @@ async function proxyRecentMemesApi(request, env) {
     try {
       memes = await enrichMemesMedia(memes, bearer);
     } catch { /* static */ }
-    memes = filterMemesWithMedia(memes).slice(0, RECENT_MEMES_LIMIT);
+    memes = rankTrendingMemes(filterMemesWithMedia(memes), { limit: RECENT_MEMES_LIMIT });
   }
 
   // When the viral-account pool is empty, populate the scroll from recent-match
