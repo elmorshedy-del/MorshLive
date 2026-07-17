@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { dedupeByContent, rankTrendingMemes, trendScore, weightedEngagement } from "../lib/trend-rank.js";
+import { dedupeByContent, qualityScore, rankTrendingMemes, weightedEngagement } from "../lib/trend-rank.js";
 
 const NOW = Date.parse("2026-07-17T12:00:00Z");
 
@@ -38,27 +38,11 @@ describe("weightedEngagement", () => {
   });
 });
 
-describe("trendScore", () => {
-  it("ranks a fresh post with traction above an older post with more likes", () => {
-    const fresh = trendScore(meme("f", { likes: 5000, ageHours: 6 }), { nowMs: NOW });
-    const stale = trendScore(meme("s", { likes: 20000, ageHours: 48 }), { nowMs: NOW });
-    expect(fresh).toBeGreaterThan(stale);
-  });
-
-  it("still lets a genuinely viral post beat a barely-liked fresh one", () => {
-    const tiny = trendScore(meme("t", { likes: 30, ageHours: 3 }), { nowMs: NOW });
-    const viral = trendScore(meme("v", { likes: 60000, ageHours: 24 }), { nowMs: NOW });
-    expect(viral).toBeGreaterThan(tiny);
-  });
-
+describe("qualityScore", () => {
   it("boosts video over an identical photo", () => {
-    const photo = trendScore(meme("p", { likes: 1000, ageHours: 5 }), { nowMs: NOW });
-    const video = trendScore(meme("v", { likes: 1000, ageHours: 5, mediaType: "video" }), { nowMs: NOW });
+    const photo = qualityScore(meme("p", { likes: 1000 }));
+    const video = qualityScore(meme("v", { likes: 1000, mediaType: "video" }));
     expect(video).toBeGreaterThan(photo);
-  });
-
-  it("returns 0 for an unparseable postedAt", () => {
-    expect(trendScore({ likes: 9999, postedAt: "not-a-date" }, { nowMs: NOW })).toBe(0);
   });
 });
 
@@ -72,26 +56,49 @@ describe("dedupeByContent", () => {
   });
 });
 
-describe("author neutrality", () => {
-  it("never limits an author — one account's stronger memes beat everyone else's weaker ones", () => {
-    const strong = Array.from({ length: 4 }, (_, i) =>
-      meme(`s${i}`, { likes: 9000 - i, ageHours: 2, author: "OneAccount" }),
-    );
-    const weak = meme("weak", { likes: 50, ageHours: 2, author: "Other" });
-    const out = rankTrendingMemes([...strong, weak], { nowMs: NOW, limit: 4 });
-    expect(out.every((m) => m.author === "OneAccount")).toBe(true);
-  });
-});
-
 describe("rankTrendingMemes", () => {
-  it("orders hottest-first and attaches trendScore/trendRank", () => {
+  it("displays newest-first like a feed, regardless of engagement", () => {
     const out = rankTrendingMemes(
-      [meme("slow", { likes: 20000, ageHours: 60 }), meme("hot", { likes: 6000, ageHours: 4 })],
+      [
+        meme("huge-yesterday", { likes: 90000, ageHours: 30 }),
+        meme("modest-now", { likes: 800, ageHours: 2 }),
+      ],
       { nowMs: NOW },
     );
-    expect(out.map((m) => m.tweetId)).toEqual(["hot", "slow"]);
+    expect(out.map((m) => m.tweetId)).toEqual(["modest-now", "huge-yesterday"]);
     expect(out[0].trendRank).toBe(1);
-    expect(out[0].trendScore).toBeGreaterThan(out[1].trendScore);
+  });
+
+  it("keeps only a day's best when that day overflows its share", () => {
+    // 30 posts today, limit 10 → the 10 with the most engagement survive.
+    const today = Array.from({ length: 30 }, (_, i) =>
+      meme(`t${i}`, { likes: 100 + i, ageHours: 3 + (i % 5) }),
+    );
+    const out = rankTrendingMemes(today, { nowMs: NOW, limit: 10 });
+    expect(out).toHaveLength(10);
+    const kept = new Set(out.map((m) => m.tweetId));
+    // t29..t20 have the highest like counts — exactly those survive.
+    for (let i = 20; i < 30; i++) expect(kept.has(`t${i}`)).toBe(true);
+  });
+
+  it("never lets yesterday's viral flood push today's events out", () => {
+    const yesterdayFlood = Array.from({ length: 10 }, (_, i) =>
+      meme(`y${i}`, { likes: 50000 - i, ageHours: 28 }),
+    );
+    const todaySmall = [
+      meme("goal-today", { likes: 300, ageHours: 2 }),
+      meme("reaction-today", { likes: 150, ageHours: 4 }),
+    ];
+    const out = rankTrendingMemes([...yesterdayFlood, ...todaySmall], { nowMs: NOW, limit: 6 });
+    // Today is represented AND leads the feed.
+    expect(out[0].tweetId).toBe("goal-today");
+    expect(out[1].tweetId).toBe("reaction-today");
+    expect(out).toHaveLength(6);
+  });
+
+  it("still fills the rail from one day when it holds the whole pool", () => {
+    const memes = Array.from({ length: 40 }, (_, i) => meme(`m${i}`, { likes: 1000 + i, ageHours: 10 }));
+    expect(rankTrendingMemes(memes, { nowMs: NOW, limit: 20 })).toHaveLength(20);
   });
 
   it("excludes posts outside the 7-day ceiling even when the rail is short", () => {
@@ -110,12 +117,16 @@ describe("rankTrendingMemes", () => {
     expect(out.map((m) => m.tweetId)).toEqual(["d5", "d6"]);
   });
 
-  it("caps at the limit", () => {
-    const memes = Array.from({ length: 40 }, (_, i) => meme(`m${i}`, { likes: 1000 + i, ageHours: 10 }));
-    expect(rankTrendingMemes(memes, { nowMs: NOW, limit: 20 })).toHaveLength(20);
+  it("never limits an author — one account's stronger posts beat weaker ones from others", () => {
+    const strong = Array.from({ length: 4 }, (_, i) =>
+      meme(`s${i}`, { likes: 9000 - i, ageHours: 2, author: "OneAccount" }),
+    );
+    const weak = meme("weak", { likes: 50, ageHours: 2, author: "Other" });
+    const out = rankTrendingMemes([...strong, weak], { nowMs: NOW, limit: 4 });
+    expect(out.every((m) => m.author === "OneAccount")).toBe(true);
   });
 
-  it("is deterministic on exact ties (newer first, then id)", () => {
+  it("is deterministic on exact ties", () => {
     const a = meme("aaa", { likes: 100, ageHours: 5 });
     const b = meme("bbb", { likes: 100, ageHours: 5 });
     const out1 = rankTrendingMemes([a, b], { nowMs: NOW });

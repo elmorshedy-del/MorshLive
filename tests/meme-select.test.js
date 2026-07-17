@@ -72,15 +72,15 @@ describe("selectHomeScrollMemes", () => {
     postedAt: new Date(now - ageDays * 86400000).toISOString(),
   });
 
-  it("pools the last 3 days, keeps the hottest by trend score", () => {
+  it("pools the last 3 days, keeps each day's best, and reads newest-first", () => {
     const memes = [
-      meme(100, 0.2, "a"), // fresh but barely liked
-      meme(9000, 1, "b"), // strong and recent — hottest
-      meme(5000, 2, "c"), // decent, cooling off
+      meme(100, 0.2, "a"), // today's best (only) post — leads the feed
+      meme(9000, 1, "b"), // yesterday's best
+      meme(5000, 2, "c"), // two days ago — no slot left at limit 2
       meme(99999, 20, "old"), // huge but 20 days old — outside the 3-day pool
     ];
     const out = selectHomeScrollMemes(memes, { limit: 2, nowMs: now });
-    expect(out.map((m) => m.tweetId)).toEqual(["b", "c"]); // hottest first
+    expect(out.map((m) => m.tweetId)).toEqual(["a", "b"]); // feed order: newest day first
     expect(out.find((m) => m.tweetId === "old")).toBeUndefined();
   });
 
