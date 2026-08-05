@@ -21,13 +21,17 @@ const SITEMAP_INDEX = path.join(ROOT, "sitemap.xml");
 const STATIC_REDIRECTS = [
   "# Pretty URLs for korazero (Cloudflare Pages / Netlify compatible)",
   "# Requires assets.html_handling = \"none\" in wrangler.toml (see docs/CLOUDFLARE.md).",
-  "/watch/:channel     /watch.html?ch=:channel     200",
+  "# Static rules first (CF allows 2000); splat/placeholder rules must be last (max 100).",
   "/                   /index.html                 200",
   "/tournament         /tournament.html            200",
   "/vip                /tournament                 301",
-  "/vip/:channel       /tournament                 301",
   "/live               /tournament                 301",
   "/bein               /tournament                 301",
+];
+
+const DYNAMIC_REDIRECTS = [
+  "/watch/:channel     /watch.html?ch=:channel     200",
+  "/vip/:channel       /tournament                 301",
 ];
 
 function main() {
@@ -88,6 +92,8 @@ function main() {
     ...matchRows.map(
       (row) => `/world-cup-2026/${row.slug}  /world-cup-match.html?slug=${row.slug}  200`,
     ),
+    "# Dynamic splat rules (must be after all static rules)",
+    ...DYNAMIC_REDIRECTS,
   ];
   fs.writeFileSync(REDIRECTS_OUT, `${redirectLines.join("\n")}\n`);
 

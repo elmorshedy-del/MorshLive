@@ -1,10 +1,9 @@
 # Pretty URLs for korazero (Cloudflare Pages / Netlify compatible)
 # Requires assets.html_handling = "none" in wrangler.toml (see docs/CLOUDFLARE.md).
-/watch/:channel     /watch.html?ch=:channel     200
+# Static rules first (CF allows 2000); splat/placeholder rules must be last (max 100).
 /                   /index.html                 200
 /tournament         /tournament.html            200
 /vip                /tournament                 301
-/vip/:channel       /tournament                 301
 /live               /tournament                 301
 /bein               /tournament                 301
 # World Cup 2026 team + match highlight pages (generated)
@@ -148,3 +147,6 @@
 /world-cup-2026/france-vs-paraguay  /world-cup-match.html?slug=france-vs-paraguay  200
 /world-cup-2026/brazil-vs-norway  /world-cup-match.html?slug=brazil-vs-norway  200
 /world-cup-2026/england-vs-mexico  /world-cup-match.html?slug=england-vs-mexico  200
+# Dynamic splat rules (must be after all static rules)
+/watch/:channel     /watch.html?ch=:channel     200
+/vip/:channel       /tournament                 301
