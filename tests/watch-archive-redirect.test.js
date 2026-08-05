@@ -19,7 +19,7 @@ describe("watch-archive-redirect", () => {
   it("redirects archived match watch URLs to tournament match deep link", () => {
     const params = new URLSearchParams("ch=bein-max-1&match=espn-fifa.world-760504");
     const hit = resolveWatchArchiveRedirect("/watch.html", params, archive, []);
-    expect(hit.url).toBe("/tournament?match=brazil~norway");
+    expect(hit.url).toBe("/world-cup-2026/brazil-vs-norway");
     expect(hit.permanent).toBe(true);
   });
 

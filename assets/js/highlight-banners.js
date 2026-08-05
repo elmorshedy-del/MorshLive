@@ -58,7 +58,7 @@
 
   function bannerCard(m, eager) {
     const label = `${teamLabel(m.home)} ${m.score ? m.score : "vs"} ${teamLabel(m.away)}`;
-    const href = `/tournament?match=${encodeURIComponent(m.key)}`;
+    const href = window.TeamNames?.matchPageHref?.(m) || `/tournament?match=${encodeURIComponent(m.key)}`;
     const embed = m.embed && window.KZHighlights
       ? window.KZHighlights.replayEmbedUrl(m.embed)
       : "";

@@ -8,8 +8,20 @@
   let archive = null;
   let activeStage = "all";
   const TEAM_PAGE = document.body.classList.contains("wc-team-page");
+  const MATCH_PAGE = document.body.classList.contains("wc-match-page");
   const teamSlug = new URLSearchParams(location.search).get("team");
+  const matchSlugParam = new URLSearchParams(location.search).get("slug");
   let activeTeam = null;
+  let activeMatch = null;
+
+  function matchPageHref(m) {
+    return window.TeamNames?.matchPageHref?.(m) || "";
+  }
+
+  function redirectToMatchPage(m) {
+    const href = matchPageHref(m);
+    if (href) location.replace(href);
+  }
 
   function teamPageHref(name) {
     const slug = window.TeamNames?.slugFor?.(name);
@@ -77,6 +89,44 @@
     if (metaDesc) metaDesc.content = desc;
   }
 
+  function applyMatchSeo(m) {
+    if (!m) return;
+    const homeEn = m.home;
+    const awayEn = m.away;
+    const homeAr = window.TeamNames?.arabicFor?.(homeEn) || homeEn;
+    const awayAr = window.TeamNames?.arabicFor?.(awayEn) || awayEn;
+    const slug = window.TeamNames?.matchSlug?.(homeEn, awayEn) || matchSlugParam;
+    const isEn = document.documentElement.lang === "en";
+    const title = isEn
+      ? `${homeEn} vs ${awayEn} — World Cup 2026 highlights | KoraZero`
+      : `ملخص مباراة ${homeAr} و${awayAr} في كأس العالم 2026 | كورة زيرو`;
+    const desc = isEn
+      ? t("wcMatch.metaDesc", { home: homeEn, away: awayEn })
+      : t("wcMatch.metaDesc", { home: homeAr, away: awayAr });
+    document.title = title;
+    const h1 = document.getElementById("wc-match-title");
+    const lede = document.getElementById("wc-match-lede");
+    if (h1) {
+      h1.textContent = isEn
+        ? `${homeEn} vs ${awayEn} — World Cup 2026 highlights`
+        : `ملخص مباراة ${homeAr} و${awayAr} في كأس العالم 2026`;
+    }
+    if (lede) {
+      lede.textContent = isEn
+        ? t("wcMatch.lede", { home: homeEn, away: awayEn })
+        : t("wcMatch.lede", { home: homeAr, away: awayAr });
+    }
+    const canonical = `https://korazero.com/world-cup-2026/${slug}`;
+    const link = document.querySelector("link[rel=\"canonical\"]");
+    if (link) link.href = canonical;
+    const ogTitle = document.querySelector("meta[property=\"og:title\"]");
+    if (ogTitle) ogTitle.content = title.replace(" | KoraZero", "");
+    const ogUrl = document.querySelector("meta[property=\"og:url\"]");
+    if (ogUrl) ogUrl.content = canonical;
+    const metaDesc = document.querySelector("meta[name=\"description\"]");
+    if (metaDesc) metaDesc.content = desc;
+  }
+
   async function resolveActiveTeam() {
     if (!TEAM_PAGE || !teamSlug) return null;
     try {
@@ -93,6 +143,23 @@
       if (m.away) names.add(m.away);
     }
     return window.TeamNames?.teamFromSlug?.(teamSlug, [...names]) || null;
+  }
+
+  async function resolveActiveMatch() {
+    if (!MATCH_PAGE || !matchSlugParam) return null;
+    try {
+      const res = await fetch("/assets/data/wc-matches-index.json", { cache: "default" });
+      if (res.ok) {
+        const idx = await res.json();
+        const hit = (idx.matches || []).find((row) => row.slug === matchSlugParam);
+        if (hit?.key) return findMatchByQuery(hit.key);
+      }
+    } catch { /* fallback */ }
+    for (const m of archive?.matches || []) {
+      const slug = window.TeamNames?.matchSlug?.(m.home, m.away);
+      if (slug === matchSlugParam) return m;
+    }
+    return null;
   }
 
   function escapeHtml(s) {
@@ -358,6 +425,10 @@
     const hasHighlight = hasAnyHighlight(m);
     const clipCount = (matchClips(m).goals ? 1 : 0) + (matchClips(m).full ? 1 : 0);
     const notableCount = (m.clips || []).filter((clip) => clip && clip.videoUrl).length;
+    const pageHref = matchPageHref(m);
+    const pageLink = pageHref
+      ? `<a class="tournament-match-page-link" href="${escapeHtml(pageHref)}">${escapeHtml(t("wcMatch.viewPage"))} →</a>`
+      : "";
     return `
       <article class="match-card tournament-match-card" data-stage="${escapeHtml(m.stage)}" data-match-key="${escapeHtml(m.key)}">
         <div class="match-top">
@@ -381,7 +452,7 @@
         </div>
         <details class="match-panel tournament-panel">
           <summary class="match-panel-toggle">${t("tournament.openMatch")}</summary>
-          <div class="match-panel-body">${matchDetailHtml(m)}</div>
+          <div class="match-panel-body">${matchDetailHtml(m)}${pageLink}</div>
         </details>
       </article>`;
   }
@@ -526,8 +597,29 @@
     const enriched = await window.ensureHighlightsFromApi(pending);
     const byKey = new Map(enriched.map((m) => [m.key, m]));
     archive.matches = archive.matches.map((m) => byKey.get(m.key) || m);
+    if (MATCH_PAGE && activeMatch) {
+      activeMatch = byKey.get(activeMatch.key) || activeMatch;
+      renderMatchPage();
+      return;
+    }
     renderFeatured();
     renderGrid();
+  }
+
+  function renderMatchPage() {
+    const wrap = document.getElementById("tournament-featured");
+    const card = document.getElementById("tournament-featured-card");
+    const empty = document.getElementById("tournament-empty");
+    if (!wrap || !card || !activeMatch) {
+      if (wrap) wrap.hidden = true;
+      if (empty) empty.hidden = false;
+      return;
+    }
+    if (empty) empty.hidden = true;
+    wrap.hidden = false;
+    card.innerHTML = featuredHeroHtml(activeMatch);
+    bindVideoLaunch(card);
+    if (window.KZTweets) window.KZTweets.bindVideoPlayers(card);
   }
 
   async function loadArchive() {
@@ -535,6 +627,18 @@
     if (!res.ok) throw new Error("archive load failed");
     archive = await res.json();
     archive.matches = Array.isArray(archive.matches) ? archive.matches : [];
+
+    if (!TEAM_PAGE && !MATCH_PAGE) {
+      const raw = new URLSearchParams(location.search).get("match");
+      if (raw) {
+        const m = findMatchByQuery(raw);
+        if (m) {
+          redirectToMatchPage(m);
+          return;
+        }
+      }
+    }
+
     if (TEAM_PAGE) {
       activeTeam = await resolveActiveTeam();
       if (!activeTeam) {
@@ -544,6 +648,20 @@
       }
       applyTeamSeo(activeTeam);
     }
+
+    if (MATCH_PAGE) {
+      activeMatch = await resolveActiveMatch();
+      if (!activeMatch) {
+        const empty = document.getElementById("tournament-empty");
+        if (empty) empty.hidden = false;
+        return;
+      }
+      applyMatchSeo(activeMatch);
+      renderMatchPage();
+      hydrateMissingHighlights().catch(() => { /* optional backfill */ });
+      return;
+    }
+
     renderFeatured();
     renderTabs();
     renderGrid();
@@ -556,6 +674,11 @@
     if (!raw || !archive) return;
     const m = findMatchByQuery(raw);
     if (!m) return;
+    const href = matchPageHref(m);
+    if (href) {
+      location.replace(href);
+      return;
+    }
     const key = m.key;
 
     const latest = latestHighlightMatch();

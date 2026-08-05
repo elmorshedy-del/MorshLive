@@ -31,6 +31,8 @@
 
   function watchHref(m) {
     if (m.status === "ended" && m.key) {
+      const href = window.TeamNames?.matchPageHref?.(m);
+      if (href) return href;
       return `/tournament?match=${encodeURIComponent(m.key)}`;
     }
     return m.channelId

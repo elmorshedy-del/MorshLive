@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   korazero.com sitemap index
-  WC team URLs live in sitemap-wc-teams.xml (regenerated with archive refresh).
+  WC team + match URLs regenerated with archive refresh.
 -->
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
@@ -10,6 +10,10 @@
   </sitemap>
   <sitemap>
     <loc>https://korazero.com/sitemap-wc-teams.xml</loc>
+    <lastmod>2026-08-05</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://korazero.com/sitemap-wc-matches.xml</loc>
     <lastmod>2026-08-05</lastmod>
   </sitemap>
 </sitemapindex>

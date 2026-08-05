@@ -38,6 +38,8 @@
   // Where a match's watch button points. Ended fixtures → archive; live/upcoming → player.
   function watchHref(m) {
     if (m.status === "ended" && m.key) {
+      const href = window.TeamNames?.matchPageHref?.(m);
+      if (href) return href;
       return `/tournament?match=${encodeURIComponent(m.key)}`;
     }
     return m.channelId
