@@ -25,7 +25,9 @@ describe("TeamNames.canonicalToken", () => {
 
   it("falls back to normalized English for unknown teams (no regression)", () => {
     expect(TeamNames.canonicalToken("Fake National Team")).toBe("fakenationalteam");
-    expect(TeamNames.canonicalToken("Fake National Team")).toBe(TeamNames.canonicalToken("fake national team"));
+    expect(TeamNames.canonicalToken("Fake National Team")).toBe(
+      TeamNames.canonicalToken("fake national team"),
+    );
   });
 });
 
