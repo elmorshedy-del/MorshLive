@@ -35,9 +35,11 @@
       : `<div class="crest">${ab || "?"}</div>`;
   }
 
-  // Where a match's watch button points. Real fixtures have no channel mapping,
-  // so they open the auto-live player; sample data keeps its channel link.
+  // Where a match's watch button points. Ended fixtures → archive; live/upcoming → player.
   function watchHref(m) {
+    if (m.status === "ended" && m.key) {
+      return `tournament.html?match=${encodeURIComponent(m.key)}`;
+    }
     return m.channelId
       ? `watch.html?ch=${m.channelId}&match=${m.id}`
       : `watch.html?ch=live&match=${m.id}`;

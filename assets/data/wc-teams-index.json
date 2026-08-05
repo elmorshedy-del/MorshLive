@@ -1,0 +1,400 @@
+{
+  "updatedAt": "2026-08-05T17:27:52.943Z",
+  "tournament": "FIFA World Cup 2026",
+  "teams": [
+    {
+      "name": "Algeria",
+      "slug": "algeria",
+      "nameAr": "الجزائر",
+      "matchCount": 4
+    },
+    {
+      "name": "Argentina",
+      "slug": "argentina",
+      "nameAr": "الأرجنتين",
+      "matchCount": 8
+    },
+    {
+      "name": "Australia",
+      "slug": "australia",
+      "nameAr": "أستراليا",
+      "matchCount": 4
+    },
+    {
+      "name": "Austria",
+      "slug": "austria",
+      "nameAr": "النمسا",
+      "matchCount": 4
+    },
+    {
+      "name": "Belgium",
+      "slug": "belgium",
+      "nameAr": "بلجيكا",
+      "matchCount": 6
+    },
+    {
+      "name": "Bosnia-Herzegovina",
+      "slug": "bosnia-herzegovina",
+      "nameAr": "Bosnia-Herzegovina",
+      "matchCount": 4
+    },
+    {
+      "name": "Brazil",
+      "slug": "brazil",
+      "nameAr": "البرازيل",
+      "matchCount": 5
+    },
+    {
+      "name": "Canada",
+      "slug": "canada",
+      "nameAr": "كندا",
+      "matchCount": 5
+    },
+    {
+      "name": "Cape Verde",
+      "slug": "cape-verde",
+      "nameAr": "الرأس الأخضر",
+      "matchCount": 4
+    },
+    {
+      "name": "Colombia",
+      "slug": "colombia",
+      "nameAr": "كولومبيا",
+      "matchCount": 5
+    },
+    {
+      "name": "Congo DR",
+      "slug": "congo-dr",
+      "nameAr": "الكونغو الديمقراطية",
+      "matchCount": 4
+    },
+    {
+      "name": "Croatia",
+      "slug": "croatia",
+      "nameAr": "كرواتيا",
+      "matchCount": 4
+    },
+    {
+      "name": "Curaçao",
+      "slug": "curacao",
+      "nameAr": "Curaçao",
+      "matchCount": 3
+    },
+    {
+      "name": "Czechia",
+      "slug": "czechia",
+      "nameAr": "التشيك",
+      "matchCount": 3
+    },
+    {
+      "name": "Ecuador",
+      "slug": "ecuador",
+      "nameAr": "الإكوادور",
+      "matchCount": 4
+    },
+    {
+      "name": "Egypt",
+      "slug": "egypt",
+      "nameAr": "مصر",
+      "matchCount": 5
+    },
+    {
+      "name": "England",
+      "slug": "england",
+      "nameAr": "إنجلترا",
+      "matchCount": 8
+    },
+    {
+      "name": "France",
+      "slug": "france",
+      "nameAr": "فرنسا",
+      "matchCount": 8
+    },
+    {
+      "name": "Germany",
+      "slug": "germany",
+      "nameAr": "ألمانيا",
+      "matchCount": 4
+    },
+    {
+      "name": "Ghana",
+      "slug": "ghana",
+      "nameAr": "غانا",
+      "matchCount": 4
+    },
+    {
+      "name": "Haiti",
+      "slug": "haiti",
+      "nameAr": "Haiti",
+      "matchCount": 3
+    },
+    {
+      "name": "Iran",
+      "slug": "iran",
+      "nameAr": "إيران",
+      "matchCount": 3
+    },
+    {
+      "name": "Iraq",
+      "slug": "iraq",
+      "nameAr": "العراق",
+      "matchCount": 3
+    },
+    {
+      "name": "Ivory Coast",
+      "slug": "ivory-coast",
+      "nameAr": "ساحل العاج",
+      "matchCount": 4
+    },
+    {
+      "name": "Japan",
+      "slug": "japan",
+      "nameAr": "اليابان",
+      "matchCount": 4
+    },
+    {
+      "name": "Jordan",
+      "slug": "jordan",
+      "nameAr": "الأردن",
+      "matchCount": 3
+    },
+    {
+      "name": "Mexico",
+      "slug": "mexico",
+      "nameAr": "المكسيك",
+      "matchCount": 5
+    },
+    {
+      "name": "Morocco",
+      "slug": "morocco",
+      "nameAr": "المغرب",
+      "matchCount": 6
+    },
+    {
+      "name": "Netherlands",
+      "slug": "netherlands",
+      "nameAr": "هولندا",
+      "matchCount": 4
+    },
+    {
+      "name": "New Zealand",
+      "slug": "new-zealand",
+      "nameAr": "نيوزيلندا",
+      "matchCount": 3
+    },
+    {
+      "name": "Norway",
+      "slug": "norway",
+      "nameAr": "النرويج",
+      "matchCount": 6
+    },
+    {
+      "name": "Panama",
+      "slug": "panama",
+      "nameAr": "بنما",
+      "matchCount": 3
+    },
+    {
+      "name": "Paraguay",
+      "slug": "paraguay",
+      "nameAr": "باراغواي",
+      "matchCount": 5
+    },
+    {
+      "name": "Portugal",
+      "slug": "portugal",
+      "nameAr": "البرتغال",
+      "matchCount": 5
+    },
+    {
+      "name": "Qatar",
+      "slug": "qatar",
+      "nameAr": "قطر",
+      "matchCount": 3
+    },
+    {
+      "name": "Saudi Arabia",
+      "slug": "saudi-arabia",
+      "nameAr": "السعودية",
+      "matchCount": 3
+    },
+    {
+      "name": "Scotland",
+      "slug": "scotland",
+      "nameAr": "اسكتلندا",
+      "matchCount": 3
+    },
+    {
+      "name": "Senegal",
+      "slug": "senegal",
+      "nameAr": "السنغال",
+      "matchCount": 4
+    },
+    {
+      "name": "South Africa",
+      "slug": "south-africa",
+      "nameAr": "جنوب أفريقيا",
+      "matchCount": 4
+    },
+    {
+      "name": "South Korea",
+      "slug": "south-korea",
+      "nameAr": "كوريا الجنوبية",
+      "matchCount": 3
+    },
+    {
+      "name": "Spain",
+      "slug": "spain",
+      "nameAr": "إسبانيا",
+      "matchCount": 8
+    },
+    {
+      "name": "Sweden",
+      "slug": "sweden",
+      "nameAr": "السويد",
+      "matchCount": 4
+    },
+    {
+      "name": "Switzerland",
+      "slug": "switzerland",
+      "nameAr": "سويسرا",
+      "matchCount": 6
+    },
+    {
+      "name": "Tunisia",
+      "slug": "tunisia",
+      "nameAr": "تونس",
+      "matchCount": 3
+    },
+    {
+      "name": "Türkiye",
+      "slug": "turkiye",
+      "nameAr": "تركيا",
+      "matchCount": 3
+    },
+    {
+      "name": "United States",
+      "slug": "united-states",
+      "nameAr": "الولايات المتحدة",
+      "matchCount": 5
+    },
+    {
+      "name": "Uruguay",
+      "slug": "uruguay",
+      "nameAr": "أوروغواي",
+      "matchCount": 3
+    },
+    {
+      "name": "Uzbekistan",
+      "slug": "uzbekistan",
+      "nameAr": "أوزبكستان",
+      "matchCount": 3
+    }
+  ],
+  "watchRedirects": {
+    "espn-fifa.world-760415": "mexico~southafrica",
+    "espn-fifa.world-760414": "czechia~southkorea",
+    "espn-fifa.world-760416": "bosniaherzegovina~canada",
+    "espn-fifa.world-760417": "paraguay~unitedstates",
+    "espn-fifa.world-760420": "qatar~switzerland",
+    "espn-fifa.world-760419": "brazil~morocco",
+    "espn-fifa.world-760418": "haiti~scotland",
+    "espn-fifa.world-760421": "australia~turkiye",
+    "espn-fifa.world-760422": "curacao~germany",
+    "espn-fifa.world-760425": "japan~netherlands",
+    "espn-fifa.world-760423": "ecuador~ivorycoast",
+    "espn-fifa.world-760424": "sweden~tunisia",
+    "espn-fifa.world-760428": "capeverde~spain",
+    "espn-fifa.world-760426": "belgium~egypt",
+    "espn-fifa.world-760429": "saudiarabia~uruguay",
+    "espn-fifa.world-760427": "iran~newzealand",
+    "espn-fifa.world-760432": "france~senegal",
+    "espn-fifa.world-760430": "iraq~norway",
+    "espn-fifa.world-760433": "algeria~argentina",
+    "espn-fifa.world-760431": "austria~jordan",
+    "espn-fifa.world-760435": "congodr~portugal",
+    "espn-fifa.world-760437": "croatia~england",
+    "espn-fifa.world-760434": "ghana~panama",
+    "espn-fifa.world-760436": "colombia~uzbekistan",
+    "espn-fifa.world-760438": "czechia~southafrica",
+    "espn-fifa.world-760439": "bosniaherzegovina~switzerland",
+    "espn-fifa.world-760440": "canada~qatar",
+    "espn-fifa.world-760441": "mexico~southkorea",
+    "espn-fifa.world-760442": "australia~unitedstates",
+    "espn-fifa.world-760445": "morocco~scotland",
+    "espn-fifa.world-760444": "brazil~haiti",
+    "espn-fifa.world-760443": "paraguay~turkiye",
+    "espn-fifa.world-760447": "netherlands~sweden",
+    "espn-fifa.world-760448": "germany~ivorycoast",
+    "espn-fifa.world-760446": "curacao~ecuador",
+    "espn-fifa.world-760449": "japan~tunisia",
+    "espn-fifa.world-760453": "saudiarabia~spain",
+    "espn-fifa.world-760451": "belgium~iran",
+    "espn-fifa.world-760450": "capeverde~uruguay",
+    "espn-fifa.world-760452": "egypt~newzealand",
+    "espn-fifa.world-760456": "argentina~austria",
+    "espn-fifa.world-760457": "france~iraq",
+    "espn-fifa.world-760454": "norway~senegal",
+    "espn-fifa.world-760455": "algeria~jordan",
+    "espn-fifa.world-760461": "portugal~uzbekistan",
+    "espn-fifa.world-760458": "england~ghana",
+    "espn-fifa.world-760460": "croatia~panama",
+    "espn-fifa.world-760459": "colombia~congodr",
+    "espn-fifa.world-760462": "bosniaherzegovina~qatar",
+    "espn-fifa.world-760463": "canada~switzerland",
+    "espn-fifa.world-760464": "haiti~morocco",
+    "espn-fifa.world-760465": "brazil~scotland",
+    "espn-fifa.world-760467": "czechia~mexico",
+    "espn-fifa.world-760466": "southafrica~southkorea",
+    "espn-fifa.world-760473": "curacao~ivorycoast",
+    "espn-fifa.world-760468": "ecuador~germany",
+    "espn-fifa.world-760471": "japan~sweden",
+    "espn-fifa.world-760472": "netherlands~tunisia",
+    "espn-fifa.world-760469": "australia~paraguay",
+    "espn-fifa.world-760470": "turkiye~unitedstates",
+    "espn-fifa.world-760475": "france~norway",
+    "espn-fifa.world-760474": "iraq~senegal",
+    "espn-fifa.world-760478": "capeverde~saudiarabia",
+    "espn-fifa.world-760479": "spain~uruguay",
+    "espn-fifa.world-760476": "egypt~iran",
+    "espn-fifa.world-760477": "belgium~newzealand",
+    "espn-fifa.world-760480": "croatia~ghana",
+    "espn-fifa.world-760485": "england~panama",
+    "espn-fifa.world-760481": "colombia~portugal",
+    "espn-fifa.world-760482": "congodr~uzbekistan",
+    "espn-fifa.world-760484": "algeria~austria",
+    "espn-fifa.world-760483": "argentina~jordan",
+    "espn-fifa.world-760486": "canada~southafrica",
+    "espn-fifa.world-760487": "brazil~japan",
+    "espn-fifa.world-760489": "germany~paraguay",
+    "espn-fifa.world-760488": "morocco~netherlands",
+    "espn-fifa.world-760490": "ivorycoast~norway",
+    "espn-fifa.world-760492": "france~sweden",
+    "espn-fifa.world-760491": "ecuador~mexico",
+    "espn-fifa.world-760495": "congodr~england",
+    "espn-fifa.world-760493": "belgium~senegal",
+    "espn-fifa.world-760494": "bosniaherzegovina~unitedstates",
+    "espn-fifa.world-760497": "austria~spain",
+    "espn-fifa.world-760496": "croatia~portugal",
+    "espn-fifa.world-760498": "algeria~switzerland",
+    "espn-fifa.world-760499": "australia~egypt",
+    "espn-fifa.world-760500": "argentina~capeverde",
+    "espn-fifa.world-760501": "colombia~ghana",
+    "espn-fifa.world-760502": "canada~morocco",
+    "espn-fifa.world-760503": "france~paraguay",
+    "espn-fifa.world-760504": "brazil~norway",
+    "espn-fifa.world-760505": "england~mexico",
+    "espn-fifa.world-760506": "portugal~spain",
+    "espn-fifa.world-760507": "belgium~unitedstates",
+    "espn-fifa.world-760509": "argentina~egypt",
+    "espn-fifa.world-760508": "colombia~switzerland",
+    "espn-fifa.world-760510": "france~morocco",
+    "espn-fifa.world-760511": "belgium~spain",
+    "espn-fifa.world-760512": "england~norway",
+    "espn-fifa.world-760513": "argentina~switzerland",
+    "espn-fifa.world-760514": "france~spain",
+    "espn-fifa.world-760515": "argentina~england",
+    "espn-fifa.world-760516": "england~france",
+    "espn-fifa.world-760517": "argentina~spain"
+  }
+}

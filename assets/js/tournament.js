@@ -7,6 +7,93 @@
 
   let archive = null;
   let activeStage = "all";
+  const TEAM_PAGE = document.body.classList.contains("wc-team-page");
+  const teamSlug = new URLSearchParams(location.search).get("team");
+  let activeTeam = null;
+
+  function teamPageHref(name) {
+    const slug = window.TeamNames?.slugFor?.(name);
+    return slug ? `/world-cup-2026/${slug}` : "";
+  }
+
+  function teamNameHtml(name) {
+    const href = teamPageHref(name);
+    const label = teamLabel(name);
+    if (href && !TEAM_PAGE) {
+      return `<a class="team-archive-link" href="${escapeHtml(href)}">${escapeHtml(label)}</a>`;
+    }
+    return escapeHtml(label);
+  }
+
+  function teamMatches() {
+    if (!archive?.matches) return [];
+    if (!activeTeam) return archive.matches;
+    return archive.matches.filter((m) => m.home === activeTeam || m.away === activeTeam);
+  }
+
+  function findMatchByQuery(raw) {
+    const p = String(raw || "").trim();
+    if (!p || !archive?.matches) return null;
+    const byKey = archive.matches.find((x) => x.key === p);
+    if (byKey) return byKey;
+    const byId = archive.matches.find((x) => x.id === p);
+    if (byId) return byId;
+    const espn = p.match(/^espn-fifa\.world-(\d+)$/);
+    if (espn) {
+      const id = `espn-fifa.world-${espn[1]}`;
+      return archive.matches.find((x) => x.id === id) || null;
+    }
+    return null;
+  }
+
+  function applyTeamSeo(teamEn) {
+    if (!teamEn) return;
+    const teamAr = window.TeamNames?.arabicFor?.(teamEn) || teamEn;
+    const slug = window.TeamNames?.slugFor?.(teamEn) || teamSlug;
+    const isEn = document.documentElement.lang === "en";
+    const title = isEn
+      ? `${teamEn} — World Cup 2026 match highlights | KoraZero`
+      : `ملخصات مباريات ${teamAr} في كأس العالم 2026 | كورة زيرو`;
+    const desc = isEn
+      ? t("wcTeam.metaDesc", { team: teamEn })
+      : t("wcTeam.metaDesc", { team: teamAr });
+    document.title = title;
+    const h1 = document.getElementById("wc-team-title");
+    const lede = document.getElementById("wc-team-lede");
+    if (h1) {
+      h1.textContent = isEn
+        ? t("wcTeam.title", { team: teamEn })
+        : `ملخصات مباريات ${teamAr} في كأس العالم 2026`;
+    }
+    if (lede) lede.textContent = t("wcTeam.lede", { team: isEn ? teamEn : teamAr });
+    const canonical = `https://korazero.com/world-cup-2026/${slug}`;
+    const link = document.querySelector("link[rel=\"canonical\"]");
+    if (link) link.href = canonical;
+    const ogTitle = document.querySelector("meta[property=\"og:title\"]");
+    if (ogTitle) ogTitle.content = title.replace(" | KoraZero", "");
+    const ogUrl = document.querySelector("meta[property=\"og:url\"]");
+    if (ogUrl) ogUrl.content = canonical;
+    const metaDesc = document.querySelector("meta[name=\"description\"]");
+    if (metaDesc) metaDesc.content = desc;
+  }
+
+  async function resolveActiveTeam() {
+    if (!TEAM_PAGE || !teamSlug) return null;
+    try {
+      const res = await fetch("/assets/data/wc-teams-index.json", { cache: "default" });
+      if (res.ok) {
+        const idx = await res.json();
+        const hit = (idx.teams || []).find((row) => row.slug === teamSlug);
+        if (hit?.name) return hit.name;
+      }
+    } catch { /* fallback */ }
+    const names = new Set();
+    for (const m of archive?.matches || []) {
+      if (m.home) names.add(m.home);
+      if (m.away) names.add(m.away);
+    }
+    return window.TeamNames?.teamFromSlug?.(teamSlug, [...names]) || null;
+  }
 
   function escapeHtml(s) {
     return String(s || "").replace(/[&<>"']/g, (c) => (
@@ -209,12 +296,12 @@
         <div class="tournament-scoreboard__teams">
           <div class="tournament-scoreboard__team">
             ${m.homeBadge ? `<img class="crest" src="${escapeHtml(m.homeBadge)}" alt="" loading="lazy" />` : ""}
-            <span>${teamLabel(m.home)}</span>
+            <span>${teamNameHtml(m.home)}</span>
           </div>
           <div class="tournament-scoreboard__score">${escapeHtml(m.score)}</div>
           <div class="tournament-scoreboard__team">
             ${m.awayBadge ? `<img class="crest" src="${escapeHtml(m.awayBadge)}" alt="" loading="lazy" />` : ""}
-            <span>${teamLabel(m.away)}</span>
+            <span>${teamNameHtml(m.away)}</span>
           </div>
         </div>
       </div>`;
@@ -236,8 +323,9 @@
   }
 
   function latestHighlightMatch() {
-    if (!archive?.matches?.length) return null;
-    return archive.matches
+    const pool = teamMatches();
+    if (!pool.length) return null;
+    return pool
       .filter((m) => hasAnyHighlight(m) && m.kickoffUtc)
       .sort((a, b) => Date.parse(b.kickoffUtc) - Date.parse(a.kickoffUtc))[0] || null;
   }
@@ -279,12 +367,12 @@
         <div class="teams">
           <div class="team">
             ${m.homeBadge ? `<img class="crest" src="${escapeHtml(m.homeBadge)}" alt="" loading="lazy" />` : ""}
-            <div class="tname">${teamLabel(m.home)}</div>
+            <div class="tname">${teamNameHtml(m.home)}</div>
           </div>
           <div class="score">${escapeHtml(m.score)}</div>
           <div class="team">
             ${m.awayBadge ? `<img class="crest" src="${escapeHtml(m.awayBadge)}" alt="" loading="lazy" />` : ""}
-            <div class="tname">${teamLabel(m.away)}</div>
+            <div class="tname">${teamNameHtml(m.away)}</div>
           </div>
         </div>
         <div class="tournament-badges">
@@ -384,13 +472,13 @@
     if (!wrap || !archive) return;
     const lang = document.documentElement.lang === "en" ? "labelEn" : "labelAr";
     const tabs = [
-      { id: "all", label: t("tournament.tabAll"), count: archive.matchCount },
+      { id: "all", label: t("tournament.tabAll"), count: teamMatches().length },
       ...(archive.stages || []).map((s) => ({
         id: s.id,
         label: s[lang],
-        count: s.matchCount,
+        count: teamMatches().filter((m) => m.stage === s.id).length,
       })),
-    ];
+    ].filter((tab) => tab.id === "all" || tab.count > 0);
     wrap.innerHTML = tabs.map((tab) => `
       <button type="button" class="filter-btn tournament-tab${activeStage === tab.id ? " active" : ""}"
               data-stage="${tab.id}" role="tab" aria-selected="${activeStage === tab.id}">
@@ -413,9 +501,10 @@
     if (!grid || !archive) return;
 
     const latest = latestHighlightMatch();
+    const pool = teamMatches();
     const list = (activeStage === "all"
-      ? archive.matches
-      : archive.matches.filter((m) => m.stage === activeStage))
+      ? pool
+      : pool.filter((m) => m.stage === activeStage))
       .filter((m) => !latest || m.key !== latest.key);
 
     grid.innerHTML = list.length ? list.map((m) => matchCard(m)).join("") : "";
@@ -446,6 +535,15 @@
     if (!res.ok) throw new Error("archive load failed");
     archive = await res.json();
     archive.matches = Array.isArray(archive.matches) ? archive.matches : [];
+    if (TEAM_PAGE) {
+      activeTeam = await resolveActiveTeam();
+      if (!activeTeam) {
+        const grid = document.getElementById("tournament-grid");
+        if (grid) grid.innerHTML = `<p style="color:var(--muted)">${t("wcTeam.notFound")}</p>`;
+        return;
+      }
+      applyTeamSeo(activeTeam);
+    }
     renderFeatured();
     renderTabs();
     renderGrid();
@@ -454,10 +552,11 @@
   }
 
   function openMatchFromQuery() {
-    const key = new URLSearchParams(location.search).get("match");
-    if (!key || !archive) return;
-    const m = archive.matches.find((x) => x.key === key);
+    const raw = new URLSearchParams(location.search).get("match");
+    if (!raw || !archive) return;
+    const m = findMatchByQuery(raw);
     if (!m) return;
+    const key = m.key;
 
     const latest = latestHighlightMatch();
     if (latest && latest.key === key) {

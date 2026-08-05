@@ -15,6 +15,7 @@ import {
 } from "./lib/meme-select.js";
 import { clampSinceUtc, rankTrendingMemes } from "./lib/trend-rank.js";
 import { resolveStreamUrl, rewriteReplayM3u8 as rewriteReplayM3u8Lines } from "./lib/replay-hls.js";
+import { resolveWatchArchiveRedirect } from "./lib/watch-archive-redirect.js";
 import { dispatchBackendRoutes } from "./backend/router.js";
 import { backendRoutes } from "./backend/routes/index.js";
 
@@ -5922,10 +5923,31 @@ async function proxyStreamsLabApi(request, env) {
 }
 
 
+async function maybeRedirectWatchArchive(request, env) {
+  const method = request.method;
+  if (method !== "GET" && method !== "HEAD") return null;
+  const url = new URL(request.url);
+  const archiveMatches = await loadTournamentArchiveMatches(env, url.origin);
+  const todayMatches = await loadTodayMatches(env, url.origin);
+  const hit = resolveWatchArchiveRedirect(url.pathname, url.searchParams, archiveMatches, todayMatches);
+  if (!hit) return null;
+  const target = new URL(hit.url, url.origin);
+  return new Response(null, {
+    status: hit.permanent ? 301 : 302,
+    headers: {
+      Location: `${target.pathname}${target.search}`,
+      "Cache-Control": "public, max-age=3600",
+    },
+  });
+}
+
 export default {
   async fetch(request, env, ctx) {
     const routed = await dispatchBackendRoutes(backendRoutes, request, env, ctx);
     if (routed) return routed;
+
+    const archiveRedirect = await maybeRedirectWatchArchive(request, env);
+    if (archiveRedirect) return archiveRedirect;
 
     const url = new URL(request.url);
     const method = request.method;
