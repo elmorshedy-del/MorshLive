@@ -231,16 +231,8 @@ function commentaryKey(home, away) {
 }
 
 // Baked-in overrides for live fixtures — survives stale today.json on CDN.
-// REMOVE after the match.
-const LIVE_MATCH_OVERRIDES = {
-  "croatia~portugal": {
-    channel: "beIN MAX 2",
-    channelId: "bein-max-2",
-    embedKey: "vip1",
-    defaultServer: 0,
-    streamPatchKey: "croatia~portugal",
-  },
-};
+// Entries auto-expire once kickoff is outside the live window.
+const LIVE_MATCH_OVERRIDES = {};
 
 function applyLiveMatchOverrides(matches) {
   return matches.map((m) => {
@@ -305,7 +297,18 @@ window.getMatches = async function getMatches({ force } = {}) {
       const live = await window.MatchesAPI.fetchLiveSoccer({ force });
       if (live.matches && live.matches.length) {
         const idx = await loadCommentaryIndex();
-        return { ...live, matches: applyLiveMatchOverrides(applyCommentary(live.matches, idx)) };
+        const dateStr = live.date || new Date().toISOString().slice(0, 10);
+        const matches = sortDisplayMatches(
+          applyLiveMatchOverrides(
+            applyCommentary(
+              live.matches
+                .map((m) => ({ ...m, status: refineStatus(m, dateStr) }))
+                .filter(keepDisplayMatch),
+              idx
+            )
+          )
+        );
+        return { ...live, matches };
       }
     } catch (e) {
       console.warn("Live API fetch failed, using cache:", e.message);

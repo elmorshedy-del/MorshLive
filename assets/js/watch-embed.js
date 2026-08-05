@@ -32,10 +32,40 @@
 
   let embedLoadedUrl = "";
 
-  function loadEmbed(serverIndex) {
+  function bustEmbedUrl(url) {
+    const u = new URL(url, location.origin);
+    u.searchParams.set("_heal", String(Date.now()));
+    return u.toString();
+  }
+
+  function embedBaseUrl(url) {
+    const u = new URL(url, location.origin);
+    u.searchParams.delete("_heal");
+    return u.toString();
+  }
+
+  function streamStateSignature() {
+    const embed = channelEmbed();
+    return [
+      channel.id,
+      match && match.id,
+      match && match.status,
+      match && match.embedKey,
+      match && match.streamPatchKey,
+      match && match.defaultServer,
+      embed && embed.url,
+      embed && embed.streamPatchKey,
+      embed && embed.defaultServer,
+      params.get("serv") || "",
+    ].join("|");
+  }
+
+  function loadEmbed(serverIndex, { force } = {}) {
     if (!frame) return;
-    const next = embedUrl(serverIndex);
-    if (embedLoadedUrl === next) return;
+    const url = embedUrl(serverIndex);
+    const sameUrl = embedLoadedUrl && embedBaseUrl(embedLoadedUrl) === embedBaseUrl(url);
+    const next = force || sameUrl ? bustEmbedUrl(url) : url;
+    if (embedLoadedUrl === next && !force) return;
     frame.src = next;
     embedLoadedUrl = next;
   }
@@ -155,15 +185,15 @@
   }
 
   async function refreshMatches({ force } = {}) {
-    const previousChannelId = channel.id;
+    const prevSig = streamStateSignature();
     const meta = await window.getMatches({ force: !!force });
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
     renderSidebar();
-    if (channel.id !== previousChannelId) {
+    if (streamStateSignature() !== prevSig) {
       renderServers();
-      loadEmbed(servIndexFromParam(channelEmbed(), params.get("serv")));
+      loadEmbed(servIndexFromParam(channelEmbed(), params.get("serv")), { force: true });
     }
   }
 

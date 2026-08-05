@@ -57,6 +57,38 @@
   let savedShellMarkup = null;
   let vipLoaded = false;
   let vipLoadedUrl = "";
+  let embedLoadedUrl = "";
+
+  function bustEmbedUrl(url) {
+    const u = new URL(url, location.origin);
+    u.searchParams.set("_heal", String(Date.now()));
+    return u.toString();
+  }
+
+  function embedBaseUrl(url) {
+    const u = new URL(url, location.origin);
+    u.searchParams.delete("_heal");
+    return u.toString();
+  }
+
+  /** Stream-relevant state — reload player when this changes even if match/channel ids stay the same. */
+  function streamStateSignature() {
+    const embed = activePlayer === 1 ? channel.embed : vipEmbed();
+    const srv = params.get("serv") || "";
+    return [
+      channel.id,
+      match && match.id,
+      match && match.status,
+      match && match.embedKey,
+      match && match.streamPatchKey,
+      match && match.defaultServer,
+      embed && embed.url,
+      embed && embed.streamPatchKey,
+      embed && embed.defaultServer,
+      activePlayer,
+      srv,
+    ].join("|");
+  }
 
   /* HLS tuned for stable live playback on mobile (buffer over ultra-low latency). */
   function createHls() {
@@ -109,10 +141,14 @@
     return servIndexFromParam(embed, params.get("serv"));
   }
 
-  function loadEmbed(serverIndex) {
+  function loadEmbed(serverIndex, { force } = {}) {
     if (!savedShellMarkup) savedShellMarkup = shell.innerHTML;
+    const url = embedUrl(serverIndex);
+    const sameUrl = embedLoadedUrl && embedBaseUrl(embedLoadedUrl) === embedBaseUrl(url);
+    const src = force || sameUrl ? bustEmbedUrl(url) : url;
+    embedLoadedUrl = src;
     shell.innerHTML =
-      `<iframe class="embed-frame" src="${embedUrl(serverIndex)}" ` +
+      `<iframe class="embed-frame" src="${src}" ` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
       `referrerpolicy="${EMBED_REFERRER}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
   }
@@ -121,10 +157,12 @@
     return embedUrlFor(vipEmbed(), serverIndex);
   }
 
-  function loadVipEmbed(serverIndex) {
+  function loadVipEmbed(serverIndex, { force } = {}) {
     if (!vipFrame) return;
-    const next = vipEmbedUrl(serverIndex);
-    if (vipLoaded && vipLoadedUrl === next) return;
+    const url = vipEmbedUrl(serverIndex);
+    const sameUrl = vipLoaded && embedBaseUrl(vipLoadedUrl) === embedBaseUrl(url);
+    const next = force || sameUrl ? bustEmbedUrl(url) : url;
+    if (vipLoaded && vipLoadedUrl === next && !force) return;
     vipFrame.src = next;
     vipLoaded = true;
     vipLoadedUrl = next;
@@ -415,20 +453,20 @@
   }
 
   async function refreshMatches({ force } = {}) {
-    const previousChannelId = channel.id;
-    const previousMatchId = match && match.id;
+    const prevSig = streamStateSignature();
     const meta = await window.getMatches({ force: !!force });
     MATCHES = meta.matches;
     resolveSelection();
     fillInfo();
     renderSidebar();
-    const matchChanged = (match && match.id) !== previousMatchId;
-    if (channel.id !== previousChannelId || matchChanged) {
+    const nextSig = streamStateSignature();
+    const streamStateChanged = nextSig !== prevSig;
+    if (streamStateChanged) {
       renderServers();
       renderVipServers();
-      if (activePlayer === 2) loadVipEmbed(currentEmbedServerIndex(vipEmbed()));
+      if (activePlayer === 2) loadVipEmbed(currentEmbedServerIndex(vipEmbed()), { force: true });
       if (activePlayer === 1) {
-        if (isEmbed) loadEmbed(currentEmbedServerIndex(channel.embed));
+        if (isEmbed) loadEmbed(currentEmbedServerIndex(channel.embed), { force: true });
         else loadStream(channel.stream);
       }
     }
@@ -469,7 +507,7 @@
   function reloadActivePlayer() {
     if (activePlayer === 1) {
       if (isEmbed) {
-        loadEmbed(activeServerIndex());
+        loadEmbed(activeServerIndex(), { force: true });
         ensureLiveFeed().catch(() => {});
       } else {
         // Reload the server the user actually has selected, not the default.
@@ -478,8 +516,7 @@
         if (url) { loadStream(url); if (started) play(); }
       }
     } else {
-      vipLoaded = false; // bypass the same-URL guard so the iframe truly reloads
-      loadVipEmbed(activeServerIndex());
+      loadVipEmbed(activeServerIndex(), { force: true });
     }
   }
 
