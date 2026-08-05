@@ -16,6 +16,7 @@
   <meta name="description" content="أرشيف كأس العالم 2026 كاملاً على كورة زيرو — ملخصات المباريات الـ104 بجودة HD مع تعليق عربي وبدون إعلانات. تصفّح حسب المنتخب أو الدور، وتابع مواعيد المباريات والنتائج والملخصات للموسم الجديد." />
   <meta name="keywords" content="ملخصات مباريات, كأس العالم 2026, مونديال 2026, أرشيف المونديال, ملخصات HD, تعليق عربي, مباريات اليوم, الدوري الإنجليزي, الدوري الإسباني, الدوري الإيطالي, دوري أبطال أوروبا, الدوري السعودي, بدون إعلانات, كورة زيرو" />
   <meta name="theme-color" content="#0a0e17" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="canonical" href="https://korazero.com/" />
   <meta property="og:type" content="website" />
   <meta property="og:locale" content="ar_AR" />
@@ -35,9 +36,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=20260805herocopy" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20260805gold" />
   <!-- i18n must run before paint so dir/lang is correct with no flash -->
-  <script src="assets/js/i18n.js?v=20260805herocopy"></script>
+  <script src="assets/js/i18n.js?v=20260805gold"></script>
   <!-- GSAP 3 — industry-standard animation engine -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script type="application/ld+json" id="seo-schema">
@@ -100,7 +101,7 @@
       <nav class="nav-links">
         <a href="index.html" class="active" data-i18n="nav.home">الرئيسية</a>
         <a href="#matches" data-i18n="nav.matches">مباريات اليوم</a>
-        <a href="tournament.html" data-i18n="nav.tournament">ملخص المباريات و التويتات الخاصة بها</a>
+        <a href="tournament.html" class="nav-link--gold" data-i18n="nav.tournament">أرشيف ملخصات المونديال</a>
         <a href="search.html" data-i18n="search.nav">بحث</a>
         <a href="#saved" data-i18n="nav.saved">المحفوظة</a>
         <a href="#faq" data-i18n="nav.faq">الأسئلة الشائعة</a>
@@ -139,7 +140,10 @@
             <span class="wc-year">2026</span>
           </div>
           <div class="wc-hosts" data-i18n="wc.hosts">أمريكا · كندا · المكسيك</div>
-          <a href="tournament.html" class="wc-archive-link" data-i18n="tournament.bannerLink">أرشيف ملخصات المباريات ←</a>
+          <a href="tournament.html" class="wc-archive-btn">
+            <svg class="ico ico-fill" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            <span data-i18n="tournament.bannerLink">▶ شاهد ملخصات المباريات — 104 مباراة</span>
+          </a>
         </div>
         <div class="wc-ball-col">
           <div class="wc-spin-ball" id="wcSpinBall">
@@ -153,7 +157,10 @@
               <polygon points="6,22 18,27 22,12" fill="#111"/>
             </svg>
           </div>
-          <div class="wc-live-badge"><span class="live-dot-i"></span> <span data-i18n="wc.live">جارٍ الآن</span></div>
+          <div class="wc-archive-badge">
+            <svg class="ico ico-fill" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+            <span data-i18n="wc.archiveBadge">104 ملخصات · أرشيف كامل</span>
+          </div>
         </div>
       </div>
     </div>
@@ -164,6 +171,15 @@
     <div class="container">
       <span class="no-ads-badge"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> <span data-i18n="hero.noAds">بدون إعلانات ولا نوافذ منبثقة</span></span>
       <h1 data-i18n-html="hero.title">ملخصات مباريات كأس العالم 2026 — كاملة بجودة HD وبدون إعلانات</h1>
+      <div class="hero-hl-spotlight">
+        <a class="btn btn-gold btn-gold--xl" href="tournament.html">
+          <svg class="ico ico-fill" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+          <span>
+            <span data-i18n="hero.ctaArchive">▶ شاهد كل ملخصات المونديال</span>
+            <small class="btn-gold-sub" data-i18n="hero.ctaArchiveSub">104 مباراة · HD · تعليق عربي · بدون إعلانات</small>
+          </span>
+        </a>
+      </div>
       <div class="hero-intro-card">
         <p class="hero-lede" data-i18n="hero.lede">انتهى المونديال، لكن كل مباراة ما زالت هنا. يضمّ كورة زيرو أرشيف كأس العالم 2026 كاملاً — ملخصات المباريات الـ104 جميعها، من دور المجموعات حتى النهائي، بجودة HD مع تعليق عربي وبدون إعلانات ولا نوافذ منبثقة. تصفّح حسب المنتخب أو المجموعة أو الدور، وأعد مشاهدة أي هدف في ثوانٍ. والموسم الجديد يبدأ الآن: يعود كورة زيرو بمواعيد المباريات والنتائج والملخصات في الدوري الإنجليزي والدوري الإسباني والدوري الإيطالي ودوري أبطال أوروبا والدوري السعودي — بالتجربة النظيفة نفسها، بلا مقاطعة.</p>
         <div class="hero-keywords" data-i18n-attr="aria-label:seo.keywordsAria" aria-label="مميزات كورة زيرو">
@@ -185,6 +201,13 @@
         <h2 class="hero-season-title" data-i18n="hero.seasonTitle">الموسم الجديد يبدأ من هنا</h2>
         <p class="hero-season-lede" data-i18n="hero.seasonLede">الدوريات تعود في أغسطس. احفظ كورة زيرو الآن، وتابع مواعيد المباريات بتوقيت الرياض والتوقيت الشرقي الأمريكي، والنتائج لحظة بلحظة، والملخصات فور انتهاء كل مباراة — بنفس التجربة النظيفة، بلا مقاطعة.</p>
       </div>
+      <div class="hero-cta">
+        <a class="btn btn-gold btn-gold--xl" href="tournament.html">
+          <svg class="ico ico-fill" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>
+          <span data-i18n="hero.ctaArchive">▶ شاهد كل ملخصات المونديال</span>
+        </a>
+        <a class="btn btn-ghost" href="#matches" data-i18n="hero.ctaMatches">مباريات الموسم الجديد</a>
+      </div>
       <div class="hero-quick-bar" aria-label="Quick settings">
         <p class="hero-quick-label" data-i18n="hero.quickSettings">إعدادات سريعة قبل المشاهدة</p>
         <div class="hero-quick-pills">
@@ -198,10 +221,6 @@
         </button>
         </div>
         <p class="hero-quick-hint"><span data-i18n="hero.tvHintPrefix">شاشة كبيرة؟</span> <button type="button" class="hero-tv-hint-link js-tv-guide-link" data-i18n="hero.tvHintLink">فعّل وضع التلفزيون لعرض الدليل</button></p>
-      </div>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="tournament.html"><span data-i18n="hero.ctaArchive">تصفّح أرشيف المونديال</span></a>
-        <a class="btn btn-ghost" href="#matches" data-i18n="hero.ctaMatches">مباريات الموسم الجديد</a>
       </div>
     </div>
   </section>
@@ -323,9 +342,12 @@
   <!-- Match highlight banners — ended matches by day → tournament ملخص -->
   <section class="section home-hl-banners-section" id="highlight-banners" hidden>
     <div class="container">
-      <div class="section-head">
-        <span class="tournament-section-icon tournament-section-icon--video" aria-hidden="true">▶</span>
-        <h2 data-i18n="home.highlightBannersTitle">ملخصات المباريات</h2>
+      <div class="section-head home-hl-banners-head">
+        <div>
+          <span class="tournament-section-icon tournament-section-icon--video" aria-hidden="true">▶</span>
+          <h2 data-i18n="home.highlightBannersTitle">ملخصات المباريات</h2>
+        </div>
+        <a class="home-hl-banners-all" href="tournament.html" data-i18n="home.highlightBannersAll">كل ملخصات المونديال →</a>
       </div>
       <p class="home-hl-banners-lede" data-i18n="home.highlightBannersLede">انتهت المباراة؟ شاهد الأهداف والملخص — مرتبة حسب اليوم.</p>
       <div id="highlight-banners-days"></div>

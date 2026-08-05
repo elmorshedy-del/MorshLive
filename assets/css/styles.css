@@ -212,6 +212,133 @@ img { max-width: 100%; display: block; }
 .btn-ghost { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1); color: var(--text); }
 .btn-ghost:hover { background: rgba(255,255,255,.1); transform: translateY(-2px); }
 
+/* Golden highlight CTA — ملخصات archive (primary home action post-WC) */
+.btn-gold {
+  background: linear-gradient(135deg, #c9a24a 0%, #ffc94d 38%, #fff2a8 72%, #e8b84a 100%);
+  color: #1a1206;
+  font-weight: 800;
+  border: 1px solid rgba(255, 220, 120, .65);
+  box-shadow:
+    0 10px 32px rgba(201, 162, 84, .45),
+    0 0 0 1px rgba(255, 220, 120, .25) inset,
+    0 0 28px rgba(255, 201, 77, .22);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .35);
+}
+.btn-gold:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow:
+    0 16px 40px rgba(201, 162, 84, .55),
+    0 0 36px rgba(255, 201, 77, .35);
+  color: #120a02;
+}
+.btn-gold .ico { stroke: #1a1206; }
+.btn-gold--xl {
+  padding: 16px 26px;
+  font-size: 1.12rem;
+  border-radius: 14px;
+  gap: 10px;
+  animation: goldPulse 2.8s ease-in-out infinite;
+}
+.btn-gold--xl .btn-gold-sub {
+  display: block;
+  font-size: .78rem;
+  font-weight: 700;
+  opacity: .82;
+  margin-top: 2px;
+}
+@keyframes goldPulse {
+  0%, 100% { box-shadow: 0 10px 32px rgba(201, 162, 84, .45), 0 0 28px rgba(255, 201, 77, .18); }
+  50% { box-shadow: 0 14px 38px rgba(201, 162, 84, .58), 0 0 42px rgba(255, 201, 77, .34); }
+}
+
+.hero-hl-spotlight {
+  margin: 18px 0 8px;
+  animation: fadeUp .7s .12s ease both;
+}
+.nav-link--gold {
+  color: #ffe08a !important;
+  background: linear-gradient(135deg, rgba(201, 162, 84, .22), rgba(255, 201, 77, .14)) !important;
+  border: 1px solid rgba(255, 201, 77, .45);
+  box-shadow: 0 0 18px rgba(255, 201, 77, .15);
+}
+.nav-link--gold::after { background: linear-gradient(90deg, #ffc94d, #fff2a8) !important; }
+.nav-link--gold:hover, .nav-link--gold.active {
+  color: #fff8dc !important;
+  border-color: rgba(255, 220, 120, .7);
+  box-shadow: 0 0 24px rgba(255, 201, 77, .28);
+}
+
+.wc-archive-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  font-size: .92rem;
+  font-weight: 800;
+  text-decoration: none;
+  color: #1a1206;
+  background: linear-gradient(135deg, #c9a24a, #ffc94d 55%, #fff2a8);
+  border: 1px solid rgba(255, 220, 120, .7);
+  box-shadow: 0 8px 24px rgba(201, 162, 84, .4), 0 0 20px rgba(255, 201, 77, .2);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.wc-archive-btn:hover {
+  transform: translateY(-2px) scale(1.03);
+  box-shadow: 0 12px 30px rgba(201, 162, 84, .5), 0 0 28px rgba(255, 201, 77, .32);
+  color: #120a02;
+}
+.wc-archive-btn .ico { width: 18px; height: 18px; stroke: #1a1206; }
+.wc-archive-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: .72rem;
+  font-weight: 800;
+  color: #ffe08a;
+  background: rgba(255, 201, 77, .12);
+  border: 1px solid rgba(255, 201, 77, .35);
+  box-shadow: 0 0 16px rgba(255, 201, 77, .12);
+}
+.wc-archive-badge .ico { width: 14px; height: 14px; color: #ffc94d; }
+
+.home-hl-banners-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.home-hl-banners-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  font-size: .88rem;
+  font-weight: 800;
+  text-decoration: none;
+  color: #1a1206;
+  background: linear-gradient(135deg, #c9a24a, #ffc94d 60%, #fff2a8);
+  border: 1px solid rgba(255, 220, 120, .65);
+  box-shadow: 0 8px 22px rgba(201, 162, 84, .35);
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+.home-hl-banners-all:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(201, 162, 84, .48);
+}
+.kz-hl-banner__cta {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: .78rem; font-weight: 800; color: #ffe08a;
+  padding-bottom: 12px;
+  text-shadow: 0 0 12px rgba(255, 201, 77, .35);
+}
+.kz-hl-banner:hover .kz-hl-banner__cta { color: #fff2a8; }
+
 /* ---- Inline SVG icon system (replaces emoji) ---- */
 .ico {
   width: 1em; height: 1em; display: inline-block; vertical-align: -.14em;
@@ -1582,6 +1709,7 @@ img { max-width: 100%; display: block; }
   font-weight: 700; text-decoration: none; opacity: .95;
 }
 .wc-archive-link:hover { text-decoration: underline; opacity: 1; }
+/* legacy class — prefer .wc-archive-btn */
 
 /* Spinning ball column */
 .wc-ball-col {
@@ -2500,10 +2628,6 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 }
 .kz-hl-banner__teams, .kz-hl-banner__cta { position: relative; z-index: 1; padding-inline: 14px; }
 .kz-hl-banner__teams { font-weight: 800; font-size: .88rem; line-height: 1.35; margin-bottom: 3px; }
-.kz-hl-banner__cta {
-  display: inline-flex; align-items: center; gap: 4px;
-  font-size: .72rem; font-weight: 700; color: var(--accent); padding-bottom: 12px;
-}
 
 /* Watch — layout only (all hooks preserved; channels stay visible above player) */
 .page-watch .watch-wrap { padding-top: 12px; }
