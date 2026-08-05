@@ -42,6 +42,7 @@ function main() {
 
   const redirectLines = [
     "# World Cup 2026 team highlight pages (generated)",
+    "/tournament         /tournament.html              200",
     ...teams.map((t) => `/world-cup-2026/${t.slug}  /world-cup-team.html?team=${t.slug}  200`),
   ];
   fs.writeFileSync(REDIRECTS_OUT, `${redirectLines.join("\n")}\n`);
