@@ -318,10 +318,14 @@ function parseKickoffMs(ts) {
 }
 
 function refineStatus(m, dateStr) {
-  if (m.status === "ended" || m.status === "live") return m.status;
   const kickoff = m.kickoffUtc
     ? parseKickoffMs(m.kickoffUtc)
     : (dateStr && m.time && /^\d{2}:\d{2}$/.test(m.time) ? Date.parse(`${dateStr}T${m.time}:00Z`) : NaN);
+  if (window.MatchStatus && !isNaN(kickoff)) {
+    return window.MatchStatus.refineCachedStatus(m.status, kickoff);
+  }
+  if (m.status === "ended") return m.status;
+  if (m.status === "live") return m.status;
   if (isNaN(kickoff)) return m.status;
   const elapsed = Date.now() - kickoff;
   if (elapsed < 0) return "upcoming";

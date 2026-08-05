@@ -26,13 +26,23 @@ function parseKickoffMs(ts) {
   return Date.parse(normalized);
 }
 
-/** Infer upcoming/live from kickoff only when the provider has no status. Never infer "ended" from elapsed time — knockouts run ET and pens well past 90'. */
+const MAX_LIVE_INFER_MS = 3 * 60 * 60 * 1000; // keep in sync with lib/match-status.js
+
+/** Infer upcoming/live/ended from kickoff when the provider has no status. */
 function kickoffInferStatus(ts, fallback) {
   const kickoff = parseKickoffMs(ts);
   if (isNaN(kickoff)) return fallback;
   const elapsed = Date.now() - kickoff;
   if (elapsed < 0) return "upcoming";
+  if (elapsed > MAX_LIVE_INFER_MS) return "ended";
   return "live";
+}
+
+function demoteStaleLive(status, kickoffUtc, now = Date.now()) {
+  if (status !== "live") return status;
+  const kickoff = parseKickoffMs(kickoffUtc);
+  if (isNaN(kickoff)) return status;
+  return now - kickoff > MAX_LIVE_INFER_MS ? "ended" : status;
 }
 
 function statusOf(strStatus, strTimestamp) {
@@ -200,7 +210,12 @@ function mergeMatches(primary, fallback) {
 }
 
 function filterDisplayMatches(matches, now = Date.now()) {
-  return matches.filter((m) => {
+  const normalized = matches.map((m) => {
+    const status = demoteStaleLive(m.status, m.kickoffUtc, now);
+    if (status === m.status) return m;
+    return { ...m, status, minute: status === "live" ? m.minute : "" };
+  });
+  return normalized.filter((m) => {
     if (m.status !== "ended") return true;
     const kickoff = parseKickoffMs(m.kickoffUtc);
     if (isNaN(kickoff)) return true;
