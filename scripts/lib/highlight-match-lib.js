@@ -164,14 +164,33 @@ function resolveFixtureKey(title, teams, matches, opts = {}) {
   return null;
 }
 
+function cleanTeamToken(s) {
+  return String(s || "")
+    .replace(/\s+\d+\s*-\s*\d+.*$/i, "")
+    .replace(/\s+\d+\s+\d+.*$/i, "")
+    .trim();
+}
+
 function titleTeams(title) {
   const t = String(title || "").replace(/\s+/g, " ").trim();
-  const m = /(?:اهداف|أهداف|ملخص)\s+مباراة\s+(.+?)(?:\s*\(|\s+ك[اأ]س)/i.exec(t);
-  if (!m) return null;
-  const chunk = m[1].replace(/[()]/g, " ").trim();
+  let chunk = null;
+  const patterns = [
+    /(?:اهداف|أهداف|ملخص)\s+مباراة\s+(.+?)(?:\s*\(|\s+نهائي|\s+ك[اأ]س)/i,
+    /(?:اهداف|أهداف|ملخص)\s+مباراة\s+(.+?)\s+\d+\s*-\s*\d+/i,
+    /(?:اهداف|أهداف|ملخص)\s+مباراة\s+(.+?)\s+\d+\s+\d+\s+ك[اأ]س/i,
+  ];
+  for (const re of patterns) {
+    const m = re.exec(t);
+    if (m) {
+      chunk = m[1];
+      break;
+    }
+  }
+  if (!chunk) return null;
+  chunk = chunk.replace(/[()]/g, " ").trim();
   const parts = chunk.split(/\s+و\s*/);
   if (parts.length < 2) return null;
-  return { a: parts[0].trim(), b: parts[1].trim() };
+  return { a: cleanTeamToken(parts[0]), b: cleanTeamToken(parts[1]) };
 }
 
 module.exports = {

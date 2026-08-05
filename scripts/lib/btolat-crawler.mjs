@@ -9,6 +9,21 @@ const FEEDS = [
   "https://www.btolat.com/league/1056/world-cup",
   "https://www.btolat.com/videos",
 ];
+const SITEMAP_URL = "https://www.btolat.com/sitemap.xml";
+
+async function fetchBtolatSitemapVideoIds() {
+  try {
+    const res = await fetch(SITEMAP_URL, {
+      headers: { "User-Agent": UA, Accept: "text/xml,text/plain,*/*" },
+      redirect: "follow",
+    });
+    if (!res.ok) return [];
+    const text = await res.text();
+    return [...text.matchAll(/video\/(\d+)/g)].map((m) => m[1]);
+  } catch {
+    return [];
+  }
+}
 
 function parseFeedCards(html, baseUrl) {
   const out = [];
@@ -33,11 +48,28 @@ function extractPublishedAt(html) {
 /**
  * @returns {Promise<Array<{ btolatId, title, embedId, publishedAt, feedUrl }>>}
  */
-export async function crawlBtolatVideos({ maxVideos = 120 } = {}) {
+export async function crawlBtolatVideos({ maxVideos = 120, useSitemap = false } = {}) {
   const byId = new Map();
+  const seedVideos = [];
+
+  if (useSitemap) {
+    const sitemapIds = await fetchBtolatSitemapVideoIds();
+    for (const btolatId of sitemapIds) {
+      if (!byId.has(btolatId)) {
+        byId.set(btolatId, {
+          btolatId,
+          title: "",
+          embedId: null,
+          publishedAt: null,
+          feedUrl: SITEMAP_URL,
+        });
+        seedVideos.push(btolatId);
+      }
+    }
+  }
 
   const crawler = new CheerioCrawler({
-    maxRequestsPerCrawl: maxVideos + FEEDS.length + 5,
+    maxRequestsPerCrawl: maxVideos + FEEDS.length + seedVideos.length + 5,
     maxConcurrency: 4,
     requestHandlerTimeoutSecs: 45,
     additionalMimeTypes: ["text/html"],
@@ -65,17 +97,29 @@ export async function crawlBtolatVideos({ maxVideos = 120 } = {}) {
         const btolatId = request.userData.btolatId;
         const embedId = extractEmbedId($.html());
         const publishedAt = extractPublishedAt($.html());
+        const pageTitle = $("h1").first().text().trim();
         const prev = byId.get(btolatId) || {
           btolatId,
           title: request.userData.title || "",
           feedUrl: request.userData.feedUrl,
         };
-        byId.set(btolatId, { ...prev, embedId, publishedAt });
+        byId.set(btolatId, {
+          ...prev,
+          title: pageTitle || prev.title,
+          embedId,
+          publishedAt,
+        });
       }
     },
   });
 
-  await crawler.run(FEEDS.map((url) => ({ url, userData: { label: "feed" } })));
+  await crawler.run([
+    ...FEEDS.map((url) => ({ url, userData: { label: "feed" } })),
+    ...seedVideos.map((btolatId) => ({
+      url: `https://www.btolat.com/video/${btolatId}`,
+      userData: { label: "video", btolatId, title: "", feedUrl: SITEMAP_URL },
+    })),
+  ]);
 
   return [...byId.values()]
     .filter((v) => v.embedId)

@@ -56,6 +56,57 @@ function titleTeams(title) {
   return parseTitleTeams(title);
 }
 
+async function runIdPool(start, end, concurrency, fn) {
+  let next = start;
+  const workers = Array.from({ length: Math.max(1, concurrency) }, async () => {
+    while (next <= end) {
+      const id = next++;
+      await fn(id);
+    }
+  });
+  await Promise.all(workers);
+}
+
+/**
+ * btolat hides most World Cup ملخص/أهداف clips off the league feed — they live in a
+ * dense numeric /video/{id} range during the tournament. Scan it directly.
+ */
+async function scanBtolatWorldCupRange(pairKeyFn, opts = {}) {
+  const startId = opts.rangeStart ?? 92800;
+  const endId = opts.rangeEnd ?? 94250;
+  const concurrency = opts.rangeConcurrency ?? 10;
+  const candidates = [];
+
+  await runIdPool(startId, endId, concurrency, async (id) => {
+    const html = await fetchText(`https://www.btolat.com/video/${id}`);
+    if (!html || html.length < 500) return;
+    const title = (html.match(/<h1[^>]*>([^<]+)</i) || [])[1]?.trim() || "";
+    if (!/كأس العالم|world cup/i.test(title)) return;
+    const kind = classifyBtolatTitle(title);
+    if (!isPrimaryKind(kind)) return;
+    const embedM = html.match(/(?:nvtboo\.)?vortexvisionworks\.com\/embed\/([A-Za-z0-9]+)/i);
+    const teams = parseTitleTeams(title);
+    const key = resolveFixtureKey(title, teams, opts.matches, {
+      pairKeyFn,
+      arabicTeam: opts.arabicTeam,
+      minScore: 1.4,
+      minMentionScore: 0.8,
+      toleranceDays: 5,
+    }) || candidatePairKey({ title, kind }, { ...opts, pairKeyFn }, null);
+    if (!key) return;
+    candidates.push({
+      btolatId: String(id),
+      title,
+      kind,
+      embedId: embedM ? embedM[1] : null,
+      key,
+      order: id,
+    });
+  });
+
+  return candidates;
+}
+
 function candidatePairKey(video, opts, activeKey) {
   const teams = parseTitleTeams(video.title);
   const contextualOpts = { ...opts, pairKeyFn: opts.pairKeyFn, minScore: 1.85 };
@@ -80,7 +131,7 @@ function candidatePairKey(video, opts, activeKey) {
 
 async function fetchBtolatEmbedId(btolatId) {
   const html = await fetchText(`https://www.btolat.com/video/${btolatId}`);
-  const m = (html || "").match(/vortexvisionworks\.com\/embed\/([A-Za-z0-9]+)/i);
+  const m = (html || "").match(/(?:nvtboo\.)?vortexvisionworks\.com\/embed\/([A-Za-z0-9]+)/i);
   return m ? m[1] : null;
 }
 
@@ -105,7 +156,7 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
   if (opts.useCrawler !== false) {
     try {
       const { crawlBtolatVideos } = await import("./lib/btolat-crawler.mjs");
-      const crawled = await crawlBtolatVideos({ maxVideos: opts.maxVideos || 120 });
+      const crawled = await crawlBtolatVideos({ maxVideos: opts.maxVideos || 120, useSitemap: opts.useSitemap });
       feedVideos = crawled.map((v) => ({
         btolatId: v.btolatId,
         title: v.title,
@@ -144,6 +195,20 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
       if (seenIds.has(v.btolatId)) continue;
       seenIds.add(v.btolatId);
       candidates.push({ ...v, key, order: candidates.length });
+    }
+  }
+
+  if (opts.scanWorldCupRange) {
+    try {
+      const rangeCandidates = await scanBtolatWorldCupRange(pairKeyFn, opts);
+      console.log(`btolat WC ID scan: ${rangeCandidates.length} ملخص/أهداف clips`);
+      for (const v of rangeCandidates) {
+        if (seenIds.has(v.btolatId)) continue;
+        seenIds.add(v.btolatId);
+        candidates.push({ ...v, order: v.order ?? candidates.length });
+      }
+    } catch (err) {
+      console.warn("btolat WC ID scan failed:", err.message);
     }
   }
 
@@ -216,6 +281,7 @@ function pickPrimaryFromBucket(highlights) {
 module.exports = {
   BTOLAT_VIDEO_FEEDS,
   scrapeBtolatHighlights,
+  scanBtolatWorldCupRange,
   applyBtolatHighlights,
   pickPrimaryFromBucket,
   parseBtolatVideos,
