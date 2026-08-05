@@ -12,6 +12,26 @@
 
   const { CHANNELS } = window.SITE_DATA;
   const params = new URLSearchParams(location.search);
+  const pathClean = location.pathname.replace(/\/$/, "");
+  const earlyMatch = params.get("match");
+  if (!earlyMatch) {
+    const legacyChannel =
+      (params.get("ch") && params.get("ch") !== "live") ||
+      (pathClean.startsWith("/watch/") && pathClean !== "/watch.html");
+    if (legacyChannel) {
+      location.replace("/tournament.html");
+      return;
+    }
+  } else {
+    fetch("/assets/data/wc-teams-index.json", { cache: "default" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((idx) => {
+        const key = idx?.watchRedirects?.[earlyMatch];
+        if (key) location.replace(`/tournament.html?match=${encodeURIComponent(key)}`);
+      })
+      .catch(() => { /* worker should 301; this is a client fallback */ });
+  }
+
   const xtreamMode = params.get("source") === "xtream";
   const xtreamDirect = params.get("direct") === "1";
   const xtreamPortalId = params.get("portal") || "";

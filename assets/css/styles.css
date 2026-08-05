@@ -172,6 +172,27 @@ img { max-width: 100%; display: block; }
   padding: 8px 14px; border-radius: 999px; backdrop-filter: blur(8px);
 }
 .hero-usps .usp .ico { color: var(--accent); }
+.hero-season-card {
+  margin-top: 20px;
+  max-width: 42rem;
+  padding: 16px 18px;
+  border-radius: calc(var(--radius) + 2px);
+  background: linear-gradient(135deg, rgba(24,226,154,.06), rgba(123,47,247,.05)), var(--glass);
+  border: 1px solid rgba(24,226,154,.18);
+  animation: fadeUp .7s .28s ease both;
+}
+.hero-season-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.hero-season-lede {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: .98rem;
+  line-height: 1.7;
+}
 .hero-cta { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; animation: fadeUp .7s .3s ease both; }
 
 .btn {
@@ -1925,6 +1946,11 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
 /* ------------------------------------------------- Tournament archive (أرشيف المونديال) */
 .tournament-page { min-height: 60vh; padding-bottom: 48px; }
 .tournament-lede { color: var(--muted); margin: -6px 0 22px; max-width: 640px; line-height: 1.65; font-size: .92rem; }
+.wc-team-back { margin: 0 0 12px; font-size: .9rem; }
+.wc-team-back a { color: var(--accent); font-weight: 700; text-decoration: none; }
+.wc-team-back a:hover { text-decoration: underline; }
+.team-archive-link { color: inherit; text-decoration: none; }
+.team-archive-link:hover { color: var(--accent); text-decoration: underline; }
 
 /* Featured shell — one contained hero, no nested cards */
 .tournament-featured { margin: 0 0 32px; }

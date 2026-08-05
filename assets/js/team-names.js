@@ -80,6 +80,10 @@
     "Greece": "اليونان",
     "Czechia": "التشيك",
     "Czech Republic": "التشيك",
+    "Bosnia-Herzegovina": "البوسنة والهرسك",
+    "Curaçao": "كوراساو",
+    "Curacao": "كوراساو",
+    "Haiti": "هايتي",
   };
 
   const norm = (s) => (s || "")
@@ -136,5 +140,25 @@
       .join("~");
   }
 
-  global.TeamNames = { localize, aliases, arabicFor, canonicalToken, canonicalKey, canonicalizeKey };
+  function slugFor(name) {
+    return String(name || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim()
+      .replace(/['']/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9-]/g, "");
+  }
+
+  function teamFromSlug(slug, candidates) {
+    const want = String(slug || "").toLowerCase().trim();
+    if (!want) return null;
+    for (const name of candidates || []) {
+      if (slugFor(name) === want) return name;
+    }
+    return null;
+  }
+
+  global.TeamNames = { localize, aliases, arabicFor, canonicalToken, canonicalKey, canonicalizeKey, slugFor, teamFromSlug };
 })(typeof window !== "undefined" ? window : this);

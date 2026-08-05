@@ -301,6 +301,12 @@ async function main() {
   fs.writeFileSync(MEMES_OUT, JSON.stringify(memesWithScores, null, 2));
   console.log(`Wrote ${matches.length} ended matches → ${OUT}`);
   console.log(`Wrote memes for ${memeCount} matches → ${MEMES_OUT}`);
+
+  const { spawnSync } = require("child_process");
+  spawnSync(process.execPath, ["scripts/lib/build-wc-teams-index.mjs"], {
+    cwd: path.join(__dirname, ".."),
+    stdio: "inherit",
+  });
 }
 
 main().catch((err) => {
