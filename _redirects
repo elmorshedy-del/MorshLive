@@ -1,8 +1,8 @@
 # Pretty URLs for korazero (Cloudflare Pages / Netlify compatible)
-# Do NOT add /tournament → tournament.html — Workers html_handling already
-# serves /tournament from tournament.html; a 200 rewrite loops with the 307
-# that strips .html (tournament.html → /tournament → blank page).
+# Requires assets.html_handling = "none" in wrangler.toml (see docs/CLOUDFLARE.md).
 /watch/:channel     /watch.html?ch=:channel     200
+/                   /index.html                 200
+/tournament         /tournament.html            200
 /vip                /tournament                 301
 /vip/:channel       /tournament                 301
 /live               /tournament                 301
