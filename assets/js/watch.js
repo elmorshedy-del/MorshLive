@@ -19,7 +19,7 @@
       (params.get("ch") && params.get("ch") !== "live") ||
       (pathClean.startsWith("/watch/") && pathClean !== "/watch.html");
     if (legacyChannel) {
-      location.replace("/tournament.html");
+      location.replace("/tournament");
       return;
     }
   } else {
@@ -27,7 +27,7 @@
       .then((r) => (r.ok ? r.json() : null))
       .then((idx) => {
         const key = idx?.watchRedirects?.[earlyMatch];
-        if (key) location.replace(`/tournament.html?match=${encodeURIComponent(key)}`);
+        if (key) location.replace(`/tournament?match=${encodeURIComponent(key)}`);
       })
       .catch(() => { /* worker should 301; this is a client fallback */ });
   }

@@ -31,7 +31,7 @@
 
   function watchHref(m) {
     if (m.status === "ended" && m.key) {
-      return `tournament.html?match=${encodeURIComponent(m.key)}`;
+      return `/tournament?match=${encodeURIComponent(m.key)}`;
     }
     return m.channelId
       ? `watch.html?ch=${m.channelId}&match=${m.id}`

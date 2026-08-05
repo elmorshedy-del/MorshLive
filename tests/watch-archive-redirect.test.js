@@ -7,33 +7,31 @@ const archive = [
 
 describe("watch-archive-redirect", () => {
   it("redirects legacy hubs to tournament archive", () => {
-    expect(resolveWatchArchiveRedirect("/live", new URLSearchParams(), archive, []).url).toBe(
-      "/tournament.html",
-    );
+    expect(resolveWatchArchiveRedirect("/live", new URLSearchParams(), archive, []).url).toBe("/tournament");
     expect(resolveWatchArchiveRedirect("/vip/bein-sports-1", new URLSearchParams(), archive, []).url).toBe(
-      "/tournament.html",
+      "/tournament",
     );
     expect(resolveWatchArchiveRedirect("/watch-embed.html", new URLSearchParams(), archive, []).url).toBe(
-      "/tournament.html",
+      "/tournament",
     );
   });
 
   it("redirects archived match watch URLs to tournament match deep link", () => {
     const params = new URLSearchParams("ch=bein-max-1&match=espn-fifa.world-760504");
     const hit = resolveWatchArchiveRedirect("/watch.html", params, archive, []);
-    expect(hit.url).toBe("/tournament.html?match=brazil~norway");
+    expect(hit.url).toBe("/tournament?match=brazil~norway");
     expect(hit.permanent).toBe(true);
   });
 
   it("redirects legacy channel pretty URLs to tournament", () => {
     expect(resolveWatchArchiveRedirect("/watch/bein-max-1", new URLSearchParams(), archive, []).url).toBe(
-      "/tournament.html",
+      "/tournament",
     );
   });
 
   it("redirects legacy beIN channel watch URLs to tournament", () => {
     const params = new URLSearchParams("ch=bein-max-1");
-    expect(resolveWatchArchiveRedirect("/watch.html", params, archive, []).url).toBe("/tournament.html");
+    expect(resolveWatchArchiveRedirect("/watch.html", params, archive, []).url).toBe("/tournament");
   });
 
   it("keeps live hub without a match param for today's fixtures", () => {
