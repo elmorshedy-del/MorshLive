@@ -24,7 +24,9 @@ const KNOWN_VORTEX = path.join(__dirname, "..", "assets", "data", "vortex-highli
 const TODAY = path.join(__dirname, "..", "assets", "data", "today.json");
 const TEAM_AR = path.join(__dirname, "..", "assets", "data", "team-names-ar.json");
 
-const ESPN_RANGE = "20260610-20260719";
+const ESPN_START = "2026-06-10";
+const ESPN_END = "2026-07-19";
+const ESPN_CHUNK_DAYS = 10;
 
 const STAGES = [
   { id: "group-stage", labelAr: "دور المجموعات", labelEn: "Group Stage" },
@@ -35,18 +37,49 @@ const STAGES = [
   { id: "final", labelAr: "النهائي", labelEn: "Final" },
 ];
 
+// ESPN edge blocks many custom UAs (403) but accepts curl — keep builds working.
+const ESPN_HEADERS = { "User-Agent": "curl/8.5.0" };
+
 function get(url) {
   return new Promise((resolve, reject) => {
     https
-      .get(url, { headers: { "User-Agent": "morsh-live/1.0" } }, (res) => {
+      .get(url, { headers: ESPN_HEADERS }, (res) => {
         let d = "";
         res.on("data", (c) => (d += c));
         res.on("end", () => {
+          if (res.statusCode && res.statusCode >= 400) {
+            reject(new Error(`HTTP ${res.statusCode}`));
+            return;
+          }
+          const trimmed = d.trimStart();
+          if (trimmed.startsWith("<")) {
+            reject(new Error("non-JSON response (upstream access denied?)"));
+            return;
+          }
           try { resolve(JSON.parse(d)); } catch (e) { reject(e); }
         });
       })
       .on("error", reject);
   });
+}
+
+function shiftDateIso(iso, days) {
+  const d = new Date(`${iso}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** ESPN blocks very wide scoreboard date ranges — fetch in short windows. */
+function espnDateChunks(startIso, endIso, chunkDays = ESPN_CHUNK_DAYS) {
+  const chunks = [];
+  let start = startIso;
+  while (start <= endIso) {
+    const tentativeEnd = shiftDateIso(start, chunkDays - 1);
+    const chunkEnd = tentativeEnd > endIso ? endIso : tentativeEnd;
+    chunks.push(`${start.replace(/-/g, "")}-${chunkEnd.replace(/-/g, "")}`);
+    start = shiftDateIso(chunkEnd, 1);
+  }
+  return chunks;
 }
 
 function buildArToEn() {
@@ -61,26 +94,50 @@ function buildArToEn() {
 }
 
 async function fetchAllEspnEnded() {
-  const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${ESPN_RANGE}&limit=200`;
-  const json = await get(url);
-  const league = json.leagues?.[0] || { slug: "fifa.world", name: "FIFA World Cup" };
+  const chunks = espnDateChunks(ESPN_START, ESPN_END);
+  const defaultLeague = { slug: "fifa.world", name: "FIFA World Cup" };
   const matches = [];
-  for (const e of json.events || []) {
-    const state = e.competitions?.[0]?.status?.type?.state;
-    if (state !== "post") continue;
-    const m = normalizeEspnEvent(e, league);
-    m.stage = e.season?.slug || "group-stage";
-    m.key = pairKey(m.home, m.away);
-    m.eventId = String(e.id);
-    matches.push(m);
+  const seenIds = new Set();
+
+  for (const dateRange of chunks) {
+    const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=${dateRange}&limit=200`;
+    try {
+      const json = await get(url);
+      const league = json.leagues?.[0] || defaultLeague;
+      for (const e of json.events || []) {
+        if (seenIds.has(e.id)) continue;
+        const state = e.competitions?.[0]?.status?.type?.state;
+        if (state !== "post") continue;
+        seenIds.add(e.id);
+        const m = normalizeEspnEvent(e, league);
+        m.stage = e.season?.slug || "group-stage";
+        m.key = pairKey(m.home, m.away);
+        m.eventId = String(e.id);
+        matches.push(m);
+      }
+    } catch (err) {
+      console.warn(`ESPN archive chunk ${dateRange} failed: ${err.message}`);
+    }
   }
+
+  if (!matches.length) throw new Error("ESPN returned no ended World Cup matches");
   matches.sort((a, b) => parseKickoffMs(a.kickoffUtc) - parseKickoffMs(b.kickoffUtc));
   return matches;
 }
 
 async function main() {
   console.log("Fetching ESPN World Cup archive…");
-  const matches = await fetchAllEspnEnded();
+  let matches;
+  try {
+    matches = await fetchAllEspnEnded();
+  } catch (err) {
+    console.warn(`ESPN archive fetch failed: ${err.message}`);
+    if (fs.existsSync(OUT)) {
+      console.warn(`Keeping existing archive → ${OUT}`);
+      return;
+    }
+    throw err;
+  }
   attachSummaries(matches);
 
   const arToEn = buildArToEn();
