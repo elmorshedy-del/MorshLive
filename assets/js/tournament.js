@@ -425,6 +425,22 @@
     if (window.KZTweets) window.KZTweets.bindVideoPlayers(grid);
   }
 
+  function needsHighlightFetch(m) {
+    const { full, goals } = matchClips(m);
+    return !full && !goals;
+  }
+
+  async function hydrateMissingHighlights() {
+    if (!archive || !window.ensureHighlightsFromApi) return;
+    const pending = archive.matches.filter(needsHighlightFetch);
+    if (!pending.length) return;
+    const enriched = await window.ensureHighlightsFromApi(pending);
+    const byKey = new Map(enriched.map((m) => [m.key, m]));
+    archive.matches = archive.matches.map((m) => byKey.get(m.key) || m);
+    renderFeatured();
+    renderGrid();
+  }
+
   async function loadArchive() {
     const res = await fetch("/assets/data/tournament-archive.json", { cache: "default" });
     if (!res.ok) throw new Error("archive load failed");
@@ -434,6 +450,7 @@
     renderTabs();
     renderGrid();
     openMatchFromQuery();
+    hydrateMissingHighlights().catch(() => { /* optional backfill */ });
   }
 
   function openMatchFromQuery() {

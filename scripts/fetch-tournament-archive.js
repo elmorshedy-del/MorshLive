@@ -11,9 +11,9 @@ const https = require("https");
 const { normalizeEspnEvent, parseKickoffMs } = require("./matches-lib");
 const { arabicTeamToEnglish, pairKey } = require("./commentators-lib");
 const { attachSummaries } = require("./highlights-lib");
-const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-highlights-lib");
-const { findKnownVortexHighlight, findKnownVortexHighlights, fetchVortexEmbedMeta, normalizeHighlightBucket, enrichHighlightMeta, pickPrimaryHighlight } = require("./vortex-highlights-lib");
+const { findKnownVortexHighlights, normalizeHighlightBucket, pickPrimaryHighlight } = require("./vortex-highlights-lib");
 const { arabicTeam } = require("./highlights-lib");
+const { enrichEndedMatchesWithHighlights } = require("./highlight-enrich-lib");
 const { discoverLatestHighlightMemes, discoverAllMatchMemes } = require("./twitter-memes-lib");
 const { attachMatchMeta, orderMemesChronological } = require("./lib/meme-match-lib");
 
@@ -125,6 +125,57 @@ async function fetchAllEspnEnded() {
   return matches;
 }
 
+function buildPreviousByKey(matches, extras = []) {
+  const map = new Map();
+  for (const m of matches || []) {
+    if (m.key) map.set(m.key, m);
+  }
+  for (const row of extras) {
+    if (!row?.key) continue;
+    const prev = map.get(row.key) || { key: row.key, home: row.home, away: row.away };
+    if (row.videoUrl) {
+      prev.highlight = {
+        videoUrl: row.videoUrl,
+        title: row.title,
+        source: row.source,
+        embedId: row.embedId,
+        thumbnail: row.thumbnail || "",
+      };
+    }
+    map.set(row.key, prev);
+  }
+  return map;
+}
+
+async function applyKnownVortexToMap(matches, map) {
+  for (const m of matches) {
+    const known = await findKnownVortexHighlights(m);
+    const bucket = await normalizeHighlightBucket({
+      goals: known.goals || null,
+      full: known.full || null,
+    });
+    if (!bucket) continue;
+    const prev = map.get(m.key) || { ...m };
+    prev.highlights = { ...(prev.highlights || {}) };
+    if (bucket.goals) prev.highlights.goals = bucket.goals;
+    if (bucket.full) prev.highlights.full = bucket.full;
+    prev.highlight = pickPrimaryHighlight(prev.highlights) || prev.highlights.full || prev.highlights.goals;
+    map.set(m.key, prev);
+  }
+}
+
+function persistVortexKnown(matches, knownVortex) {
+  const out = { ...knownVortex };
+  for (const m of matches) {
+    if (!m.key || !m.highlights) continue;
+    const goals = m.highlights.goals?.embedId;
+    const full = m.highlights.full?.embedId;
+    if (!goals && !full) continue;
+    out[m.key] = goals && full ? { goals, full } : (full || goals);
+  }
+  return out;
+}
+
 async function main() {
   console.log("Fetching ESPN World Cup archive…");
   let matches;
@@ -141,68 +192,57 @@ async function main() {
   attachSummaries(matches);
 
   const arToEn = buildArToEn();
-  const btolatMap = await scrapeBtolatHighlights(
-    (a, b) => {
-      const home = arToEn(a) || a;
-      const away = arToEn(b) || b;
-      return pairKey(home, away);
-    },
-    (id) => fetchVortexEmbedMeta(id, { allowAnyTitle: true }),
-    { matches, arabicTeam }
-  );
-  const dualCount = [...btolatMap.values()].filter((b) => b.goals && b.full).length;
-  console.log(`btolat highlights: ${btolatMap.size} matches (${dualCount} with goals+full)`);
+  let previousMatches = [];
+  try {
+    if (fs.existsSync(OUT)) {
+      const prev = JSON.parse(fs.readFileSync(OUT, "utf8"));
+      previousMatches = prev.matches || [];
+    }
+  } catch { /* */ }
 
   let knownVortex = {};
   try { knownVortex = JSON.parse(fs.readFileSync(KNOWN_VORTEX, "utf8")); } catch { /* */ }
-  let todayHighlights = new Map();
+
+  const todayHighlights = [];
   let todayDetails = new Map();
   try {
     const today = JSON.parse(fs.readFileSync(TODAY, "utf8"));
-    for (const h of today.highlightsIndex || []) todayHighlights.set(h.key, h);
-    for (const m of today.matches || []) todayDetails.set(m.key, {
-      lineups: m.lineups || null,
-      stats: m.stats || null,
-    });
-    for (const d of today.matchDetailIndex || []) todayDetails.set(d.key, {
-      lineups: d.lineups || todayDetails.get(d.key)?.lineups || null,
-      stats: d.stats || todayDetails.get(d.key)?.stats || null,
-    });
+    todayHighlights.push(...(today.highlightsIndex || []));
+    for (const m of today.matches || []) {
+      todayDetails.set(m.key, { lineups: m.lineups || null, stats: m.stats || null });
+    }
+    for (const d of today.matchDetailIndex || []) {
+      todayDetails.set(d.key, {
+        lineups: d.lineups || todayDetails.get(d.key)?.lineups || null,
+        stats: d.stats || todayDetails.get(d.key)?.stats || null,
+      });
+    }
   } catch { /* */ }
+
+  const previousByKey = buildPreviousByKey(previousMatches, todayHighlights);
+  await applyKnownVortexToMap(matches, previousByKey);
 
   for (const m of matches) {
     const details = todayDetails.get(m.key);
     if (details?.lineups && !m.lineups) m.lineups = details.lineups;
     if (details?.stats && !m.stats) m.stats = details.stats;
-
-    const bt = btolatMap.get(m.key);
-    const pinned = todayHighlights.get(m.key);
-    if (bt && applyBtolatHighlights(m, bt, normalizeHighlightBucket)) {
-      continue;
-    }
-    if (pinned?.videoUrl) {
-      const meta = await enrichHighlightMeta({
-        videoUrl: pinned.videoUrl,
-        title: pinned.title,
-        source: pinned.source,
-        embedId: pinned.embedId,
-        thumbnail: pinned.thumbnail || "",
-      });
-      if (meta) m.highlight = meta;
-    } else if (knownVortex[m.key]) {
-      const known = await findKnownVortexHighlights(m);
-      const bucket = await normalizeHighlightBucket({
-        goals: known.goals || null,
-        full: known.full || null,
-      });
-      if (bucket && (bucket.goals || bucket.full)) {
-        m.highlights = {};
-        if (bucket.goals) m.highlights.goals = bucket.goals;
-        if (bucket.full) m.highlights.full = bucket.full;
-        m.highlight = pickPrimaryHighlight(m.highlights) || m.highlights.full || m.highlights.goals;
-      }
-    }
   }
+
+  const { matched, total } = await enrichEndedMatchesWithHighlights(matches, {
+    pairKeyFn: (home, away) => pairKey(home, away),
+    btolatPairKeyFn: (a, b) => {
+      const home = arToEn(a) || a;
+      const away = arToEn(b) || b;
+      return pairKey(home, away);
+    },
+    arabicTeam,
+    previousByKey,
+    concurrency: 4,
+  });
+  console.log(`ملخص video attached: ${matched}/${total} ended matches`);
+
+  const updatedKnown = persistVortexKnown(matches, knownVortex);
+  fs.writeFileSync(KNOWN_VORTEX, JSON.stringify(updatedKnown, null, 2));
 
   let pinnedMemes = {};
   try { pinnedMemes = JSON.parse(fs.readFileSync(PINNED_MEMES, "utf8")); } catch { /* */ }

@@ -203,10 +203,102 @@ function vortexQueries(home, away, arabicFor) {
   return [...queries];
 }
 
-async function searchDdgEmbedIds(query) {
-  const url = `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`;
-  const html = await fetchText(url);
-  return extractEmbedIds(html);
+function extractUddgEmbedIds(html) {
+  const ids = new Set();
+  for (const m of String(html || "").matchAll(/uddg=([^&"]+)/g)) {
+    try {
+      const url = decodeURIComponent(m[1]);
+      const hit = url.match(/embed\/([A-Za-z0-9]+)/i);
+      if (hit) ids.add(hit[1]);
+    } catch { /* skip bad redirect */ }
+  }
+  return [...ids];
+}
+
+function collectEmbedIdsFromDdgHtml(html) {
+  const ids = new Set(extractEmbedIds(html));
+  for (const id of extractUddgEmbedIds(html)) ids.add(id);
+  return [...ids];
+}
+
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+async function searchDdgEmbedIds(query, maxPages = 1) {
+  const seen = new Set();
+  const out = [];
+  for (let page = 0; page < maxPages; page++) {
+    const url = page === 0
+      ? `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`
+      : `https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}&s=${page * 10}`;
+    const html = await fetchText(url);
+    const ids = collectEmbedIdsFromDdgHtml(html);
+    let added = 0;
+    for (const id of ids) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      out.push(id);
+      added++;
+    }
+    if (!added) break;
+    await sleep(250);
+  }
+  return out;
+}
+
+const VORTEX_POOL_QUERIES = [
+  "site:nvtboo.vortexvisionworks.com ملخص مباراة كأس العالم",
+  "site:nvtboo.vortexvisionworks.com أهداف مباراة كأس العالم",
+  "site:nvtboo.vortexvisionworks.com ملخص مباراة world cup 2026",
+  "site:nvtboo.vortexvisionworks.com embed ملخص كأس العالم",
+];
+
+/** Bulk DuckDuckGo discovery — one pass for many fixtures instead of per-match search. */
+async function discoverVortexHighlightPool(opts = {}) {
+  const queries = opts.queries || VORTEX_POOL_QUERIES;
+  const maxPagesPerQuery = opts.maxPagesPerQuery ?? 6;
+  const maxClips = opts.maxClips ?? 400;
+  const seenIds = new Set();
+  const clips = [];
+
+  for (const query of queries) {
+    const ids = await searchDdgEmbedIds(query, maxPagesPerQuery);
+    for (const id of ids) {
+      if (seenIds.has(id)) continue;
+      seenIds.add(id);
+      const meta = await enrichHighlightMeta(await fetchVortexEmbedMeta(id));
+      if (!meta) continue;
+      clips.push(meta);
+      if (clips.length >= maxClips) return clips;
+    }
+    await sleep(300);
+  }
+  return clips;
+}
+
+/** Map discovered vortex clips onto ended fixtures by Arabic title matching. */
+function mapVortexClipsToMatches(clips, matches, arabicFor, pairKeyFn) {
+  const { resolveFixtureKey, titleTeams } = require("./lib/highlight-match-lib");
+  const ended = (matches || []).filter((m) => m.status === "ended" || !m.status);
+  const out = new Map();
+
+  for (const clip of clips || []) {
+    if (!clip?.title || !isTrueHighlightTitle(clip.title)) continue;
+    const teams = titleTeams(clip.title);
+    const key = resolveFixtureKey(clip.title, teams, ended, {
+      pairKeyFn,
+      arabicTeam: arabicFor,
+      minScore: 1.5,
+      minMentionScore: 0.85,
+      toleranceDays: 3,
+    });
+    if (!key) continue;
+    const kind = clip.kind || classifyHighlightTitle(clip.title);
+    if (kind !== "goals" && kind !== "full") continue;
+    if (!out.has(key)) out.set(key, {});
+    const bucket = out.get(key);
+    if (!bucket[kind]) bucket[kind] = clip;
+  }
+  return out;
 }
 
 async function fetchVortexEmbedMeta(id, opts = {}) {
@@ -270,4 +362,8 @@ module.exports = {
   buildHighlightLookup,
   validateClip,
   extractEmbedIds,
+  extractUddgEmbedIds,
+  discoverVortexHighlightPool,
+  mapVortexClipsToMatches,
+  VORTEX_POOL_QUERIES,
 };
