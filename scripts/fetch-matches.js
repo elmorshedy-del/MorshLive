@@ -47,10 +47,15 @@ const ESPN_LEAGUES = ["fifa.world"];
 function get(url) {
   return new Promise((resolve, reject) => {
     https
-      .get(url, { headers: { "User-Agent": "morsh-live/1.0" } }, (res) => {
+      .get(url, { headers: { "User-Agent": "curl/8.5.0" } }, (res) => {
         let d = "";
         res.on("data", (c) => (d += c));
         res.on("end", () => {
+          const trimmed = d.trimStart();
+          if (trimmed.startsWith("<")) {
+            reject(new Error("non-JSON response"));
+            return;
+          }
           try { resolve(JSON.parse(d)); } catch (e) { reject(e); }
         });
       })
