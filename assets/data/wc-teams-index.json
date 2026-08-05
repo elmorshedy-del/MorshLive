@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-05T17:27:52.943Z",
+  "updatedAt": "2026-08-05T17:51:36.808Z",
   "tournament": "FIFA World Cup 2026",
   "teams": [
     {
@@ -12,7 +12,7 @@
       "name": "Argentina",
       "slug": "argentina",
       "nameAr": "الأرجنتين",
-      "matchCount": 8
+      "matchCount": 4
     },
     {
       "name": "Australia",
@@ -30,12 +30,12 @@
       "name": "Belgium",
       "slug": "belgium",
       "nameAr": "بلجيكا",
-      "matchCount": 6
+      "matchCount": 4
     },
     {
       "name": "Bosnia-Herzegovina",
       "slug": "bosnia-herzegovina",
-      "nameAr": "Bosnia-Herzegovina",
+      "nameAr": "البوسنة والهرسك",
       "matchCount": 4
     },
     {
@@ -60,7 +60,7 @@
       "name": "Colombia",
       "slug": "colombia",
       "nameAr": "كولومبيا",
-      "matchCount": 5
+      "matchCount": 4
     },
     {
       "name": "Congo DR",
@@ -77,7 +77,7 @@
     {
       "name": "Curaçao",
       "slug": "curacao",
-      "nameAr": "Curaçao",
+      "nameAr": "كوراساو",
       "matchCount": 3
     },
     {
@@ -96,19 +96,19 @@
       "name": "Egypt",
       "slug": "egypt",
       "nameAr": "مصر",
-      "matchCount": 5
+      "matchCount": 4
     },
     {
       "name": "England",
       "slug": "england",
       "nameAr": "إنجلترا",
-      "matchCount": 8
+      "matchCount": 5
     },
     {
       "name": "France",
       "slug": "france",
       "nameAr": "فرنسا",
-      "matchCount": 8
+      "matchCount": 5
     },
     {
       "name": "Germany",
@@ -125,7 +125,7 @@
     {
       "name": "Haiti",
       "slug": "haiti",
-      "nameAr": "Haiti",
+      "nameAr": "هايتي",
       "matchCount": 3
     },
     {
@@ -168,7 +168,7 @@
       "name": "Morocco",
       "slug": "morocco",
       "nameAr": "المغرب",
-      "matchCount": 6
+      "matchCount": 5
     },
     {
       "name": "Netherlands",
@@ -186,7 +186,7 @@
       "name": "Norway",
       "slug": "norway",
       "nameAr": "النرويج",
-      "matchCount": 6
+      "matchCount": 5
     },
     {
       "name": "Panama",
@@ -204,7 +204,7 @@
       "name": "Portugal",
       "slug": "portugal",
       "nameAr": "البرتغال",
-      "matchCount": 5
+      "matchCount": 4
     },
     {
       "name": "Qatar",
@@ -246,7 +246,7 @@
       "name": "Spain",
       "slug": "spain",
       "nameAr": "إسبانيا",
-      "matchCount": 8
+      "matchCount": 4
     },
     {
       "name": "Sweden",
@@ -258,7 +258,7 @@
       "name": "Switzerland",
       "slug": "switzerland",
       "nameAr": "سويسرا",
-      "matchCount": 6
+      "matchCount": 4
     },
     {
       "name": "Tunisia",
@@ -276,7 +276,7 @@
       "name": "United States",
       "slug": "united-states",
       "nameAr": "الولايات المتحدة",
-      "matchCount": 5
+      "matchCount": 4
     },
     {
       "name": "Uruguay",
@@ -383,18 +383,6 @@
     "espn-fifa.world-760502": "canada~morocco",
     "espn-fifa.world-760503": "france~paraguay",
     "espn-fifa.world-760504": "brazil~norway",
-    "espn-fifa.world-760505": "england~mexico",
-    "espn-fifa.world-760506": "portugal~spain",
-    "espn-fifa.world-760507": "belgium~unitedstates",
-    "espn-fifa.world-760509": "argentina~egypt",
-    "espn-fifa.world-760508": "colombia~switzerland",
-    "espn-fifa.world-760510": "france~morocco",
-    "espn-fifa.world-760511": "belgium~spain",
-    "espn-fifa.world-760512": "england~norway",
-    "espn-fifa.world-760513": "argentina~switzerland",
-    "espn-fifa.world-760514": "france~spain",
-    "espn-fifa.world-760515": "argentina~england",
-    "espn-fifa.world-760516": "england~france",
-    "espn-fifa.world-760517": "argentina~spain"
+    "espn-fifa.world-760505": "england~mexico"
   }
 }
