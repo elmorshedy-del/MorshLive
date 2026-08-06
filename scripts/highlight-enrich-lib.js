@@ -7,6 +7,7 @@ const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-high
 const {
   findVortexHighlight,
   findVortexGoalsHighlight,
+  findVortexFullHighlight,
   fetchVortexEmbedMeta,
   normalizeHighlightBucket,
   enrichHighlightMeta,
@@ -151,10 +152,25 @@ async function enrichEndedMatchesWithHighlights(matches, opts = {}) {
       if (meta?.kind === "goals") {
         if (!m.highlights) m.highlights = {};
         m.highlights.goals = meta;
-        if (!m.highlight) m.highlight = pickPrimaryHighlight(m.highlights) || meta;
+        m.highlight = pickPrimaryHighlight(m.highlights) || m.highlight || meta;
       }
     } catch (err) {
       console.warn(`vortex goals search failed for ${m.home} vs ${m.away}:`, err.message);
+    }
+  });
+
+  const missingFull = ended.filter((m) => !m.highlights?.full?.videoUrl && !m.highlight?.videoUrl);
+  await runPool(missingFull, concurrency, async (m) => {
+    try {
+      const full = await findVortexFullHighlight(m, arabicTeam);
+      const meta = enrichHighlightMeta(full);
+      if (meta?.kind === "full") {
+        if (!m.highlights) m.highlights = {};
+        m.highlights.full = meta;
+        m.highlight = pickPrimaryHighlight(m.highlights) || meta;
+      }
+    } catch (err) {
+      console.warn(`vortex full highlight search failed for ${m.home} vs ${m.away}:`, err.message);
     }
   });
 

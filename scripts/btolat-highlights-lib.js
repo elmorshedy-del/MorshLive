@@ -276,21 +276,30 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
   return out;
 }
 
-/** Attach highlights.goals + highlights.full; primary = true ملخص reel or أهداف reel. */
+/** Attach highlights.goals + highlights.full; merge with existing — never drop ملخص when adding أهداف. */
 function applyBtolatHighlights(match, bucket, normalizeBucket) {
   if (!bucket || (!bucket.goals && !bucket.full && !bucket.clips?.length)) return false;
   const cleaned = normalizeBucket ? normalizeBucket({ goals: bucket.goals, full: bucket.full }) : bucket;
   if (!cleaned && !bucket.clips?.length) return false;
-  match.highlights = {};
+  match.highlights = { ...(match.highlights || {}) };
   if (cleaned?.goals) match.highlights.goals = { ...cleaned.goals, kind: "goals" };
   if (cleaned?.full) match.highlights.full = { ...cleaned.full, kind: "full" };
   if (bucket.clips?.length) {
-    match.clips = bucket.clips
+    const notable = bucket.clips
       .filter((c) => c && c.videoUrl && !isPrimaryKind(c.kind))
       .map((c) => ({ ...c, kind: c.kind || "clip" }));
+    const seen = new Set((match.clips || []).map((c) => c.btolatId || c.videoUrl));
+    const merged = [...(match.clips || [])];
+    for (const clip of notable) {
+      const id = clip.btolatId || clip.videoUrl;
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      merged.push(clip);
+    }
+    if (merged.length) match.clips = merged;
   }
-  match.highlight = pickPrimaryFromBucket(match.highlights) || match.highlights.full || match.highlights.goals || null;
-  return !!(match.highlight || match.clips?.length);
+  match.highlight = pickPrimaryFromBucket(match.highlights) || match.highlights.full || match.highlights.goals || match.highlight || null;
+  return !!(match.highlights.goals || match.highlights.full || match.highlight || match.clips?.length);
 }
 
 function pickPrimaryFromBucket(highlights) {
