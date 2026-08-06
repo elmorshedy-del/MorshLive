@@ -90,7 +90,14 @@ async function enrichEndedMatchesWithHighlights(matches, opts = {}) {
     btolatMap = await scrapeBtolatHighlights(
       btolatPairKeyFn,
       (id) => fetchVortexEmbedMeta(id, { allowAnyTitle: true }),
-      { matches, arabicTeam, maxVideos: 500, useSitemap: true, scanWorldCupRange: true },
+      {
+        matches,
+        arabicTeam,
+        maxVideos: 500,
+        useSitemap: true,
+        scanWorldCupRange: true,
+        useCrawler: false,
+      },
     );
     const dual = [...btolatMap.values()].filter((b) => b.goals && b.full).length;
     console.log(`btolat highlights: ${btolatMap.size} matches (${dual} with goals+full)`);

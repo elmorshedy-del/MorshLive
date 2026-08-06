@@ -73,8 +73,8 @@ async function runIdPool(start, end, concurrency, fn) {
  * dense numeric /video/{id} range during the tournament. Scan it directly.
  */
 async function scanBtolatWorldCupRange(pairKeyFn, opts = {}) {
-  const startId = opts.rangeStart ?? 93700;
-  const endId = opts.rangeEnd ?? 94200;
+  const startId = opts.rangeStart ?? 93400;
+  const endId = opts.rangeEnd ?? 94300;
   const concurrency = opts.rangeConcurrency ?? 10;
   const candidates = [];
 

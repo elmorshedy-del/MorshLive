@@ -147,6 +147,18 @@
 /world-cup-2026/france-vs-paraguay  /world-cup-match.html?slug=france-vs-paraguay  200
 /world-cup-2026/brazil-vs-norway  /world-cup-match.html?slug=brazil-vs-norway  200
 /world-cup-2026/england-vs-mexico  /world-cup-match.html?slug=england-vs-mexico  200
+/world-cup-2026/portugal-vs-spain  /world-cup-match.html?slug=portugal-vs-spain  200
+/world-cup-2026/belgium-vs-united-states  /world-cup-match.html?slug=belgium-vs-united-states  200
+/world-cup-2026/argentina-vs-egypt  /world-cup-match.html?slug=argentina-vs-egypt  200
+/world-cup-2026/colombia-vs-switzerland  /world-cup-match.html?slug=colombia-vs-switzerland  200
+/world-cup-2026/france-vs-morocco  /world-cup-match.html?slug=france-vs-morocco  200
+/world-cup-2026/belgium-vs-spain  /world-cup-match.html?slug=belgium-vs-spain  200
+/world-cup-2026/england-vs-norway  /world-cup-match.html?slug=england-vs-norway  200
+/world-cup-2026/argentina-vs-switzerland  /world-cup-match.html?slug=argentina-vs-switzerland  200
+/world-cup-2026/france-vs-spain  /world-cup-match.html?slug=france-vs-spain  200
+/world-cup-2026/argentina-vs-england  /world-cup-match.html?slug=argentina-vs-england  200
+/world-cup-2026/england-vs-france  /world-cup-match.html?slug=england-vs-france  200
+/world-cup-2026/argentina-vs-spain  /world-cup-match.html?slug=argentina-vs-spain  200
 # Dynamic splat rules (must be after all static rules)
 /watch/:channel     /watch.html?ch=:channel     200
 /vip/:channel       /tournament                 301

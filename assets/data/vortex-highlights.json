@@ -1,5 +1,26 @@
 {
-  "canada~morocco": { "full": "BD8ZRSAEM1XiE" },
-  "france~paraguay": { "full": "4Duh6QTRDC3M6" },
-  "brazil~norway": { "goals": "3PJE9G5Eza9fM", "full": "mA5amQonpFi8V" }
+  "canada~morocco": {
+    "full": "BD8ZRSAEM1XiE"
+  },
+  "france~paraguay": {
+    "full": "4Duh6QTRDC3M6"
+  },
+  "brazil~norway": {
+    "goals": "3PJE9G5Eza9fM",
+    "full": "mA5amQonpFi8V"
+  },
+  "haiti~scotland": "gbiGwzZ6SGkIQ",
+  "brazil~haiti": "luWMkfrTH0nwF",
+  "egypt~newzealand": "QYkZmkyFtvhyM",
+  "norway~senegal": "3tx87KIRUnd4Q",
+  "algeria~jordan": "cJoCzMZxfWyIr",
+  "croatia~panama": "Wvb7p8PuxcVJu",
+  "australia~egypt": {
+    "goals": "a1DWlo52JPLta",
+    "full": "a1DWlo52JPLta"
+  },
+  "england~mexico": {
+    "goals": "b1dy0L8gi2Kbt",
+    "full": "WAOCAqgXRSoPe"
+  }
 }

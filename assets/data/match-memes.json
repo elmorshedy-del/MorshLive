@@ -2,22 +2,28 @@
   "mexico~southafrica": [
     {
       "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2065178045246484698",
-      "text": "Referee of Mexico vs South Africa https://t.co/qUq3Ofz8ZQ",
-      "author": "TrollFootball",
-      "tweetId": "2065178045246484698",
-      "likes": 70201,
-      "retweets": 5609,
-      "engagement": 82288,
-      "postedAt": "2026-06-11T21:03:09.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "url": "https://x.com/memesvsfootball/status/2065182283242295794",
+      "text": "Mexico vs. South Africa https://t.co/T61GjQU5ud",
+      "author": "memesvsfootball",
+      "tweetId": "2065182283242295794",
+      "likes": 18723,
+      "retweets": 303,
+      "engagement": 19340,
+      "postedAt": "2026-06-11T21:20:00.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
       "media": [
         {
           "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HKj8dEdagAARbv5.jpg",
-          "url": "https://pbs.twimg.com/media/HKj8dEdagAARbv5.jpg"
+          "previewUrl": "https://pbs.twimg.com/media/HKj__-lawAA_ahy.jpg",
+          "url": "https://pbs.twimg.com/media/HKj__-lawAA_ahy.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Mexico",
+      "away": "South Africa",
+      "score": "2 - 0",
+      "kickoffUtc": "2026-06-11T19:00Z"
     },
     {
       "type": "tweet",
@@ -36,26 +42,38 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2065181156216299520/img/zAS2hVJj6VUWn1bZ.jpg",
           "url": "https://video.twimg.com/amplify_video/2065181156216299520/vid/avc1/480x726/OOOUgEiCGXTJT5O0.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Mexico",
+      "away": "South Africa",
+      "score": "2 - 0",
+      "kickoffUtc": "2026-06-11T19:00Z"
     },
     {
       "type": "tweet",
-      "url": "https://x.com/memesvsfootball/status/2065182283242295794",
-      "text": "Mexico vs. South Africa https://t.co/T61GjQU5ud",
-      "author": "memesvsfootball",
-      "tweetId": "2065182283242295794",
-      "likes": 18723,
-      "retweets": 303,
-      "engagement": 19340,
-      "postedAt": "2026-06-11T21:20:00.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "url": "https://x.com/TrollFootball/status/2065178045246484698",
+      "text": "Referee of Mexico vs South Africa https://t.co/qUq3Ofz8ZQ",
+      "author": "TrollFootball",
+      "tweetId": "2065178045246484698",
+      "likes": 70201,
+      "retweets": 5609,
+      "engagement": 82288,
+      "postedAt": "2026-06-11T21:03:09.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
       "media": [
         {
           "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HKj__-lawAA_ahy.jpg",
-          "url": "https://pbs.twimg.com/media/HKj__-lawAA_ahy.jpg"
+          "previewUrl": "https://pbs.twimg.com/media/HKj8dEdagAARbv5.jpg",
+          "url": "https://pbs.twimg.com/media/HKj8dEdagAARbv5.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Mexico",
+      "away": "South Africa",
+      "score": "2 - 0",
+      "kickoffUtc": "2026-06-11T19:00Z"
     }
   ],
   "czechia~southkorea": [
@@ -76,7 +94,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2065292580796215296/img/3rYtjK0sSuCASUWq.jpg",
           "url": "https://video.twimg.com/amplify_video/2065292580796215296/vid/avc1/720x924/v01IfM_J221zIHtj.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "South Korea",
+      "away": "Czechia",
+      "score": "2 - 1",
+      "kickoffUtc": "2026-06-12T02:00Z"
     }
   ],
   "bosniaherzegovina~canada": [
@@ -97,7 +121,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HKpJsVjbIAAA-Hk.jpg",
           "url": "https://pbs.twimg.com/media/HKpJsVjbIAAA-Hk.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Canada",
+      "away": "Bosnia-Herzegovina",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-12T19:00Z"
     },
     {
       "type": "tweet",
@@ -116,29 +146,16 @@
           "previewUrl": "https://pbs.twimg.com/media/HKpB3RHaAAAF8oa.jpg",
           "url": "https://pbs.twimg.com/media/HKpB3RHaAAAF8oa.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Canada",
+      "away": "Bosnia-Herzegovina",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-12T19:00Z"
     }
   ],
   "paraguay~unitedstates": [
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2065631106330927565",
-      "text": "USA vs Paraguay https://t.co/v4SJ0hjhD3",
-      "author": "TrollFootball",
-      "tweetId": "2065631106330927565",
-      "likes": 18942,
-      "retweets": 1473,
-      "engagement": 22048,
-      "postedAt": "2026-06-13T03:03:27.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HKqYfo5aEAA0TZp.jpg",
-          "url": "https://pbs.twimg.com/media/HKqYfo5aEAA0TZp.jpg"
-        }
-      ]
-    },
     {
       "type": "tweet",
       "url": "https://x.com/TrollFootball/status/2065632835881623852",
@@ -156,7 +173,38 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2065632223282573312/img/b-jW7YCw9pnMa6wy.jpg",
           "url": "https://video.twimg.com/amplify_video/2065632223282573312/vid/avc1/1280x720/o-EJquyuZLAvguoy.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "United States",
+      "away": "Paraguay",
+      "score": "4 - 1",
+      "kickoffUtc": "2026-06-13T01:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2065631106330927565",
+      "text": "USA vs Paraguay https://t.co/v4SJ0hjhD3",
+      "author": "TrollFootball",
+      "tweetId": "2065631106330927565",
+      "likes": 18942,
+      "retweets": 1473,
+      "engagement": 22048,
+      "postedAt": "2026-06-13T03:03:27.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKqYfo5aEAA0TZp.jpg",
+          "url": "https://pbs.twimg.com/media/HKqYfo5aEAA0TZp.jpg"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "United States",
+      "away": "Paraguay",
+      "score": "4 - 1",
+      "kickoffUtc": "2026-06-13T01:00Z"
     },
     {
       "type": "tweet",
@@ -175,29 +223,16 @@
           "previewUrl": "https://pbs.twimg.com/media/HKqYWhNa8AIfcmd.jpg",
           "url": "https://pbs.twimg.com/media/HKqYWhNa8AIfcmd.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "United States",
+      "away": "Paraguay",
+      "score": "4 - 1",
+      "kickoffUtc": "2026-06-13T01:00Z"
     }
   ],
   "qatar~switzerland": [
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2065905126783762609",
-      "text": "Qatar vs Switzerland https://t.co/FS5rMprqYQ",
-      "author": "TrollFootball",
-      "tweetId": "2065905126783762609",
-      "likes": 19006,
-      "retweets": 1059,
-      "engagement": 21271,
-      "postedAt": "2026-06-13T21:12:19.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HKuRtlNaIAAceVa.jpg",
-          "url": "https://pbs.twimg.com/media/HKuRtlNaIAAceVa.jpg"
-        }
-      ]
-    },
     {
       "type": "tweet",
       "url": "https://x.com/memesvsfootball/status/2065907058877026423",
@@ -215,29 +250,41 @@
           "previewUrl": "https://pbs.twimg.com/media/HKuTF40acAAg1aS.jpg",
           "url": "https://pbs.twimg.com/media/HKuTF40acAAg1aS.jpg"
         }
-      ]
-    }
-  ],
-  "brazil~morocco": [
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Qatar",
+      "away": "Switzerland",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-13T19:00Z"
+    },
     {
       "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2065953825736081758",
-      "text": "Brazil vs Morocco https://t.co/SGVal0Cw8i",
+      "url": "https://x.com/TrollFootball/status/2065905126783762609",
+      "text": "Qatar vs Switzerland https://t.co/FS5rMprqYQ",
       "author": "TrollFootball",
-      "tweetId": "2065953825736081758",
-      "likes": 41794,
-      "retweets": 2069,
-      "engagement": 46074,
-      "postedAt": "2026-06-14T00:25:50.000Z",
+      "tweetId": "2065905126783762609",
+      "likes": 19006,
+      "retweets": 1059,
+      "engagement": 21271,
+      "postedAt": "2026-06-13T21:12:19.000Z",
       "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
       "media": [
         {
           "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HKu8vSJbwAAJmm6.jpg",
-          "url": "https://pbs.twimg.com/media/HKu8vSJbwAAJmm6.jpg"
+          "previewUrl": "https://pbs.twimg.com/media/HKuRtlNaIAAceVa.jpg",
+          "url": "https://pbs.twimg.com/media/HKuRtlNaIAAceVa.jpg"
         }
-      ]
-    },
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Qatar",
+      "away": "Switzerland",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-13T19:00Z"
+    }
+  ],
+  "brazil~morocco": [
     {
       "type": "tweet",
       "url": "https://x.com/Contxtfootball/status/2065954657273327622",
@@ -255,7 +302,38 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2065954563237007360/img/-EYK0wDdJXrXvBvI.jpg",
           "url": "https://video.twimg.com/amplify_video/2065954563237007360/vid/avc1/1080x1080/BstUcJOLINQJ-R4V.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Brazil",
+      "away": "Morocco",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-13T22:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2065953825736081758",
+      "text": "Brazil vs Morocco https://t.co/SGVal0Cw8i",
+      "author": "TrollFootball",
+      "tweetId": "2065953825736081758",
+      "likes": 41794,
+      "retweets": 2069,
+      "engagement": 46074,
+      "postedAt": "2026-06-14T00:25:50.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKu8vSJbwAAJmm6.jpg",
+          "url": "https://pbs.twimg.com/media/HKu8vSJbwAAJmm6.jpg"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Brazil",
+      "away": "Morocco",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-13T22:00Z"
     },
     {
       "type": "tweet",
@@ -274,7 +352,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HKu5czYagAA8Q5b.jpg",
           "url": "https://pbs.twimg.com/media/HKu5czYagAA8Q5b.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Brazil",
+      "away": "Morocco",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-13T22:00Z"
     }
   ],
   "haiti~scotland": [
@@ -295,7 +379,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HKvjeCGbIAA155h.jpg",
           "url": "https://pbs.twimg.com/media/HKvjeCGbIAA155h.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Haiti",
+      "away": "Scotland",
+      "score": "0 - 1",
+      "kickoffUtc": "2026-06-14T01:00Z"
     }
   ],
   "curacao~germany": [
@@ -316,26 +406,13 @@
           "previewUrl": "https://pbs.twimg.com/ext_tw_video_thumb/1425496035993047040/pu/img/ZjwqQIkQGpR2iZ_k.jpg",
           "url": "https://video.twimg.com/ext_tw_video/1425496035993047040/pu/vid/640x360/qwrKvFLyrs4i8anO.mp4?tag=12"
         }
-      ]
-    },
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2066237807891460433",
-      "text": "How Germans see Curaçao https://t.co/XMAXocnhe0",
-      "author": "TrollFootball",
-      "tweetId": "2066237807891460433",
-      "likes": 80979,
-      "retweets": 5482,
-      "engagement": 92399,
-      "postedAt": "2026-06-14T19:14:16.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HKzARgXbYAA87OD.jpg",
-          "url": "https://pbs.twimg.com/media/HKzARgXbYAA87OD.jpg"
-        }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Germany",
+      "away": "Curaçao",
+      "score": "7 - 1",
+      "kickoffUtc": "2026-06-14T17:00Z"
     },
     {
       "type": "tweet",
@@ -354,7 +431,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HKzBpHTb0AAySJT.jpg",
           "url": "https://pbs.twimg.com/media/HKzBpHTb0AAySJT.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Germany",
+      "away": "Curaçao",
+      "score": "7 - 1",
+      "kickoffUtc": "2026-06-14T17:00Z"
     },
     {
       "type": "tweet",
@@ -373,29 +456,41 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066239914929446912/img/aJOfT8eohyaPvkgm.jpg",
           "url": "https://video.twimg.com/amplify_video/2066239914929446912/vid/avc1/480x720/zVP0F4roYlVYJF30.mp4?tag=14"
         }
-      ]
-    }
-  ],
-  "japan~netherlands": [
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Germany",
+      "away": "Curaçao",
+      "score": "7 - 1",
+      "kickoffUtc": "2026-06-14T17:00Z"
+    },
     {
       "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2066280611640455442",
-      "text": "*I am going to bed, this 1st half is boring*\n\n2nd half of Netherlands vs Japan:\n\n https://t.co/Epqa7NMsB0",
+      "url": "https://x.com/TrollFootball/status/2066237807891460433",
+      "text": "How Germans see Curaçao https://t.co/XMAXocnhe0",
       "author": "TrollFootball",
-      "tweetId": "2066280611640455442",
-      "likes": 85439,
-      "retweets": 4689,
-      "engagement": 95127,
-      "postedAt": "2026-06-14T22:04:22.000Z",
+      "tweetId": "2066237807891460433",
+      "likes": 80979,
+      "retweets": 5482,
+      "engagement": 92399,
+      "postedAt": "2026-06-14T19:14:16.000Z",
       "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
       "media": [
         {
-          "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066280259197296640/img/lRMPBpSqfxy72vfz.jpg",
-          "url": "https://video.twimg.com/amplify_video/2066280259197296640/vid/avc1/888x720/4eRcVIzmohOvh7q9.mp4"
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HKzARgXbYAA87OD.jpg",
+          "url": "https://pbs.twimg.com/media/HKzARgXbYAA87OD.jpg"
         }
-      ]
-    },
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Germany",
+      "away": "Curaçao",
+      "score": "7 - 1",
+      "kickoffUtc": "2026-06-14T17:00Z"
+    }
+  ],
+  "japan~netherlands": [
     {
       "type": "tweet",
       "url": "https://x.com/TrollFootball/status/2066305805960532082",
@@ -413,7 +508,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066305637378867200/img/5bzckTo3U6SH6uq2.jpg",
           "url": "https://video.twimg.com/amplify_video/2066305637378867200/vid/avc1/858x880/_bss5WnD20Msj7Q9.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Netherlands",
+      "away": "Japan",
+      "score": "2 - 2",
+      "kickoffUtc": "2026-06-14T20:00Z"
     },
     {
       "type": "tweet",
@@ -432,7 +533,38 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066283835957137408/img/ii8Nr7ROLhDmRa86.jpg",
           "url": "https://video.twimg.com/amplify_video/2066283835957137408/vid/avc1/480x360/caDzcVr3m4GtFRHR.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Netherlands",
+      "away": "Japan",
+      "score": "2 - 2",
+      "kickoffUtc": "2026-06-14T20:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2066280611640455442",
+      "text": "*I am going to bed, this 1st half is boring*\n\n2nd half of Netherlands vs Japan:\n\n https://t.co/Epqa7NMsB0",
+      "author": "TrollFootball",
+      "tweetId": "2066280611640455442",
+      "likes": 85439,
+      "retweets": 4689,
+      "engagement": 95127,
+      "postedAt": "2026-06-14T22:04:22.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066280259197296640/img/lRMPBpSqfxy72vfz.jpg",
+          "url": "https://video.twimg.com/amplify_video/2066280259197296640/vid/avc1/888x720/4eRcVIzmohOvh7q9.mp4"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Netherlands",
+      "away": "Japan",
+      "score": "2 - 2",
+      "kickoffUtc": "2026-06-14T20:00Z"
     }
   ],
   "ecuador~ivorycoast": [
@@ -453,7 +585,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HK0SJJ-bEAA7kql.jpg",
           "url": "https://pbs.twimg.com/media/HK0SJJ-bEAA7kql.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Ivory Coast",
+      "away": "Ecuador",
+      "score": "1 - 0",
+      "kickoffUtc": "2026-06-14T23:00Z"
     },
     {
       "type": "tweet",
@@ -472,7 +610,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HK0P3ozbcAAY7rp.jpg",
           "url": "https://pbs.twimg.com/media/HK0P3ozbcAAY7rp.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Ivory Coast",
+      "away": "Ecuador",
+      "score": "1 - 0",
+      "kickoffUtc": "2026-06-14T23:00Z"
     }
   ],
   "sweden~tunisia": [
@@ -493,7 +637,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066371296599142400/img/cZI7N_rEBd6Poj95.jpg",
           "url": "https://video.twimg.com/amplify_video/2066371296599142400/vid/avc1/888x916/bqlUonH81tGGkv0p.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Sweden",
+      "away": "Tunisia",
+      "score": "5 - 1",
+      "kickoffUtc": "2026-06-15T02:00Z"
     },
     {
       "type": "tweet",
@@ -512,7 +662,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HK05tTJaYAA2LZv.jpg",
           "url": "https://pbs.twimg.com/media/HK05tTJaYAA2LZv.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Sweden",
+      "away": "Tunisia",
+      "score": "5 - 1",
+      "kickoffUtc": "2026-06-15T02:00Z"
     }
   ],
   "capeverde~spain": [
@@ -533,7 +689,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066588870515556352/img/ysKuFHCaFq_APvGL.jpg",
           "url": "https://video.twimg.com/amplify_video/2066588870515556352/vid/avc1/720x1280/JH6nBoWXxf42AToQ.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Spain",
+      "away": "Cape Verde",
+      "score": "0 - 0",
+      "kickoffUtc": "2026-06-15T16:00Z"
     },
     {
       "type": "tweet",
@@ -552,29 +714,16 @@
           "previewUrl": "https://pbs.twimg.com/media/HK38YNlbMAAWY3P.jpg",
           "url": "https://pbs.twimg.com/media/HK38YNlbMAAWY3P.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Spain",
+      "away": "Cape Verde",
+      "score": "0 - 0",
+      "kickoffUtc": "2026-06-15T16:00Z"
     }
   ],
   "belgium~egypt": [
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2066630912222310454",
-      "text": "Me, sleep deprived, trying to explain to my girl how Egypt scored both goals against Belgium and still couldn't win. https://t.co/HvJ5l5rUFa",
-      "author": "TrollFootball",
-      "tweetId": "2066630912222310454",
-      "likes": 14811,
-      "retweets": 865,
-      "engagement": 16646,
-      "postedAt": "2026-06-15T21:16:20.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HK4laY4akAAbO8D.jpg",
-          "url": "https://pbs.twimg.com/media/HK4laY4akAAbO8D.jpg"
-        }
-      ]
-    },
     {
       "type": "tweet",
       "url": "https://x.com/TrollFootball/status/2066637361312932125",
@@ -592,7 +741,38 @@
           "previewUrl": "https://pbs.twimg.com/media/HK4kwLFa8AAMZrn.jpg",
           "url": "https://pbs.twimg.com/media/HK4kwLFa8AAMZrn.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Belgium",
+      "away": "Egypt",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-15T19:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2066630912222310454",
+      "text": "Me, sleep deprived, trying to explain to my girl how Egypt scored both goals against Belgium and still couldn't win. https://t.co/HvJ5l5rUFa",
+      "author": "TrollFootball",
+      "tweetId": "2066630912222310454",
+      "likes": 14811,
+      "retweets": 865,
+      "engagement": 16646,
+      "postedAt": "2026-06-15T21:16:20.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK4laY4akAAbO8D.jpg",
+          "url": "https://pbs.twimg.com/media/HK4laY4akAAbO8D.jpg"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Belgium",
+      "away": "Egypt",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-15T19:00Z"
     }
   ],
   "saudiarabia~uruguay": [
@@ -613,7 +793,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2059703316653727744/img/vxAGojlnXi8ZrYvL.jpg",
           "url": "https://video.twimg.com/amplify_video/2059703316653727744/vid/avc1/1280x720/gyI7ACbvs8Z4mWBH.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Saudi Arabia",
+      "away": "Uruguay",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-15T22:00Z"
     },
     {
       "type": "tweet",
@@ -632,29 +818,16 @@
           "previewUrl": "https://pbs.twimg.com/media/HK5Loc-aQAAwA-3.jpg",
           "url": "https://pbs.twimg.com/media/HK5Loc-aQAAwA-3.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Saudi Arabia",
+      "away": "Uruguay",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-15T22:00Z"
     }
   ],
   "iran~newzealand": [
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2066718228735504876",
-      "text": "A moment of silence for those who missed Iran vs New Zealand https://t.co/mITHnPRYO6",
-      "author": "TrollFootball",
-      "tweetId": "2066718228735504876",
-      "likes": 50394,
-      "retweets": 3379,
-      "engagement": 57550,
-      "postedAt": "2026-06-16T03:03:18.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HK51MgCb0AAFkZA.jpg",
-          "url": "https://pbs.twimg.com/media/HK51MgCb0AAFkZA.jpg"
-        }
-      ]
-    },
     {
       "type": "tweet",
       "url": "https://x.com/memesvsfootball/status/2066719915139289303",
@@ -672,7 +845,38 @@
           "previewUrl": "https://pbs.twimg.com/media/HK52dqIa0AAz_-I.jpg",
           "url": "https://pbs.twimg.com/media/HK52dqIa0AAz_-I.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Iran",
+      "away": "New Zealand",
+      "score": "2 - 2",
+      "kickoffUtc": "2026-06-16T01:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2066718228735504876",
+      "text": "A moment of silence for those who missed Iran vs New Zealand https://t.co/mITHnPRYO6",
+      "author": "TrollFootball",
+      "tweetId": "2066718228735504876",
+      "likes": 50394,
+      "retweets": 3379,
+      "engagement": 57550,
+      "postedAt": "2026-06-16T03:03:18.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HK51MgCb0AAFkZA.jpg",
+          "url": "https://pbs.twimg.com/media/HK51MgCb0AAFkZA.jpg"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Iran",
+      "away": "New Zealand",
+      "score": "2 - 2",
+      "kickoffUtc": "2026-06-16T01:00Z"
     }
   ],
   "france~senegal": [
@@ -693,7 +897,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066994447750230016/img/yT4ZAg2xQPSYEiYP.jpg",
           "url": "https://video.twimg.com/amplify_video/2066994447750230016/vid/avc1/720x858/l2HuZkiOgVjqas-I.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "France",
+      "away": "Senegal",
+      "score": "3 - 1",
+      "kickoffUtc": "2026-06-16T19:00Z"
     },
     {
       "type": "tweet",
@@ -712,7 +922,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HK9yA_UbkAEDH7h.jpg",
           "url": "https://pbs.twimg.com/media/HK9yA_UbkAEDH7h.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "France",
+      "away": "Senegal",
+      "score": "3 - 1",
+      "kickoffUtc": "2026-06-16T19:00Z"
     },
     {
       "type": "tweet",
@@ -731,7 +947,13 @@
           "previewUrl": "https://pbs.twimg.com/ext_tw_video_thumb/1904405595857297408/pu/img/Yca5vx0IW9LnUvaU.jpg",
           "url": "https://video.twimg.com/ext_tw_video/1904405595857297408/pu/vid/avc1/930x720/pd5i450OalJkLxh4.mp4?tag=12"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "France",
+      "away": "Senegal",
+      "score": "3 - 1",
+      "kickoffUtc": "2026-06-16T19:00Z"
     }
   ],
   "iraq~norway": [
@@ -752,7 +974,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HK-VQU6aMAArgTJ.jpg",
           "url": "https://pbs.twimg.com/media/HK-VQU6aMAArgTJ.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Iraq",
+      "away": "Norway",
+      "score": "1 - 4",
+      "kickoffUtc": "2026-06-16T22:00Z"
     },
     {
       "type": "tweet",
@@ -771,7 +999,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HK-Us8YbkAAFMeI.jpg",
           "url": "https://pbs.twimg.com/media/HK-Us8YbkAAFMeI.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Iraq",
+      "away": "Norway",
+      "score": "1 - 4",
+      "kickoffUtc": "2026-06-16T22:00Z"
     }
   ],
   "algeria~argentina": [
@@ -792,7 +1026,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HK_OE4WbEAAkPuD.jpg",
           "url": "https://pbs.twimg.com/media/HK_OE4WbEAAkPuD.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Argentina",
+      "away": "Algeria",
+      "score": "3 - 0",
+      "kickoffUtc": "2026-06-17T01:00Z"
     },
     {
       "type": "tweet",
@@ -811,7 +1051,13 @@
           "previewUrl": "https://pbs.twimg.com/ext_tw_video_thumb/1552208441455812608/pu/img/UwfF6Reex8opOKhZ.jpg",
           "url": "https://video.twimg.com/ext_tw_video/1552208441455812608/pu/vid/728x470/xpBaMrmAUpCcV48A.mp4?tag=12"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Argentina",
+      "away": "Algeria",
+      "score": "3 - 0",
+      "kickoffUtc": "2026-06-17T01:00Z"
     },
     {
       "type": "tweet",
@@ -830,7 +1076,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067081975618469888/img/-Hmn2mtrZEdAsEdA.jpg",
           "url": "https://video.twimg.com/amplify_video/2067081975618469888/vid/avc1/720x960/9U_1cvDM_PulujzH.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Argentina",
+      "away": "Algeria",
+      "score": "3 - 0",
+      "kickoffUtc": "2026-06-17T01:00Z"
     }
   ],
   "austria~jordan": [
@@ -851,10 +1103,41 @@
           "previewUrl": "https://pbs.twimg.com/media/HK_p5A2acAA6oAD.jpg",
           "url": "https://pbs.twimg.com/media/HK_p5A2acAA6oAD.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Austria",
+      "away": "Jordan",
+      "score": "3 - 1",
+      "kickoffUtc": "2026-06-17T04:00Z"
     }
   ],
   "congodr~portugal": [
+    {
+      "type": "tweet",
+      "url": "https://x.com/memesvsfootball/status/2067340263299919950",
+      "text": "Ronaldo be like.. \n\nhttps://t.co/IYB6dbJdNc",
+      "author": "memesvsfootball",
+      "tweetId": "2067340263299919950",
+      "likes": 109,
+      "retweets": 8,
+      "engagement": 127,
+      "postedAt": "2026-06-17T20:15:02.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067338392334192640/img/q0_Kg3uXCfSKScvy.jpg",
+          "url": "https://video.twimg.com/amplify_video/2067338392334192640/vid/avc1/360x640/5Gc-B59szbs6p4nv.mp4?tag=14"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Portugal",
+      "away": "Congo DR",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-17T17:00Z"
+    },
     {
       "type": "tweet",
       "url": "https://x.com/TrollFootball/status/2067336554536915282",
@@ -872,26 +1155,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLCnNsqawAAOcO3.jpg",
           "url": "https://pbs.twimg.com/media/HLCnNsqawAAOcO3.jpg"
         }
-      ]
-    },
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2067327820800684332",
-      "text": "Portugal vs DR Congo https://t.co/8g8OaD14cH",
-      "author": "TrollFootball",
-      "tweetId": "2067327820800684332",
-      "likes": 26493,
-      "retweets": 3556,
-      "engagement": 34270,
-      "postedAt": "2026-06-17T19:25:36.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067327367782240256/img/--zIvBQvcnji9qU7.jpg",
-          "url": "https://video.twimg.com/amplify_video/2067327367782240256/vid/avc1/720x1280/sXJibfHWFxjed0Xa.mp4"
-        }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Portugal",
+      "away": "Congo DR",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-17T17:00Z"
     },
     {
       "type": "tweet",
@@ -910,48 +1180,41 @@
           "previewUrl": "https://pbs.twimg.com/media/HLCjN3obkAAWMfm.png",
           "url": "https://pbs.twimg.com/media/HLCjN3obkAAWMfm.png"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Portugal",
+      "away": "Congo DR",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-17T17:00Z"
     },
     {
       "type": "tweet",
-      "url": "https://x.com/memesvsfootball/status/2067340263299919950",
-      "text": "Ronaldo be like.. \n\nhttps://t.co/IYB6dbJdNc",
-      "author": "memesvsfootball",
-      "tweetId": "2067340263299919950",
-      "likes": 109,
-      "retweets": 8,
-      "engagement": 127,
-      "postedAt": "2026-06-17T20:15:02.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
-      "media": [
-        {
-          "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067338392334192640/img/q0_Kg3uXCfSKScvy.jpg",
-          "url": "https://video.twimg.com/amplify_video/2067338392334192640/vid/avc1/360x640/5Gc-B59szbs6p4nv.mp4?tag=14"
-        }
-      ]
-    }
-  ],
-  "croatia~england": [
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2067367954480791647",
-      "text": "England vs Croatia https://t.co/drXJI5uG2j",
+      "url": "https://x.com/TrollFootball/status/2067327820800684332",
+      "text": "Portugal vs DR Congo https://t.co/8g8OaD14cH",
       "author": "TrollFootball",
-      "tweetId": "2067367954480791647",
-      "likes": 20396,
-      "retweets": 976,
-      "engagement": 22436,
-      "postedAt": "2026-06-17T22:05:04.000Z",
+      "tweetId": "2067327820800684332",
+      "likes": 26493,
+      "retweets": 3556,
+      "engagement": 34270,
+      "postedAt": "2026-06-17T19:25:36.000Z",
       "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
       "media": [
         {
-          "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HLDEJOubYAANYZG.jpg",
-          "url": "https://pbs.twimg.com/media/HLDEJOubYAANYZG.jpg"
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067327367782240256/img/--zIvBQvcnji9qU7.jpg",
+          "url": "https://video.twimg.com/amplify_video/2067327367782240256/vid/avc1/720x1280/sXJibfHWFxjed0Xa.mp4"
         }
-      ]
-    },
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Portugal",
+      "away": "Congo DR",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-17T17:00Z"
+    }
+  ],
+  "croatia~england": [
     {
       "type": "tweet",
       "url": "https://x.com/memesvsfootball/status/2067372990745165913",
@@ -969,7 +1232,38 @@
           "previewUrl": "https://pbs.twimg.com/media/HLDIjxiasAA9aA_.jpg",
           "url": "https://pbs.twimg.com/media/HLDIjxiasAA9aA_.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "England",
+      "away": "Croatia",
+      "score": "4 - 2",
+      "kickoffUtc": "2026-06-17T20:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2067367954480791647",
+      "text": "England vs Croatia https://t.co/drXJI5uG2j",
+      "author": "TrollFootball",
+      "tweetId": "2067367954480791647",
+      "likes": 20396,
+      "retweets": 976,
+      "engagement": 22436,
+      "postedAt": "2026-06-17T22:05:04.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLDEJOubYAANYZG.jpg",
+          "url": "https://pbs.twimg.com/media/HLDEJOubYAANYZG.jpg"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "England",
+      "away": "Croatia",
+      "score": "4 - 2",
+      "kickoffUtc": "2026-06-17T20:00Z"
     }
   ],
   "ghana~panama": [
@@ -990,7 +1284,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067416088498077696/img/85aFkjKONTOnLokZ.jpg",
           "url": "https://video.twimg.com/amplify_video/2067416088498077696/vid/avc1/1080x1638/pnVJI8-N8LL5IeCo.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Ghana",
+      "away": "Panama",
+      "score": "1 - 0",
+      "kickoffUtc": "2026-06-17T23:00Z"
     }
   ],
   "colombia~uzbekistan": [
@@ -1011,29 +1311,16 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2008768610945159168/img/9pXGSDH890gu-V9o.jpg",
           "url": "https://video.twimg.com/amplify_video/2008768610945159168/vid/avc1/752x416/7L4wYp19wbYwAqPx.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Uzbekistan",
+      "away": "Colombia",
+      "score": "1 - 3",
+      "kickoffUtc": "2026-06-18T02:00Z"
     }
   ],
   "czechia~southafrica": [
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2067668967720931630",
-      "text": "Czechia vs South Africa https://t.co/u4P3tCbun7",
-      "author": "TrollFootball",
-      "tweetId": "2067668967720931630",
-      "likes": 17197,
-      "retweets": 626,
-      "engagement": 18547,
-      "postedAt": "2026-06-18T18:01:11.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HLHV8UZa4AAHeIc.jpg",
-          "url": "https://pbs.twimg.com/media/HLHV8UZa4AAHeIc.jpg"
-        }
-      ]
-    },
     {
       "type": "tweet",
       "url": "https://x.com/TrollFootball/status/2067673558889972117",
@@ -1051,7 +1338,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067673278362402816/img/mmEScJVrqU5OVsKI.jpg",
           "url": "https://video.twimg.com/amplify_video/2067673278362402816/vid/avc1/1228x720/nMQdHYFn-Lk7DHjM.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Czechia",
+      "away": "South Africa",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-18T16:00Z"
     },
     {
       "type": "tweet",
@@ -1070,7 +1363,38 @@
           "previewUrl": "https://pbs.twimg.com/ext_tw_video_thumb/1904112162378756096/pu/img/a3tqa1nmQ5njjKNn.jpg",
           "url": "https://video.twimg.com/ext_tw_video/1904112162378756096/pu/vid/avc1/718x646/gT_U76HtQ9mgyhx9.mp4?tag=12"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Czechia",
+      "away": "South Africa",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-18T16:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2067668967720931630",
+      "text": "Czechia vs South Africa https://t.co/u4P3tCbun7",
+      "author": "TrollFootball",
+      "tweetId": "2067668967720931630",
+      "likes": 17197,
+      "retweets": 626,
+      "engagement": 18547,
+      "postedAt": "2026-06-18T18:01:11.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLHV8UZa4AAHeIc.jpg",
+          "url": "https://pbs.twimg.com/media/HLHV8UZa4AAHeIc.jpg"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Czechia",
+      "away": "South Africa",
+      "score": "1 - 1",
+      "kickoffUtc": "2026-06-18T16:00Z"
     }
   ],
   "canada~qatar": [
@@ -1091,7 +1415,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2067760476411539457/img/TQxqhNxwFcg5nMXV.jpg",
           "url": "https://video.twimg.com/amplify_video/2067760476411539457/vid/avc1/1080x1404/uTBQU9LKGd1tYGvd.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Canada",
+      "away": "Qatar",
+      "score": "6 - 0",
+      "kickoffUtc": "2026-06-18T22:00Z"
     }
   ],
   "mexico~southkorea": [
@@ -1112,7 +1442,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLJSivCbEAAYSA9.jpg",
           "url": "https://pbs.twimg.com/media/HLJSivCbEAAYSA9.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Mexico",
+      "away": "South Korea",
+      "score": "1 - 0",
+      "kickoffUtc": "2026-06-19T01:00Z"
     },
     {
       "type": "tweet",
@@ -1131,7 +1467,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2065512967400042497/img/57zICyCcJhnIySQB.jpg",
           "url": "https://video.twimg.com/amplify_video/2065512967400042497/vid/avc1/576x322/zyvFczXA2aXmQMGf.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Mexico",
+      "away": "South Korea",
+      "score": "1 - 0",
+      "kickoffUtc": "2026-06-19T01:00Z"
     },
     {
       "type": "tweet",
@@ -1150,7 +1492,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLJRZQxacAERm5Z.jpg",
           "url": "https://pbs.twimg.com/media/HLJRZQxacAERm5Z.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Mexico",
+      "away": "South Korea",
+      "score": "1 - 0",
+      "kickoffUtc": "2026-06-19T01:00Z"
     }
   ],
   "australia~unitedstates": [
@@ -1171,7 +1519,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068077165556678656/img/qHOYlxYI-HjsIIlT.jpg",
           "url": "https://video.twimg.com/amplify_video/2068077165556678656/vid/avc1/1080x652/8IzbtYiNMFqMnpq6.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "United States",
+      "away": "Australia",
+      "score": "2 - 0",
+      "kickoffUtc": "2026-06-19T19:00Z"
     }
   ],
   "morocco~scotland": [
@@ -1192,7 +1546,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068125344125820928/img/6oKKURJhXHG6Y9pt.jpg",
           "url": "https://video.twimg.com/amplify_video/2068125344125820928/vid/avc1/1128x720/ImoEHr0yLA9DZLnN.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Scotland",
+      "away": "Morocco",
+      "score": "0 - 1",
+      "kickoffUtc": "2026-06-19T22:00Z"
     }
   ],
   "brazil~haiti": [
@@ -1213,28 +1573,40 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068158917587386368/img/J8sN_pGddq9-LOdS.jpg",
           "url": "https://video.twimg.com/amplify_video/2068158917587386368/vid/avc1/480x480/DqczEa8FHUioYLXD.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Brazil",
+      "away": "Haiti",
+      "score": "3 - 0",
+      "kickoffUtc": "2026-06-20T00:30Z"
     }
   ],
   "paraguay~turkiye": [
     {
       "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2068198617593397554",
-      "text": "The only thing Türkiye can win https://t.co/b4OjNhcYCO",
-      "author": "TrollFootball",
-      "tweetId": "2068198617593397554",
-      "likes": 234656,
-      "retweets": 17123,
-      "engagement": 272594,
-      "postedAt": "2026-06-20T05:05:50.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "url": "https://x.com/memesvsfootball/status/2068223573106536815",
+      "text": "Türkiye.. 🇹🇷💔\n\nhttps://t.co/hOunnBOrQa",
+      "author": "memesvsfootball",
+      "tweetId": "2068223573106536815",
+      "likes": 15475,
+      "retweets": 1337,
+      "engagement": 18404,
+      "postedAt": "2026-06-20T06:45:00.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
       "media": [
         {
-          "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HLO0r-HbUAADuVS.jpg",
-          "url": "https://pbs.twimg.com/media/HLO0r-HbUAADuVS.jpg"
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068222545351114752/img/J_2bKe8-O1vu3Pkv.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068222545351114752/vid/avc1/750x600/sj7fPLDrnJi8gnd7.mp4?tag=14"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Türkiye",
+      "away": "Paraguay",
+      "score": "0 - 1",
+      "kickoffUtc": "2026-06-20T03:00Z"
     },
     {
       "type": "tweet",
@@ -1253,26 +1625,38 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068208746162278400/img/T6avOm7d-tCcsi8H.jpg",
           "url": "https://video.twimg.com/amplify_video/2068208746162278400/vid/avc1/1280x720/FMEFgO_6w4JRBKiI.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Türkiye",
+      "away": "Paraguay",
+      "score": "0 - 1",
+      "kickoffUtc": "2026-06-20T03:00Z"
     },
     {
       "type": "tweet",
-      "url": "https://x.com/memesvsfootball/status/2068223573106536815",
-      "text": "Türkiye.. 🇹🇷💔\n\nhttps://t.co/hOunnBOrQa",
-      "author": "memesvsfootball",
-      "tweetId": "2068223573106536815",
-      "likes": 15475,
-      "retweets": 1337,
-      "engagement": 18404,
-      "postedAt": "2026-06-20T06:45:00.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
+      "url": "https://x.com/TrollFootball/status/2068198617593397554",
+      "text": "The only thing Türkiye can win https://t.co/b4OjNhcYCO",
+      "author": "TrollFootball",
+      "tweetId": "2068198617593397554",
+      "likes": 234656,
+      "retweets": 17123,
+      "engagement": 272594,
+      "postedAt": "2026-06-20T05:05:50.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
       "media": [
         {
-          "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068222545351114752/img/J_2bKe8-O1vu3Pkv.jpg",
-          "url": "https://video.twimg.com/amplify_video/2068222545351114752/vid/avc1/750x600/sj7fPLDrnJi8gnd7.mp4?tag=14"
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLO0r-HbUAADuVS.jpg",
+          "url": "https://pbs.twimg.com/media/HLO0r-HbUAADuVS.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Türkiye",
+      "away": "Paraguay",
+      "score": "0 - 1",
+      "kickoffUtc": "2026-06-20T03:00Z"
     }
   ],
   "netherlands~sweden": [
@@ -1293,7 +1677,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLR-LINacAAVFpx.jpg",
           "url": "https://pbs.twimg.com/media/HLR-LINacAAVFpx.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Netherlands",
+      "away": "Sweden",
+      "score": "5 - 1",
+      "kickoffUtc": "2026-06-20T17:00Z"
     }
   ],
   "germany~ivorycoast": [
@@ -1314,7 +1704,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLSizxPbwAAz7x7.jpg",
           "url": "https://pbs.twimg.com/media/HLSizxPbwAAz7x7.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Germany",
+      "away": "Ivory Coast",
+      "score": "2 - 1",
+      "kickoffUtc": "2026-06-20T20:00Z"
     },
     {
       "type": "tweet",
@@ -1333,28 +1729,40 @@
           "previewUrl": "https://pbs.twimg.com/media/HLSgkNDasAEZ1X9.jpg",
           "url": "https://pbs.twimg.com/media/HLSgkNDasAEZ1X9.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Germany",
+      "away": "Ivory Coast",
+      "score": "2 - 1",
+      "kickoffUtc": "2026-06-20T20:00Z"
     }
   ],
   "curacao~ecuador": [
     {
       "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2068514931209904529",
-      "text": "Ecuador vs Curacao\n\n https://t.co/81NFkexhxd",
-      "author": "TrollFootball",
-      "tweetId": "2068514931209904529",
-      "likes": 61588,
-      "retweets": 4311,
-      "engagement": 70493,
-      "postedAt": "2026-06-21T02:02:45.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "url": "https://x.com/memesvsfootball/status/2068530796793839833",
+      "text": "Ecuador vs. Curacao\n\nhttps://t.co/ptese2DK4v",
+      "author": "memesvsfootball",
+      "tweetId": "2068530796793839833",
+      "likes": 6686,
+      "retweets": 563,
+      "engagement": 7853,
+      "postedAt": "2026-06-21T03:05:48.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
       "media": [
         {
           "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068514765459398656/img/Yiok1P1LsiDBUj59.jpg",
-          "url": "https://video.twimg.com/amplify_video/2068514765459398656/vid/avc1/888x964/vLeZuqIXEDcHInlc.mp4"
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068530431642005504/img/agzR6iMVxVuzimSp.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068530431642005504/vid/avc1/540x360/Uz7EvnEYtsCaxs4E.mp4?tag=14"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Ecuador",
+      "away": "Curaçao",
+      "score": "0 - 0",
+      "kickoffUtc": "2026-06-21T00:00Z"
     },
     {
       "type": "tweet",
@@ -1373,48 +1781,41 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2066837609226088448/img/iWPS_02SjxFnw4oZ.jpg",
           "url": "https://video.twimg.com/amplify_video/2066837609226088448/vid/avc1/828x464/AoMphh7g4BAPCm4u.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Ecuador",
+      "away": "Curaçao",
+      "score": "0 - 0",
+      "kickoffUtc": "2026-06-21T00:00Z"
     },
     {
       "type": "tweet",
-      "url": "https://x.com/memesvsfootball/status/2068530796793839833",
-      "text": "Ecuador vs. Curacao\n\nhttps://t.co/ptese2DK4v",
-      "author": "memesvsfootball",
-      "tweetId": "2068530796793839833",
-      "likes": 6686,
-      "retweets": 563,
-      "engagement": 7853,
-      "postedAt": "2026-06-21T03:05:48.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2017804319270309895/TqBzYvKY_normal.png",
-      "media": [
-        {
-          "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068530431642005504/img/agzR6iMVxVuzimSp.jpg",
-          "url": "https://video.twimg.com/amplify_video/2068530431642005504/vid/avc1/540x360/Uz7EvnEYtsCaxs4E.mp4?tag=14"
-        }
-      ]
-    }
-  ],
-  "japan~tunisia": [
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2068577488763232505",
-      "text": "Japan vs Tunisia match highlights https://t.co/pwyJzsBknh",
+      "url": "https://x.com/TrollFootball/status/2068514931209904529",
+      "text": "Ecuador vs Curacao\n\n https://t.co/81NFkexhxd",
       "author": "TrollFootball",
-      "tweetId": "2068577488763232505",
-      "likes": 65421,
-      "retweets": 4902,
-      "engagement": 75719,
-      "postedAt": "2026-06-21T06:11:20.000Z",
+      "tweetId": "2068514931209904529",
+      "likes": 61588,
+      "retweets": 4311,
+      "engagement": 70493,
+      "postedAt": "2026-06-21T02:02:45.000Z",
       "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
       "media": [
         {
           "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068577369452122112/img/hFk1Pwzkbttiohhv.jpg",
-          "url": "https://video.twimg.com/amplify_video/2068577369452122112/vid/avc1/888x1190/NZWT0uGFAde9oWoV.mp4"
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068514765459398656/img/Yiok1P1LsiDBUj59.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068514765459398656/vid/avc1/888x964/vLeZuqIXEDcHInlc.mp4"
         }
-      ]
-    },
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Ecuador",
+      "away": "Curaçao",
+      "score": "0 - 0",
+      "kickoffUtc": "2026-06-21T00:00Z"
+    }
+  ],
+  "japan~tunisia": [
     {
       "type": "tweet",
       "url": "https://x.com/TrollFootball/status/2068596627443716412",
@@ -1432,29 +1833,41 @@
           "previewUrl": "https://pbs.twimg.com/media/HLUZtb4aIAA8Xgm.jpg",
           "url": "https://pbs.twimg.com/media/HLUZtb4aIAA8Xgm.jpg"
         }
-      ]
-    }
-  ],
-  "saudiarabia~spain": [
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Tunisia",
+      "away": "Japan",
+      "score": "0 - 4",
+      "kickoffUtc": "2026-06-21T04:00Z"
+    },
     {
       "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2068759769759023341",
-      "text": "Spain vs Saudi Arabia https://t.co/rUR8D5xEn4",
+      "url": "https://x.com/TrollFootball/status/2068577488763232505",
+      "text": "Japan vs Tunisia match highlights https://t.co/pwyJzsBknh",
       "author": "TrollFootball",
-      "tweetId": "2068759769759023341",
-      "likes": 39990,
-      "retweets": 2006,
-      "engagement": 44198,
-      "postedAt": "2026-06-21T18:15:39.000Z",
+      "tweetId": "2068577488763232505",
+      "likes": 65421,
+      "retweets": 4902,
+      "engagement": 75719,
+      "postedAt": "2026-06-21T06:11:20.000Z",
       "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
       "media": [
         {
-          "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HLW2ADoaYAAtgTc.jpg",
-          "url": "https://pbs.twimg.com/media/HLW2ADoaYAAtgTc.jpg"
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068577369452122112/img/hFk1Pwzkbttiohhv.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068577369452122112/vid/avc1/888x1190/NZWT0uGFAde9oWoV.mp4"
         }
-      ]
-    },
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Tunisia",
+      "away": "Japan",
+      "score": "0 - 4",
+      "kickoffUtc": "2026-06-21T04:00Z"
+    }
+  ],
+  "saudiarabia~spain": [
     {
       "type": "tweet",
       "url": "https://x.com/TrollFootball/status/2068766925266854289",
@@ -1472,7 +1885,13 @@
           "previewUrl": "https://pbs.twimg.com/ext_tw_video_thumb/2023067631104974848/pu/img/EEjPIOvBwOzzhIjF.jpg",
           "url": "https://video.twimg.com/ext_tw_video/2023067631104974848/pu/vid/avc1/1440x1080/ewMDDKCTq1-_I8kW.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Spain",
+      "away": "Saudi Arabia",
+      "score": "4 - 0",
+      "kickoffUtc": "2026-06-21T16:00Z"
     },
     {
       "type": "tweet",
@@ -1491,7 +1910,38 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068763050413633536/img/KwiRuGN56smW4EQy.jpg",
           "url": "https://video.twimg.com/amplify_video/2068763050413633536/vid/avc1/480x720/GJ1bSYfhCMFemQLa.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Spain",
+      "away": "Saudi Arabia",
+      "score": "4 - 0",
+      "kickoffUtc": "2026-06-21T16:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2068759769759023341",
+      "text": "Spain vs Saudi Arabia https://t.co/rUR8D5xEn4",
+      "author": "TrollFootball",
+      "tweetId": "2068759769759023341",
+      "likes": 39990,
+      "retweets": 2006,
+      "engagement": 44198,
+      "postedAt": "2026-06-21T18:15:39.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLW2ADoaYAAtgTc.jpg",
+          "url": "https://pbs.twimg.com/media/HLW2ADoaYAAtgTc.jpg"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Spain",
+      "away": "Saudi Arabia",
+      "score": "4 - 0",
+      "kickoffUtc": "2026-06-21T16:00Z"
     }
   ],
   "belgium~iran": [
@@ -1512,26 +1962,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLXrgUWbsAA6Gse.jpg",
           "url": "https://pbs.twimg.com/media/HLXrgUWbsAA6Gse.jpg"
         }
-      ]
-    },
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2068808526143860896",
-      "text": "Donald Trump seeing Iran is unbeaten on US soil\n \nhttps://t.co/JI4zGKn7w7",
-      "author": "TrollFootball",
-      "tweetId": "2068808526143860896",
-      "likes": 77150,
-      "retweets": 4641,
-      "engagement": 86675,
-      "postedAt": "2026-06-21T21:29:23.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068807663417438208/img/MGPNMVcuvzvYeG-m.jpg",
-          "url": "https://video.twimg.com/amplify_video/2068807663417438208/vid/avc1/720x528/Lnz51trXcM09CaOL.mp4"
-        }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Belgium",
+      "away": "Iran",
+      "score": "0 - 0",
+      "kickoffUtc": "2026-06-21T19:00Z"
     },
     {
       "type": "tweet",
@@ -1550,7 +1987,38 @@
           "previewUrl": "https://pbs.twimg.com/media/HLXqZfPaIAASQ-K.jpg",
           "url": "https://pbs.twimg.com/media/HLXqZfPaIAASQ-K.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Belgium",
+      "away": "Iran",
+      "score": "0 - 0",
+      "kickoffUtc": "2026-06-21T19:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2068808526143860896",
+      "text": "Donald Trump seeing Iran is unbeaten on US soil\n \nhttps://t.co/JI4zGKn7w7",
+      "author": "TrollFootball",
+      "tweetId": "2068808526143860896",
+      "likes": 77150,
+      "retweets": 4641,
+      "engagement": 86675,
+      "postedAt": "2026-06-21T21:29:23.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068807663417438208/img/MGPNMVcuvzvYeG-m.jpg",
+          "url": "https://video.twimg.com/amplify_video/2068807663417438208/vid/avc1/720x528/Lnz51trXcM09CaOL.mp4"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Belgium",
+      "away": "Iran",
+      "score": "0 - 0",
+      "kickoffUtc": "2026-06-21T19:00Z"
     }
   ],
   "capeverde~uruguay": [
@@ -1571,29 +2039,16 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2068852375637704704/img/M9wSg5maKjXHGTjo.jpg",
           "url": "https://video.twimg.com/amplify_video/2068852375637704704/vid/avc1/960x540/rr7iYiP6xtFWrBay.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Uruguay",
+      "away": "Cape Verde",
+      "score": "2 - 2",
+      "kickoffUtc": "2026-06-21T22:00Z"
     }
   ],
   "egypt~newzealand": [
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2068891949936070988",
-      "text": "Egypt against New Zealand https://t.co/AJgTdLKd0r",
-      "author": "TrollFootball",
-      "tweetId": "2068891949936070988",
-      "likes": 57020,
-      "retweets": 5341,
-      "engagement": 68312,
-      "postedAt": "2026-06-22T03:00:53.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HLYtLM3acAAxsx-.jpg",
-          "url": "https://pbs.twimg.com/media/HLYtLM3acAAxsx-.jpg"
-        }
-      ]
-    },
     {
       "type": "tweet",
       "url": "https://x.com/TrollFootball/status/2068894831599141175",
@@ -1611,7 +2066,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLYw4ChbUAAKeMx.jpg",
           "url": "https://pbs.twimg.com/media/HLYw4ChbUAAKeMx.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "New Zealand",
+      "away": "Egypt",
+      "score": "1 - 3",
+      "kickoffUtc": "2026-06-22T01:00Z"
     },
     {
       "type": "tweet",
@@ -1630,10 +2091,66 @@
           "previewUrl": "https://pbs.twimg.com/media/HLYsFsXaYAAcyYa.jpg",
           "url": "https://pbs.twimg.com/media/HLYsFsXaYAAcyYa.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "New Zealand",
+      "away": "Egypt",
+      "score": "1 - 3",
+      "kickoffUtc": "2026-06-22T01:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2068891949936070988",
+      "text": "Egypt against New Zealand https://t.co/AJgTdLKd0r",
+      "author": "TrollFootball",
+      "tweetId": "2068891949936070988",
+      "likes": 57020,
+      "retweets": 5341,
+      "engagement": 68312,
+      "postedAt": "2026-06-22T03:00:53.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLYtLM3acAAxsx-.jpg",
+          "url": "https://pbs.twimg.com/media/HLYtLM3acAAxsx-.jpg"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "New Zealand",
+      "away": "Egypt",
+      "score": "1 - 3",
+      "kickoffUtc": "2026-06-22T01:00Z"
     }
   ],
   "argentina~austria": [
+    {
+      "type": "tweet",
+      "url": "https://x.com/Contxtfootball/status/2069139621447913555",
+      "text": "Messi 5 goals in 2 games at the World Cup \n\nI don’t even know what to say anymore https://t.co/QEwb3X8B9D",
+      "author": "Contxtfootball",
+      "tweetId": "2069139621447913555",
+      "likes": 0,
+      "retweets": 0,
+      "engagement": 0,
+      "postedAt": "2026-06-22T19:25:03.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/1944187419017859073/3KjUtvDF_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLcPhBtW0AAP0Wk.jpg",
+          "url": "https://pbs.twimg.com/media/HLcPhBtW0AAP0Wk.jpg"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Argentina",
+      "away": "Austria",
+      "score": "2 - 0",
+      "kickoffUtc": "2026-06-22T17:00Z"
+    },
     {
       "type": "tweet",
       "url": "https://x.com/TrollFootball/status/2069134700569096545",
@@ -1651,7 +2168,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLcKk0bbcAA87VY.jpg",
           "url": "https://pbs.twimg.com/media/HLcKk0bbcAA87VY.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Argentina",
+      "away": "Austria",
+      "score": "2 - 0",
+      "kickoffUtc": "2026-06-22T17:00Z"
     },
     {
       "type": "tweet",
@@ -1670,26 +2193,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2020187741183758336/img/r5Qji6E0h5B1MDtN.jpg",
           "url": "https://video.twimg.com/amplify_video/2020187741183758336/vid/avc1/576x462/LTuzf2DTqu0yELGU.mp4?tag=14"
         }
-      ]
-    },
-    {
-      "type": "tweet",
-      "url": "https://x.com/Contxtfootball/status/2069139621447913555",
-      "text": "Messi 5 goals in 2 games at the World Cup \n\nI don’t even know what to say anymore https://t.co/QEwb3X8B9D",
-      "author": "Contxtfootball",
-      "tweetId": "2069139621447913555",
-      "likes": 0,
-      "retweets": 0,
-      "engagement": 0,
-      "postedAt": "2026-06-22T19:25:03.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/1944187419017859073/3KjUtvDF_normal.jpg",
-      "media": [
-        {
-          "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HLcPhBtW0AAP0Wk.jpg",
-          "url": "https://pbs.twimg.com/media/HLcPhBtW0AAP0Wk.jpg"
-        }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Argentina",
+      "away": "Austria",
+      "score": "2 - 0",
+      "kickoffUtc": "2026-06-22T17:00Z"
     },
     {
       "type": "tweet",
@@ -1708,29 +2218,16 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069131012685361152/img/g0RV1guPyjvlqdP0.jpg",
           "url": "https://video.twimg.com/amplify_video/2069131012685361152/vid/avc1/600x400/O5PTlOMc-yAIidTd.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Argentina",
+      "away": "Austria",
+      "score": "2 - 0",
+      "kickoffUtc": "2026-06-22T17:00Z"
     }
   ],
   "france~iraq": [
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2069199337159377252",
-      "text": "France vs Iraq https://t.co/ayDXA1plXe",
-      "author": "TrollFootball",
-      "tweetId": "2069199337159377252",
-      "likes": 31125,
-      "retweets": 1995,
-      "engagement": 35268,
-      "postedAt": "2026-06-22T23:22:20.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "photo",
-          "previewUrl": "https://pbs.twimg.com/media/HLdFlP0asAAhJ7h.jpg",
-          "url": "https://pbs.twimg.com/media/HLdFlP0asAAhJ7h.jpg"
-        }
-      ]
-    },
     {
       "type": "tweet",
       "url": "https://x.com/TrollFootball/status/2069215413876167109",
@@ -1748,7 +2245,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLdUcFraQAAobyA.jpg",
           "url": "https://pbs.twimg.com/media/HLdUcFraQAAobyA.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "France",
+      "away": "Iraq",
+      "score": "3 - 0",
+      "kickoffUtc": "2026-06-22T21:00Z"
     },
     {
       "type": "tweet",
@@ -1767,7 +2270,38 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069183591880208384/img/NVbMeU2wR3s4M8_B.jpg",
           "url": "https://video.twimg.com/amplify_video/2069183591880208384/vid/avc1/576x576/swHPeIQYY-iGuYlP.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "France",
+      "away": "Iraq",
+      "score": "3 - 0",
+      "kickoffUtc": "2026-06-22T21:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2069199337159377252",
+      "text": "France vs Iraq https://t.co/ayDXA1plXe",
+      "author": "TrollFootball",
+      "tweetId": "2069199337159377252",
+      "likes": 31125,
+      "retweets": 1995,
+      "engagement": 35268,
+      "postedAt": "2026-06-22T23:22:20.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "photo",
+          "previewUrl": "https://pbs.twimg.com/media/HLdFlP0asAAhJ7h.jpg",
+          "url": "https://pbs.twimg.com/media/HLdFlP0asAAhJ7h.jpg"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "France",
+      "away": "Iraq",
+      "score": "3 - 0",
+      "kickoffUtc": "2026-06-22T21:00Z"
     }
   ],
   "algeria~jordan": [
@@ -1788,7 +2322,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLeWNm8bYAAtxMQ.jpg",
           "url": "https://pbs.twimg.com/media/HLeWNm8bYAAtxMQ.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Jordan",
+      "away": "Algeria",
+      "score": "1 - 2",
+      "kickoffUtc": "2026-06-23T03:00Z"
     },
     {
       "type": "tweet",
@@ -1807,29 +2347,16 @@
           "previewUrl": "https://pbs.twimg.com/media/HLeSaXkboAAAd-c.jpg",
           "url": "https://pbs.twimg.com/media/HLeSaXkboAAAd-c.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Jordan",
+      "away": "Algeria",
+      "score": "1 - 2",
+      "kickoffUtc": "2026-06-23T03:00Z"
     }
   ],
   "portugal~uzbekistan": [
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2069496715791708612",
-      "text": "Ronaldo has arrived at the World Cup https://t.co/OIu90Qy2uz",
-      "author": "TrollFootball",
-      "tweetId": "2069496715791708612",
-      "likes": 61830,
-      "retweets": 4953,
-      "engagement": 72050,
-      "postedAt": "2026-06-23T19:04:01.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069496544219602944/img/JgpC_fKxZR02yFve.jpg",
-          "url": "https://video.twimg.com/amplify_video/2069496544219602944/vid/avc1/888x1266/ulEtpZd6XPtlbg8B.mp4"
-        }
-      ]
-    },
     {
       "type": "tweet",
       "url": "https://x.com/Contxtfootball/status/2069500975178506620",
@@ -1847,7 +2374,38 @@
           "previewUrl": "https://pbs.twimg.com/media/HLhYKQ6WgAAWIOL.jpg",
           "url": "https://pbs.twimg.com/media/HLhYKQ6WgAAWIOL.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Portugal",
+      "away": "Uzbekistan",
+      "score": "5 - 0",
+      "kickoffUtc": "2026-06-23T17:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2069496715791708612",
+      "text": "Ronaldo has arrived at the World Cup https://t.co/OIu90Qy2uz",
+      "author": "TrollFootball",
+      "tweetId": "2069496715791708612",
+      "likes": 61830,
+      "retweets": 4953,
+      "engagement": 72050,
+      "postedAt": "2026-06-23T19:04:01.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069496544219602944/img/JgpC_fKxZR02yFve.jpg",
+          "url": "https://video.twimg.com/amplify_video/2069496544219602944/vid/avc1/888x1266/ulEtpZd6XPtlbg8B.mp4"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Portugal",
+      "away": "Uzbekistan",
+      "score": "5 - 0",
+      "kickoffUtc": "2026-06-23T17:00Z"
     }
   ],
   "england~ghana": [
@@ -1868,7 +2426,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069539059496849408/img/ve3qZduTBW2ix-_o.jpg",
           "url": "https://video.twimg.com/amplify_video/2069539059496849408/vid/avc1/888x920/3anWG-bUhvp4Xvsx.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "England",
+      "away": "Ghana",
+      "score": "0 - 0",
+      "kickoffUtc": "2026-06-23T20:00Z"
     },
     {
       "type": "tweet",
@@ -1887,7 +2451,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069542137017044992/img/Pc1SBhc4CUITAHAR.jpg",
           "url": "https://video.twimg.com/amplify_video/2069542137017044992/vid/avc1/888x956/kOHfwWLG5GaUhfns.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "England",
+      "away": "Ghana",
+      "score": "0 - 0",
+      "kickoffUtc": "2026-06-23T20:00Z"
     },
     {
       "type": "tweet",
@@ -1906,7 +2476,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069534707952545792/img/54iX__DyZdvEC7Z7.jpg",
           "url": "https://video.twimg.com/amplify_video/2069534707952545792/vid/avc1/720x1280/xz1lBp3mS6DxJC4m.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "England",
+      "away": "Ghana",
+      "score": "0 - 0",
+      "kickoffUtc": "2026-06-23T20:00Z"
     }
   ],
   "croatia~panama": [
@@ -1927,7 +2503,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069593395421708288/img/OroF4cpi_KmYrU3Z.jpg",
           "url": "https://video.twimg.com/amplify_video/2069593395421708288/vid/avc1/888x904/rk9HjqVxmQwL4hLV.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Panama",
+      "away": "Croatia",
+      "score": "0 - 1",
+      "kickoffUtc": "2026-06-23T23:00Z"
     }
   ],
   "colombia~congodr": [
@@ -1948,7 +2530,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069633129569230848/img/8X4lBlUNutZ2E67B.jpg",
           "url": "https://video.twimg.com/amplify_video/2069633129569230848/vid/avc1/640x360/Ap05bZrhdATVcCsf.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Colombia",
+      "away": "Congo DR",
+      "score": "1 - 0",
+      "kickoffUtc": "2026-06-24T02:00Z"
     },
     {
       "type": "tweet",
@@ -1967,7 +2555,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069631751941705728/img/rKtq85DOUEGZzFQq.jpg",
           "url": "https://video.twimg.com/amplify_video/2069631751941705728/vid/avc1/888x1576/aIeGwmiH446y562H.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Colombia",
+      "away": "Congo DR",
+      "score": "1 - 0",
+      "kickoffUtc": "2026-06-24T02:00Z"
     }
   ],
   "bosniaherzegovina~qatar": [
@@ -1988,7 +2582,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLm5rexbMAAcaBR.jpg",
           "url": "https://pbs.twimg.com/media/HLm5rexbMAAcaBR.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Bosnia-Herzegovina",
+      "away": "Qatar",
+      "score": "3 - 1",
+      "kickoffUtc": "2026-06-24T19:00Z"
     }
   ],
   "haiti~morocco": [
@@ -2009,7 +2609,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069942355353014272/img/32sMHpF7h7RshDnA.jpg",
           "url": "https://video.twimg.com/amplify_video/2069942355353014272/vid/avc1/828x490/NbwrqICJyhDlKK2P.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Morocco",
+      "away": "Haiti",
+      "score": "4 - 2",
+      "kickoffUtc": "2026-06-24T22:00Z"
     }
   ],
   "brazil~scotland": [
@@ -2030,7 +2636,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069951172505669632/img/_7Y5K_zvA3kXkAXY.jpg",
           "url": "https://video.twimg.com/amplify_video/2069951172505669632/vid/avc1/888x1036/qiJiiEd-Y_9Lzgkg.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Scotland",
+      "away": "Brazil",
+      "score": "0 - 3",
+      "kickoffUtc": "2026-06-24T22:00Z"
     },
     {
       "type": "tweet",
@@ -2049,7 +2661,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069942355353014272/img/32sMHpF7h7RshDnA.jpg",
           "url": "https://video.twimg.com/amplify_video/2069942355353014272/vid/avc1/828x490/NbwrqICJyhDlKK2P.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Scotland",
+      "away": "Brazil",
+      "score": "0 - 3",
+      "kickoffUtc": "2026-06-24T22:00Z"
     }
   ],
   "southafrica~southkorea": [
@@ -2070,7 +2688,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2069987089090064384/img/_wRC9R64hwxe8xVL.jpg",
           "url": "https://video.twimg.com/amplify_video/2069987089090064384/vid/avc1/888x1466/EMH4bl6dUdLdblvw.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "South Africa",
+      "away": "South Korea",
+      "score": "1 - 0",
+      "kickoffUtc": "2026-06-25T01:00Z"
     },
     {
       "type": "tweet",
@@ -2089,7 +2713,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLoNSNXa0AEP-f2.jpg",
           "url": "https://pbs.twimg.com/media/HLoNSNXa0AEP-f2.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "South Africa",
+      "away": "South Korea",
+      "score": "1 - 0",
+      "kickoffUtc": "2026-06-25T01:00Z"
     }
   ],
   "ecuador~germany": [
@@ -2110,7 +2740,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2070277725043249152/img/yFztEpR1LhRWDkJx.jpg",
           "url": "https://video.twimg.com/amplify_video/2070277725043249152/vid/avc1/888x756/LrQ0X-XFI9gmmtcV.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Ecuador",
+      "away": "Germany",
+      "score": "2 - 1",
+      "kickoffUtc": "2026-06-25T20:00Z"
     },
     {
       "type": "tweet",
@@ -2129,7 +2765,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLsRfx3WIAAC0Xg.jpg",
           "url": "https://pbs.twimg.com/media/HLsRfx3WIAAC0Xg.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Ecuador",
+      "away": "Germany",
+      "score": "2 - 1",
+      "kickoffUtc": "2026-06-25T20:00Z"
     }
   ],
   "australia~paraguay": [
@@ -2150,29 +2792,16 @@
           "previewUrl": "https://pbs.twimg.com/media/HLtp_k1aIAAit8k.jpg",
           "url": "https://pbs.twimg.com/media/HLtp_k1aIAAit8k.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Paraguay",
+      "away": "Australia",
+      "score": "0 - 0",
+      "kickoffUtc": "2026-06-26T02:00Z"
     }
   ],
   "turkiye~unitedstates": [
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2070356895760785802",
-      "text": "Türkiye when absolutely nothing is on the line\n\nhttps://t.co/HG3gKirp0M",
-      "author": "TrollFootball",
-      "tweetId": "2070356895760785802",
-      "likes": 98600,
-      "retweets": 3544,
-      "engagement": 105965,
-      "postedAt": "2026-06-26T04:02:03.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2070341509510287361/img/PSY3WLEWzHH_YlzF.jpg",
-          "url": "https://video.twimg.com/amplify_video/2070341509510287361/vid/avc1/1272x720/tF0u1nSfICsGG383.mp4"
-        }
-      ]
-    },
     {
       "type": "tweet",
       "url": "https://x.com/TrollFootball/status/2070375700016795940",
@@ -2190,7 +2819,38 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2070375487097151488/img/aAN8i5jBxXGu5G6c.jpg",
           "url": "https://video.twimg.com/amplify_video/2070375487097151488/vid/avc1/360x360/tooCN-HJji2iw7aj.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Türkiye",
+      "away": "United States",
+      "score": "3 - 2",
+      "kickoffUtc": "2026-06-26T02:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2070356895760785802",
+      "text": "Türkiye when absolutely nothing is on the line\n\nhttps://t.co/HG3gKirp0M",
+      "author": "TrollFootball",
+      "tweetId": "2070356895760785802",
+      "likes": 98600,
+      "retweets": 3544,
+      "engagement": 105965,
+      "postedAt": "2026-06-26T04:02:03.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2070341509510287361/img/PSY3WLEWzHH_YlzF.jpg",
+          "url": "https://video.twimg.com/amplify_video/2070341509510287361/vid/avc1/1272x720/tF0u1nSfICsGG383.mp4"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Türkiye",
+      "away": "United States",
+      "score": "3 - 2",
+      "kickoffUtc": "2026-06-26T02:00Z"
     }
   ],
   "france~norway": [
@@ -2211,7 +2871,13 @@
           "previewUrl": "https://pbs.twimg.com/media/HLxd_d_bMAA7jTA.jpg",
           "url": "https://pbs.twimg.com/media/HLxd_d_bMAA7jTA.jpg"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Norway",
+      "away": "France",
+      "score": "1 - 4",
+      "kickoffUtc": "2026-06-26T19:00Z"
     },
     {
       "type": "tweet",
@@ -2230,7 +2896,13 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2070617387054055424/img/eQrCQgTdoanddLd_.jpg",
           "url": "https://video.twimg.com/amplify_video/2070617387054055424/vid/avc1/1078x1158/wtjEntiqanYIxcNi.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Norway",
+      "away": "France",
+      "score": "1 - 4",
+      "kickoffUtc": "2026-06-26T19:00Z"
     }
   ],
   "france~paraguay": [
@@ -2251,29 +2923,16 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2073552105047306240/img/rUvGSdpdhLKMe6Jd.jpg",
           "url": "https://video.twimg.com/amplify_video/2073552105047306240/vid/avc1/600x400/aLPOD9WlBKd5FviP.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Paraguay",
+      "away": "France",
+      "score": "0 - 1",
+      "kickoffUtc": "2026-07-04T21:00Z"
     }
   ],
   "brazil~norway": [
-    {
-      "type": "tweet",
-      "url": "https://x.com/TrollFootball/status/2073899801721311324",
-      "text": "Norway goalkeeper Nyland against Brasil:  https://t.co/eWZ845yMcU",
-      "author": "TrollFootball",
-      "tweetId": "2073899801721311324",
-      "likes": 9146,
-      "retweets": 711,
-      "engagement": 10610,
-      "postedAt": "2026-07-05T22:40:18.000Z",
-      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
-      "media": [
-        {
-          "type": "video",
-          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2073893938638073856/img/4NbfjKPmk1in_0CM.jpg",
-          "url": "https://video.twimg.com/amplify_video/2073893938638073856/vid/avc1/1080x720/JORgh5HXyZYTA_at.mp4"
-        }
-      ]
-    },
     {
       "type": "tweet",
       "url": "https://x.com/memesvsfootball/status/2073902241140912176",
@@ -2291,7 +2950,38 @@
           "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2073901787510353920/img/R5Dz2H7xxsV3Mfq-.jpg",
           "url": "https://video.twimg.com/amplify_video/2073901787510353920/vid/avc1/720x720/At-kW9y7qtHVEbQI.mp4"
         }
-      ]
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Brazil",
+      "away": "Norway",
+      "score": "1 - 2",
+      "kickoffUtc": "2026-07-05T20:00Z"
+    },
+    {
+      "type": "tweet",
+      "url": "https://x.com/TrollFootball/status/2073899801721311324",
+      "text": "Norway goalkeeper Nyland against Brasil:  https://t.co/eWZ845yMcU",
+      "author": "TrollFootball",
+      "tweetId": "2073899801721311324",
+      "likes": 9146,
+      "retweets": 711,
+      "engagement": 10610,
+      "postedAt": "2026-07-05T22:40:18.000Z",
+      "avatarUrl": "https://pbs.twimg.com/profile_images/2007448817789194242/VzLmM12q_normal.jpg",
+      "media": [
+        {
+          "type": "video",
+          "previewUrl": "https://pbs.twimg.com/amplify_video_thumb/2073893938638073856/img/4NbfjKPmk1in_0CM.jpg",
+          "url": "https://video.twimg.com/amplify_video/2073893938638073856/vid/avc1/1080x720/JORgh5HXyZYTA_at.mp4"
+        }
+      ],
+      "scope": "match",
+      "status": "ended",
+      "home": "Brazil",
+      "away": "Norway",
+      "score": "1 - 2",
+      "kickoffUtc": "2026-07-05T20:00Z"
     }
   ]
 }
