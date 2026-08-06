@@ -125,7 +125,51 @@ async function fetchAllEspnEnded() {
   return matches;
 }
 
-function buildPreviousByKey(matches, extras = []) {
+function reportHighlightCoverage(matches) {
+  const ended = (matches || []).filter((m) => m.status === "ended");
+  const hasClip = (x) => x && (x.videoUrl || x.embedId);
+  let both = 0;
+  let fullOnly = 0;
+  let goalsOnly = 0;
+  let neither = 0;
+  const missingBoth = [];
+  const missingGoals = [];
+  const missingFull = [];
+
+  for (const m of ended) {
+    const g = hasClip(m.highlights?.goals);
+    const f = hasClip(m.highlights?.full);
+    const label = `${m.home} vs ${m.away} (${m.key})`;
+    if (g && f) both++;
+    else if (f && !g) {
+      fullOnly++;
+      missingGoals.push(label);
+    } else if (g && !f) {
+      goalsOnly++;
+      missingFull.push(label);
+    } else {
+      neither++;
+      missingBoth.push(label);
+    }
+  }
+
+  console.log(`أهداف+ملخص both: ${both}/${ended.length}`);
+  console.log(`ملخص only (missing أهداف): ${fullOnly}`);
+  console.log(`أهداف only (missing ملخص): ${goalsOnly}`);
+  console.log(`neither: ${neither}`);
+  if (missingBoth.length) {
+    console.log("Missing both أهداف + ملخص:");
+    for (const line of missingBoth) console.log(`  • ${line}`);
+  }
+  if (missingGoals.length) {
+    console.log("Has ملخص, missing أهداف:");
+    for (const line of missingGoals) console.log(`  • ${line}`);
+  }
+  if (missingFull.length) {
+    console.log("Has أهداف, missing ملخص:");
+    for (const line of missingFull) console.log(`  • ${line}`);
+  }
+}
   const map = new Map();
   for (const m of matches || []) {
     if (m.key) map.set(m.key, m);
@@ -240,6 +284,7 @@ async function main() {
     concurrency: 4,
   });
   console.log(`ملخص video attached: ${matched}/${total} ended matches`);
+  reportHighlightCoverage(matches);
 
   const updatedKnown = persistVortexKnown(matches, knownVortex);
   fs.writeFileSync(KNOWN_VORTEX, JSON.stringify(updatedKnown, null, 2));

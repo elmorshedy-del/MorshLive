@@ -19,6 +19,14 @@ const FULL_MATCH_TITLE_RE = /مباراة\s+كاملة|كامل(?:ة)?\s*(?:لل
 /** Common Arabic transliteration variants (e.g. باراغواي vs باراجواي on vortex titles). */
 const TEAM_AR_ALIASES = {
   Paraguay: ["باراجواي"],
+  "Ivory Coast": ["كوت ديفوار", "كوت الديفوار", "ساحل العاج"],
+  "Cape Verde": ["الراس الاخضر", "راس الاخضر"],
+  Turkiye: ["تركيا"],
+  Türkiye: ["تركيا"],
+  Turkey: ["تركيا"],
+  Curacao: ["كوراساو"],
+  "Curaçao": ["كوراساو"],
+  Ecuador: ["الاكوادور", "اكوادور"],
 };
 
 let _knownEmbeds = null;
