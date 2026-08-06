@@ -329,9 +329,21 @@
       </div>`;
   }
 
+  function mergeMemesByTweetId(staticList, apiList) {
+    const seen = new Set();
+    const out = [];
+    for (const meme of [...(staticList || []), ...(apiList || [])]) {
+      const id = meme?.tweetId || meme?.url;
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      out.push(meme);
+    }
+    return out;
+  }
+
   function memesForMatch(m) {
-    if (!archive?.memes || !m?.key) return [];
-    const list = archive.memes[m.key] || [];
+    if (!m?.key) return [];
+    const list = m._hydratedMemes || archive?.memes?.[m.key] || [];
     return list.map((meme) => ({
       ...meme,
       home: m.home,
@@ -586,8 +598,43 @@
   }
 
   function needsHighlightFetch(m) {
+    if (window.matchNeedsReplayFetch) return window.matchNeedsReplayFetch(m);
     const { full, goals } = matchClips(m);
-    return !full && !goals;
+    const hasClips = Array.isArray(m.clips) && m.clips.length > 0;
+    return !goals || !full || !hasClips;
+  }
+
+  function syncActiveMatch(enriched) {
+    if (!enriched?.key) return;
+    activeMatch = enriched;
+    archive.matches = archive.matches.map((row) => (row.key === enriched.key ? enriched : row));
+  }
+
+  async function hydrateActiveMatchMemes() {
+    if (!MATCH_PAGE || !activeMatch || !window.KZMatchMemes?.fetchMatchMemes) return;
+    const staticMemes = archive?.memes?.[activeMatch.key] || [];
+    const apiMemes = await window.KZMatchMemes.fetchMatchMemes(
+      activeMatch.home,
+      activeMatch.away,
+      activeMatch.kickoffUtc,
+    );
+    const merged = mergeMemesByTweetId(staticMemes, apiMemes);
+    if (!merged.length) return;
+    activeMatch._hydratedMemes = merged;
+    renderMatchPage();
+  }
+
+  async function hydrateActiveMatchMedia() {
+    if (!MATCH_PAGE || !activeMatch) return;
+    if (window.ensureHighlightsFromApi && needsHighlightFetch(activeMatch)) {
+      const enriched = await window.ensureHighlightsFromApi([activeMatch]);
+      const hit = enriched.find((row) => row.key === activeMatch.key);
+      if (hit) {
+        syncActiveMatch(hit);
+        renderMatchPage();
+      }
+    }
+    await hydrateActiveMatchMemes();
   }
 
   async function hydrateMissingHighlights() {
@@ -598,8 +645,9 @@
     const byKey = new Map(enriched.map((m) => [m.key, m]));
     archive.matches = archive.matches.map((m) => byKey.get(m.key) || m);
     if (MATCH_PAGE && activeMatch) {
-      activeMatch = byKey.get(activeMatch.key) || activeMatch;
+      syncActiveMatch(byKey.get(activeMatch.key) || activeMatch);
       renderMatchPage();
+      await hydrateActiveMatchMemes();
       return;
     }
     renderFeatured();
@@ -658,7 +706,7 @@
       }
       applyMatchSeo(activeMatch);
       renderMatchPage();
-      hydrateMissingHighlights().catch(() => { /* optional backfill */ });
+      hydrateActiveMatchMedia().catch(() => { /* optional backfill */ });
       return;
     }
 
