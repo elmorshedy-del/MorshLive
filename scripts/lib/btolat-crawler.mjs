@@ -2,7 +2,11 @@
  * btolat.com video crawler — CheerioCrawler (https://github.com/apify/crawlee)
  * Deterministic HTML scrape: feed cards → video pages → vortex embed + date.
  */
+import { createRequire } from "node:module";
 import { CheerioCrawler } from "crawlee";
+
+const require = createRequire(import.meta.url);
+const { extractBtolatMedia } = require("./btolat-media.js");
 
 const UA = "Mozilla/5.0 (compatible; MorshLive-BtolatCrawler/1.0)";
 const FEEDS = [
@@ -34,8 +38,8 @@ function parseFeedCards(html, baseUrl) {
 }
 
 function extractEmbedId(html) {
-  const m = String(html || "").match(/vortexvisionworks\.com\/embed\/([A-Za-z0-9]+)/i);
-  return m ? m[1] : null;
+  const media = extractBtolatMedia(html);
+  return media?.embedId || media?.tweetId || null;
 }
 
 function extractPublishedAt(html) {
@@ -95,7 +99,8 @@ export async function crawlBtolatVideos({ maxVideos = 120, useSitemap = false } 
 
       if (label === "video") {
         const btolatId = request.userData.btolatId;
-        const embedId = extractEmbedId($.html());
+        const media = extractBtolatMedia($.html());
+        const embedId = media?.embedId || media?.tweetId || null;
         const publishedAt = extractPublishedAt($.html());
         const pageTitle = $("h1").first().text().trim();
         const prev = byId.get(btolatId) || {
@@ -107,6 +112,7 @@ export async function crawlBtolatVideos({ maxVideos = 120, useSitemap = false } 
           ...prev,
           title: pageTitle || prev.title,
           embedId,
+          media,
           publishedAt,
         });
       }
@@ -122,6 +128,6 @@ export async function crawlBtolatVideos({ maxVideos = 120, useSitemap = false } 
   ]);
 
   return [...byId.values()]
-    .filter((v) => v.embedId)
+    .filter((v) => v.media || v.embedId)
     .slice(0, maxVideos);
 }
