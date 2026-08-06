@@ -170,6 +170,8 @@ function reportHighlightCoverage(matches) {
     for (const line of missingFull) console.log(`  • ${line}`);
   }
 }
+
+function buildPreviousByKey(matches, extras = []) {
   const map = new Map();
   for (const m of matches || []) {
     if (m.key) map.set(m.key, m);

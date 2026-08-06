@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-06T07:14:50.931Z",
+  "updatedAt": "2026-08-06T07:25:34.114Z",
   "tournament": "FIFA World Cup 2026",
   "stages": [
     {
@@ -88,7 +88,39 @@
       "stage": "group-stage",
       "key": "czechia~southkorea",
       "eventId": "760414",
-      "summaryAr": "انتهت المباراة بفوز كوريا الجنوبية على التشيك بنتيجة 2-1 ضمن FIFA World Cup على ملعب Estadio Akron · Guadalajara · Mexico."
+      "summaryAr": "انتهت المباراة بفوز كوريا الجنوبية على التشيك بنتيجة 2-1 ضمن FIFA World Cup على ملعب Estadio Akron · Guadalajara · Mexico.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2065292026921271676&dnt=true",
+          "title": "اهداف مباراة كوريا الجنوبية والتشيك (2-1) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2065292026921271676",
+          "btolatId": "93321",
+          "thumbnail": "",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2065292026921271676&dnt=true",
+          "title": "ملخص مباراة كوريا الجنوبية والتشيك (2-1) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2065292026921271676",
+          "btolatId": "93326",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2065292026921271676&dnt=true",
+        "title": "ملخص مباراة كوريا الجنوبية والتشيك (2-1) كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2065292026921271676",
+        "btolatId": "93326",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760416",
@@ -112,7 +144,39 @@
       "stage": "group-stage",
       "key": "bosniaherzegovina~canada",
       "eventId": "760416",
-      "summaryAr": "انتهت المباراة بالتعادل بين كندا والبوسنة والهرسك بنتيجة 1-1 ضمن FIFA World Cup على ملعب BMO Field · Toronto · Canada."
+      "summaryAr": "انتهت المباراة بالتعادل بين كندا والبوسنة والهرسك بنتيجة 1-1 ضمن FIFA World Cup على ملعب BMO Field · Toronto · Canada.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2065549651357368633&dnt=true",
+          "title": "اهداف مباراة كندا والبوسنة والهرسك (1-1) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2065549651357368633",
+          "btolatId": "93327",
+          "thumbnail": "",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2065549651357368633&dnt=true",
+          "title": "ملخص مباراة كندا والبوسنة والهرسك (1-1) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2065549651357368633",
+          "btolatId": "93332",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2065549651357368633&dnt=true",
+        "title": "ملخص مباراة كندا والبوسنة والهرسك (1-1) كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2065549651357368633",
+        "btolatId": "93332",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760417",
@@ -160,7 +224,39 @@
       "stage": "group-stage",
       "key": "qatar~switzerland",
       "eventId": "760420",
-      "summaryAr": "انتهت المباراة بالتعادل بين قطر وسويسرا بنتيجة 1-1 ضمن FIFA World Cup على ملعب Levi's Stadium · Santa Clara, California · USA."
+      "summaryAr": "انتهت المباراة بالتعادل بين قطر وسويسرا بنتيجة 1-1 ضمن FIFA World Cup على ملعب Levi's Stadium · Santa Clara, California · USA.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2065912460578553882&dnt=true",
+          "title": "اهداف مباراة قطر وسويسرا (1-1) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2065912460578553882",
+          "btolatId": "93341",
+          "thumbnail": "",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2065912460578553882&dnt=true",
+          "title": "ملخص مباراة قطر وسويسرا (1-1) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2065912460578553882",
+          "btolatId": "93345",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2065912460578553882&dnt=true",
+        "title": "ملخص مباراة قطر وسويسرا (1-1) كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2065912460578553882",
+        "btolatId": "93345",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760419",
@@ -213,7 +309,7 @@
         "full": {
           "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/gbiGwzZ6SGkIQ",
           "title": "ملخص مباراة اسكتلندا وهايتي 1 0 كاس العالم",
-          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/317423/poster/0.png?token=OEYwb3FvWEcrNlIwdGtKcDlQZkQwemFJMUNRQm5qdkZLT1ZmTzF1TUlUND06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNi8xNC8zMTc0MjMvMC5wbmc6JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MjE2MDA3NDg0NDkxMDYy&keypair=OFEyOEJQVmQ1bmRUVHZTMXZQVUUvZFFzRk0yYUF6UDQ5NXBkNWQzWHc2Zz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNi8xNC8zMTc0MjMvOiUyRiUyRmhsczAuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAwNzQ4NDQ5MTA2Mg==",
+          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/317423/poster/0.png?token=cUNXbzMrbWdRUEcvRVVwRFZtMnJZRWFsc1d6VjM3MEtqdnlHOWtDb1h6ND06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNi8xNC8zMTc0MjMvMC5wbmc6JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MjE2MDE0MTU0MDQ1OTc4&keypair=SCsraWRSMGEyRUhuQ2lCQXBDRmZaVDU0V0RCbUlBUDg4VVhEemJxc0VCUT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNi8xNC8zMTc0MjMvOiUyRiUyRmhsczAuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAxNDE1NDA0NTk3OA==",
           "source": "vortex",
           "embedId": "gbiGwzZ6SGkIQ",
           "kind": "full"
@@ -222,7 +318,7 @@
       "highlight": {
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/gbiGwzZ6SGkIQ",
         "title": "ملخص مباراة اسكتلندا وهايتي 1 0 كاس العالم",
-        "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/317423/poster/0.png?token=OEYwb3FvWEcrNlIwdGtKcDlQZkQwemFJMUNRQm5qdkZLT1ZmTzF1TUlUND06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNi8xNC8zMTc0MjMvMC5wbmc6JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MjE2MDA3NDg0NDkxMDYy&keypair=OFEyOEJQVmQ1bmRUVHZTMXZQVUUvZFFzRk0yYUF6UDQ5NXBkNWQzWHc2Zz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNi8xNC8zMTc0MjMvOiUyRiUyRmhsczAuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAwNzQ4NDQ5MTA2Mg==",
+        "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/317423/poster/0.png?token=cUNXbzMrbWdRUEcvRVVwRFZtMnJZRWFsc1d6VjM3MEtqdnlHOWtDb1h6ND06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNi8xNC8zMTc0MjMvMC5wbmc6JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MjE2MDE0MTU0MDQ1OTc4&keypair=SCsraWRSMGEyRUhuQ2lCQXBDRmZaVDU0V0RCbUlBUDg4VVhEemJxc0VCUT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNi8xNC8zMTc0MjMvOiUyRiUyRmhsczAuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAxNDE1NDA0NTk3OA==",
         "source": "vortex",
         "embedId": "gbiGwzZ6SGkIQ",
         "kind": "full"
@@ -250,7 +346,39 @@
       "stage": "group-stage",
       "key": "australia~turkiye",
       "eventId": "760421",
-      "summaryAr": "انتهت المباراة بفوز أستراليا على تركيا بنتيجة 2-0 ضمن FIFA World Cup على ملعب BC Place · Vancouver · Canada."
+      "summaryAr": "انتهت المباراة بفوز أستراليا على تركيا بنتيجة 2-0 ضمن FIFA World Cup على ملعب BC Place · Vancouver · Canada.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/NruavGHgkS2LL",
+          "title": "اهداف مباراة تركيا واستراليا (0-2) كأس العالم",
+          "source": "vortex",
+          "embedId": "NruavGHgkS2LL",
+          "tweetId": null,
+          "btolatId": "93354",
+          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/317427/poster/0.png?token=MERBREpqMFd4eXMwRGVEcGhIMytzNXZiOWFnTVEzL3R5OG5MN0ZGSFdVaz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNi8xNC8zMTc0MjcvMC5wbmc6JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAxNDQ3MDc0MTk2Nw==&keypair=dXNDdEpYUENtenhWc0JIS1M3UkVRTG1hWnU3MkNZa2syUERhSXJLWk9pTT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNi8xNC8zMTc0MjcvOiUyRiUyRmhsc3gyLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkyMTYwMTQ0NzA3NDE5Njc=",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2066043136791494702&dnt=true",
+          "title": "ملخص مباراة تركيا واستراليا (0-2) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2066043136791494702",
+          "btolatId": "93357",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2066043136791494702&dnt=true",
+        "title": "ملخص مباراة تركيا واستراليا (0-2) كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2066043136791494702",
+        "btolatId": "93357",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760422",
@@ -274,7 +402,39 @@
       "stage": "group-stage",
       "key": "curacao~germany",
       "eventId": "760422",
-      "summaryAr": "انتهت المباراة بفوز ألمانيا على كوراساو بنتيجة 7-1 ضمن FIFA World Cup على ملعب NRG Stadium · Houston, Texas · USA."
+      "summaryAr": "انتهت المباراة بفوز ألمانيا على كوراساو بنتيجة 7-1 ضمن FIFA World Cup على ملعب NRG Stadium · Houston, Texas · USA.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2066242083799605750&dnt=true",
+          "title": "اهداف مباراة المانيا وكوراساو (7-1) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2066242083799605750",
+          "btolatId": "93359",
+          "thumbnail": "",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2066242083799605750&dnt=true",
+          "title": "ملخص مباراة المانيا وكوراساو (7-1) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2066242083799605750",
+          "btolatId": "93368",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2066242083799605750&dnt=true",
+        "title": "ملخص مباراة المانيا وكوراساو (7-1) كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2066242083799605750",
+        "btolatId": "93368",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760425",
@@ -298,7 +458,39 @@
       "stage": "group-stage",
       "key": "japan~netherlands",
       "eventId": "760425",
-      "summaryAr": "انتهت المباراة بالتعادل بين هولندا واليابان بنتيجة 2-2 ضمن FIFA World Cup على ملعب AT&T Stadium · Arlington, Texas · USA."
+      "summaryAr": "انتهت المباراة بالتعادل بين هولندا واليابان بنتيجة 2-2 ضمن FIFA World Cup على ملعب AT&T Stadium · Arlington, Texas · USA.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2066286140810768554&dnt=true",
+          "title": "اهداف مباراة هولندا واليابان (2-2) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2066286140810768554",
+          "btolatId": "93370",
+          "thumbnail": "",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2066286140810768554&dnt=true",
+          "title": "ملخص مباراة هولندا واليابان (2-2) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2066286140810768554",
+          "btolatId": "93375",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2066286140810768554&dnt=true",
+        "title": "ملخص مباراة هولندا واليابان (2-2) كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2066286140810768554",
+        "btolatId": "93375",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760423",
@@ -370,7 +562,29 @@
       "stage": "group-stage",
       "key": "capeverde~spain",
       "eventId": "760428",
-      "summaryAr": "انتهت المباراة بالتعادل بين إسبانيا والرأس الأخضر بنتيجة 0-0 ضمن FIFA World Cup على ملعب Mercedes-Benz Stadium · Atlanta, Georgia · USA."
+      "summaryAr": "انتهت المباراة بالتعادل بين إسبانيا والرأس الأخضر بنتيجة 0-0 ضمن FIFA World Cup على ملعب Mercedes-Benz Stadium · Atlanta, Georgia · USA.",
+      "highlights": {
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2066589871167123753&dnt=true",
+          "title": "ملخص مباراة اسبانيا والراس الاخضر في كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2066589871167123753",
+          "btolatId": "93389",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2066589871167123753&dnt=true",
+        "title": "ملخص مباراة اسبانيا والراس الاخضر في كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2066589871167123753",
+        "btolatId": "93389",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760426",
@@ -1118,7 +1332,39 @@
       "stage": "group-stage",
       "key": "australia~unitedstates",
       "eventId": "760442",
-      "summaryAr": "انتهت المباراة بفوز الولايات المتحدة على أستراليا بنتيجة 2-0 ضمن FIFA World Cup على ملعب Lumen Field · Seattle, Washington · USA."
+      "summaryAr": "انتهت المباراة بفوز الولايات المتحدة على أستراليا بنتيجة 2-0 ضمن FIFA World Cup على ملعب Lumen Field · Seattle, Washington · USA.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2068086886703284387&dnt=true",
+          "title": "اهداف مباراة امريكا واستراليا (2-0) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2068086886703284387",
+          "btolatId": "93505",
+          "thumbnail": "",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2068086886703284387&dnt=true",
+          "title": "ملخص مباراة امريكا واستراليا (2-0) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2068086886703284387",
+          "btolatId": "93510",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2068086886703284387&dnt=true",
+        "title": "ملخص مباراة امريكا واستراليا (2-0) كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2068086886703284387",
+        "btolatId": "93510",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760445",
@@ -1324,7 +1570,39 @@
       "stage": "group-stage",
       "key": "germany~ivorycoast",
       "eventId": "760448",
-      "summaryAr": "انتهت المباراة بفوز ألمانيا على ساحل العاج بنتيجة 2-1 ضمن FIFA World Cup على ملعب BMO Field · Toronto · Canada."
+      "summaryAr": "انتهت المباراة بفوز ألمانيا على ساحل العاج بنتيجة 2-1 ضمن FIFA World Cup على ملعب BMO Field · Toronto · Canada.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2068461146818945282&dnt=true",
+          "title": "اهداف مباراة المانيا وكوت ديفوار (2-1) بكأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2068461146818945282",
+          "btolatId": "93539",
+          "thumbnail": "",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2068461146818945282&dnt=true",
+          "title": "ملخص مباراة المانيا وكوت ديفوار (2-1) بكأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2068461146818945282",
+          "btolatId": "93545",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2068461146818945282&dnt=true",
+        "title": "ملخص مباراة المانيا وكوت ديفوار (2-1) بكأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2068461146818945282",
+        "btolatId": "93545",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760446",
@@ -2418,7 +2696,39 @@
       "stage": "group-stage",
       "key": "curacao~ivorycoast",
       "eventId": "760473",
-      "summaryAr": "انتهت المباراة بفوز ساحل العاج على كوراساو بنتيجة 2-0 ضمن FIFA World Cup على ملعب Lincoln Financial Field · Philadelphia, Pennsylvania · USA."
+      "summaryAr": "انتهت المباراة بفوز ساحل العاج على كوراساو بنتيجة 2-0 ضمن FIFA World Cup على ملعب Lincoln Financial Field · Philadelphia, Pennsylvania · USA.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2070278284726726747&dnt=true",
+          "title": "اهداف مباراة كوت ديفوار وكوراساو (2-0) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2070278284726726747",
+          "btolatId": "93682",
+          "thumbnail": "",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2070278284726726747&dnt=true",
+          "title": "ملخص مباراة كوت ديفوار وكوراساو (2-0) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2070278284726726747",
+          "btolatId": "93687",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2070278284726726747&dnt=true",
+        "title": "ملخص مباراة كوت ديفوار وكوراساو (2-0) كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2070278284726726747",
+        "btolatId": "93687",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760468",
@@ -2445,33 +2755,33 @@
       "summaryAr": "انتهت المباراة بفوز الإكوادور على ألمانيا بنتيجة 2-1 ضمن FIFA World Cup على ملعب MetLife Stadium · East Rutherford, New Jersey · USA.",
       "highlights": {
         "goals": {
-          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2068461146818945282&dnt=true",
-          "title": "اهداف مباراة المانيا وكوت ديفوار (2-1) بكأس العالم",
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2070276429120504312&dnt=true",
+          "title": "اهداف مباراة الاكوادور والمانيا (2-1) كأس العالم",
           "source": "twitter",
           "embedId": null,
-          "tweetId": "2068461146818945282",
-          "btolatId": "93539",
+          "tweetId": "2070276429120504312",
+          "btolatId": "93679",
           "thumbnail": "",
           "kind": "goals"
         },
         "full": {
-          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2068461146818945282&dnt=true",
-          "title": "ملخص مباراة المانيا وكوت ديفوار (2-1) بكأس العالم",
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2070276429120504312&dnt=true",
+          "title": "ملخص مباراة الاكوادور والمانيا (2-1) كأس العالم",
           "source": "twitter",
           "embedId": null,
-          "tweetId": "2068461146818945282",
-          "btolatId": "93545",
+          "tweetId": "2070276429120504312",
+          "btolatId": "93688",
           "thumbnail": "",
           "kind": "full"
         }
       },
       "highlight": {
-        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2068461146818945282&dnt=true",
-        "title": "ملخص مباراة المانيا وكوت ديفوار (2-1) بكأس العالم",
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2070276429120504312&dnt=true",
+        "title": "ملخص مباراة الاكوادور والمانيا (2-1) كأس العالم",
         "source": "twitter",
         "embedId": null,
-        "tweetId": "2068461146818945282",
-        "btolatId": "93545",
+        "tweetId": "2070276429120504312",
+        "btolatId": "93688",
         "thumbnail": "",
         "kind": "full"
       }
@@ -2656,7 +2966,39 @@
       "stage": "group-stage",
       "key": "turkiye~unitedstates",
       "eventId": "760470",
-      "summaryAr": "انتهت المباراة بفوز تركيا على الولايات المتحدة بنتيجة 3-2 ضمن FIFA World Cup على ملعب SoFi Stadium · Inglewood, California · USA."
+      "summaryAr": "انتهت المباراة بفوز تركيا على الولايات المتحدة بنتيجة 3-2 ضمن FIFA World Cup على ملعب SoFi Stadium · Inglewood, California · USA.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2070366032380805555&dnt=true",
+          "title": "اهداف مباراة تركيا وامريكا (3-2) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2070366032380805555",
+          "btolatId": "93700",
+          "thumbnail": "",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2070366032380805555&dnt=true",
+          "title": "ملخص مباراة تركيا وامريكا (3-2) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2070366032380805555",
+          "btolatId": "93706",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2070366032380805555&dnt=true",
+        "title": "ملخص مباراة تركيا وامريكا (3-2) كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2070366032380805555",
+        "btolatId": "93706",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760475",
@@ -3516,7 +3858,39 @@
       "stage": "round-of-32",
       "key": "ivorycoast~norway",
       "eventId": "760490",
-      "summaryAr": "انتهت المباراة بفوز النرويج على ساحل العاج بنتيجة 2-1 ضمن FIFA World Cup على ملعب AT&T Stadium · Arlington, Texas · USA."
+      "summaryAr": "انتهت المباراة بفوز النرويج على ساحل العاج بنتيجة 2-1 ضمن FIFA World Cup على ملعب AT&T Stadium · Arlington, Texas · USA.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2072042615436873905&dnt=true",
+          "title": "اهداف مباراة النرويج وكوت ديفوار (2-1) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2072042615436873905",
+          "btolatId": "93814",
+          "thumbnail": "",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2072042615436873905&dnt=true",
+          "title": "ملخص مباراة النرويج وكوت ديفوار (2-1) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2072042615436873905",
+          "btolatId": "93819",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2072042615436873905&dnt=true",
+        "title": "ملخص مباراة النرويج وكوت ديفوار (2-1) كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2072042615436873905",
+        "btolatId": "93819",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760492",
@@ -3732,7 +4106,39 @@
       "stage": "round-of-32",
       "key": "bosniaherzegovina~unitedstates",
       "eventId": "760494",
-      "summaryAr": "انتهت المباراة بفوز الولايات المتحدة على البوسنة والهرسك بنتيجة 2-0 ضمن FIFA World Cup على ملعب Levi's Stadium · Santa Clara, California · USA."
+      "summaryAr": "انتهت المباراة بفوز الولايات المتحدة على البوسنة والهرسك بنتيجة 2-0 ضمن FIFA World Cup على ملعب Levi's Stadium · Santa Clara, California · USA.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2072508513671139687&dnt=true",
+          "title": "اهداف مباراة امريكا والبوسنة والهرسك (2-0) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2072508513671139687",
+          "btolatId": "93857",
+          "thumbnail": "",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2072508513671139687&dnt=true",
+          "title": "ملخص مباراة امريكا والبوسنة والهرسك (2-0) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2072508513671139687",
+          "btolatId": "93861",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2072508513671139687&dnt=true",
+        "title": "ملخص مباراة امريكا والبوسنة والهرسك (2-0) كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2072508513671139687",
+        "btolatId": "93861",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760497",
@@ -3929,7 +4335,7 @@
         "goals": {
           "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/a1DWlo52JPLta",
           "title": "اهداف مباراة مصر واسبانيا 29 31 كأس العالم لكرة اليد تحت 19 عام",
-          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/304423/poster/0.png?token=UGZBcnhrby9KbzBiQ0o4OVlXRzM5MjA2aHcrWXZtN3lFUDMwM1dqTkVJZz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjUvOC8xNC8zMDQ0MjMvMC5wbmc6JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAwNDk0NzEwNjgwOQ==&keypair=Q2ZtSUM3a2VqL3NTcldFMXZVeloyamxEcXl4V2RoRU43TkxpSGludU4wWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjUvOC8xNC8zMDQ0MjMvOiUyRiUyRmhsc3gyLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkyMTYwMDQ5NDcxMDY4MDk=",
+          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/304423/poster/0.png?token=a3V2QmxsU3N0RW9MUVg4Y0NDV0tudE4xRG5oazdIdjgra1FHY0FCQ3NXaz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjUvOC8xNC8zMDQ0MjMvMC5wbmc6JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAxNDE3ODc0NzIzNg==&keypair=RENNMm55TEhoTGpSS3hYNHg1ZDlQTW1hQm8zdm1TanMyTURqUmpkRFMyRT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjUvOC8xNC8zMDQ0MjMvOiUyRiUyRmhsc3gyLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkyMTYwMTQxNzg3NDcyMzY=",
           "source": "vortex",
           "embedId": "a1DWlo52JPLta",
           "kind": "goals"
@@ -3937,7 +4343,7 @@
         "full": {
           "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/a1DWlo52JPLta",
           "title": "اهداف مباراة مصر واسبانيا 29 31 كأس العالم لكرة اليد تحت 19 عام",
-          "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/304423/poster/0.png?token=RGhXNHdiL1NpQmlLVG95aGRpL0dVd3Q3M1RVczNZdDE2LzJHQzBwbDdqND06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjUvOC8xNC8zMDQ0MjMvMC5wbmc6JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAwNzUwODU2MzE0OQ==&keypair=MUVpelkwbHdBRnM4NFhxOWN1Wmt4Z2xIWVdZeWdsNGN0cHpyNWdEWnNYZz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjUvOC8xNC8zMDQ0MjMvOiUyRiUyRmhsczg2LmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkyMTYwMDc1MDg1NjMxNDk=",
+          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/304423/poster/0.png?token=QzFEQjVaaWc5clRBcjg2ODBaazB3RjUxVkFsRVloaUdEWDJaL21vdDU3OD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjUvOC8xNC8zMDQ0MjMvMC5wbmc6JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MjE2MDE0MTgyNjUzNjA4&keypair=V1hHcWZNNGdYK0RTekpZOTZKMy8xVmROSVBpWHBmaWZ4alRSbzF2dzI1Zz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjUvOC8xNC8zMDQ0MjMvOiUyRiUyRmhsczAuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAxNDE4MjY1MzYwOA==",
           "source": "vortex",
           "embedId": "a1DWlo52JPLta",
           "kind": "full"
@@ -3946,7 +4352,7 @@
       "highlight": {
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/a1DWlo52JPLta",
         "title": "اهداف مباراة مصر واسبانيا 29 31 كأس العالم لكرة اليد تحت 19 عام",
-        "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/304423/poster/0.png?token=RGhXNHdiL1NpQmlLVG95aGRpL0dVd3Q3M1RVczNZdDE2LzJHQzBwbDdqND06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjUvOC8xNC8zMDQ0MjMvMC5wbmc6JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAwNzUwODU2MzE0OQ==&keypair=MUVpelkwbHdBRnM4NFhxOWN1Wmt4Z2xIWVdZeWdsNGN0cHpyNWdEWnNYZz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjUvOC8xNC8zMDQ0MjMvOiUyRiUyRmhsczg2LmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkyMTYwMDc1MDg1NjMxNDk=",
+        "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/304423/poster/0.png?token=QzFEQjVaaWc5clRBcjg2ODBaazB3RjUxVkFsRVloaUdEWDJaL21vdDU3OD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjUvOC8xNC8zMDQ0MjMvMC5wbmc6JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MjE2MDE0MTgyNjUzNjA4&keypair=V1hHcWZNNGdYK0RTekpZOTZKMy8xVmROSVBpWHBmaWZ4alRSbzF2dzI1Zz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjUvOC8xNC8zMDQ0MjMvOiUyRiUyRmhsczAuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAxNDE4MjY1MzYwOA==",
         "source": "vortex",
         "embedId": "a1DWlo52JPLta",
         "kind": "full"
@@ -4207,7 +4613,7 @@
         "goals": {
           "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/b1dy0L8gi2Kbt",
           "title": "اهداف مباراة انجلترا والمكسيك 3 2 كاس العالم",
-          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318218/poster/0.png?token=N1dYMTFqY1AyaXVVMU5tOW56ZHcyNTZKby84MTZKS3lnUmhoamllZkFPWT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MjE2MDA3NTI5NTA2MjMz&keypair=S0lHcDFxbk5NVUFsUlFqQ2kyNklYYzErU01ETlFNdXhKU0FuakZOcmdPbz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAwNzUyOTUwNjIzMw==",
+          "thumbnail": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318218/poster/0.png?token=bkJqMmxqRHpSUzdKL2xjTTlFeUNMTDBERE45WElxRVhxQWRLSWc3YWpXUT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MjE2MDE0MjAyMzQ2NTA2&keypair=SWVsZW9PT1Q4Y1R2VHZpQ05jZHU5MmEzVUdXYWRmMldzRzdqZUU5cU1mTT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOC86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAxNDIwMjM0NjUwNg==",
           "source": "vortex",
           "embedId": "b1dy0L8gi2Kbt",
           "kind": "goals"
@@ -4215,7 +4621,7 @@
         "full": {
           "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/WAOCAqgXRSoPe",
           "title": "ملخص مباراة انجلترا والمكسيك 3 2 كاس العالم",
-          "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=cmxWL1RCZUdyd1dac3k1RG5KVlJaNWhDNTZqS3BCS3oyVk1sSWlMSVRpOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkyMTYwMDc1MzM1NzI5ODQ=&keypair=ZnBUTEtRczdwUi94bkFmQ09raEtLR0dWaktyMnVXZU00SlVaaEhCcWxRYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MjE2MDA3NTMzNTcyOTg0",
+          "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=U3pwUlZlODd3U00wL1JyVURDYUFrVmlYUXJnWFNEK1Q1TngvODFXb0lLST06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MjE2MDE0MjA2MTE3MzA2&keypair=dUJqS2VTK1IzUXpJSVFLaEZjbi9RaWlKZFV3NEFxRkhyQk5vd0JBQ1Rhcz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAxNDIwNjExNzMwNg==",
           "source": "vortex",
           "embedId": "WAOCAqgXRSoPe",
           "kind": "full"
@@ -4224,7 +4630,7 @@
       "highlight": {
         "videoUrl": "https://nvtboo.vortexvisionworks.com/embed/WAOCAqgXRSoPe",
         "title": "ملخص مباراة انجلترا والمكسيك 3 2 كاس العالم",
-        "thumbnail": "https://hls0.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=cmxWL1RCZUdyd1dac3k1RG5KVlJaNWhDNTZqS3BCS3oyVk1sSWlMSVRpOD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHMwLmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkyMTYwMDc1MzM1NzI5ODQ=&keypair=ZnBUTEtRczdwUi94bkFmQ09raEtLR0dWaktyMnVXZU00SlVaaEhCcWxRYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzMC5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MjE2MDA3NTMzNTcyOTg0",
+        "thumbnail": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=U3pwUlZlODd3U00wL1JyVURDYUFrVmlYUXJnWFNEK1Q1TngvODFXb0lLST06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MjE2MDE0MjA2MTE3MzA2&keypair=dUJqS2VTK1IzUXpJSVFLaEZjbi9RaWlKZFV3NEFxRkhyQk5vd0JBQ1Rhcz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIxNjAxNDIwNjExNzMwNg==",
         "source": "vortex",
         "embedId": "WAOCAqgXRSoPe",
         "kind": "full"
@@ -4318,7 +4724,39 @@
       "stage": "round-of-16",
       "key": "belgium~unitedstates",
       "eventId": "760507",
-      "summaryAr": "انتهت المباراة بفوز بلجيكا على الولايات المتحدة بنتيجة 4-1 ضمن FIFA World Cup على ملعب Lumen Field · Seattle, Washington · USA."
+      "summaryAr": "انتهت المباراة بفوز بلجيكا على الولايات المتحدة بنتيجة 4-1 ضمن FIFA World Cup على ملعب Lumen Field · Seattle, Washington · USA.",
+      "highlights": {
+        "goals": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2074321516406214914&dnt=true",
+          "title": "اهداف مباراة بلجيكا وامريكا (4-1) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2074321516406214914",
+          "btolatId": "93953",
+          "thumbnail": "",
+          "kind": "goals"
+        },
+        "full": {
+          "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2074321516406214914&dnt=true",
+          "title": "ملخص مباراة بلجيكا وامريكا (4-1) كأس العالم",
+          "source": "twitter",
+          "embedId": null,
+          "tweetId": "2074321516406214914",
+          "btolatId": "93959",
+          "thumbnail": "",
+          "kind": "full"
+        }
+      },
+      "highlight": {
+        "videoUrl": "https://platform.twitter.com/embed/Tweet.html?id=2074321516406214914&dnt=true",
+        "title": "ملخص مباراة بلجيكا وامريكا (4-1) كأس العالم",
+        "source": "twitter",
+        "embedId": null,
+        "tweetId": "2074321516406214914",
+        "btolatId": "93959",
+        "thumbnail": "",
+        "kind": "full"
+      }
     },
     {
       "id": "espn-fifa.world-760509",
