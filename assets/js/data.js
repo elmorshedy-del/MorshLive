@@ -1089,6 +1089,7 @@ function scheduleHighlightEnrich(matches) {
 
 window.ensureHighlightsFromApi = ensureHighlightsFromApi;
 window.fetchHighlightFromApi = fetchHighlightFromApi;
+window.matchNeedsReplayFetch = matchNeedsReplayFetch;
 
 window.getMatches = async function getMatches({ force } = {}) {
   // 1) Live fetch from TheSportsDB in the browser (best — real statuses, auto-refresh)

@@ -323,6 +323,83 @@ async function findKnownVortexHighlight(match) {
   return pickPrimaryHighlight(known) || known.full || known.goals || null;
 }
 
+function vortexGoalsQueries(home, away, arabicFor) {
+  const homeNames = teamNamesForMatch(home, arabicFor);
+  const awayNames = teamNamesForMatch(away, arabicFor);
+  const queries = new Set();
+  for (const h of homeNames.slice(0, 2)) {
+    for (const a of awayNames.slice(0, 2)) {
+      queries.add(`site:${VORTEX_HOST} اهداف مباراة ${h} ${a}`);
+      queries.add(`site:${VORTEX_HOST} أهداف مباراة ${h} ${a}`);
+      queries.add(`site:${VORTEX_HOST} ${h} ${a}`);
+    }
+  }
+  return [...queries];
+}
+
+function vortexFullQueries(home, away, arabicFor) {
+  const homeNames = teamNamesForMatch(home, arabicFor);
+  const awayNames = teamNamesForMatch(away, arabicFor);
+  const queries = new Set();
+  for (const h of homeNames.slice(0, 2)) {
+    for (const a of awayNames.slice(0, 2)) {
+      queries.add(`site:${VORTEX_HOST} ملخص مباراة ${h} ${a}`);
+      queries.add(`site:${VORTEX_HOST} ${h} ${a}`);
+    }
+  }
+  return [...queries];
+}
+
+/** Find a full ملخص reel for home vs away. */
+async function findVortexFullHighlight(match, arabicFor) {
+  if (!match?.home || !match?.away) return null;
+
+  const known = await findKnownVortexHighlights(match);
+  if (known.full) {
+    const meta = enrichHighlightMeta(await fetchVortexEmbedMeta(known.full));
+    if (meta?.kind === "full") return meta;
+  }
+
+  const seen = new Set();
+  for (const q of vortexFullQueries(match.home, match.away, arabicFor)) {
+    const ids = await searchDdgEmbedIds(q);
+    for (const id of ids.slice(0, 12)) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const meta = enrichHighlightMeta(await fetchVortexEmbedMeta(id));
+      if (meta?.kind === "full" && titleMatchesMatch(meta.title, match.home, match.away, arabicFor)) {
+        return meta;
+      }
+    }
+  }
+  return null;
+}
+
+/** Find a goals-only vortex/beIN reel for home vs away. */
+async function findVortexGoalsHighlight(match, arabicFor) {
+  if (!match?.home || !match?.away) return null;
+
+  const known = await findKnownVortexHighlights(match);
+  if (known.goals) {
+    const meta = enrichHighlightMeta(await fetchVortexEmbedMeta(known.goals));
+    if (meta?.kind === "goals") return meta;
+  }
+
+  const seen = new Set();
+  for (const q of vortexGoalsQueries(match.home, match.away, arabicFor)) {
+    const ids = await searchDdgEmbedIds(q);
+    for (const id of ids.slice(0, 12)) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const meta = enrichHighlightMeta(await fetchVortexEmbedMeta(id));
+      if (meta?.kind === "goals" && titleMatchesMatch(meta.title, match.home, match.away, arabicFor)) {
+        return meta;
+      }
+    }
+  }
+  return null;
+}
+
 /** Find a vortexvisionworks ملخص embed for home vs away. */
 async function findVortexHighlight(match, arabicFor) {
   if (!match || !match.home || !match.away) return null;
@@ -352,6 +429,8 @@ module.exports = {
   classifyHighlightTitle,
   isTrueHighlightTitle,
   findVortexHighlight,
+  findVortexGoalsHighlight,
+  findVortexFullHighlight,
   findKnownVortexHighlight,
   findKnownVortexHighlights,
   titleMatchesMatch,

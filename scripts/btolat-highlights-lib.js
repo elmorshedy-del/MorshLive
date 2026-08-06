@@ -8,6 +8,7 @@
  * ==========================================================================*/
 const VORTEX_EMBED_BASE = "https://nvtboo.vortexvisionworks.com/embed";
 const UA = "Mozilla/5.0 (compatible; MorshLive/1.0)";
+const { extractBtolatMedia } = require("./lib/btolat-media");
 const { resolveFixtureKey, titleTeams: parseTitleTeams, clipRelatesToMatch } = require("./lib/highlight-match-lib");
 
 /** League page + main videos feed (goals clips often only on /videos). */
@@ -72,8 +73,8 @@ async function runIdPool(start, end, concurrency, fn) {
  * dense numeric /video/{id} range during the tournament. Scan it directly.
  */
 async function scanBtolatWorldCupRange(pairKeyFn, opts = {}) {
-  const startId = opts.rangeStart ?? 92800;
-  const endId = opts.rangeEnd ?? 94250;
+  const startId = opts.rangeStart ?? 93700;
+  const endId = opts.rangeEnd ?? 94200;
   const concurrency = opts.rangeConcurrency ?? 10;
   const candidates = [];
 
@@ -84,7 +85,7 @@ async function scanBtolatWorldCupRange(pairKeyFn, opts = {}) {
     if (!/كأس العالم|world cup/i.test(title)) return;
     const kind = classifyBtolatTitle(title);
     if (!isPrimaryKind(kind)) return;
-    const embedM = html.match(/(?:nvtboo\.)?vortexvisionworks\.com\/embed\/([A-Za-z0-9]+)/i);
+    const media = extractBtolatMedia(html);
     const teams = parseTitleTeams(title);
     const key = resolveFixtureKey(title, teams, opts.matches, {
       pairKeyFn,
@@ -98,7 +99,8 @@ async function scanBtolatWorldCupRange(pairKeyFn, opts = {}) {
       btolatId: String(id),
       title,
       kind,
-      embedId: embedM ? embedM[1] : null,
+      media,
+      embedId: media?.embedId || null,
       key,
       order: id,
     });
@@ -129,22 +131,35 @@ function candidatePairKey(video, opts, activeKey) {
   return clipRelatesToMatch(video.title, activeMatch, opts.arabicTeam) ? activeKey : null;
 }
 
-async function fetchBtolatEmbedId(btolatId) {
+async function fetchBtolatMedia(btolatId) {
   const html = await fetchText(`https://www.btolat.com/video/${btolatId}`);
-  const m = (html || "").match(/(?:nvtboo\.)?vortexvisionworks\.com\/embed\/([A-Za-z0-9]+)/i);
-  return m ? m[1] : null;
+  return extractBtolatMedia(html);
 }
 
-function clipFromEmbed(embedId, meta) {
+async function fetchBtolatEmbedId(btolatId) {
+  const media = await fetchBtolatMedia(btolatId);
+  return media?.embedId || null;
+}
+
+function clipFromMedia(media, meta) {
+  if (!media?.videoUrl) return null;
   return {
-    videoUrl: `${VORTEX_EMBED_BASE}/${embedId}`,
+    videoUrl: media.videoUrl,
     title: meta.title,
-    source: "vortex",
-    embedId,
+    source: media.source === "twitter" ? "twitter" : "vortex",
+    embedId: media.embedId || null,
+    tweetId: media.tweetId || null,
     btolatId: meta.btolatId,
     thumbnail: meta.thumbnail || "",
     kind: meta.kind,
   };
+}
+
+function clipFromEmbed(embedId, meta) {
+  return clipFromMedia(
+    { source: "vortex", embedId, videoUrl: `${VORTEX_EMBED_BASE}/${embedId}` },
+    meta,
+  );
 }
 
 /**
@@ -161,6 +176,7 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
         btolatId: v.btolatId,
         title: v.title,
         embedId: v.embedId,
+        media: v.media,
         publishedAt: v.publishedAt,
         kind: classifyBtolatTitle(v.title),
       })).filter((v) => v.kind);
@@ -215,18 +231,22 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
   const out = new Map();
   for (const v of candidates) {
     if (!v.key) continue;
-    const embedId = v.embedId || (await fetchBtolatEmbedId(v.btolatId));
-    if (!embedId) continue;
+    const media =
+      v.media ||
+      (v.embedId
+        ? { source: "vortex", embedId: v.embedId, videoUrl: `${VORTEX_EMBED_BASE}/${v.embedId}` }
+        : await fetchBtolatMedia(v.btolatId));
+    if (!media) continue;
 
     let thumbnail = "";
-    if (fetchMeta) {
+    if (fetchMeta && media.embedId) {
       try {
-        const meta = await fetchMeta(embedId);
+        const meta = await fetchMeta(media.embedId);
         thumbnail = meta?.thumbnail || "";
       } catch { /* optional poster */ }
     }
 
-    const clip = clipFromEmbed(embedId, {
+    const clip = clipFromMedia(media, {
       title: v.title,
       btolatId: v.btolatId,
       thumbnail,
@@ -234,6 +254,7 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
       publishedAt: v.publishedAt || null,
       order: v.order,
     });
+    if (!clip) continue;
 
     if (!out.has(v.key)) out.set(v.key, {});
     const bucket = out.get(v.key);
@@ -255,21 +276,30 @@ async function scrapeBtolatHighlights(pairKeyFn, fetchMeta, opts = {}) {
   return out;
 }
 
-/** Attach highlights.goals + highlights.full; primary = true ملخص reel or أهداف reel. */
+/** Attach highlights.goals + highlights.full; merge with existing — never drop ملخص when adding أهداف. */
 function applyBtolatHighlights(match, bucket, normalizeBucket) {
   if (!bucket || (!bucket.goals && !bucket.full && !bucket.clips?.length)) return false;
   const cleaned = normalizeBucket ? normalizeBucket({ goals: bucket.goals, full: bucket.full }) : bucket;
   if (!cleaned && !bucket.clips?.length) return false;
-  match.highlights = {};
+  match.highlights = { ...(match.highlights || {}) };
   if (cleaned?.goals) match.highlights.goals = { ...cleaned.goals, kind: "goals" };
   if (cleaned?.full) match.highlights.full = { ...cleaned.full, kind: "full" };
   if (bucket.clips?.length) {
-    match.clips = bucket.clips
+    const notable = bucket.clips
       .filter((c) => c && c.videoUrl && !isPrimaryKind(c.kind))
       .map((c) => ({ ...c, kind: c.kind || "clip" }));
+    const seen = new Set((match.clips || []).map((c) => c.btolatId || c.videoUrl));
+    const merged = [...(match.clips || [])];
+    for (const clip of notable) {
+      const id = clip.btolatId || clip.videoUrl;
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      merged.push(clip);
+    }
+    if (merged.length) match.clips = merged;
   }
-  match.highlight = pickPrimaryFromBucket(match.highlights) || match.highlights.full || match.highlights.goals || null;
-  return !!(match.highlight || match.clips?.length);
+  match.highlight = pickPrimaryFromBucket(match.highlights) || match.highlights.full || match.highlights.goals || match.highlight || null;
+  return !!(match.highlights.goals || match.highlights.full || match.highlight || match.clips?.length);
 }
 
 function pickPrimaryFromBucket(highlights) {

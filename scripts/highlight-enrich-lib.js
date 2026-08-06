@@ -6,6 +6,8 @@ const { attachSummaries } = require("./highlights-lib");
 const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-highlights-lib");
 const {
   findVortexHighlight,
+  findVortexGoalsHighlight,
+  findVortexFullHighlight,
   fetchVortexEmbedMeta,
   normalizeHighlightBucket,
   enrichHighlightMeta,
@@ -139,6 +141,36 @@ async function enrichEndedMatchesWithHighlights(matches, opts = {}) {
       } catch (err) {
         console.warn(`youtube highlight search failed for ${m.home} vs ${m.away}:`, err.message);
       }
+    }
+  });
+
+  const missingGoals = ended.filter((m) => !m.highlights?.goals?.videoUrl);
+  await runPool(missingGoals, concurrency, async (m) => {
+    try {
+      const goals = await findVortexGoalsHighlight(m, arabicTeam);
+      const meta = enrichHighlightMeta(goals);
+      if (meta?.kind === "goals") {
+        if (!m.highlights) m.highlights = {};
+        m.highlights.goals = meta;
+        m.highlight = pickPrimaryHighlight(m.highlights) || m.highlight || meta;
+      }
+    } catch (err) {
+      console.warn(`vortex goals search failed for ${m.home} vs ${m.away}:`, err.message);
+    }
+  });
+
+  const missingFull = ended.filter((m) => !m.highlights?.full?.videoUrl && !m.highlight?.videoUrl);
+  await runPool(missingFull, concurrency, async (m) => {
+    try {
+      const full = await findVortexFullHighlight(m, arabicTeam);
+      const meta = enrichHighlightMeta(full);
+      if (meta?.kind === "full") {
+        if (!m.highlights) m.highlights = {};
+        m.highlights.full = meta;
+        m.highlight = pickPrimaryHighlight(m.highlights) || meta;
+      }
+    } catch (err) {
+      console.warn(`vortex full highlight search failed for ${m.home} vs ${m.away}:`, err.message);
     }
   });
 

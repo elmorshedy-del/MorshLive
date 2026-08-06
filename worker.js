@@ -3676,6 +3676,33 @@ async function searchKnownVortexHighlight(home, away, known) {
   return null;
 }
 
+async function searchVortexGoalsHighlight(home, away, teamAr, known) {
+  const hit = known && known[highlightPairKey(home, away)];
+  if (hit?.goals) {
+    const goals = await fetchVortexEmbedMeta(hit.goals);
+    if (goals?.kind === "goals") return goals;
+  }
+
+  const homeAr = teamArabic(teamAr, home);
+  const awayAr = teamArabic(teamAr, away);
+  const queries = [
+    `site:${VORTEX_HOST} اهداف مباراة ${homeAr} ${awayAr}`,
+    `site:${VORTEX_HOST} أهداف مباراة ${homeAr} ${awayAr}`,
+    ...vortexSearchQueries(home, away, teamAr),
+  ];
+  const seen = new Set();
+  for (const q of queries) {
+    const ids = await searchDdgVortexIds(q);
+    for (const id of ids.slice(0, 12)) {
+      if (seen.has(id)) continue;
+      seen.add(id);
+      const meta = await fetchVortexEmbedMeta(id);
+      if (meta?.kind === "goals" && vortexTitleMatches(meta.title, home, away, teamAr)) return meta;
+    }
+  }
+  return null;
+}
+
 async function searchVortexHighlight(home, away, teamAr, known) {
   const pinned = await searchKnownVortexHighlight(home, away, known);
   if (pinned) return pinned;
@@ -3787,6 +3814,15 @@ async function proxyHighlightApi(request, env) {
   try {
     const staticHit = await lookupStaticHighlights(env, url.origin, home, away);
     if (staticHit) {
+      if (!staticHit.highlights?.goals?.videoUrl) {
+        const teamAr = await loadTeamAr(env, url.origin);
+        const knownVortex = await loadKnownVortex(env, url.origin);
+        const goals = await searchVortexGoalsHighlight(home, away, teamAr, knownVortex);
+        if (goals) {
+          staticHit.highlights = { ...(staticHit.highlights || {}), goals };
+          if (!staticHit.highlight?.videoUrl) staticHit.highlight = goals;
+        }
+      }
       return new Response(JSON.stringify(staticHit), {
         status: 200,
         headers: { ...headers, "X-KZ-Highlight-Source": "archive" },
@@ -3795,6 +3831,25 @@ async function proxyHighlightApi(request, env) {
 
     const teamAr = await loadTeamAr(env, url.origin);
     const knownVortex = await loadKnownVortex(env, url.origin);
+
+    const vortexGoals = await searchVortexGoalsHighlight(home, away, teamAr, knownVortex);
+    if (vortexGoals) {
+      return new Response(
+        JSON.stringify({
+          highlight: vortexGoals,
+          highlights: { goals: vortexGoals },
+          clips: [],
+          videoUrl: vortexGoals.videoUrl,
+          title: vortexGoals.title,
+          thumbnail: vortexGoals.thumbnail,
+          source: vortexGoals.source || "vortex",
+        }),
+        {
+          status: 200,
+          headers: { ...headers, "X-KZ-Highlight-Source": "vortex-goals" },
+        },
+      );
+    }
 
     const vortex = await searchVortexHighlight(home, away, teamAr, knownVortex);
     if (vortex) {

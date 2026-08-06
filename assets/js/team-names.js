@@ -160,5 +160,28 @@
     return null;
   }
 
-  global.TeamNames = { localize, aliases, arabicFor, canonicalToken, canonicalKey, canonicalizeKey, slugFor, teamFromSlug };
+  function matchSlug(home, away) {
+    const slugs = [slugFor(home), slugFor(away)].filter(Boolean).sort();
+    if (slugs.length !== 2) return "";
+    return `${slugs[0]}-vs-${slugs[1]}`;
+  }
+
+  function matchPageHref(m) {
+    if (!m?.home || !m?.away) return "";
+    const slug = matchSlug(m.home, m.away);
+    return slug ? `/world-cup-2026/${slug}` : "";
+  }
+
+  global.TeamNames = {
+    localize,
+    aliases,
+    arabicFor,
+    canonicalToken,
+    canonicalKey,
+    canonicalizeKey,
+    slugFor,
+    teamFromSlug,
+    matchSlug,
+    matchPageHref,
+  };
 })(typeof window !== "undefined" ? window : this);

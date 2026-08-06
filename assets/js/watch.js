@@ -27,7 +27,14 @@
       .then((r) => (r.ok ? r.json() : null))
       .then((idx) => {
         const key = idx?.watchRedirects?.[earlyMatch];
-        if (key) location.replace(`/tournament?match=${encodeURIComponent(key)}`);
+        if (!key) return;
+        fetch("/assets/data/wc-matches-index.json", { cache: "default" })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((matchesIdx) => {
+            const row = (matchesIdx?.matches || []).find((m) => m.key === key);
+            location.replace(row?.path || `/tournament?match=${encodeURIComponent(key)}`);
+          })
+          .catch(() => location.replace(`/tournament?match=${encodeURIComponent(key)}`));
       })
       .catch(() => { /* worker should 301; this is a client fallback */ });
   }
