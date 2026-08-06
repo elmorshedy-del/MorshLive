@@ -1,9 +1,17 @@
 # Fail PR checks until Gemini Code Assist finishes review (optional required check).
+# Disabled on pull_request — GitHub Actions billing is locked on this account.
+# Poll locally instead: node scripts/poll-gemini-review.js <PR_NUMBER>
+#
+# Manual: GitHub → Actions → Gemini review gate → Run workflow (PR number input)
 name: Gemini review gate
 
 on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number
+        required: true
+        type: string
 
 permissions:
   pull-requests: read
@@ -11,7 +19,6 @@ permissions:
 
 jobs:
   await-gemini-review:
-    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,4 +30,4 @@ jobs:
       - name: Wait for Gemini Code Assist review
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: node scripts/poll-gemini-review.js ${{ github.event.pull_request.number }}
+        run: node scripts/poll-gemini-review.js ${{ inputs.pr_number }}

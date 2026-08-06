@@ -18,7 +18,7 @@ GitHub Actions billing was blocking deploys. The repo now uses:
 | `deploy.yml` | **Off** (manual only) | Legacy duplicate deploy |
 | `github-pages.yml` | **Off** (manual only) | Legacy gh-pages (site uses Worker `morshlive`) |
 | `update-matches.yml` | **Off** (manual only) | Legacy match commit bot |
-| `gemini-review*.yml` | On PR | Optional code review gate (uses Actions minutes) |
+| `gemini-review*.yml` | **Manual only** (`workflow_dispatch`) | Gemini review — PR auto-trigger off (Actions billing locked) |
 
 ## Normal flow
 
