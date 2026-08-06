@@ -73,8 +73,9 @@ async function runIdPool(start, end, concurrency, fn) {
  * dense numeric /video/{id} range during the tournament. Scan it directly.
  */
 async function scanBtolatWorldCupRange(pairKeyFn, opts = {}) {
-  const startId = opts.rangeStart ?? 93400;
-  const endId = opts.rangeEnd ?? 94300;
+  // Early group-stage clips often sit below 93400 (e.g. japan~netherlands at 93370).
+  const startId = opts.rangeStart ?? 92800;
+  const endId = opts.rangeEnd ?? 94600;
   const concurrency = opts.rangeConcurrency ?? 10;
   const candidates = [];
 

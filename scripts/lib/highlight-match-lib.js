@@ -8,6 +8,34 @@
 const { normalizeArabic, levenshtein } = require("../arabic-team-resolver");
 const { playerHitScore, momentHit } = require("./meme-match-lib");
 
+/** btolat / vortex titles often use colloquial names (كوت ديفوار, الاكوادور). */
+const EXTRA_TEAM_ALIASES = {
+  "Ivory Coast": ["كوت ديفوار", "كوت الديفوار"],
+  "Cote d'Ivoire": ["كوت ديفوار", "كوت الديفوار"],
+  "Cape Verde": ["الراس الاخضر", "راس الاخضر"],
+  Ecuador: ["الاكوادور", "اكوادور"],
+  Germany: ["المانيا"],
+  Mexico: ["المكسيك"],
+  "South Africa": ["جنوب افريقيا", "جنوب أفريقيا"],
+  "South Korea": ["كوريا الجنوبية"],
+  Scotland: ["اسكتلندا"],
+  Spain: ["اسبانيا", "إسبانيا"],
+  Argentina: ["الارجنتين", "الأرجنتين"],
+  Netherlands: ["هولندا"],
+  Japan: ["اليابان"],
+  Morocco: ["المغرب"],
+  Turkiye: ["تركيا"],
+  Türkiye: ["تركيا"],
+  Turkey: ["تركيا"],
+  Curacao: ["كوراساو"],
+  "Curaçao": ["كوراساو"],
+  Paraguay: ["باراجواي", "باراغواي"],
+  Switzerland: ["سويسرا"],
+  Qatar: ["قطر"],
+  Brazil: ["البرازيل"],
+  "United States": ["الولايات المتحدة", "امريكا", "أمريكا"],
+};
+
 const AR_MONTHS = {
   يناير: 0,
   فبراير: 1,
@@ -47,7 +75,8 @@ function uniqueTruthy(items) {
 function teamArabicCandidates(match, side, arabicTeam) {
   const name = match && match[side];
   const ar = arabicTeam ? arabicTeam(name) : "";
-  return uniqueTruthy([ar, name]);
+  const aliases = EXTRA_TEAM_ALIASES[name] || [];
+  return uniqueTruthy([ar, name, ...aliases]);
 }
 
 function sideScore(titleTeam, candidates) {
@@ -168,6 +197,7 @@ function cleanTeamToken(s) {
   return String(s || "")
     .replace(/\s+\d+\s*-\s*\d+.*$/i, "")
     .replace(/\s+\d+\s+\d+.*$/i, "")
+    .replace(/\s+في\s*$/i, "")
     .trim();
 }
 

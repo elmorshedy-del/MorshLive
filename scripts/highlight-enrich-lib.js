@@ -43,10 +43,10 @@ function applyVortexBucket(match, bucket, normalizeBucket) {
   const cleaned = normalizeBucket ? normalizeBucket(bucket) : bucket;
   if (!cleaned) return false;
   match.highlights = { ...(match.highlights || {}) };
-  if (cleaned.goals) match.highlights.goals = { ...cleaned.goals, kind: "goals" };
-  if (cleaned.full) match.highlights.full = { ...cleaned.full, kind: "full" };
+  if (cleaned.goals && !match.highlights.goals) match.highlights.goals = { ...cleaned.goals, kind: "goals" };
+  if (cleaned.full && !match.highlights.full) match.highlights.full = { ...cleaned.full, kind: "full" };
   match.highlight = pickPrimaryHighlight(match.highlights) || match.highlights.full || match.highlights.goals || null;
-  return !!match.highlight;
+  return !!(match.highlights.goals || match.highlights.full || match.highlight);
 }
 
 async function runPool(items, concurrency, fn) {
@@ -120,9 +120,9 @@ async function enrichEndedMatchesWithHighlights(matches, opts = {}) {
   for (const m of ended) {
     const key = pairKeyFn(m.home, m.away);
     const bt = btolatMap.get(key);
-    if (bt && applyBtolatHighlights(m, bt, normalizeHighlightBucket)) continue;
+    if (bt) applyBtolatHighlights(m, bt, normalizeHighlightBucket);
     const pool = poolMap.get(key);
-    if (pool && applyVortexBucket(m, pool, normalizeHighlightBucket)) continue;
+    if (pool) applyVortexBucket(m, pool, normalizeHighlightBucket);
     if (!hasPrimaryHighlight(m)) missing.push(m);
   }
 

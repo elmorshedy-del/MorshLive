@@ -12,10 +12,10 @@ describe("titleTeams", () => {
     });
   });
 
-  it("parses parenthetical scores before نهائي", () => {
-    expect(titleTeams("ملخص مباراة اسبانيا والارجنتين (1-0) نهائي كأس العالم 2026")).toEqual({
+  it("parses titles ending with في كأس العالم", () => {
+    expect(titleTeams("ملخص مباراة اسبانيا والراس الاخضر في كأس العالم")).toEqual({
       a: "اسبانيا",
-      b: "الارجنتين",
+      b: "الراس الاخضر",
     });
   });
 });
