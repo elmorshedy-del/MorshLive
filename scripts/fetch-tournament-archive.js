@@ -114,33 +114,42 @@ async function runPool(items, concurrency, fn) {
 /** Goal timeline (من سجّل ومتى) isn't in the ESPN scoreboard payload — only the
  * per-match summary endpoint carries keyEvents, so it needs its own fetch pass.
  * Lineups/stats ride along on the same response and backfill any match that
- * missed today.json's rolling window (the archive spans the whole tournament). */
+ * missed today.json's rolling window (the archive spans the whole tournament).
+ *
+ * Always re-derives from ESPN rather than keeping whatever the previous archive
+ * had: carrying forward on "field is absent" made any extraction bug permanent
+ * (an own-goal side bug survived every rebuild because the field was populated,
+ * just wrong). The previous archive is used only as a fallback when a fetch
+ * fails, so a transient ESPN outage still can't drop data we already had. */
 async function backfillMatchDetails(matches, previousByKey, concurrency = 6) {
-  for (const m of matches) {
-    const prev = previousByKey.get(m.key);
-    if (prev?.goals && !m.goals) m.goals = prev.goals;
-    if (prev?.lineups && !m.lineups) m.lineups = prev.lineups;
-    if (prev?.stats && !m.stats) m.stats = prev.stats;
-  }
-
-  const pending = matches.filter((m) => !m.goals && parseEspnMatchId(m.id));
+  const targets = matches.filter((m) => parseEspnMatchId(m.id));
   let matched = 0;
-  await runPool(pending, concurrency, async (m) => {
+  await runPool(targets, concurrency, async (m) => {
     const parsed = parseEspnMatchId(m.id);
     try {
       const summary = await fetchEspnSummary(parsed.leagueSlug, parsed.eventId);
       const goals = extractGoals(summary);
-      if (goals && goals.length) {
+      if (goals?.length) {
         m.goals = goals;
         matched++;
       }
-      if (!m.lineups) m.lineups = extractLineups(summary) || m.lineups;
-      if (!m.stats) m.stats = extractMatchStats(summary) || m.stats;
+      const lineups = extractLineups(summary);
+      const stats = extractMatchStats(summary);
+      if (lineups) m.lineups = lineups;
+      if (stats) m.stats = stats;
     } catch (err) {
       console.warn(`match detail fetch failed for ${m.home} vs ${m.away}:`, err.message);
     }
   });
-  return { matched, fetched: pending.length };
+
+  for (const m of matches) {
+    const prev = previousByKey.get(m.key);
+    if (!prev) continue;
+    if (!m.goals?.length && prev.goals?.length) m.goals = prev.goals;
+    if (!m.lineups && prev.lineups) m.lineups = prev.lineups;
+    if (!m.stats && prev.stats) m.stats = prev.stats;
+  }
+  return { matched, total: targets.length };
 }
 
 async function fetchAllEspnEnded() {
@@ -280,7 +289,7 @@ async function main() {
 
   const detailBackfill = await backfillMatchDetails(matches, previousByKey);
   console.log(
-    `goal timeline attached: ${detailBackfill.matched}/${detailBackfill.fetched} newly-fetched matches ` +
+    `goal timeline: ${detailBackfill.matched}/${detailBackfill.total} re-derived from ESPN ` +
     `(${matches.filter((m) => m.goals?.length).length}/${matches.length} total)`
   );
 
