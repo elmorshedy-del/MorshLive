@@ -171,7 +171,12 @@ async function enrichEndedMatchesWithHighlights(matches, opts = {}) {
     }
   });
 
-  const missingGoals = ended.filter((m) => !m.highlights?.goals?.videoUrl);
+  // Only hunt for a standalone أهداف reel when the match has no ملخص either. The
+  // bulk btolat/filgoal scans above already carry both kinds where a source has
+  // them; this per-match DuckDuckGo fallback costs ~12 queries each and currently
+  // returns nothing (DDG answers 202 to automated queries). Without this guard the
+  // duplicate-clip dedupe doubles the list to ~102 matches and stalls the build.
+  const missingGoals = ended.filter((m) => !m.highlights?.goals?.videoUrl && !m.highlights?.full?.videoUrl);
   await runPool(missingGoals, concurrency, async (m) => {
     try {
       const goals = await findVortexGoalsHighlight(m, arabicTeam);

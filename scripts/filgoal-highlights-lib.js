@@ -22,13 +22,22 @@ const VIDEO_LISTING_URL = "https://www.filgoal.com/videos";
 const FILGOAL_WC_RANGE_START = 50560;
 const FILGOAL_WC_RANGE_END = 50800;
 
+/** Bounded so one stalled upstream connection can't wedge the whole build;
+ * callers already treat "" as a miss. */
+const FETCH_TIMEOUT_MS = 15000;
+
 async function fetchText(url) {
-  const res = await fetch(url, {
-    headers: { "User-Agent": UA, Accept: "text/html,*/*" },
-    redirect: "follow",
-  });
-  if (!res.ok) return "";
-  return res.text();
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": UA, Accept: "text/html,*/*" },
+      redirect: "follow",
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (!res.ok) return "";
+    return await res.text();
+  } catch {
+    return "";
+  }
 }
 
 /** goals = أهداف multi-goal reel; full = ملخص recap. Single هدف clips excluded —

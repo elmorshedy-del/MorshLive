@@ -17,13 +17,22 @@ const BTOLAT_VIDEO_FEEDS = [
   "https://www.btolat.com/videos",
 ];
 
+/** Bounded so one stalled upstream connection can't wedge the whole build;
+ * callers already treat "" as a miss. */
+const FETCH_TIMEOUT_MS = 15000;
+
 async function fetchText(url) {
-  const res = await fetch(url, {
-    headers: { "User-Agent": UA, Accept: "text/html,*/*" },
-    redirect: "follow",
-  });
-  if (!res.ok) return "";
-  return res.text();
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": UA, Accept: "text/html,*/*" },
+      redirect: "follow",
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (!res.ok) return "";
+    return await res.text();
+  } catch {
+    return "";
+  }
 }
 
 function parseBtolatVideos(html) {

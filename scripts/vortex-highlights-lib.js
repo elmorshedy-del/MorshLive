@@ -133,13 +133,24 @@ async function findKnownVortexHighlights(match) {
   return out;
 }
 
+/** Every caller treats "" as "no result", so a slow or hostile upstream degrades
+ * to a miss instead of hanging. Without the timeout a single stalled connection
+ * blocks the whole deploy — DuckDuckGo answers 202 and throttles automated
+ * queries, which is exactly how this used to wedge. */
+const FETCH_TIMEOUT_MS = 15000;
+
 async function fetchText(url) {
-  const res = await fetch(url, {
-    headers: { "User-Agent": UA, Accept: "text/html,*/*" },
-    redirect: "follow",
-  });
-  if (!res.ok) return "";
-  return res.text();
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": UA, Accept: "text/html,*/*" },
+      redirect: "follow",
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
+    if (!res.ok) return "";
+    return await res.text();
+  } catch {
+    return "";
+  }
 }
 
 function extractEmbedIds(html) {
