@@ -1,9 +1,11 @@
 /**
- * Shared ملخص enrichment for ended fixtures — btolat scrape, vortex bulk pool,
- * per-match vortex search, optional YouTube, merge with previous JSON.
+ * Shared ملخص enrichment for ended fixtures — btolat scrape, filgoal scrape,
+ * vortex bulk pool, per-match vortex search, optional YouTube, merge with
+ * previous JSON.
  */
 const { attachSummaries } = require("./highlights-lib");
 const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-highlights-lib");
+const { scrapeFilgoalHighlights, applyFilgoalHighlights } = require("./filgoal-highlights-lib");
 const {
   findVortexHighlight,
   findVortexGoalsHighlight,
@@ -105,6 +107,19 @@ async function enrichEndedMatchesWithHighlights(matches, opts = {}) {
     console.warn("btolat highlights scrape failed:", err.message);
   }
 
+  let filgoalMap = new Map();
+  try {
+    filgoalMap = await scrapeFilgoalHighlights(btolatPairKeyFn, {
+      matches,
+      arabicTeam,
+      scanWorldCupRange: true,
+    });
+    const dual = [...filgoalMap.values()].filter((b) => b.goals && b.full).length;
+    console.log(`filgoal highlights: ${filgoalMap.size} matches (${dual} with goals+full)`);
+  } catch (err) {
+    console.warn("filgoal highlights scrape failed:", err.message);
+  }
+
   let poolMap = new Map();
   try {
     const clips = await discoverVortexHighlightPool();
@@ -114,15 +129,20 @@ async function enrichEndedMatchesWithHighlights(matches, opts = {}) {
     console.warn("vortex pool discovery failed:", err.message);
   }
 
+  // Apply every source per match instead of stopping at the first hit — a
+  // fixture with only a btolat ملخص still needs a chance at a filgoal/vortex
+  // أهداف reel (and vice versa), since each apply* call only fills gaps.
   const ended = matches.filter((m) => m.status === "ended");
   const missing = [];
 
   for (const m of ended) {
     const key = pairKeyFn(m.home, m.away);
     const bt = btolatMap.get(key);
-    if (bt && applyBtolatHighlights(m, bt, normalizeHighlightBucket)) continue;
+    if (bt) applyBtolatHighlights(m, bt, normalizeHighlightBucket);
+    const fg = filgoalMap.get(key);
+    if (fg) applyFilgoalHighlights(m, fg, normalizeHighlightBucket);
     const pool = poolMap.get(key);
-    if (pool && applyVortexBucket(m, pool, normalizeHighlightBucket)) continue;
+    if (pool) applyVortexBucket(m, pool, normalizeHighlightBucket);
     if (!hasPrimaryHighlight(m)) missing.push(m);
   }
 

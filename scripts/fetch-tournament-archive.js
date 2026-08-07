@@ -16,6 +16,7 @@ const { arabicTeam } = require("./highlights-lib");
 const { enrichEndedMatchesWithHighlights } = require("./highlight-enrich-lib");
 const { discoverLatestHighlightMemes, discoverAllMatchMemes } = require("./twitter-memes-lib");
 const { attachMatchMeta, orderMemesChronological } = require("./lib/meme-match-lib");
+const { parseEspnMatchId, extractLineups, extractMatchStats, extractGoals } = require("./match-detail-lib");
 
 const OUT = path.join(__dirname, "..", "assets", "data", "tournament-archive.json");
 const MEMES_OUT = path.join(__dirname, "..", "assets", "data", "match-memes.json");
@@ -91,6 +92,55 @@ function buildArToEn() {
   }
   return (ar) =>
     arabicTeamToEnglish(ar) || out.get(ar) || out.get(ar.replace(/\s+/g, "")) || ar;
+}
+
+async function fetchEspnSummary(leagueSlug, eventId) {
+  const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${leagueSlug}/summary?event=${eventId}`;
+  return get(url);
+}
+
+async function runPool(items, concurrency, fn) {
+  const queue = [...items];
+  const workers = Array.from({ length: Math.max(1, concurrency) }, async () => {
+    while (queue.length) {
+      const item = queue.shift();
+      if (item === undefined) break;
+      await fn(item);
+    }
+  });
+  await Promise.all(workers);
+}
+
+/** Goal timeline (من سجّل ومتى) isn't in the ESPN scoreboard payload — only the
+ * per-match summary endpoint carries keyEvents, so it needs its own fetch pass.
+ * Lineups/stats ride along on the same response and backfill any match that
+ * missed today.json's rolling window (the archive spans the whole tournament). */
+async function backfillMatchDetails(matches, previousByKey, concurrency = 6) {
+  for (const m of matches) {
+    const prev = previousByKey.get(m.key);
+    if (prev?.goals && !m.goals) m.goals = prev.goals;
+    if (prev?.lineups && !m.lineups) m.lineups = prev.lineups;
+    if (prev?.stats && !m.stats) m.stats = prev.stats;
+  }
+
+  const pending = matches.filter((m) => !m.goals && parseEspnMatchId(m.id));
+  let matched = 0;
+  await runPool(pending, concurrency, async (m) => {
+    const parsed = parseEspnMatchId(m.id);
+    try {
+      const summary = await fetchEspnSummary(parsed.leagueSlug, parsed.eventId);
+      const goals = extractGoals(summary);
+      if (goals && goals.length) {
+        m.goals = goals;
+        matched++;
+      }
+      if (!m.lineups) m.lineups = extractLineups(summary) || m.lineups;
+      if (!m.stats) m.stats = extractMatchStats(summary) || m.stats;
+    } catch (err) {
+      console.warn(`match detail fetch failed for ${m.home} vs ${m.away}:`, err.message);
+    }
+  });
+  return { matched, fetched: pending.length };
 }
 
 async function fetchAllEspnEnded() {
@@ -227,6 +277,12 @@ async function main() {
     if (details?.lineups && !m.lineups) m.lineups = details.lineups;
     if (details?.stats && !m.stats) m.stats = details.stats;
   }
+
+  const detailBackfill = await backfillMatchDetails(matches, previousByKey);
+  console.log(
+    `goal timeline attached: ${detailBackfill.matched}/${detailBackfill.fetched} newly-fetched matches ` +
+    `(${matches.filter((m) => m.goals?.length).length}/${matches.length} total)`
+  );
 
   const { matched, total } = await enrichEndedMatchesWithHighlights(matches, {
     pairKeyFn: (home, away) => pairKey(home, away),

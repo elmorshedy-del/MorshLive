@@ -29,6 +29,7 @@ const {
 const { attachSummaries, buildHighlightQueries, pickArabicVideo, arabicTeam } = require("./highlights-lib");
 const { findVortexHighlight, fetchVortexEmbedMeta, normalizeHighlightBucket, enrichHighlightMeta, pickPrimaryHighlight, buildHighlightLookup } = require("./vortex-highlights-lib");
 const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-highlights-lib");
+const { scrapeFilgoalHighlights, applyFilgoalHighlights } = require("./filgoal-highlights-lib");
 const { parseEspnMatchId, extractLineups, extractMatchStats, extractGoals } = require("./match-detail-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 const { writePollConfig } = require("./match-poll-lib");
@@ -263,9 +264,9 @@ function mergeReplayFromPrevious(matches, previousPayload) {
   }
 
   // ملخص المباريات: Arabic text summary for every ended match (always, no
-  // network needed) plus an Arabic-commentary highlight clip — vortexvisionworks
-  // embeds first (btolat/kawkabnews source), then YouTube when YOUTUBE_API_KEY
-  // is set. Vortex pins are kept; YouTube pins are upgraded when vortex is found.
+  // network needed) plus an Arabic-commentary highlight clip — btolat/vortex
+  // embeds first, then filgoal (YouTube/Dailymotion), then YouTube search when
+  // YOUTUBE_API_KEY is set. Existing pins are kept; never overwritten downward.
   attachSummaries(matches);
   const highlightsByKey = new Map(
     ((previousPayload && previousPayload.highlightsIndex) || []).map((h) => [h.key, h])
@@ -284,20 +285,37 @@ function mergeReplayFromPrevious(matches, previousPayload) {
   } catch (err) {
     console.warn("btolat highlights scrape failed:", err.message);
   }
+  let filgoalMap = new Map();
+  try {
+    filgoalMap = await scrapeFilgoalHighlights((a, b) => pairKey(arToEn(a), arToEn(b)), { matches, arabicTeam });
+    const dualCount = [...filgoalMap.values()].filter((b) => b.goals && b.full).length;
+    console.log(`filgoal highlights: ${filgoalMap.size} matches (${dualCount} with goals+full)`);
+  } catch (err) {
+    console.warn("filgoal highlights scrape failed:", err.message);
+  }
+  function pinHighlightBucket(m, key) {
+    const primary = m.highlight;
+    highlightsByKey.set(key, { key, home: m.home, away: m.away, ...primary });
+    if (m.highlights?.goals) {
+      highlightsByKey.set(`${key}~goals`, { key, home: m.home, away: m.away, ...m.highlights.goals, clip: "goals" });
+    }
+    if (m.highlights?.full) {
+      highlightsByKey.set(`${key}~full`, { key, home: m.home, away: m.away, ...m.highlights.full, clip: "full" });
+    }
+  }
   for (const m of matches) {
     if (m.status !== "ended") continue;
     const key = pairKey(m.home, m.away);
     const pinned = highlightsByKey.get(key);
     const bt = btolatMap.get(key);
     if (bt && applyBtolatHighlights(m, bt, normalizeHighlightBucket)) {
-      const primary = m.highlight;
-      highlightsByKey.set(key, { key, home: m.home, away: m.away, ...primary });
-      if (m.highlights?.goals) {
-        highlightsByKey.set(`${key}~goals`, { key, home: m.home, away: m.away, ...m.highlights.goals, clip: "goals" });
-      }
-      if (m.highlights?.full) {
-        highlightsByKey.set(`${key}~full`, { key, home: m.home, away: m.away, ...m.highlights.full, clip: "full" });
-      }
+      pinHighlightBucket(m, key);
+      highlightsMatched++;
+      continue;
+    }
+    const fg = filgoalMap.get(key);
+    if (fg && applyFilgoalHighlights(m, fg, normalizeHighlightBucket)) {
+      pinHighlightBucket(m, key);
       highlightsMatched++;
       continue;
     }

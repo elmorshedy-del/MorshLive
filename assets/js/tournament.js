@@ -386,10 +386,15 @@
       </div>`;
   }
 
+  function goalsHtml(m) {
+    return window.buildGoalsHtml ? window.buildGoalsHtml(m) : "";
+  }
+
   function featuredHeroHtml(m) {
     return `
       <article class="tournament-hero">
         ${scoreboardHtml(m)}
+        ${goalsHtml(m)}
         ${m.summaryAr ? `<div class="tournament-recap"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
         ${highlightsBlock(m, "hero")}
         ${memesBlock(m, "hero")}
@@ -426,6 +431,7 @@
   function matchDetailHtml(m) {
     return `
       <div class="tournament-detail">
+        ${goalsHtml(m)}
         ${m.summaryAr ? `<div class="tournament-recap tournament-recap--compact"><p>${escapeHtml(m.summaryAr)}</p></div>` : ""}
         ${highlightsBlock(m, "card")}
         ${notableClipsBlock(m)}
