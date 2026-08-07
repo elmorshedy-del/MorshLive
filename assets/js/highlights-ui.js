@@ -42,6 +42,9 @@
     const h = m.highlights || {};
     let goals = clipUsable(h.goals) ? h.goals : null;
     let full = clipUsable(h.full) ? h.full : null;
+    // btolat sometimes embeds the same tweet on both its اهداف and ملخص article
+    // pages — same videoUrl for goals and full. Keep ملخص, drop the duplicate.
+    if (goals && full && goals.videoUrl === full.videoUrl) goals = null;
     if (!full && clipUsable(m.highlight)) {
       const sameAsGoals = goals && m.highlight.videoUrl === goals.videoUrl;
       if (!sameAsGoals) full = m.highlight;

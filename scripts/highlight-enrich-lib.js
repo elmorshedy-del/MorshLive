@@ -203,6 +203,12 @@ async function enrichEndedMatchesWithHighlights(matches, opts = {}) {
 
   let matched = 0;
   for (const m of ended) {
+    // Defensive dedupe: mergeReplayFields() carries forward prev.highlights without
+    // running normalizeHighlightBucket, so btolat's duplicate اهداف/ملخص videoUrl can
+    // survive from an earlier run. Drop goals when it's the same clip as full.
+    if (m.highlights?.goals && m.highlights?.full && m.highlights.goals.videoUrl === m.highlights.full.videoUrl) {
+      delete m.highlights.goals;
+    }
     if (!m.highlight && m.highlights) {
       m.highlight = pickPrimaryHighlight(m.highlights) || m.highlights.full || m.highlights.goals || null;
     }

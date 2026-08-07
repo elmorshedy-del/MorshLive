@@ -169,6 +169,13 @@ function mergeReplayFields(out, prev) {
       out.clips.push(clip);
     }
   }
+  // btolat publishes separate اهداف/ملخص article pages that sometimes embed the same
+  // tweet. This merge path bypasses normalizeHighlightBucket, so drop the redundant
+  // أهداف entry here too rather than rendering two buttons for one video.
+  if (out.highlights?.goals && out.highlights?.full
+    && out.highlights.goals.videoUrl === out.highlights.full.videoUrl) {
+    delete out.highlights.goals;
+  }
   if (!out.highlight && out.highlights) {
     out.highlight = pickPrimaryHighlight(out.highlights) || out.highlights.full || out.highlights.goals || null;
   }

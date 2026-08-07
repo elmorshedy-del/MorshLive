@@ -118,8 +118,19 @@ function scoreTitleMentions(title, match, arabicTeam) {
   return homeHit + awayHit;
 }
 
+/** This app tracks football only — a clip mentioning a shared country name
+ * (e.g. an unrelated handball/basketball reel for "Egypt") can still out-score
+ * every real fixture on team-name mentions alone, so reject other sports
+ * before any scoring runs rather than relying on the score to save us. */
+const NON_FOOTBALL_RE =
+  /كرة اليد|كرة السلة|كرة الطائرة|هاندبول|handball|basketball|volleyball|رجبي|\brugby\b|كريكيت|\bcricket\b/i;
+
+function isNonFootballTitle(title) {
+  return NON_FOOTBALL_RE.test(String(title || ""));
+}
+
 function clipRelatesToMatch(title, match, arabicTeam) {
-  if (!match?.home || !match?.away) return false;
+  if (!match?.home || !match?.away || isNonFootballTitle(title)) return false;
   const mentions = scoreTitleMentions(title, match, arabicTeam);
   const player = playerHitScore(title, match);
   const moment = momentHit(title);
@@ -135,7 +146,7 @@ function resolveFixtureKey(title, teams, matches, opts = {}) {
   const pairKeyFn = opts.pairKeyFn;
   const arabicTeam = opts.arabicTeam;
   const minScore = opts.minScore ?? 1.85;
-  if (!list.length || !pairKeyFn) return null;
+  if (!list.length || !pairKeyFn || isNonFootballTitle(title)) return null;
 
   const scored = [];
   if (teams?.a && teams?.b) {
@@ -200,6 +211,7 @@ module.exports = {
   scoreFixtureMatch,
   scoreTitleMentions,
   clipRelatesToMatch,
+  isNonFootballTitle,
   titleTeams,
   arabicSimilarity,
 };

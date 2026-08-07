@@ -105,6 +105,12 @@ function normalizeHighlightBucket(bucket) {
     const f = validateClip(bucket.full);
     if (f) out.full = f;
   }
+  // btolat publishes separate اهداف/ملخص article pages that sometimes embed the
+  // exact same tweet — same videoUrl for both buckets. Keep ملخص (the canonical
+  // archive reel / primary CTA) and drop the redundant أهداف entry.
+  if (out.goals && out.full && out.goals.videoUrl === out.full.videoUrl) {
+    delete out.goals;
+  }
   return Object.keys(out).length ? out : null;
 }
 

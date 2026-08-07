@@ -178,7 +178,8 @@ function shortenName(full) {
 }
 
 /** Goal timeline from keyEvents: [{ side, scorer, minute, penalty, own }], time-ordered.
- * Own goals are credited to the opponent (football convention) and tagged. */
+ * ESPN's e.team.id on an own-goal event is already the team that BENEFITS from the goal, so
+ * no side flip is applied. The `own` flag is kept purely so the UI can tag the scorer's name. */
 function extractGoals(summary) {
   const events = (summary && summary.keyEvents) || [];
   const sideById = teamSideById(summary);
@@ -188,9 +189,8 @@ function extractGoals(summary) {
     const type = (e.type && e.type.type) || "";
     if (/shootout/.test(type)) continue; // shootout kicks are reflected in the final score, not the timeline
     const teamId = e.team && e.team.id ? String(e.team.id) : null;
-    let side = teamId ? sideById[teamId] : null;
+    const side = teamId ? sideById[teamId] : null;
     const own = /own/.test(type);
-    if (own && (side === "home" || side === "away")) side = side === "home" ? "away" : "home";
     if (side !== "home" && side !== "away") continue;
     const athlete = e.participants && e.participants[0] && e.participants[0].athlete;
     const scorer = shortenName(athlete && (athlete.shortName || athlete.displayName));
