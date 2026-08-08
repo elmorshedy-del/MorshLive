@@ -5,6 +5,7 @@ const require = createRequire(import.meta.url);
 const {
   buildHighlightLookup,
   classifyHighlightTitle,
+  isBetterClip,
   normalizeHighlightBucket,
   pickPrimaryHighlight,
 } = require("../scripts/vortex-highlights-lib.js");
@@ -95,5 +96,37 @@ describe("normalizeHighlightBucket", () => {
     const out = normalizeHighlightBucket(bucket);
     expect(out.goals.videoUrl).toBe("https://example.com/tweet/goals-clip");
     expect(out.full).toBeUndefined();
+  });
+});
+
+describe("isBetterClip", () => {
+  const vortex = { videoUrl: "https://v/1", source: "vortex" };
+  const youtube = { videoUrl: "https://y/1", source: "youtube" };
+  const twitter = { videoUrl: "https://t/1", source: "twitter" };
+
+  it("fills an empty slot with anything playable", () => {
+    expect(isBetterClip(null, twitter)).toBe(true);
+    expect(isBetterClip(undefined, vortex)).toBe(true);
+  });
+
+  it("never downgrades vortex to an X card", () => {
+    // Regression: btolat's World Cup pages are all X embeds and ran after the
+    // curated vortex map, silently replacing a real player with a tweet card.
+    expect(isBetterClip(vortex, twitter)).toBe(false);
+    expect(isBetterClip(youtube, twitter)).toBe(false);
+  });
+
+  it("upgrades an X card when a better source turns up", () => {
+    expect(isBetterClip(twitter, vortex)).toBe(true);
+    expect(isBetterClip(twitter, youtube)).toBe(true);
+  });
+
+  it("does not churn between equal-ranked sources", () => {
+    expect(isBetterClip(vortex, { videoUrl: "https://v/2", source: "vortex" })).toBe(false);
+  });
+
+  it("ignores an incoming clip with no videoUrl", () => {
+    expect(isBetterClip(twitter, { source: "vortex" })).toBe(false);
+    expect(isBetterClip(null, null)).toBe(false);
   });
 });

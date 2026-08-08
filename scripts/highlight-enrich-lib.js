@@ -12,6 +12,7 @@ const {
   findVortexFullHighlight,
   fetchVortexEmbedMeta,
   normalizeHighlightBucket,
+  isBetterClip,
   enrichHighlightMeta,
   pickPrimaryHighlight,
   discoverVortexHighlightPool,
@@ -45,8 +46,12 @@ function applyVortexBucket(match, bucket, normalizeBucket) {
   const cleaned = normalizeBucket ? normalizeBucket(bucket) : bucket;
   if (!cleaned) return false;
   match.highlights = { ...(match.highlights || {}) };
-  if (cleaned.goals) match.highlights.goals = { ...cleaned.goals, kind: "goals" };
-  if (cleaned.full) match.highlights.full = { ...cleaned.full, kind: "full" };
+  if (isBetterClip(match.highlights.goals, cleaned.goals)) {
+    match.highlights.goals = { ...cleaned.goals, kind: "goals" };
+  }
+  if (isBetterClip(match.highlights.full, cleaned.full)) {
+    match.highlights.full = { ...cleaned.full, kind: "full" };
+  }
   match.highlight = pickPrimaryHighlight(match.highlights) || match.highlights.full || match.highlights.goals || null;
   return !!match.highlight;
 }

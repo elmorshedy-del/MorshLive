@@ -207,8 +207,13 @@ function applyFilgoalHighlights(match, bucket, normalizeBucket) {
   const cleaned = normalizeBucket ? normalizeBucket({ goals: bucket.goals, full: bucket.full }) : bucket;
   if (!cleaned) return false;
   match.highlights = { ...(match.highlights || {}) };
-  if (cleaned.goals && !match.highlights.goals) match.highlights.goals = { ...cleaned.goals, kind: "goals" };
-  if (cleaned.full && !match.highlights.full) match.highlights.full = { ...cleaned.full, kind: "full" };
+  const { isBetterClip } = require("./vortex-highlights-lib");
+  if (cleaned.goals && isBetterClip(match.highlights.goals, cleaned.goals)) {
+    match.highlights.goals = { ...cleaned.goals, kind: "goals" };
+  }
+  if (cleaned.full && isBetterClip(match.highlights.full, cleaned.full)) {
+    match.highlights.full = { ...cleaned.full, kind: "full" };
+  }
   match.highlight = match.highlights.full || match.highlights.goals || match.highlight || null;
   return !!(match.highlights.goals || match.highlights.full);
 }

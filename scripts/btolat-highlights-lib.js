@@ -291,8 +291,16 @@ function applyBtolatHighlights(match, bucket, normalizeBucket) {
   const cleaned = normalizeBucket ? normalizeBucket({ goals: bucket.goals, full: bucket.full }) : bucket;
   if (!cleaned && !bucket.clips?.length) return false;
   match.highlights = { ...(match.highlights || {}) };
-  if (cleaned?.goals) match.highlights.goals = { ...cleaned.goals, kind: "goals" };
-  if (cleaned?.full) match.highlights.full = { ...cleaned.full, kind: "full" };
+  // btolat's World Cup pages are entirely X embeds, which render as a tweet card
+  // rather than a player — never let one overwrite a better source (a curated
+  // vortex embed, say) that an earlier step already attached.
+  const { isBetterClip } = require("./vortex-highlights-lib");
+  if (cleaned?.goals && isBetterClip(match.highlights.goals, cleaned.goals)) {
+    match.highlights.goals = { ...cleaned.goals, kind: "goals" };
+  }
+  if (cleaned?.full && isBetterClip(match.highlights.full, cleaned.full)) {
+    match.highlights.full = { ...cleaned.full, kind: "full" };
+  }
   if (bucket.clips?.length) {
     const notable = bucket.clips
       .filter((c) => c && c.videoUrl && !isPrimaryKind(c.kind))

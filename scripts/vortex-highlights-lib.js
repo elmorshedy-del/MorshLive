@@ -94,6 +94,26 @@ function buildHighlightLookup(highlightsIndex) {
   return byKey;
 }
 
+/** Playback quality ranking, best first. vortex plays inline through our own
+ * /replay/embed proxy; youtube/dailymotion are clean third-party players; a
+ * twitter clip can only render as an X card carrying the broadcaster's
+ * marketing, so it is the last resort. */
+const SOURCE_RANK = { vortex: 4, youtube: 3, dailymotion: 3, twitter: 1 };
+
+function sourceRank(clip) {
+  if (!clip?.videoUrl) return 0;
+  return SOURCE_RANK[clip.source] ?? 2;
+}
+
+/** True when `incoming` should replace `existing` — sources are applied in
+ * sequence, and without this a later btolat/X clip silently downgrades a
+ * curated vortex embed that was already attached. */
+function isBetterClip(existing, incoming) {
+  if (!incoming?.videoUrl) return false;
+  if (!existing?.videoUrl) return true;
+  return sourceRank(incoming) > sourceRank(existing);
+}
+
 function normalizeHighlightBucket(bucket) {
   if (!bucket) return bucket;
   const out = {};
@@ -453,6 +473,9 @@ module.exports = {
   titleMatchesMatch,
   fetchVortexEmbedMeta,
   normalizeHighlightBucket,
+  isBetterClip,
+  sourceRank,
+  SOURCE_RANK,
   enrichHighlightMeta,
   pickPrimaryHighlight,
   buildHighlightLookup,
