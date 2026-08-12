@@ -1091,6 +1091,59 @@ window.ensureHighlightsFromApi = ensureHighlightsFromApi;
 window.fetchHighlightFromApi = fetchHighlightFromApi;
 window.matchNeedsReplayFetch = matchNeedsReplayFetch;
 
+// Pinned manual fixtures — live games we carry a dedicated stream embed for
+// (see MANUAL_MIRROR_MATCHES in watch.js) but that the World-Cup-only live feed
+// does not list (e.g. club games). Merged into every getMatches() result so the
+// card renders and links to watch.html?match=<id>, which then loads the pinned
+// embed. Each entry auto-appears within its kickoff window and hides afterward,
+// so no stale "live" card is left behind.
+const PINNED_MATCHES = [
+  {
+    id: "pinned-psg-astonvilla",
+    home: "Paris Saint-Germain",
+    away: "Aston Villa",
+    homeAbbr: "PSG",
+    awayAbbr: "AVL",
+    homeBadge: "",
+    awayBadge: "",
+    score: "VS",
+    league: "Club Friendly",
+    channelId: "bein-max-1",
+    kickoffUtc: "2026-08-12T19:00:00Z",
+    source: "pinned",
+  },
+];
+
+// Show a pinned match only around its kickoff: upcoming up to 3h before, live
+// through 4h after, hidden otherwise. Returns null when it should not display.
+function pinnedStatusFor(kickoffUtc) {
+  const ko = parseKickoffMs(kickoffUtc);
+  if (isNaN(ko)) return "live";
+  const now = Date.now();
+  if (now < ko - 3 * 3600e3) return null;
+  if (now > ko + 4 * 3600e3) return null;
+  return now < ko ? "upcoming" : "live";
+}
+
+function pinnedKey(home, away) {
+  const token = (n) => (window.TeamNames && window.TeamNames.canonicalToken)
+    ? window.TeamNames.canonicalToken(n)
+    : String(n || "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, "");
+  return [token(home), token(away)].sort().join("~");
+}
+
+function mergePinnedMatches(matches) {
+  const list = Array.isArray(matches) ? matches.slice() : [];
+  const present = new Set(list.map((m) => pinnedKey(m.home, m.away)));
+  for (const p of PINNED_MATCHES) {
+    const status = pinnedStatusFor(p.kickoffUtc);
+    if (!status) continue;
+    if (present.has(pinnedKey(p.home, p.away))) continue;
+    list.push({ ...p, status, minute: status === "live" ? "مباشر" : "" });
+  }
+  return sortDisplayMatches(list);
+}
+
 window.getMatches = async function getMatches({ force } = {}) {
   // 1) Live fetch from TheSportsDB in the browser (best — real statuses, auto-refresh)
   if (window.MatchesAPI) {
@@ -1111,7 +1164,7 @@ window.getMatches = async function getMatches({ force } = {}) {
         const withStaticDetail = applyMatchDetail(withStaticReplay, didx);
         const withLiveDetail = await enrichLiveMatchDetails(withStaticDetail, { force });
         scheduleHighlightEnrich(withLiveDetail);
-        return { ...live, matches: withLiveDetail };
+        return { ...live, matches: mergePinnedMatches(withLiveDetail) };
       }
     } catch (e) {
       console.warn("Live API fetch failed, using cache:", e.message);
@@ -1136,7 +1189,7 @@ window.getMatches = async function getMatches({ force } = {}) {
     scheduleHighlightEnrich(matches);
     const withLiveDetail = await enrichLiveMatchDetails(matches, { force });
     return {
-      matches: withLiveDetail,
+      matches: mergePinnedMatches(withLiveDetail),
       updatedAt: data.updatedAt,
       date: data.date,
       live: true,
@@ -1145,6 +1198,6 @@ window.getMatches = async function getMatches({ force } = {}) {
     };
   } catch (e) {
     // 3) Demo sample data
-    return { matches: MATCHES, updatedAt: null, date: null, live: false, source: "demo", sourceLabel: (window.I18N ? window.I18N.t("updated.demo") : "بيانات تجريبية") };
+    return { matches: mergePinnedMatches(MATCHES), updatedAt: null, date: null, live: false, source: "demo", sourceLabel: (window.I18N ? window.I18N.t("updated.demo") : "بيانات تجريبية") };
   }
 };
