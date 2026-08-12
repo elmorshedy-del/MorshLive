@@ -1,8 +1,8 @@
-/* PSG vs Aston Villa: one fixed clean same-origin player.
+/* PSG vs Aston Villa: one fixed upstream iframe.
  * No source cycling, no fallback ladder, no channel switching.
  */
 (function () {
-  const FIXED_SRC = "/sir/ar1/";
+  const FIXED_SRC = "https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4728413&key=9f39972b67d6ce22189507d008acwc26";
   let applying = false;
 
   function isPsgVillaPage() {
@@ -26,7 +26,7 @@
     frame.allowFullscreen = true;
     frame.scrolling = "no";
     frame.loading = "eager";
-    frame.referrerPolicy = "same-origin";
+    frame.referrerPolicy = "no-referrer";
     shell.appendChild(frame);
     applying = false;
   }
