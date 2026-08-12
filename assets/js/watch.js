@@ -526,7 +526,14 @@
     if (!shell || !url) return;
 
     if (isIframe) {
-      loadIframePlayer(url, true);
+      // Mount directly — skip loadIframePlayer's referrerpolicy="no-referrer"
+      // because third-party players (Fabor, kooralive, …) check the Referer
+      // header and refuse to play when it is stripped.
+      shell.innerHTML =
+        `<iframe class="embed-frame" src="${escapeHtml(url)}" ` +
+        `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
+        `scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
+      installIframeWatchdog(shell.querySelector(".embed-frame"), { role: "main" });
       loadedUrl = `pinned-mirror-iframe:${url}`;
       return;
     }
