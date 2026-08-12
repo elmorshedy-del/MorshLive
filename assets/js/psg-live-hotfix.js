@@ -1,5 +1,7 @@
-/* PSG vs Aston Villa: one fixed upstream iframe.
+/* PSG vs Aston Villa: exact upstream embed supplied for this live game.
  * No source cycling, no fallback ladder, no channel switching.
+ * Keep the iframe deliberately unsandboxed and do not suppress Referer: the
+ * upstream player uses its normal embed request context to initialise media.
  */
 (function () {
   const FIXED_SRC = "https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4728413&key=9f39972b67d6ce22189507d008acwc26";
@@ -22,11 +24,14 @@
     const frame = document.createElement("iframe");
     frame.className = "embed-frame psg-fixed-frame";
     frame.src = FIXED_SRC;
-    frame.allow = "autoplay; encrypted-media; fullscreen; picture-in-picture";
-    frame.allowFullscreen = true;
+    frame.width = "640";
+    frame.height = "360";
+    frame.setAttribute("frameborder", "0");
+    frame.setAttribute("allowfullscreen", "");
     frame.scrolling = "no";
-    frame.loading = "eager";
-    frame.referrerPolicy = "no-referrer";
+    frame.allow = "autoplay; encrypted-media; fullscreen; picture-in-picture";
+    // Intentionally no sandbox and no referrerPolicy: mirror the supplied
+    // working embed instead of stripping the parent Referer.
     shell.appendChild(frame);
     applying = false;
   }
