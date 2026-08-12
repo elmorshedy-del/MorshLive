@@ -505,6 +505,10 @@
 
   function installIframeWatchdog(frame, opts = {}) {
     if (!frame) return;
+    // The watchdog's only remedy is bumpIframeHeal, which is a no-op on pinned
+    // frames. Installing it anyway would just surface a heal toast and a
+    // recovery button for something it cannot heal.
+    if (isPinnedFrame(frame)) return;
     const role = opts.role || frame.dataset.kzWatchdogRole || "stream";
     const prior = FRAME_WATCHDOGS.get(frame);
     if (prior && prior.timers) prior.timers.forEach(clearTimeout);
@@ -541,6 +545,9 @@
 
   function loadIframePlayer(url, noSandbox) {
     if (!shell || !url) return;
+    // Never wipe a pinned frame out of the shell: the pin would put it straight
+    // back and both sides would keep rebuilding the same iframe.
+    if (isPinnedFrame(shell.querySelector("iframe[data-kz-pinned]"))) return;
     destroyInlineHls();
     if (loadedUrl === url) return;
     loadedUrl = url;
@@ -861,8 +868,18 @@
     }, 3500);
   }
 
+  // A frame marked data-kz-pinned is owned by a match-specific pin, not by the
+  // generic healer. Rewriting its src here restarts the pinned load from zero
+  // and (because the pin compares src to decide whether it is still intact)
+  // makes the pin rebuild the frame, which restarts the load again — a loop
+  // that never lets any media buffer. Leave pinned frames to their owner.
+  function isPinnedFrame(frame) {
+    return !!(frame && frame.dataset && frame.dataset.kzPinned === "1");
+  }
+
   function bumpIframeHeal(frame) {
     if (!frame || !frame.src) return;
+    if (isPinnedFrame(frame)) return;
     try {
       const u = new URL(frame.src);
       u.searchParams.set("_heal", String(Date.now()));
