@@ -72,12 +72,14 @@
   // the SAME stream on another CDN, retried once on error — not a switch to a
   // different source.
   //
-  // Spain vs Belgium (World Cup) — the beIN Max 1 mirror set. The first
-  // simokora mirror is pinned as the auto-loading main (standard HLS, reliably
-  // playable) with no `fallback`; every mirror (incl. the CloudFront bmax1
-  // feed) is also a manual card. Nothing auto-switches the source.
+  // Spain vs Belgium (World Cup) — pinned to the kooralive albaplayer iframe
+  // (self-contained player that handles its own stream) as the auto-loading
+  // main, since the raw simokora HLS was not playing. No `fallback` so nothing
+  // auto-switches the source. The beIN Max 1 HLS mirrors remain below as manual
+  // backup cards.
   const SPAIN_BELGIUM_MAIN = {
-    url: "https://3.simokora.com/my-hls/h9asfma10d5/master.m3u8",
+    url: "https://23.1kooralive.fun/albaplayer/live5/?serv=0",
+    iframe: true,
   };
   const SPAIN_BELGIUM_CARDS = [
     {
@@ -643,8 +645,22 @@
     const override = mainPlayerOverrideForMatch(match);
     if (override) {
       mountPinnedMainMirror(override.url, override.fallback, override.iframe);
+      document.body.classList.add("pinned-player-only");
+      // Minimal title: team names only.
+      if (match) {
+        const h = teamLabel(match.home);
+        const a = teamLabel(match.away);
+        document.title = `${h} × ${a} — KoraZero`;
+        const chName = document.getElementById("ch-name");
+        if (chName) chName.textContent = `${h} × ${a}`;
+        const chStatus = document.getElementById("ch-status");
+        if (chStatus) chStatus.innerHTML = match.status === "live"
+          ? liveStatusHtml(match)
+          : "";
+      }
       return;
     }
+    document.body.classList.remove("pinned-player-only");
     loadIframePlayer(embedUrlFor(currentEmbed(), embedQuery(activeServ)), true);
   }
 
