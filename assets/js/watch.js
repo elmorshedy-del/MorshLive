@@ -71,58 +71,6 @@
   // user clicks one). A card's optional `fallback` is a same-content mirror of
   // the SAME stream on another CDN, retried once on error — not a switch to a
   // different source.
-  //
-  // Spain vs Belgium (World Cup) — pinned to the kooralive albaplayer iframe
-  // (self-contained player that handles its own stream) as the auto-loading
-  // main, since the raw simokora HLS was not playing. No `fallback` so nothing
-  // auto-switches the source. The beIN Max 1 HLS mirrors remain below as manual
-  // backup cards.
-  const SPAIN_BELGIUM_MAIN = {
-    url: "https://23.1kooralive.fun/albaplayer/live5/?serv=0",
-    iframe: true,
-  };
-  const SPAIN_BELGIUM_CARDS = [
-    {
-      // Encrypted HLS disguised as .css, decoded client-side by Hls.js (loads
-      // by content, not extension).
-      id: "mirror-cf",
-      label: "CF Edge (bmax1)",
-      url: "https://df8lqtx6snn9o.cloudfront.net/bmax1/nano.css?v=1783706435",
-    },
-    {
-      id: "mirror-a",
-      label: "Mirror A",
-      url: "https://3.simokora.com/my-hls/h9asfma10d5/master.m3u8",
-      fallback: "https://2.simokora.com/my-hls/h9asfma10d5/master.m3u8",
-    },
-    {
-      id: "mirror-b",
-      label: "Mirror B",
-      url: "https://3.simokora.com/my-hls/0wo68p0w54v/master.m3u8",
-      fallback: "https://2.simokora.com/my-hls/0wo68p0w54v/master.m3u8",
-    },
-    {
-      id: "mirror-c",
-      label: "Mirror C",
-      url: "https://3.simokora.com/my-hls/uktmlo48gga/master.m3u8",
-    },
-    {
-      id: "mirror-d",
-      label: "Mirror D",
-      url: "https://3.simokora.com/my-hls/4v561xgucp9/master.m3u8",
-      fallback: "https://2.simokora.com/my-hls/4v561xgucp9/master.m3u8",
-    },
-    {
-      id: "mirror-ir",
-      label: "Iran CDN",
-      url: "https://edge22.776740.ir.cdn.ir/hls2/sport.m3u8",
-    },
-    {
-      id: "mirror-adab",
-      label: "AdabMedia",
-      url: "https://cp11.adabmedia.com/hls2/sport.m3u8",
-    },
-  ];
 
   // PSG vs Aston Villa — its own match with its own embed: the Fabor playerv5
   // iframe. Pinned as the auto-loading main with no `fallback` and no extra
@@ -133,11 +81,6 @@
   };
 
   const MANUAL_MIRROR_MATCHES = [
-    {
-      teams: ["spain", "belgium"],
-      mainPlayer: SPAIN_BELGIUM_MAIN,
-      cards: SPAIN_BELGIUM_CARDS,
-    },
     {
       // "Paris PG" = Paris Saint-Germain. Each side is a list of accepted
       // normalized names so the binding fires regardless of how the fixtures
