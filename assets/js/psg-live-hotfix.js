@@ -1,9 +1,9 @@
-/* PSG vs Aston Villa: hard lock to the confirmed live Fabor embed.
- * This file intentionally runs after watch.js and prevents the generic stream
- * healer from taking this one match back to Sir/Koora/other sources.
+/* PSG vs Aston Villa: hard lock to the existing match-specific clean resolver.
+ * The Worker already knows how to decode the Fabor/SIR playerv5 config, sign the
+ * underlying HLS, proxy it through KoraZero, and render a clean same-origin player.
  */
 (function () {
-  const FIXED_SRC = "https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4728413&key=9f39972b67d6ce22189507d008acwc26";
+  const FIXED_SRC = "/siir/m/4728413";
   let applying = false;
   let locked = false;
 
@@ -16,13 +16,7 @@
     const text = targetText();
     if (/aston villa/i.test(text) && /(paris saint-germain|paris saint germain|paris sg|\bpsg\b|\bparis\b)/i.test(text)) {
       locked = true;
-      document.documentElement.dataset.psgVillaFaborLock = "1";
-      return true;
-    }
-    const existing = document.querySelector(`iframe[src^="${FIXED_SRC}"]`);
-    if (existing) {
-      locked = true;
-      document.documentElement.dataset.psgVillaFaborLock = "1";
+      document.documentElement.dataset.psgVillaCleanLock = "1";
       return true;
     }
     return false;
@@ -55,30 +49,23 @@
     const frame = document.createElement("iframe");
     frame.className = "embed-frame psg-fixed-frame";
     frame.src = FIXED_SRC;
-    frame.width = "640";
-    frame.height = "360";
     frame.setAttribute("frameborder", "0");
     frame.setAttribute("allowfullscreen", "");
     frame.scrolling = "no";
+    frame.loading = "eager";
     frame.allow = "autoplay; encrypted-media; fullscreen; picture-in-picture";
-    // Match the supplied working embed: no sandbox and no referrer suppression.
     shell.appendChild(frame);
     applying = false;
     suppressOtherSources();
   }
 
-  // watch.js listens for this message to heal/swap streams. For this confirmed
-  // pinned match, stop that generic handler before it can replace Fabor.
+  // Do not let the generic watch-page healer replace this match-specific route.
   window.addEventListener("message", function (ev) {
     if (!detectTarget()) return;
-    if (ev.data && ev.data.type === "kz-alt-reload") {
-      ev.stopImmediatePropagation();
-    }
+    if (ev.data && ev.data.type === "kz-alt-reload") ev.stopImmediatePropagation();
   }, true);
 
   document.addEventListener("DOMContentLoaded", function () {
-    // Match data arrives asynchronously, so keep probing until the target is
-    // recognised. Once recognised, `locked` never becomes false on this page.
     let probes = 0;
     const discover = setInterval(function () {
       probes += 1;
@@ -94,13 +81,11 @@
     if (shell) {
       new MutationObserver(function () {
         if (!applying && detectTarget()) setTimeout(pin, 0);
-      }).observe(shell, { childList: true, subtree: false, attributes: true, attributeFilter: ["src"] });
+      }).observe(shell, { childList: true, subtree: false });
     }
 
-    // Last-resort guard against periodic match refreshes/recovery events in the
-    // legacy watch code. It does nothing while the exact frame is intact.
     setInterval(function () {
       if (locked) pin();
-    }, 750);
+    }, 1000);
   });
 })();
