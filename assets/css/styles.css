@@ -2679,3 +2679,16 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
   .page-watch .channel-btn { font-size: .78rem; padding: 8px 6px; }
   .page-watch .watch-sources-card { padding: 10px 12px; }
 }
+
+/* ── Pinned-player-only mode ────────────────────────────────────
+   When a match has a dedicated pinned embed (e.g. Fabor playerv5),
+   strip everything except the player + match title so the user
+   sees just the stream — no channel buttons, server tabs, or info
+   grid cluttering the view.  Manual mirror cards are still shown
+   when the match has backup mirrors. */
+.pinned-player-only .watch-sources-card,
+.pinned-player-only #alt-streams,
+.pinned-player-only .watch-grid,
+.pinned-player-only .no-ads-badge { display: none !important; }
+.pinned-player-only .watch-head { margin-bottom: 8px; }
+.pinned-player-only .watch-topline__title { font-size: 1.15rem; }
