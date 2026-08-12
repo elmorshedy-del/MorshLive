@@ -63,46 +63,80 @@
   const FRAME_WATCHDOGS = new WeakMap();
 
   // Pinned main-player override + manual click-to-play cards for a specific
-  // match. `mainPlayer` auto-loads in the primary player shell on page load
-  // (its `fallback` is a same-content mirror on a different CDN, tried once
-  // on error — not a switch to a different source/embed). `cards` are
-  // separate, secondary options: no auto-select, no auto-switching between
-  // them — the user picks one explicitly.
+  // match. `mainPlayer` auto-loads in the primary player shell on page load and
+  // short-circuits `loadPlayer` before it ever reaches the generic
+  // koraplus/alt-stream system — so once one of these cards is opened there is
+  // NO auto-fallback to a different source and NO auto-selection: these embeds
+  // are the only thing that plays. `cards` are separate manual options (the
+  // user clicks one). A card's optional `fallback` is a same-content mirror of
+  // the SAME stream on another CDN, retried once on error — not a switch to a
+  // different source.
+  //
+  // Shared pinned embeds — used by the Spain/Belgium World Cup card and, by
+  // explicit request, reused verbatim for the PSG vs Aston Villa card.
+  const WC_PINNED_MAIN = {
+    // Fabor playerv5 iframe. No `fallback` → nothing auto-switches the main.
+    url: "https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4728413&key=9f39972b67d6ce22189507d008acwc26",
+    iframe: true,
+  };
+  const WC_PINNED_CARDS = [
+    {
+      // Encrypted HLS disguised as .css, decoded client-side by Hls.js (loads
+      // by content, not extension).
+      id: "mirror-cf",
+      label: "CF Edge",
+      url: "https://df8lqtx6snn9o.cloudfront.net/bmax1/nano.css?v=1783706435",
+    },
+    {
+      id: "mirror-a",
+      label: "Mirror A",
+      url: "https://3.simokora.com/my-hls/h9asfma10d5/master.m3u8",
+      fallback: "https://2.simokora.com/my-hls/h9asfma10d5/master.m3u8",
+    },
+    {
+      id: "mirror-b",
+      label: "Mirror B",
+      url: "https://3.simokora.com/my-hls/0wo68p0w54v/master.m3u8",
+      fallback: "https://2.simokora.com/my-hls/0wo68p0w54v/master.m3u8",
+    },
+    {
+      id: "mirror-c",
+      label: "Mirror C",
+      url: "https://3.simokora.com/my-hls/uktmlo48gga/master.m3u8",
+    },
+    {
+      id: "mirror-d",
+      label: "Mirror D",
+      url: "https://3.simokora.com/my-hls/4v561xgucp9/master.m3u8",
+      fallback: "https://2.simokora.com/my-hls/4v561xgucp9/master.m3u8",
+    },
+    {
+      id: "mirror-ir",
+      label: "Iran CDN",
+      url: "https://edge22.776740.ir.cdn.ir/hls2/sport.m3u8",
+    },
+    {
+      id: "mirror-adab",
+      label: "AdabMedia",
+      url: "https://cp11.adabmedia.com/hls2/sport.m3u8",
+    },
+  ];
   const MANUAL_MIRROR_MATCHES = [
     {
       teams: ["spain", "belgium"],
-      // Fabor disabled embeds during World Cup 2026. Do not pin it as main;
-      // let the normal proxied player and backup panel handle playback.
-      mainPlayer: null,
-      cards: [
-        {
-          id: "mirror-b",
-          label: "Mirror B",
-          url: "https://3.simokora.com/my-hls/0wo68p0w54v/master.m3u8",
-          fallback: "https://2.simokora.com/my-hls/0wo68p0w54v/master.m3u8",
-        },
-        {
-          id: "mirror-c",
-          label: "Mirror C",
-          url: "https://3.simokora.com/my-hls/uktmlo48gga/master.m3u8",
-        },
-        {
-          id: "mirror-d",
-          label: "Mirror D",
-          url: "https://3.simokora.com/my-hls/4v561xgucp9/master.m3u8",
-          fallback: "https://2.simokora.com/my-hls/4v561xgucp9/master.m3u8",
-        },
-        {
-          id: "mirror-ir",
-          label: "Iran CDN",
-          url: "https://edge22.776740.ir.cdn.ir/hls2/sport.m3u8",
-        },
-        {
-          id: "mirror-adab",
-          label: "AdabMedia",
-          url: "https://cp11.adabmedia.com/hls2/sport.m3u8",
-        },
+      mainPlayer: WC_PINNED_MAIN,
+      cards: WC_PINNED_CARDS,
+    },
+    {
+      // "Paris PG" = Paris Saint-Germain. Reuses the exact same embeds. Each
+      // side is a list of accepted normalized names so the binding fires
+      // regardless of how the fixtures feed spells the club.
+      teams: [
+        ["paris saint-germain", "paris saint germain", "paris sg", "psg", "paris"],
+        ["aston villa"],
       ],
+      mainPlayer: WC_PINNED_MAIN,
+      cards: WC_PINNED_CARDS,
     },
   ];
 
@@ -114,6 +148,13 @@
       .trim();
   }
 
+  // A team spec is either a normalized name string or a list of accepted
+  // normalized aliases. Match on exact equality (no substrings — avoids e.g.
+  // "villarreal" matching an "aston villa" / "villa" alias).
+  function teamSpecMatches(spec, name) {
+    return Array.isArray(spec) ? spec.includes(name) : spec === name;
+  }
+
   function manualMirrorEntryForMatch(m) {
     if (!m || !m.home || !m.away) return null;
     const a = normalizeTeamName(m.home);
@@ -121,7 +162,10 @@
     return (
       MANUAL_MIRROR_MATCHES.find((e) => {
         const [x, y] = e.teams;
-        return (a === x && b === y) || (a === y && b === x);
+        return (
+          (teamSpecMatches(x, a) && teamSpecMatches(y, b)) ||
+          (teamSpecMatches(x, b) && teamSpecMatches(y, a))
+        );
       }) || null
     );
   }
