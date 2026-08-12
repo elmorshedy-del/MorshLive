@@ -124,11 +124,10 @@
     },
   ];
 
-  // PSG vs Aston Villa — its own match with its own embed: the Fabor playerv5
-  // iframe. Pinned as the auto-loading main with no `fallback` and no extra
-  // cards, so once the card is opened this embed is the only thing that plays.
+  // PSG vs Aston Villa — pinned to the Kooralive albaplayer iframe that is
+  // currently carrying this game. No fallback or extra mirror cards.
   const PSG_VILLA_MAIN = {
-    url: "https://912acsss8af382.fabortvcdn.com/playerv5.php?match=4728413&key=9f39972b67d6ce22189507d008acwc26",
+    url: "https://23.1kooralive.fun/albaplayer/live5/?serv=0",
     iframe: true,
   };
 
