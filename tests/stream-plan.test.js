@@ -292,7 +292,7 @@ describe("resolveStreamPlan", () => {
               role: "primary",
               kind: "iframe",
               profile: "operator-iframe-v1",
-              url: "https://iframe.st/games/hull-city-vs-manchester-united/",
+              url: "https://mo.yallacuo.xyz/albaplayer/sport-1/",
               contentKey: "match:espn-eng.1-401879322",
               status: "operator",
             },
@@ -303,7 +303,7 @@ describe("resolveStreamPlan", () => {
       now: Date.parse("2026-08-22T11:20:00Z"),
     });
     expect(resolved.status).toBe("operator");
-    expect(resolved.selected.playbackUrl).toContain("iframe.st/games/hull-city-vs-manchester-united");
+    expect(resolved.selected.playbackUrl).toContain("yallacuo.xyz/albaplayer/sport-1");
     expect(resolved.selected.playbackUrl).not.toContain("/wk/albaplayer/koraplus/");
     expect(resolved.profile.profileId).toBe("operator-iframe-v1");
     expect(resolved.profile.noSandbox).toBe(true);
