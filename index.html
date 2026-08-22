@@ -15,7 +15,7 @@
   <title>مباريات الدوري الإنجليزي والإسباني ودوري الأبطال مباشرة | كورة زيرو</title>
   <meta name="description" content="جدول ونتائج مباشرة للدوري الإنجليزي والدوري الإسباني ودوري أبطال أوروبا على كورة زيرو — تشكيلات رسمية، أهداف لحظة بلحظة، وإحصائيات المباراة بتوقيت الرياض." />
   <meta name="keywords" content="مباريات اليوم, الدوري الإنجليزي, الدوري الإسباني, دوري أبطال أوروبا, نتائج مباشرة, تشكيلات, أهداف, إحصائيات, كورة زيرو" />
-  <meta name="theme-color" content="#080a0e" />
+  <meta name="theme-color" content="#07110c" />
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <link rel="canonical" href="https://korazero.com/" />
   <meta property="og:type" content="website" />
@@ -33,11 +33,10 @@
   <link rel="preconnect" href="https://nvtboo.vortexvisionworks.com" crossorigin />
   <link rel="dns-prefetch" href="https://vip.worldkoora.com" />
   <link rel="preconnect" href="https://vip.worldkoora.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=20260822editorial" />
+  <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20260822craft" />
   <!-- i18n must run before paint so dir/lang is correct with no flash -->
-  <script src="assets/js/i18n.js?v=20260822editorial"></script>
+  <script src="assets/js/i18n.js?v=20260822craft"></script>
   <!-- GSAP 3 — industry-standard animation engine -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script type="application/ld+json" id="seo-schema">
@@ -123,104 +122,59 @@
     </div>
   </header>
 
-  <section class="season-notice" aria-labelledby="season-notice-title">
-    <div class="container season-notice-inner">
-      <span class="season-notice-pulse" aria-hidden="true"></span>
-      <div>
-        <p class="season-notice-kicker" data-i18n="notice.seasonKicker">تنويه الموسم</p>
-        <h2 id="season-notice-title" data-i18n="notice.seasonTitle">نجهّز بث الموسم الجديد</h2>
+  <section class="season-stage" aria-labelledby="season-stage-title">
+    <div class="season-stage-sky" aria-hidden="true"></div>
+    <div class="season-stage-lights" aria-hidden="true"></div>
+    <div class="season-stage-pitch" aria-hidden="true"></div>
+    <div class="season-stage-grain" aria-hidden="true"></div>
+    <div class="season-stage-ticker">
+      <div class="container season-stage-ticker-inner">
+        <span class="season-stage-ticker-kicker" data-i18n="notice.seasonKicker">تنويه الموسم</span>
         <p data-i18n="notice.seasonBody">نعتذر عن إطالة الانتظار، وشكراً لصبركم. الموقع قيد التجهيز حالياً، وسيتوفّر البث المباشر للموسم الجديد قريباً بتجربة أوضح وأكثر ثباتاً.</p>
-        <div class="season-notice-track" aria-hidden="true"><span class="season-notice-bar"></span></div>
       </div>
     </div>
-  </section>
-
-  <section class="archive-strip" aria-labelledby="archive-strip-title">
-    <div class="container archive-strip-inner">
-      <div>
-        <p class="archive-strip-kicker" data-i18n="archive.kicker">الأرشيف</p>
-        <h2 id="archive-strip-title" data-i18n="archive.title">كأس العالم 2026 — 104 ملخصات</h2>
-        <p data-i18n="archive.lede">كل المباريات ما زالت هنا: ملخصات HD وتعليق عربي بدون إعلانات.</p>
-      </div>
-      <a class="btn btn-secondary" href="/tournament" data-i18n="archive.cta">افتح أرشيف المونديال</a>
-    </div>
-  </section>
-
-  <!-- 2026/27 European season hub -->
-  <section class="season-hub-banner" aria-labelledby="season-hub-title">
-    <div class="container season-hub-inner">
-      <div class="season-hub-copy">
-        <span class="season-hub-live"><i></i><span data-i18n="season.liveCoverage">تغطية مباشرة · موسم 2026/27</span></span>
-        <h2 id="season-hub-title" data-i18n="season.title">أكبر ليالي الكرة الأوروبية في مكان واحد</h2>
-        <p data-i18n="season.lede">الجداول والنتائج والتشكيلات والأهداف والإحصائيات — تتحدث تلقائياً طوال المباراة.</p>
-      </div>
-      <div class="season-leagues" aria-label="البطولات المتاحة">
-        <button type="button" class="season-league-card season-league-card--epl" data-league-jump="epl">
-          <span class="season-league-monogram">PL</span>
-          <span><b data-i18n="league.epl">الدوري الإنجليزي الممتاز</b><small data-i18n="season.openSchedule">عرض الجدول المباشر</small></span>
-        </button>
-        <button type="button" class="season-league-card season-league-card--laliga" data-league-jump="laliga">
-          <span class="season-league-monogram">LL</span>
-          <span><b data-i18n="league.laliga">الدوري الإسباني</b><small data-i18n="season.openSchedule">عرض الجدول المباشر</small></span>
-        </button>
-        <button type="button" class="season-league-card season-league-card--ucl" data-league-jump="ucl">
-          <span class="season-league-monogram">UCL</span>
-          <span><b data-i18n="league.ucl">دوري أبطال أوروبا</b><small data-i18n="season.openSchedule">عرض الجدول المباشر</small></span>
-        </button>
-      </div>
-      <a class="season-archive-link" href="/tournament">
-        <span aria-hidden="true">▶</span>
-        <span data-i18n="season.worldCupArchive">أرشيف كأس العالم 2026 · 104 مباراة</span>
-      </a>
-    </div>
-  </section>
-
-  <!-- Hero -->
-  <section class="hero">
-    <div class="container">
-      <span class="no-ads-badge"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> <span data-i18n="hero.noAds">بدون إعلانات ولا نوافذ منبثقة</span></span>
-      <h1 data-i18n-html="hero.title">الدوري الإنجليزي والإسباني ودوري الأبطال — <em>مباشرة لحظة بلحظة</em></h1>
-      <div class="hero-intro-card">
-        <p class="hero-lede" data-i18n="hero.lede">تابع جدول الأسبوع والنتائج المباشرة والتشكيلة الرسمية وخريطة اللاعبين وأسماء المسجلين وإحصائيات الاستحواذ والتسديدات في تجربة عربية سريعة ومصممة لكل شاشة.</p>
-        <div class="hero-keywords" data-i18n-attr="aria-label:seo.keywordsAria" aria-label="مميزات كورة زيرو">
-          <span class="hero-keyword hero-keyword--accent" data-i18n="seo.kw1">3 بطولات أوروبية كبرى</span>
-          <span class="hero-keyword" data-i18n="seo.kw2">جدول 7 أيام</span>
-          <span class="hero-keyword" data-i18n="seo.kw3">تحديثات مباشرة</span>
-          <span class="hero-keyword" data-i18n="seo.kw4">تشكيلات وإحصائيات</span>
-          <span class="hero-keyword" data-i18n="seo.kw5">بدون إعلانات ولا نوافذ منبثقة</span>
-          <span class="hero-keyword" data-i18n="seo.kw6">بتوقيت الرياض وET</span>
+    <div class="container season-stage-inner">
+      <div class="season-stage-copy">
+        <p class="season-stage-kicker"><i></i><span data-i18n="season.liveCoverage">تغطية مباشرة · موسم 2026/27</span></p>
+        <h1 id="season-stage-title" data-i18n="stage.title">الليالي الأوروبية على الهواء</h1>
+        <p class="season-stage-lede" data-i18n="stage.lede">الدوري الإنجليزي · الليغا · دوري الأبطال — جداول ونتائج وتشكيلات وإحصائيات تتحدث لحظة بلحظة.</p>
+        <div class="season-stage-actions">
+          <a class="btn btn-primary" href="#matches">
+            <span class="live-dot-i"></span>
+            <span data-i18n="hero.ctaMatches">افتح جدول المباريات</span>
+          </a>
+          <a class="btn btn-ghost" href="/tournament">
+            <span aria-hidden="true">▶</span>
+            <span data-i18n="season.worldCupArchive">أرشيف كأس العالم 2026 · 104 مباراة</span>
+          </a>
+          <span class="no-ads-badge no-ads-badge--inline"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg> <span data-i18n="hero.noAds">بدون إعلانات ولا نوافذ منبثقة</span></span>
         </div>
       </div>
-      <div class="hero-usps" aria-label="KoraZero">
-        <span class="usp"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 4H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a2.5 2.5 0 0 1-2.5-2.5Z"/><path d="M8 11h8"/><path d="M8 7h6"/></svg> <span data-i18n="hero.usp1">جدول أسبوعي</span></span>
-        <span class="usp"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m9 12 2 2 4-4"/></svg> <span data-i18n="hero.usp2">نتائج مباشرة</span></span>
-        <span class="usp"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M12 3v18"/><circle cx="12" cy="12" r="8"/></svg> <span data-i18n="hero.usp3">تشكيلات رسمية</span></span>
-        <span class="usp"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2"/></svg> <span data-i18n="hero.usp4">إحصائيات حية</span></span>
-      </div>
-      <div class="hero-season-card">
-        <h2 class="hero-season-title" data-i18n="hero.seasonTitle">مركز مباراة متكامل</h2>
-        <p class="hero-season-lede" data-i18n="hero.seasonLede">تظهر التشكيلة الرسمية قبل البداية، ثم تتحدث النتيجة والدقيقة والمسجلون والإحصائيات تلقائياً أثناء اللعب. افتح بطاقة المباراة لرؤية الملعب والبدلاء وكل الأرقام.</p>
-      </div>
-      <div class="hero-cta">
-        <a class="btn btn-primary" href="#matches">
-          <span class="live-dot-i"></span>
-          <span data-i18n="hero.ctaMatches">افتح جدول المباريات</span>
-        </a>
-        <a class="btn btn-ghost" href="/tournament" data-i18n="hero.ctaArchive">أرشيف كأس العالم 2026</a>
-      </div>
-      <div class="hero-quick-bar" aria-label="Quick settings">
-        <p class="hero-quick-label" data-i18n="hero.quickSettings">إعدادات سريعة قبل المشاهدة</p>
-        <div class="hero-quick-pills">
-        <button type="button" class="hero-pill js-lang-toggle" data-i18n-attr="aria-label:lang.toggleAria" aria-label="Switch to English">
-          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-          <span data-lang-label data-i18n="lang.toggleFull">English</span>
+      <div class="season-stage-leagues" aria-label="البطولات المتاحة">
+        <button type="button" class="stage-league stage-league--epl" data-league-jump="epl">
+          <span class="stage-league-photo" aria-hidden="true"></span>
+          <span class="stage-league-monogram">PL</span>
+          <span class="stage-league-copy">
+            <b data-i18n="league.epl">الدوري الإنجليزي الممتاز</b>
+            <small data-i18n="season.openSchedule">عرض الجدول المباشر</small>
+          </span>
         </button>
-        <button type="button" class="hero-pill js-tv-toggle" data-i18n-attr="aria-label:tv.toggleAria" aria-pressed="false" aria-label="تفعيل وضع التلفزيون">
-          <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>
-          <span data-tv-label data-i18n="tv.toggle">وضع التلفزيون</span>
+        <button type="button" class="stage-league stage-league--laliga" data-league-jump="laliga">
+          <span class="stage-league-photo" aria-hidden="true"></span>
+          <span class="stage-league-monogram">LL</span>
+          <span class="stage-league-copy">
+            <b data-i18n="league.laliga">الدوري الإسباني</b>
+            <small data-i18n="season.openSchedule">عرض الجدول المباشر</small>
+          </span>
         </button>
-        </div>
-        <p class="hero-quick-hint"><span data-i18n="hero.tvHintPrefix">شاشة كبيرة؟</span> <button type="button" class="hero-tv-hint-link js-tv-guide-link" data-i18n="hero.tvHintLink">فعّل وضع التلفزيون لعرض الدليل</button></p>
+        <button type="button" class="stage-league stage-league--ucl" data-league-jump="ucl">
+          <span class="stage-league-photo" aria-hidden="true"></span>
+          <span class="stage-league-monogram">UCL</span>
+          <span class="stage-league-copy">
+            <b data-i18n="league.ucl">دوري أبطال أوروبا</b>
+            <small data-i18n="season.openSchedule">عرض الجدول المباشر</small>
+          </span>
+        </button>
       </div>
     </div>
   </section>
@@ -349,7 +303,7 @@
         </div>
         <a class="home-hl-banners-all" href="#matches" data-i18n="home.highlightBannersAll">إلى جدول المباريات →</a>
       </div>
-      <p class="home-hl-banners-lede" data-i18n="home.highlightBannersLede">ملخصات الدوريات الحالية أولاً. أرشيف المونديال يبقى في الشريط أعلاه.</p>
+      <p class="home-hl-banners-lede" data-i18n="home.highlightBannersLede">ملخصات الدوريات الحالية أولاً. أرشيف المونديال ما زال متاحاً من أعلى الصفحة.</p>
       <div id="highlight-banners-days"></div>
     </div>
   </section>
@@ -507,11 +461,11 @@
   <script src="assets/js/data.js?v=20260822leagues"></script>
   <script src="assets/js/team-names.js?v=20260822leagues"></script>
   <script src="assets/js/match-notice.js?v=20260706o"></script>
-  <script src="assets/js/highlights-ui.js?v=20260822editorial"></script>
-  <script src="assets/js/highlight-banners.js?v=20260822editorial"></script>
+  <script src="assets/js/highlights-ui.js?v=20260822craft"></script>
+  <script src="assets/js/highlight-banners.js?v=20260822craft"></script>
   <script src="assets/js/tweet-cards.js?v=20260717xtrend"></script>
   <script src="assets/js/match-memes.js?v=20260708play"></script>
-  <script src="assets/js/recent-tweets.js?v=20260822editorial"></script>
+  <script src="assets/js/recent-tweets.js?v=20260822craft"></script>
   <script src="assets/js/app.js?v=20260822leagues"></script>
   <script src="assets/js/animations.js?v=20260625c"></script>
 </body>

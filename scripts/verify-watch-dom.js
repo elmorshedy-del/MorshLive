@@ -11,10 +11,7 @@ const html = fs.readFileSync(path.join(__dirname, "..", "watch.html"), "utf8");
 const requiredIds = [
   "shotBall",
   "logoBallIcon",
-  "wc2026Banner",
-  "wcParticles",
-  "wcTrophy",
-  "wcSpinBall",
+  "seasonRail",
   "channel-row",
   "servers",
   "player-toolbar",
@@ -38,11 +35,8 @@ const requiredIds = [
 
 const requiredClasses = [
   "page-watch",
-  "wc-word",
-  "wc-year",
-  "wc-hosts",
-  "wc-live-badge",
-  "wc-eyebrow",
+  "season-rail",
+  "season-rail-inner",
   "no-ads-badge",
   "disclaimer",
   "js-bookmark-site",
