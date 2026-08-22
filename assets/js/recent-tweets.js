@@ -1,13 +1,30 @@
-/* recent-tweets.js — home: title + top meme media strip */
+/* recent-tweets.js — home: title + top meme media strip.
+ * Live /api/recent-memes first; fall back to the World Cup meme archive
+ * so the X rail does not vanish when the live endpoint is empty. */
 (function () {
   "use strict";
 
+  function flattenMemeArchive(data) {
+    if (!data) return [];
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.memes)) return data.memes;
+    return Object.values(data).flatMap((value) => (Array.isArray(value) ? value : []));
+  }
+
+  async function fetchJson(url, cache) {
+    const res = await fetch(url, { cache });
+    if (!res.ok) return null;
+    return res.json();
+  }
+
   async function fetchRecentTweets() {
     try {
-      const res = await fetch("/api/recent-memes", { cache: "no-store" });
-      if (!res.ok) return [];
-      const data = await res.json();
-      return data.memes || [];
+      const live = await fetchJson("/api/recent-memes", "no-store");
+      if (live?.memes?.length) return live.memes;
+    } catch { /* use static archive */ }
+    try {
+      const archived = await fetchJson("/assets/data/match-memes.json", "default");
+      return flattenMemeArchive(archived).slice(0, 24);
     } catch {
       return [];
     }

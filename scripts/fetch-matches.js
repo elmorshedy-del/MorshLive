@@ -437,6 +437,11 @@ function mergeReplayFromPrevious(matches, previousPayload) {
         poster: media.thumbnail,
         embed: media.videoUrl,
         stage: m.stage || "",
+        league: m.league || "",
+        leagueAr: m.leagueAr || "",
+        competition: m.competition || "",
+        leagueSlug: m.leagueSlug || "",
+        id: m.id || "",
       });
     }
     const days = [...daysMap.entries()]

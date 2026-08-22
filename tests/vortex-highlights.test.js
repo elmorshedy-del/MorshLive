@@ -16,6 +16,11 @@ describe("classifyHighlightTitle", () => {
     expect(classifyHighlightTitle("ملخص مباراة مصر والأرجنتين")).toBe("full");
   });
 
+  it("accepts current-league highlight titles", () => {
+    expect(classifyHighlightTitle("ملخص ارسنال وكوفنتري الدوري الانجليزي")).toBe("full");
+    expect(classifyHighlightTitle("أهداف ريال بيتيس في الدوري الإسباني")).toBe("goals");
+  });
+
   it("rejects full-match broadcasts", () => {
     expect(classifyHighlightTitle("مباراة كاملة")).toBeNull();
   });

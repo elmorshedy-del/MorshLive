@@ -12,7 +12,12 @@
           "kickoffUtc": "2026-08-21T19:00Z",
           "poster": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318840/poster/0.png?token=endoTXY0ellNZTBJcXdZT0pDN0FzMGREQmkrL0FNOXgwd2FWSEgrbHJ2QT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvOC8yMS8zMTg4NDAvMC5wbmc6JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIyOTg4NDYzMzI0OTM3OQ==&keypair=UWVkUkpyb0VqejNVRmJBbjRKYTY1SHprZzhHME1EQklJM1V4SVJMR29yMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvOC8yMS8zMTg4NDAvOiUyRiUyRmhsczg2LmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkyMjk4ODQ2MzMyNDkzNzk=",
           "embed": "https://nvtboo.vortexvisionworks.com/embed/6BkPxr1tWuNIq",
-          "stage": ""
+          "stage": "",
+          "league": "English Premier League",
+          "leagueAr": "الدوري الإنجليزي الممتاز",
+          "competition": "epl",
+          "leagueSlug": "eng.1",
+          "id": "espn-eng.1-401879301"
         }
       ]
     }
