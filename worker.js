@@ -2378,8 +2378,8 @@ async function proxyWeshan(request, env) {
 const AMINE = "https://yallashooot.tv/albaplayer/amine/";
 const AMINE_RE = /^\/wk\/albaplayer\/amine\/?$/i;
 const KORAPLUS_RE = /^\/wk\/albaplayer\/koraplus\/?$/i;
-const KORAPLUS_EDGES = ["a4", "a11", "a12", "a13", "a14", "a15", "a16", "a17", "a18", "a19", "a20"];
-const KORAPLUS_EDGE_DOMAIN = "kora-plus.app";
+const KORAPLUS_EDGES = ["a11", "a12", "a13", "a14", "a15", "a16"];
+const KORAPLUS_EDGE_DOMAIN = "kora-plus.li";
 const DADDY_RE = /^\/wk\/albaplayer\/daddy\/?$/i;
 const AEROZAST = "https://yallashooot.tv/albaplayer/aerozast/";
 const AEROZAST_RE = /^\/wk\/albaplayer\/aerozast\/?$/i;

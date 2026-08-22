@@ -31,8 +31,8 @@ describe("go4scoreFrameUrl", () => {
   });
 
   it("uses the fallback host when edges are missing", () => {
-    expect(go4scoreFrameUrl({ channel: "b1", fallbackHost: "a11.kora-plus.app" })).toBe(
-      "https://a11.kora-plus.app/frame.php?ch=b1&p=12",
+    expect(go4scoreFrameUrl({ channel: "b1", fallbackHost: "a11.kora-plus.li" })).toBe(
+      "https://a11.kora-plus.li/frame.php?ch=b1&p=12",
     );
   });
 });

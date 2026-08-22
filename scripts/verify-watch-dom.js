@@ -40,6 +40,7 @@ const requiredClasses = [
   "season-rail-inner",
   "no-ads-badge",
   "disclaimer",
+  "watch-disclaimer",
   "js-bookmark-site",
   "js-lang-toggle",
   "js-tv-toggle",

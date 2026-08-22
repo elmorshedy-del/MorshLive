@@ -1,3 +1,4 @@
+import bundledCatalog from "../../assets/data/stream-plans.json" with { type: "json" };
 import {
   applyConflicts,
   emptyCatalog,
@@ -8,8 +9,13 @@ import { fetchAssetJson, loadTodayMatches } from "../adapters/assets.js";
 
 export async function loadStreamPlanCatalog(env, origin) {
   const json = await fetchAssetJson(env, origin, "/assets/data/stream-plans.json");
-  if (!json || !Array.isArray(json.plans)) return emptyCatalog();
-  return { ...emptyCatalog(), ...json, plans: json.plans };
+  if (json && Array.isArray(json.plans) && json.plans.length) {
+    return { ...emptyCatalog(), ...json, plans: json.plans };
+  }
+  if (Array.isArray(bundledCatalog?.plans) && bundledCatalog.plans.length) {
+    return { ...emptyCatalog(), ...bundledCatalog, plans: bundledCatalog.plans };
+  }
+  return emptyCatalog();
 }
 
 function findRequestedMatch(matches, params) {

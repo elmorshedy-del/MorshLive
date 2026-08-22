@@ -678,7 +678,7 @@
       activePlan = match ? activePlan : null;
       return activePlan;
     }
-    const plan = await window.StreamPlanApi.fetchPlan(match, { timeoutMs: 1500 });
+    const plan = await window.StreamPlanApi.fetchPlan(match, { timeoutMs: 4000 });
     if (plan) activePlan = plan;
     return activePlan;
   }

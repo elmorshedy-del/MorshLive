@@ -16,7 +16,7 @@
     const hit = CACHE.get(id);
     if (hit && Date.now() - hit.at < CACHE_MS) return hit.plan;
 
-    const timeoutMs = opts && opts.timeoutMs != null ? opts.timeoutMs : 1500;
+    const timeoutMs = opts && opts.timeoutMs != null ? opts.timeoutMs : 4000;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
     try {

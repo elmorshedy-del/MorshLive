@@ -291,8 +291,8 @@ describe("resolveStreamPlan", () => {
               id: "primary",
               role: "primary",
               kind: "iframe",
-              profile: "koraplus-v1",
-              path: "/wk/albaplayer/koraplus/?m=31055&lang=ar",
+              profile: "operator-iframe-v1",
+              url: "https://iframe.st/games/hull-city-vs-manchester-united/",
               contentKey: "match:espn-eng.1-401879322",
               status: "operator",
             },
@@ -303,9 +303,9 @@ describe("resolveStreamPlan", () => {
       now: Date.parse("2026-08-22T11:20:00Z"),
     });
     expect(resolved.status).toBe("operator");
-    expect(resolved.selected.playbackUrl).toContain("m=31055");
-    expect(resolved.selected.playbackUrl).not.toContain("/wk/albaplayer/koraplus/?ch=bein-sports-1");
-    expect(resolved.profile.profileId).toBe("koraplus-v1");
+    expect(resolved.selected.playbackUrl).toContain("iframe.st/games/hull-city-vs-manchester-united");
+    expect(resolved.selected.playbackUrl).not.toContain("/wk/albaplayer/koraplus/");
+    expect(resolved.profile.profileId).toBe("operator-iframe-v1");
     expect(resolved.profile.noSandbox).toBe(true);
     expect(shouldHoldPlayer(resolved)).toBe(false);
   });

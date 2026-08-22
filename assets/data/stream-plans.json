@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-22T11:22:00.000Z",
+  "updatedAt": "2026-08-22T11:38:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879322",
@@ -18,8 +18,8 @@
           "id": "primary",
           "role": "primary",
           "kind": "iframe",
-          "profile": "koraplus-v1",
-          "path": "/wk/albaplayer/koraplus/?m=31055&lang=ar",
+          "profile": "operator-iframe-v1",
+          "url": "https://iframe.st/games/hull-city-vs-manchester-united/",
           "contentKey": "match:espn-eng.1-401879322",
           "status": "operator",
           "label": "Hull × United"
