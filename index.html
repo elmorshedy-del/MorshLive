@@ -34,9 +34,9 @@
   <link rel="dns-prefetch" href="https://vip.worldkoora.com" />
   <link rel="preconnect" href="https://vip.worldkoora.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=20260822stream" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20260822play" />
   <!-- i18n must run before paint so dir/lang is correct with no flash -->
-  <script src="assets/js/i18n.js?v=20260822stream"></script>
+  <script src="assets/js/i18n.js?v=20260822play"></script>
   <!-- GSAP 3 — industry-standard animation engine -->
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
   <script type="application/ld+json" id="seo-schema">
@@ -122,17 +122,22 @@
     </div>
   </header>
 
+  <aside class="season-notice" role="note" aria-labelledby="season-notice-title">
+    <div class="container season-notice-inner">
+      <span class="season-notice-pulse" aria-hidden="true"></span>
+      <div>
+        <p class="season-notice-kicker" data-i18n="notice.seasonKicker">تنويه الموسم</p>
+        <h2 id="season-notice-title" data-i18n="notice.seasonTitle">نجهّز بث الموسم الجديد</h2>
+        <p data-i18n="notice.seasonBody">نعتذر عن إطالة الانتظار، وشكراً لصبركم. الموقع قيد التجهيز حالياً، وسيتوفّر البث المباشر للموسم الجديد قريباً بتجربة أوضح وأكثر ثباتاً.</p>
+      </div>
+    </div>
+  </aside>
+
   <section class="season-stage" aria-labelledby="season-stage-title">
     <div class="season-stage-sky" aria-hidden="true"></div>
     <div class="season-stage-lights" aria-hidden="true"></div>
     <div class="season-stage-pitch" aria-hidden="true"></div>
     <div class="season-stage-grain" aria-hidden="true"></div>
-    <div class="season-stage-ticker">
-      <div class="container season-stage-ticker-inner">
-        <span class="season-stage-ticker-kicker" data-i18n="notice.seasonKicker">تنويه الموسم</span>
-        <p data-i18n="notice.seasonBody">نعتذر عن إطالة الانتظار، وشكراً لصبركم. الموقع قيد التجهيز حالياً، وسيتوفّر البث المباشر للموسم الجديد قريباً بتجربة أوضح وأكثر ثباتاً.</p>
-      </div>
-    </div>
     <div class="container season-stage-inner">
       <div class="season-stage-copy">
         <p class="season-stage-kicker"><i></i><span data-i18n="season.liveCoverage">تغطية مباشرة · موسم 2026/27</span></p>

@@ -3230,15 +3230,19 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 
 /* Season readiness notice + World Cup archive strip */
 .season-notice {
-  border-bottom: 1px solid var(--border);
-  background: var(--surface);
+  position: relative;
+  z-index: 4;
+  border-bottom: 1px solid rgba(255, 209, 92, .35);
+  background:
+    linear-gradient(180deg, rgba(255, 201, 77, .2), rgba(18, 16, 8, .92)),
+    var(--surface);
 }
 .season-notice-inner {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   gap: 16px;
   align-items: start;
-  padding-block: 20px;
+  padding-block: 22px 24px;
 }
 .season-notice-pulse {
   width: 10px; height: 10px; margin-top: 10px; border-radius: 50%;
@@ -3246,24 +3250,26 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
   animation: seasonPulse 1.8s ease-in-out infinite;
 }
 .season-notice-kicker {
-  margin: 0 0 4px;
-  color: var(--accent);
-  font-size: .72rem;
-  font-weight: 700;
-  letter-spacing: .08em;
+  margin: 0 0 6px;
+  color: #ffe08a;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .1em;
 }
 .season-notice h2 {
   margin: 0;
-  font-size: clamp(1.15rem, 2.2vw, 1.55rem);
-  font-weight: 700;
-  line-height: 1.4;
+  font-size: clamp(1.35rem, 3vw, 1.85rem);
+  font-weight: 800;
+  line-height: 1.35;
+  color: #fff6d2;
 }
 .season-notice p:last-of-type {
-  margin: 8px 0 0;
-  max-width: 42rem;
-  color: var(--muted);
-  font-size: .95rem;
-  line-height: 1.75;
+  margin: 10px 0 0;
+  max-width: 46rem;
+  color: #f0e2b0;
+  font-size: 1.05rem;
+  line-height: 1.8;
+  font-weight: 600;
 }
 .season-notice-track {
   position: relative;
