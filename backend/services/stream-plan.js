@@ -1,10 +1,10 @@
-import { fetchAssetJson, loadTodayMatches } from "../adapters/assets.js";
 import {
   applyConflicts,
   emptyCatalog,
   liveContentConflicts,
   resolveStreamPlan,
 } from "../../lib/stream-plan.js";
+import { fetchAssetJson, loadTodayMatches } from "../adapters/assets.js";
 
 export async function loadStreamPlanCatalog(env, origin) {
   const json = await fetchAssetJson(env, origin, "/assets/data/stream-plans.json");
@@ -52,7 +52,10 @@ export async function getStreamPlan(env, origin, params) {
   const away = String(params.get("away") || "").trim();
   if (!matchId && !(home && away)) throw new Error("Match id or team pair required");
 
-  const [catalog, matches] = await Promise.all([loadStreamPlanCatalog(env, origin), loadTodayMatches(env, origin)]);
+  const [catalog, matches] = await Promise.all([
+    loadStreamPlanCatalog(env, origin),
+    loadTodayMatches(env, origin),
+  ]);
   const match = findRequestedMatch(matches, params);
   if (!match) throw new Error("Unknown match");
 

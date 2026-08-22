@@ -66,7 +66,9 @@ describe("match identity", () => {
   });
 
   it("uses an explicit content key before the channel fallback", () => {
-    expect(contentKeyForMatch({ contentKey: "bein-sports-1", channelId: "bein-max-1" })).toBe("bein-sports-1");
+    expect(contentKeyForMatch({ contentKey: "bein-sports-1", channelId: "bein-max-1" })).toBe(
+      "bein-sports-1",
+    );
     expect(contentKeyForMatch(liverpoolArsenal)).toBe("channel:bein-sports-1");
   });
 });
@@ -298,10 +300,7 @@ describe("conflicts and verification", () => {
 
   it("does not hold two legacy matches that merely share the default channel key", () => {
     const conflicts = liveContentConflicts(
-      [
-        liverpoolArsenal,
-        { ...realBarca, channelId: "bein-sports-1" },
-      ],
+      [liverpoolArsenal, { ...realBarca, channelId: "bein-sports-1" }],
       catalog([]),
       NOW,
     );
@@ -324,7 +323,9 @@ describe("provider profiles", () => {
 
   it("builds a same-origin worker path for legacy iframes", () => {
     const legacy = buildLegacyPlan(liverpoolArsenal, "sirtv", NOW);
-    expect(playbackUrlForSource(legacy.sources[0], { origin: "https://korazero.com", match: liverpoolArsenal })).toBe(
+    expect(
+      playbackUrlForSource(legacy.sources[0], { origin: "https://korazero.com", match: liverpoolArsenal }),
+    ).toBe(
       "https://korazero.com/wk/albaplayer/sirtv/?ch=bein-sports-1&match=espn-eng.1-401111111&home=Liverpool&away=Arsenal",
     );
   });
