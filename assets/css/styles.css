@@ -2000,7 +2000,7 @@ img { max-width: 100%; display: block; }
 .kz-word b {
   font-weight: 700;
   margin-inline-start: -.02em;
-  background: linear-gradient(118deg, #152033 0%, #3a4a66 48%, #9a7b4f 100%);
+  background: linear-gradient(118deg, #3ddc97 0%, #8a6bff 46%, #3ddc97 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -2014,15 +2014,16 @@ img { max-width: 100%; display: block; }
   transform: skewX(8deg) translateY(.05em);  /* cancel parent skew so the ball stays round */
   position: relative;
   isolation: isolate;
-  filter: drop-shadow(0 2px 6px rgba(21,32,51,.22));
+  filter: drop-shadow(0 4px 9px rgba(123,47,247,.5));
 }
 .kz-o::after {
   content: "";
   position: absolute;
-  inset: -10%;
+  inset: -30%;
   border-radius: 50%;
-  background: #10151f;
+  background: radial-gradient(circle, rgba(123,47,247,.5), rgba(24,226,154,.16) 55%, transparent 72%);
   z-index: -1;
+  animation: logoHalo 3.2s ease-in-out infinite;
 }
 .kz-float {            /* GSAP idle-bob target — no CSS transform of its own */
   display: inline-flex;
