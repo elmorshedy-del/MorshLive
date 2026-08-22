@@ -1,6 +1,6 @@
 /* ============================================================================
  * KoraZero — stylesheet (RTL, light premium, ad-free)
- * Ivory surface, ink navy type, bronze accent. No mint/editorial greens.
+ * Cool white glass surface, ink navy type, bronze accent. No mint/editorial greens.
  * ==========================================================================*/
 
 @import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap");
@@ -10,11 +10,11 @@
   --space-2:   16px;
   --space-3:   24px;
   --space-4:   32px;
-  --bg:        #f6f3ec;
-  --bg-2:      #efebe2;
-  --surface:   #fffcf7;
-  --surface-2: #f3eee4;
-  --border:    #e4ddd0;
+  --bg:        #f3f5f8;
+  --bg-2:      #e8edf3;
+  --surface:   #ffffff;
+  --surface-2: #f4f6f9;
+  --border:    rgba(21,32,51,.08);
   --text:      #141820;
   --muted:     #5d6470;
   --brand:     #152033;
@@ -29,9 +29,9 @@
   --league-ucl: #0e1c4f;
   --radius:    16px;
   --radius-sm: 10px;
-  --shadow:    0 18px 40px rgba(21,32,51,.08);
-  --shadow-soft: 0 8px 22px rgba(21,32,51,.06);
-  --glass:     rgba(255,252,247,.86);
+  --shadow:    0 18px 40px rgba(21,32,51,.07);
+  --shadow-soft: 0 8px 24px rgba(21,32,51,.05);
+  --glass:     rgba(255,255,255,.72);
   --grad:      var(--brand-2);
   --font:      "IBM Plex Sans Arabic", "Readex Pro", "Tajawal", "Segoe UI", Tahoma, system-ui, sans-serif;
   --font-display: "IBM Plex Sans Arabic", "Readex Pro", sans-serif;
@@ -52,9 +52,8 @@ html { scroll-behavior: smooth; }
 body {
   font-family: var(--font);
   background:
-    radial-gradient(900px 420px at 100% -8%, rgba(196,165,116,.16), transparent 52%),
-    radial-gradient(720px 380px at 0% 0%, rgba(21,32,51,.05), transparent 48%),
-    var(--bg);
+    radial-gradient(880px 420px at 100% -12%, rgba(21,32,51,.045), transparent 52%),
+    linear-gradient(180deg, #f7f8fb 0%, var(--bg) 42%, #eef1f5 100%);
   color: var(--text);
   line-height: var(--leading);
   min-height: 100vh;
@@ -76,9 +75,10 @@ img { max-width: 100%; display: block; }
 /* ---------------------------------------------------------------- Header */
 .site-header {
   position: sticky; top: 0; z-index: 50;
-  background: rgba(255,252,247,.88);
+  background: var(--glass);
   border-bottom: 1px solid var(--border);
-  backdrop-filter: saturate(1.1) blur(16px);
+  backdrop-filter: saturate(1.35) blur(18px);
+  -webkit-backdrop-filter: saturate(1.35) blur(18px);
 }
 .nav {
   display: flex; align-items: center; gap: var(--space);
@@ -545,24 +545,27 @@ img { max-width: 100%; display: block; }
   text-align: start;
   font: inherit;
   cursor: pointer;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(255,255,255,.82);
   border-radius: var(--radius);
-  background: var(--surface);
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   box-shadow: var(--shadow-soft);
   transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
 }
 .hero-league:hover {
   transform: translateY(-2px);
-  border-color: #d2c8b6;
+  border-color: rgba(21,32,51,.14);
   box-shadow: var(--shadow);
 }
 .hero-league-mark {
-  width: 42px; height: 42px; border-radius: 12px;
-  background: var(--surface-2) center/28px no-repeat;
+  width: 48px; height: 48px; border-radius: 14px;
+  background: #10151f center/78% no-repeat;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
 }
-.hero-league-mark--epl { background-color: #f3eef8; background-image: url("../img/leagues/epl.png"); }
-.hero-league-mark--laliga { background-color: #fbecee; background-image: url("../img/leagues/laliga.png"); }
-.hero-league-mark--ucl { background-color: #eef1f8; background-image: url("../img/leagues/ucl.png"); }
+.hero-league-mark--epl { background-image: url("../img/leagues/epl.png"); }
+.hero-league-mark--laliga { background-image: url("../img/leagues/laliga.png"); }
+.hero-league-mark--ucl { background-image: url("../img/leagues/ucl.png"); }
 .hero-league-copy { display: grid; gap: 2px; }
 .hero-league-copy b { font-size: .95rem; font-weight: 700; }
 .hero-league-copy small { color: var(--muted); font-size: .78rem; }
@@ -808,6 +811,14 @@ img { max-width: 100%; display: block; }
   background-image: url("../img/leagues/all.svg");
   background-size: 62%;
   border-radius: var(--radius-sm);
+}
+.competition-filter-icon--epl, .competition-mark--epl,
+.competition-filter-icon--laliga, .competition-mark--laliga,
+.competition-filter-icon--ucl, .competition-mark--ucl {
+  background-color: #10151f;
+  background-size: 78%;
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
 }
 .competition-filter-icon--epl, .competition-mark--epl { background-image: url("../img/leagues/epl.png"); }
 .competition-filter-icon--laliga, .competition-mark--laliga { background-image: url("../img/leagues/laliga.png"); }
@@ -1983,13 +1994,13 @@ img { max-width: 100%; display: block; }
   font-size: 1.6rem;
   letter-spacing: -.04em;
   transform: skewX(-8deg);            /* custom sporty oblique — not a plain font */
-  color: #f4f2ff;
-  text-shadow: 0 2px 10px rgba(0,0,0,.35);
+  color: #141820;
+  text-shadow: none;
 }
 .kz-word b {
   font-weight: 700;
   margin-inline-start: -.02em;
-  background: linear-gradient(118deg, var(--accent) 0%, #8a6bff 46%, var(--brand-2) 100%);
+  background: linear-gradient(118deg, #152033 0%, #3a4a66 48%, #9a7b4f 100%);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -2003,16 +2014,15 @@ img { max-width: 100%; display: block; }
   transform: skewX(8deg) translateY(.05em);  /* cancel parent skew so the ball stays round */
   position: relative;
   isolation: isolate;
-  filter: drop-shadow(0 4px 9px rgba(123,47,247,.5));
+  filter: drop-shadow(0 2px 6px rgba(21,32,51,.22));
 }
 .kz-o::after {
   content: "";
   position: absolute;
-  inset: -30%;
+  inset: -10%;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(123,47,247,.5), rgba(24,226,154,.16) 55%, transparent 72%);
+  background: #10151f;
   z-index: -1;
-  animation: logoHalo 3.2s ease-in-out infinite;
 }
 .kz-float {            /* GSAP idle-bob target — no CSS transform of its own */
   display: inline-flex;
