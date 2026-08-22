@@ -1,49 +1,48 @@
 /* ============================================================================
- * KoraZero — stylesheet (RTL, editorial sports, ad-free)
- * Design tokens first. Page chrome should consume these — not invent new
- * glows, capsules, or accent colors.
+ * KoraZero — stylesheet (RTL, light premium, ad-free)
+ * Ivory surface, ink navy type, bronze accent. No mint/editorial greens.
  * ==========================================================================*/
 
-@import url("https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;500;600;700&family=Noto+Kufi+Arabic:wght@700&family=Space+Grotesk:wght@600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap");
 
 :root {
   --space:     8px;
   --space-2:   16px;
   --space-3:   24px;
   --space-4:   32px;
-  --bg:        #07110c;
-  --bg-2:      #0b1711;
-  --surface:   #12201a;
-  --surface-2: #183028;
-  --border:    #2a4036;
-  --text:      #f4f7f3;
-  --muted:     #b4c3b8;
-  --brand:     #3ddc97;
-  --brand-2:   #3ddc97;
-  --accent:    #3ddc97;
-  --danger:    #ef4b63;
-  --gold:      #d8b56a;
-  --stat-home: #3ddc97;
-  --stat-away: #7eb6ff;
+  --bg:        #f6f3ec;
+  --bg-2:      #efebe2;
+  --surface:   #fffcf7;
+  --surface-2: #f3eee4;
+  --border:    #e4ddd0;
+  --text:      #141820;
+  --muted:     #5d6470;
+  --brand:     #152033;
+  --brand-2:   #c4a574;
+  --accent:    #152033;
+  --danger:    #c23b4a;
+  --gold:      #9a7b4f;
+  --stat-home: #152033;
+  --stat-away: #9a7b4f;
   --league-epl: #3d195b;
   --league-laliga: #c8102e;
   --league-ucl: #0e1c4f;
-  --radius:    12px;
-  --radius-sm: 8px;
-  --shadow:    0 18px 40px rgba(0,0,0,.38);
-  --shadow-soft: 0 10px 24px rgba(0,0,0,.22);
-  --glass:     var(--surface);
-  --grad:      var(--accent);
-  --font:      "Readex Pro", "Noto Naskh Arabic", "Tajawal", "Segoe UI", Tahoma, system-ui, sans-serif;
-  --font-display: "Noto Kufi Arabic", "Readex Pro", sans-serif;
-  --font-body: "Noto Naskh Arabic", "Readex Pro", serif;
-  --leading:   1.7;
+  --radius:    16px;
+  --radius-sm: 10px;
+  --shadow:    0 18px 40px rgba(21,32,51,.08);
+  --shadow-soft: 0 8px 22px rgba(21,32,51,.06);
+  --glass:     rgba(255,252,247,.86);
+  --grad:      var(--brand-2);
+  --font:      "IBM Plex Sans Arabic", "Readex Pro", "Tajawal", "Segoe UI", Tahoma, system-ui, sans-serif;
+  --font-display: "IBM Plex Sans Arabic", "Readex Pro", sans-serif;
+  --font-body: "IBM Plex Sans Arabic", "Readex Pro", sans-serif;
+  --leading:   1.65;
   --fs-xs:     .72rem;
   --fs-sm:     .82rem;
   --fs-md:     .95rem;
   --fs-lg:     1.15rem;
   --fs-xl:     clamp(1.2rem, 2.2vw, 1.5rem);
-  --fs-display: clamp(1.9rem, 4.6vw, 3.15rem);
+  --fs-display: clamp(1.85rem, 4.4vw, 3rem);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -53,8 +52,8 @@ html { scroll-behavior: smooth; }
 body {
   font-family: var(--font);
   background:
-    radial-gradient(1200px 520px at 80% -10%, rgba(61,220,151,.08), transparent 55%),
-    radial-gradient(900px 420px at 0% 8%, rgba(14,28,79,.28), transparent 50%),
+    radial-gradient(900px 420px at 100% -8%, rgba(196,165,116,.16), transparent 52%),
+    radial-gradient(720px 380px at 0% 0%, rgba(21,32,51,.05), transparent 48%),
     var(--bg);
   color: var(--text);
   line-height: var(--leading);
@@ -77,9 +76,9 @@ img { max-width: 100%; display: block; }
 /* ---------------------------------------------------------------- Header */
 .site-header {
   position: sticky; top: 0; z-index: 50;
-  background: rgba(7,17,12,.88);
-  border-bottom: 1px solid rgba(61,220,151,.12);
-  backdrop-filter: saturate(1.2) blur(14px);
+  background: rgba(255,252,247,.88);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: saturate(1.1) blur(16px);
 }
 .nav {
   display: flex; align-items: center; gap: var(--space);
@@ -442,15 +441,21 @@ img { max-width: 100%; display: block; }
 .season-archive-link:hover { border-color: #3a4454; background: var(--surface-2); }
 
 /* ---------------------------------------------------------------- Hero */
-.hero { padding: 24px 0 16px; position: relative; }
-.hero h1 {
-  font-size: var(--fs-display); font-weight: 700; line-height: 1.45;
-  letter-spacing: -.015em; max-width: 22em;
+.hero { padding: 36px 0 28px; position: relative; }
+.hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, .8fr);
+  gap: 36px;
+  align-items: end;
 }
-.hero h1 em, .hero h1 span { font-style: normal; color: var(--text); }
+.hero h1 {
+  font-size: var(--fs-display); font-weight: 700; line-height: 1.28;
+  letter-spacing: -.03em; max-width: 16em; margin-top: 14px;
+}
+.hero h1 em, .hero h1 span { font-style: normal; color: var(--gold); }
 .hero h1 em {
   font-style: normal;
-  color: var(--accent);
+  color: var(--gold);
 }
 .hero p { color: var(--muted); margin-top: 14px; max-width: 680px; font-size: 1.08rem; animation: fadeUp .7s .18s ease both; }
 .hero-intro-card {
@@ -483,27 +488,27 @@ img { max-width: 100%; display: block; }
 .hero-keywords {
   display: flex; flex-wrap: wrap; gap: 8px;
   margin-top: 14px; padding-top: 14px;
-  border-top: 1px solid rgba(255,255,255,.08);
+  border-top: 1px solid var(--border);
 }
 .hero-keyword {
   display: inline-flex; align-items: center;
   padding: 6px 12px; border-radius: 999px;
   font-size: .8rem; font-weight: 700;
   color: var(--text);
-  background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.1);
+  background: var(--surface);
+  border: 1px solid var(--border);
 }
 .hero-keyword--accent {
-  color: #8ef0c8;
-  border-color: rgba(24,226,154,.35);
-  background: rgba(24,226,154,.1);
+  color: #5c4524;
+  border-color: rgba(196,165,116,.55);
+  background: rgba(196,165,116,.16);
 }
 .hero-usps { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; animation: fadeUp .7s .24s ease both; }
 .hero-usps .usp {
   display: inline-flex; align-items: center; gap: 7px;
   font-size: .85rem; font-weight: 700; color: var(--text);
-  background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
-  padding: 8px 14px; border-radius: 999px; backdrop-filter: blur(8px);
+  background: var(--surface); border: 1px solid var(--border);
+  padding: 8px 14px; border-radius: 999px;
 }
 .hero-usps .usp .ico { color: var(--accent); }
 .hero-season-card {
@@ -528,14 +533,47 @@ img { max-width: 100%; display: block; }
   line-height: 1.7;
 }
 .hero-cta { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; animation: fadeUp .7s .3s ease both; }
+.hero-leagues { display: grid; gap: 10px; }
+.hero-league {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  min-height: 82px;
+  padding: 14px 16px;
+  color: var(--text);
+  text-align: start;
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow-soft);
+  transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+}
+.hero-league:hover {
+  transform: translateY(-2px);
+  border-color: #d2c8b6;
+  box-shadow: var(--shadow);
+}
+.hero-league-mark {
+  width: 42px; height: 42px; border-radius: 12px;
+  background: var(--surface-2) center/28px no-repeat;
+}
+.hero-league-mark--epl { background-color: #f3eef8; background-image: url("../img/leagues/epl.png"); }
+.hero-league-mark--laliga { background-color: #fbecee; background-image: url("../img/leagues/laliga.png"); }
+.hero-league-mark--ucl { background-color: #eef1f8; background-image: url("../img/leagues/ucl.png"); }
+.hero-league-copy { display: grid; gap: 2px; }
+.hero-league-copy b { font-size: .95rem; font-weight: 700; }
+.hero-league-copy small { color: var(--muted); font-size: .78rem; }
 
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 16px; border-radius: var(--radius); font-weight: 700; cursor: pointer;
   border: 1px solid transparent; transition: background .15s ease, border-color .15s ease; font-size: .92rem;
 }
-.btn-primary { background: var(--accent); color: #082016; }
-.btn-primary:hover { background: #4ee6a6; }
+.btn-primary { background: var(--accent); color: #fffaf2; }
+.btn-primary:hover { background: #243049; }
 .btn-ghost, .btn-secondary { background: var(--surface); border-color: var(--border); color: var(--text); }
 .btn-ghost:hover, .btn-secondary:hover { background: var(--surface-2); }
 
@@ -737,7 +775,7 @@ img { max-width: 100%; display: block; }
   background: var(--surface);
   transition: border-color .15s ease, color .15s ease, background .15s ease;
 }
-.competition-filter:hover { color: var(--text); border-color: #3a4454; background: var(--surface-2); }
+.competition-filter:hover { color: var(--text); border-color: #d2c8b6; background: var(--surface-2); }
 .competition-filter.active {
   color: var(--text);
   border-color: var(--accent);
@@ -751,7 +789,7 @@ img { max-width: 100%; display: block; }
   border-radius: 999px;
   color: var(--text);
   text-align: center;
-  background: rgba(255,255,255,.08);
+  background: var(--bg-2);
   font-family: "Space Grotesk", sans-serif;
   font-size: .68rem;
 }
@@ -809,7 +847,7 @@ img { max-width: 100%; display: block; }
 .match-card.competition-epl::before { background: var(--league-epl); }
 .match-card.competition-laliga::before { background: var(--league-laliga); }
 .match-card.competition-ucl::before { background: var(--league-ucl); }
-.match-card:hover { border-color: #3d5648; transform: translateY(-1px); }
+.match-card:hover { border-color: #d2c8b6; transform: translateY(-1px); }
 .match-card.is-live {
   border-color: rgba(239,75,99,.45);
   box-shadow: var(--shadow-soft);
@@ -927,9 +965,9 @@ img { max-width: 100%; display: block; }
 .match-meta { font-size: .82rem; color: var(--muted); }
 .match-meta b { color: var(--text); }
 .watch-link {
-  background: var(--grad); color: #fff; padding: 8px 16px; border-radius: 9px;
+  background: var(--accent); color: #fffaf2; padding: 8px 16px; border-radius: 9px;
   font-weight: 700; font-size: .85rem; display: inline-flex; gap: 6px; align-items: center; transition: .2s;
-  box-shadow: 0 8px 20px rgba(123,47,247,.28);
+  box-shadow: var(--shadow-soft);
 }
 .watch-link:hover { transform: translateY(-2px); }
 .watch-link--commentary {
@@ -1168,7 +1206,7 @@ img { max-width: 100%; display: block; }
   padding: 8px 12px; border-radius: var(--radius-sm); cursor: pointer; font-weight: 600; font-size: var(--fs-sm); transition: .15s;
 }
 .filter-btn:hover { color: var(--text); }
-.filter-btn.active { background: var(--accent); color: #082016; border-color: var(--accent); }
+.filter-btn.active { background: var(--accent); color: #fffaf2; border-color: var(--accent); }
 
 /* --------------------------------------------------------- Watch page */
 .watch-wrap { padding: 28px 0 60px; }
@@ -3187,6 +3225,7 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
   .season-league-card { flex: 0 0 82%; scroll-snap-align: start; }
   .season-archive-link { white-space: normal; }
   .hero { padding: 20px 0 12px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 20px; }
   .hero h1 { font-size: clamp(1.3rem, 6.4vw, 1.7rem); max-width: 16em; }
   .hero-intro-card, .hero-season-card { padding: 15px; }
   .hero-usps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -3232,10 +3271,8 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 .season-notice {
   position: relative;
   z-index: 4;
-  border-bottom: 1px solid rgba(255, 209, 92, .35);
-  background:
-    linear-gradient(180deg, rgba(255, 201, 77, .2), rgba(18, 16, 8, .92)),
-    var(--surface);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
 }
 .season-notice-inner {
   display: grid;
@@ -3251,25 +3288,25 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 }
 .season-notice-kicker {
   margin: 0 0 6px;
-  color: #ffe08a;
+  color: var(--gold);
   font-size: .78rem;
   font-weight: 800;
   letter-spacing: .1em;
 }
 .season-notice h2 {
   margin: 0;
-  font-size: clamp(1.35rem, 3vw, 1.85rem);
-  font-weight: 800;
+  font-size: clamp(1.2rem, 2.6vw, 1.55rem);
+  font-weight: 700;
   line-height: 1.35;
-  color: #fff6d2;
+  color: var(--text);
 }
 .season-notice p:last-of-type {
   margin: 10px 0 0;
   max-width: 46rem;
-  color: #f0e2b0;
-  font-size: 1.05rem;
-  line-height: 1.8;
-  font-weight: 600;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.7;
+  font-weight: 500;
 }
 .season-notice-track {
   position: relative;
@@ -3317,7 +3354,7 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
   line-height: 1.4;
 }
 .archive-strip p { margin: 4px 0 0; color: var(--muted); font-size: .88rem; }
-.hero-keywords, .hero-usps, .hero-season-card, .hero-quick-bar { display: none; }
+.hero-season-card, .hero-quick-bar { display: none; }
 .nav-links .nav-link--tertiary { font-weight: 500; color: #8b94a3; }
 .nav-links a.nav-link--primary { color: var(--text); }
 .kz-hl-banner__league {
