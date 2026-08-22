@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import catalogJson from "../assets/data/stream-plans.json";
 import {
   allowlistedHref,
   applyConflicts,
@@ -443,5 +444,34 @@ describe("preferNewerCatalog", () => {
       plans: [{ matchId: "ar", sources: [] }],
     };
     expect(preferNewerCatalog(empty, filled).plans[0].matchId).toBe("ar");
+  });
+});
+
+describe("today's stream-plans catalog", () => {
+  it("gives every wired match its own content key", () => {
+    const keys = catalogJson.plans.map((plan) => plan.contentKey);
+    expect(keys.length).toBeGreaterThan(0);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect(keys.every((key) => String(key).startsWith("match:"))).toBe(true);
+  });
+
+  it("plays Everton from the Arabic sport-1 wrapper", () => {
+    const match = {
+      id: "espn-eng.1-401879300",
+      home: "Everton",
+      away: "Crystal Palace",
+      channelId: "bein-sports-1",
+      status: "live",
+      kickoffUtc: "2026-08-22T14:00:00Z",
+    };
+    const resolved = resolveStreamPlan({
+      match,
+      catalog: catalogJson,
+      legacyEmbedKey: "koraplus",
+      now: Date.parse("2026-08-22T14:20:00Z"),
+    });
+    expect(resolved.status).toBe("operator");
+    expect(resolved.selected.playbackUrl).toContain("yallacuo.xyz/albaplayer/sport-1");
+    expect(shouldHoldPlayer(resolved)).toBe(false);
   });
 });
