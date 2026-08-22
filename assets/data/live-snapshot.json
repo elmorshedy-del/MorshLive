@@ -1,30 +1,16 @@
 {
-  "updatedAt": "2026-07-07T22:27:07.492Z",
-  "bindingVersion": 12,
+  "updatedAt": "2026-08-22T08:43:35.350Z",
+  "bindingVersion": 13,
   "embedBinding": {
-    "bein-max-1": "vip1",
-    "bein-max-2": "amine",
-    "bein-max-3": "vip1",
-    "bein-max-4": "vip2",
-    "bein-sports-1": "vip1",
-    "bein-sports-2": "vip1"
+    "bein-max-1": "koraplus",
+    "bein-max-2": "koraplus",
+    "bein-max-3": "koraplus",
+    "bein-max-4": "koraplus",
+    "bein-sports-1": "koraplus",
+    "bein-sports-2": "koraplus"
   },
-  "liveCount": 1,
-  "routes": [
-    {
-      "id": "espn-fifa.world-760508",
-      "home": "Switzerland",
-      "away": "Colombia",
-      "score": "0 - 0",
-      "minute": "112'",
-      "channelId": "bein-max-2",
-      "channel": "beIN MAX 2",
-      "commentator": "علي الكعبي",
-      "embedKey": "amine",
-      "embedUrl": "https://yallashooot.tv/albaplayer/amine/",
-      "kickoffUtc": "2026-07-07T20:00Z"
-    }
-  ],
+  "liveCount": 0,
+  "routes": [],
   "conflicts": [],
   "ok": true,
   "warning": null
