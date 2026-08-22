@@ -2930,11 +2930,14 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 }
 
 @media (max-width: 600px) {
+  .container { width: min(100% - 24px, 1200px); }
   .season-hub-inner { padding-block: 18px; }
   .season-hub-copy h2 { font-size: 1.45rem; }
   .season-leagues {
     display: flex;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-inline: contain;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
     padding-bottom: 3px;
@@ -2942,9 +2945,18 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
   .season-leagues::-webkit-scrollbar { display: none; }
   .season-league-card { flex: 0 0 82%; scroll-snap-align: start; }
   .season-archive-link { white-space: normal; }
+  .hero { padding: 38px 0 24px; }
+  .hero h1 { font-size: clamp(1.75rem, 9vw, 2.35rem); }
+  .hero-intro-card, .hero-season-card { padding: 15px; }
+  .hero-usps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .hero-usps .usp { justify-content: center; padding-inline: 8px; text-align: center; }
+  .hero-cta { display: grid; grid-template-columns: 1fr; }
+  .hero-cta .btn { width: 100%; min-height: 48px; justify-content: center; }
   .competition-filters {
     display: flex;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-inline: contain;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
     padding-bottom: 4px;
@@ -2952,7 +2964,25 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
   .competition-filters::-webkit-scrollbar { display: none; }
   .competition-filter { flex: 0 0 auto; min-width: 185px; scroll-snap-align: start; }
   .competition-filter:first-child { min-width: 145px; }
+  .competition-filter, .filter-btn { min-height: 44px; }
+  .status-filters {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .status-filters::-webkit-scrollbar { display: none; }
+  .status-filters .filter-btn { flex: 0 0 auto; }
   .schedule-day-head { align-items: flex-start; flex-direction: column; gap: 2px; }
   .matches { grid-template-columns: minmax(0, 1fr); }
   .match-card { padding: 15px; }
+  .match-top { align-items: flex-start; gap: 10px; }
+  .match-top-end { flex-shrink: 0; }
+  .league-tag { line-height: 1.35; }
+  .match-foot { align-items: stretch; flex-direction: column; gap: 12px; }
+  .match-meta { line-height: 1.55; overflow-wrap: anywhere; }
+  .watch-link { justify-content: center; min-height: 44px; width: 100%; }
+  .match-panel-toggle { min-height: 44px; }
 }
