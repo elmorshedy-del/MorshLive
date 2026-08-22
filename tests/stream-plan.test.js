@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  allowlistedHref,
   applyConflicts,
   applyVerificationResult,
   buildLegacyPlan,
@@ -9,6 +10,7 @@ import {
   liveContentConflicts,
   matchPlanKey,
   normalizePlan,
+  normalizeSource,
   playbackUrlForSource,
   resolveStreamPlan,
   selectPlayableSource,
@@ -328,5 +330,38 @@ describe("provider profiles", () => {
     ).toBe(
       "https://korazero.com/wk/albaplayer/sirtv/?ch=bein-sports-1&match=espn-eng.1-401111111&home=Liverpool&away=Arsenal",
     );
+  });
+
+  it("keeps worker paths relative when no origin is provided", () => {
+    const legacy = buildLegacyPlan(liverpoolArsenal, "koraplus", NOW);
+    expect(playbackUrlForSource(legacy.sources[0], { match: liverpoolArsenal })).toBe(
+      "/wk/albaplayer/koraplus/?ch=bein-sports-1&match=espn-eng.1-401111111&home=Liverpool&away=Arsenal",
+    );
+  });
+});
+
+describe("href allowlist", () => {
+  it("rejects javascript URLs, protocol-relative URLs, and embedded credentials", () => {
+    expect(allowlistedHref("javascript:alert(1)")).toBe("");
+    expect(allowlistedHref("//evil.test/embed")).toBe("");
+    expect(allowlistedHref("https://user:pass@example.test/live.m3u8")).toBe("");
+    expect(allowlistedHref("https://example.test/embed")).toBe("https://example.test/embed");
+    expect(allowlistedHref("/wk/albaplayer/koraplus/")).toBe("/wk/albaplayer/koraplus/");
+  });
+
+  it("drops a source whose only URL is unsafe", () => {
+    expect(
+      normalizeSource(
+        {
+          id: "bad",
+          kind: "iframe",
+          url: "javascript:alert(1)",
+          contentKey: "bein-sports-1",
+          status: "operator",
+        },
+        "bein-sports-1",
+        NOW,
+      ),
+    ).toBeNull();
   });
 });
