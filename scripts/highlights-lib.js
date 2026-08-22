@@ -33,7 +33,7 @@ function parseScoreParts(score) {
 function buildArabicSummary(match) {
   const homeAr = arabicTeam(match.home);
   const awayAr = arabicTeam(match.away);
-  const league = match.league || "المباراة";
+  const league = match.leagueAr || match.league || "المباراة";
   const venue = match.venue ? ` على ملعب ${match.venue}` : "";
   const parts = parseScoreParts(match.score);
 
@@ -68,7 +68,7 @@ function buildHighlightQueries(match, arabicFor) {
   const awayAr = arabicFor(match.away);
   return [
     `ملخص واهداف مباراة ${homeAr} و ${awayAr} تعليق عربي`,
-    `ملخص مباراة ${homeAr} و ${awayAr} كأس العالم 2026`,
+    `ملخص مباراة ${homeAr} و ${awayAr} ${match.leagueAr || match.league || ""}`,
     `اهداف مباراة ${homeAr} ضد ${awayAr} تعليق عربي`,
   ];
 }

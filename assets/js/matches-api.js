@@ -8,9 +8,28 @@
   const API_KEY = "3"; // free public test key — upgrade via SPORTSDB_KEY env in CI
   const BASE = `https://www.thesportsdb.com/api/v1/json/${API_KEY}`;
   const ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer";
-  // World Cup only for now.
-  const ESPN_LEAGUES = ["fifa.world"];
-  const WORLD_CUP_RE = /world\s*cup|كأس العالم/i;
+  const COMPETITIONS = [
+    {
+      key: "epl",
+      nameAr: "الدوري الإنجليزي الممتاز",
+      espnSlugs: ["eng.1"],
+      leagueNames: ["English Premier League"],
+    },
+    {
+      key: "laliga",
+      nameAr: "الدوري الإسباني",
+      espnSlugs: ["esp.1"],
+      leagueNames: ["Spanish La Liga", "Spanish LALIGA", "LaLiga"],
+    },
+    {
+      key: "ucl",
+      nameAr: "دوري أبطال أوروبا",
+      espnSlugs: ["uefa.champions", "uefa.champions_qual"],
+      leagueNames: ["UEFA Champions League", "UEFA Champions League Qualifying"],
+    },
+  ];
+  const ESPN_LEAGUES = COMPETITIONS.flatMap((competition) => competition.espnSlugs);
+  const SCHEDULE_DAYS_AHEAD = 7;
   const CACHE_MS = 60 * 1000; // 1 min client cache
   const FETCH_TIMEOUT_MS = 5000;
   const MATCH_WINDOW_MS = 135 * 60 * 1000;
@@ -20,6 +39,19 @@
   const ENDED = new Set(["FT", "AET", "PEN", "Match Finished", "AWD", "WO", "CANC", "ABD", "PST"]);
 
   let cache = null;
+
+  function competitionForEspnSlug(slug) {
+    const wanted = String(slug || "").toLowerCase();
+    return COMPETITIONS.find((competition) => competition.espnSlugs.includes(wanted)) || null;
+  }
+
+  function competitionForLeagueName(name) {
+    const wanted = String(name || "").trim().toLowerCase();
+    if (!wanted) return null;
+    return COMPETITIONS.find((competition) =>
+      competition.leagueNames.some((leagueName) => leagueName.toLowerCase() === wanted)
+    ) || null;
+  }
 
   function abbr(name) {
     return (name || "")
@@ -92,6 +124,7 @@
 
   function normalizeEvent(e) {
     const status = statusOf(e.strStatus, e.strTimestamp);
+    const competition = competitionForLeagueName(e.strLeague);
     return {
       id: "e" + e.idEvent,
       status,
@@ -106,6 +139,9 @@
       time: formatTime(e),
       kickoffUtc: e.strTimestamp || null,
       league: e.strLeague || "مباراة",
+      leagueAr: competition ? competition.nameAr : "",
+      leagueSlug: null,
+      competition: competition ? competition.key : "",
       venue: [e.strVenue, e.strCity].filter(Boolean).join(" · "),
       channel: null,
       channelId: null,
@@ -138,7 +174,7 @@
 
   function espnDateRange() {
     const today = arabiaToday();
-    return `${shiftDate(today, -1).replace(/-/g, "")}-${shiftDate(today, 1).replace(/-/g, "")}`;
+    return `${shiftDate(today, -1).replace(/-/g, "")}-${shiftDate(today, SCHEDULE_DAYS_AHEAD).replace(/-/g, "")}`;
   }
 
   async function fetchJson(url, label) {
@@ -158,7 +194,7 @@
     const url = `${BASE}/eventsday.php?d=${dateStr}&s=Soccer`;
     const json = await fetchJson(url, `TheSportsDB (${dateStr})`);
     const events = Array.isArray(json.events) ? json.events : [];
-    return events.filter((e) => WORLD_CUP_RE.test(e.strLeague || ""));
+    return events.filter((e) => competitionForLeagueName(e.strLeague));
   }
 
   function espnStatus(status, kickoffUtc) {
@@ -179,9 +215,11 @@
     const kickoffUtc = competition.date || e.date || null;
     const status = espnStatus(competition.status, kickoffUtc);
     const statusType = competition.status && competition.status.type ? competition.status.type : {};
+    const leagueSlug = (league && league.slug) || "";
+    const competitionMeta = competitionForEspnSlug(leagueSlug);
 
     return {
-      id: `espn-${(league && league.slug) || "soccer"}-${e.id}`,
+      id: `espn-${leagueSlug || "soccer"}-${e.id}`,
       status,
       minute: status === "live" ? (competition.status && (competition.status.displayClock || statusType.shortDetail || statusType.detail)) || "مباشر" : "",
       home: homeTeam.displayName || homeTeam.name || e.name,
@@ -194,6 +232,9 @@
       time: kickoffUtc ? new Date(parseKickoffMs(kickoffUtc)).toISOString().slice(11, 16) : "—",
       kickoffUtc,
       league: (league && league.name) || competition.altGameNote || "مباراة",
+      leagueAr: competitionMeta ? competitionMeta.nameAr : "",
+      leagueSlug,
+      competition: competitionMeta ? competitionMeta.key : "",
       venue: [
         competition.venue && competition.venue.fullName,
         competition.venue && competition.venue.address && competition.venue.address.city,
@@ -209,9 +250,33 @@
   async function fetchEspnLeague(slug, dateRange) {
     const url = `${ESPN_BASE}/${slug}/scoreboard?dates=${dateRange}&limit=100`;
     const json = await fetchJson(url, `ESPN (${slug})`);
-    const league = json.leagues && json.leagues[0] ? json.leagues[0] : { slug };
+    const league = { ...(json.leagues && json.leagues[0] ? json.leagues[0] : {}), slug };
     const events = Array.isArray(json.events) ? json.events : [];
     return events.map((event) => normalizeEspnEvent(event, league));
+  }
+
+  function normalizeEspnScoreboard(data, slug) {
+    const league = { ...(data && data.leagues && data.leagues[0] ? data.leagues[0] : {}), slug };
+    const events = Array.isArray(data && data.events) ? data.events : [];
+    return events.map((event) => normalizeEspnEvent(event, league));
+  }
+
+  async function fetchEspnScoreboards(dateRange) {
+    try {
+      const params = new URLSearchParams({ dates: dateRange });
+      const bundle = await fetchJson(`/api/football/scoreboard?${params.toString()}`, "KoraZero football API");
+      const rows = Array.isArray(bundle.leagues) ? bundle.leagues : [];
+      if (rows.length) {
+        return rows.flatMap((row) => normalizeEspnScoreboard(row.data, row.slug));
+      }
+    } catch {
+      // Static/local deployments fall back to ESPN directly.
+    }
+
+    const settled = await Promise.allSettled(
+      ESPN_LEAGUES.map((slug) => fetchEspnLeague(slug, dateRange))
+    );
+    return settled.flatMap((result) => result.status === "fulfilled" ? result.value : []);
   }
 
   function canonical(text) {
@@ -230,6 +295,9 @@
 
   function mergeMatch(existing, incoming) {
     const merged = { ...existing };
+    if (!String(existing.id || "").startsWith("espn-") && String(incoming.id || "").startsWith("espn-")) {
+      merged.id = incoming.id;
+    }
     if (incoming.status === "live") merged.status = "live";
     else if (incoming.status === "ended") merged.status = "ended";
     else if (existing.status === "upcoming") merged.status = incoming.status;
@@ -239,6 +307,9 @@
     if (incoming.channelId && !merged.channelId) merged.channelId = incoming.channelId;
     if (incoming.commentator && !merged.commentator) merged.commentator = incoming.commentator;
     if (incoming.venue && !merged.venue) merged.venue = incoming.venue;
+    if (incoming.leagueSlug && !merged.leagueSlug) merged.leagueSlug = incoming.leagueSlug;
+    if (incoming.competition && !merged.competition) merged.competition = incoming.competition;
+    if (incoming.leagueAr && !merged.leagueAr) merged.leagueAr = incoming.leagueAr;
     merged.source = existing.source === incoming.source ? existing.source : `${existing.source}+${incoming.source}`;
     return merged;
   }
@@ -296,26 +367,28 @@
       return cache.payload;
     }
 
-    const [sportsDbSettled, espnSettled] = await Promise.all([
-      Promise.allSettled(datesToFetch().map(fetchDay)),
-      Promise.allSettled(ESPN_LEAGUES.map((slug) => fetchEspnLeague(slug, espnDateRange()))),
-    ]);
+    const espnMatches = await fetchEspnScoreboards(espnDateRange());
     const seen = new Set();
     const sportsDbMatches = [];
 
-    for (const result of sportsDbSettled) {
-      if (result.status !== "fulfilled") continue;
-      const events = result.value;
-      for (const e of events) {
-        const id = "e" + e.idEvent;
-        if (seen.has(id)) continue;
-        seen.add(id);
-        sportsDbMatches.push(normalizeEvent(e));
+    // ESPN is the normal path and preserves the event id needed for lineups and
+    // stats. TheSportsDB is only a fallback, avoiding three extra requests from
+    // every browser on each live refresh.
+    if (!espnMatches.length) {
+      const sportsDbSettled = await Promise.allSettled(datesToFetch().map(fetchDay));
+      for (const result of sportsDbSettled) {
+        if (result.status !== "fulfilled") continue;
+        const events = result.value;
+        for (const e of events) {
+          const id = "e" + e.idEvent;
+          if (seen.has(id)) continue;
+          seen.add(id);
+          sportsDbMatches.push(normalizeEvent(e));
+        }
       }
     }
 
-    const espnMatches = espnSettled.flatMap((result) => result.status === "fulfilled" ? result.value : []);
-    const matches = filterDisplayMatches(mergeMatches(sportsDbMatches, espnMatches));
+    const matches = filterDisplayMatches(mergeMatches(espnMatches, sportsDbMatches));
     sortMatches(matches);
     if (!matches.length) throw new Error("No live soccer fixtures found");
     const sourceLabel = sportsDbMatches.length && espnMatches.length
@@ -329,7 +402,7 @@
       updatedAt: new Date().toISOString(),
       date: isoDate(new Date()),
       live: true,
-      source: sportsDbMatches.length ? "thesportsdb" : "espn",
+      source: espnMatches.length ? "espn" : "thesportsdb",
       sourceLabel,
     };
 
@@ -351,10 +424,7 @@
   async function supplementEspnLiveScores(matches) {
     if (!Array.isArray(matches) || !matches.length) return matches;
     try {
-      const espnResults = await Promise.allSettled(
-        ESPN_LEAGUES.map((slug) => fetchEspnLeague(slug, espnDateRange()))
-      );
-      const espnMatches = espnResults.flatMap((result) => result.status === "fulfilled" ? result.value : []);
+      const espnMatches = await fetchEspnScoreboards(espnDateRange());
       if (!espnMatches.length) return matches;
       const byKey = new Map(espnMatches.map((m) => [pairKey(m.home, m.away), m]));
       return matches.map((m) => {

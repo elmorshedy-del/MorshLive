@@ -4,6 +4,7 @@
 
   const ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer";
   const FETCH_TIMEOUT_MS = 8000;
+  const UPCOMING_DETAIL_WINDOW_MS = 6 * 60 * 60 * 1000;
   const _cache = new Map();
 
   const STAT_DEFS = [
@@ -38,7 +39,13 @@
 
   function shouldFetchDetail(match) {
     if (!parseEspnMatchId(match && match.id)) return false;
-    if (match.status === "live" || match.status === "upcoming") return true;
+    if (match.status === "live") return true;
+    if (match.status === "upcoming") {
+      const kickoff = Date.parse(match.kickoffUtc || "");
+      if (Number.isNaN(kickoff)) return false;
+      const untilKickoff = kickoff - Date.now();
+      return untilKickoff >= -3 * 60 * 60 * 1000 && untilKickoff <= UPCOMING_DETAIL_WINDOW_MS;
+    }
     if (match.status === "ended" && (!match.lineups || !match.stats)) return true;
     return false;
   }
@@ -200,10 +207,7 @@
     return rows.map((g) => ({ side: g.side, scorer: g.scorer, minute: g.minute, penalty: g.penalty, own: g.own }));
   }
 
-  async function fetchSummary(match) {
-    const parsed = parseEspnMatchId(match.id);
-    if (!parsed) return null;
-    const url = `${ESPN_BASE}/${parsed.leagueSlug}/summary?event=${parsed.eventId}`;
+  async function fetchJson(url) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
     try {
@@ -212,6 +216,21 @@
       return await res.json();
     } finally {
       clearTimeout(timer);
+    }
+  }
+
+  async function fetchSummary(match) {
+    const parsed = parseEspnMatchId(match.id);
+    if (!parsed) return null;
+    const params = new URLSearchParams({
+      league: parsed.leagueSlug,
+      event: parsed.eventId,
+    });
+    try {
+      return await fetchJson(`/api/football/summary?${params.toString()}`);
+    } catch {
+      const url = `${ESPN_BASE}/${parsed.leagueSlug}/summary?event=${parsed.eventId}`;
+      return fetchJson(url);
     }
   }
 

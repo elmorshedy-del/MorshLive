@@ -3,8 +3,48 @@ const LIVE = new Set(["1H", "2H", "HT", "ET", "BT", "P", "LIVE", "IN PLAY", "INT
 const ENDED = new Set(["FT", "AET", "PEN", "Match Finished", "AWD", "WO", "CANC", "ABD", "PST"]);
 const MATCH_WINDOW_MS = 135 * 60 * 1000;
 const RECENT_ENDED_MS = 18 * 60 * 60 * 1000;
-// World Cup only for now.
-const WORLD_CUP_RE = /world\s*cup|كأس العالم/i;
+
+const COMPETITIONS = Object.freeze([
+  {
+    key: "epl",
+    name: "English Premier League",
+    nameAr: "الدوري الإنجليزي الممتاز",
+    espnSlugs: ["eng.1"],
+    leagueNames: ["English Premier League"],
+  },
+  {
+    key: "laliga",
+    name: "Spanish LALIGA",
+    nameAr: "الدوري الإسباني",
+    espnSlugs: ["esp.1"],
+    leagueNames: ["Spanish La Liga", "Spanish LALIGA", "LaLiga"],
+  },
+  {
+    key: "ucl",
+    name: "UEFA Champions League",
+    nameAr: "دوري أبطال أوروبا",
+    espnSlugs: ["uefa.champions", "uefa.champions_qual"],
+    leagueNames: ["UEFA Champions League", "UEFA Champions League Qualifying"],
+  },
+]);
+const ESPN_LEAGUES = Object.freeze(COMPETITIONS.flatMap((competition) => competition.espnSlugs));
+
+function competitionForEspnSlug(slug) {
+  const wanted = String(slug || "").toLowerCase();
+  return COMPETITIONS.find((competition) => competition.espnSlugs.includes(wanted)) || null;
+}
+
+function competitionForLeagueName(name) {
+  const wanted = String(name || "").trim().toLowerCase();
+  if (!wanted) return null;
+  return COMPETITIONS.find((competition) =>
+    competition.leagueNames.some((leagueName) => leagueName.toLowerCase() === wanted)
+  ) || null;
+}
+
+function isSupportedLeagueName(name) {
+  return competitionForLeagueName(name) != null;
+}
 
 function abbr(name) {
   return (name || "")
@@ -76,6 +116,7 @@ function formatTime(e) {
 
 function normalizeEvent(e) {
   const status = statusOf(e.strStatus, e.strTimestamp);
+  const competition = competitionForLeagueName(e.strLeague);
   return {
     id: "e" + e.idEvent,
     status,
@@ -89,7 +130,10 @@ function normalizeEvent(e) {
     score: formatScore(e.intHomeScore, e.intAwayScore, status),
     time: formatTime(e),
     kickoffUtc: e.strTimestamp || null,
-    league: e.strLeague || "كأس العالم",
+    league: e.strLeague || "مباراة",
+    leagueAr: competition ? competition.nameAr : "",
+    leagueSlug: null,
+    competition: competition ? competition.key : "",
     venue: [e.strVenue, e.strCity].filter(Boolean).join(" · "),
     channel: null,
     channelId: "bein-sports-1",
@@ -116,9 +160,11 @@ function normalizeEspnEvent(e, league) {
   const kickoffUtc = competition.date || e.date || null;
   const status = espnStatus(competition.status, kickoffUtc);
   const statusType = competition.status && competition.status.type ? competition.status.type : {};
+  const leagueSlug = (league && league.slug) || "";
+  const competitionMeta = competitionForEspnSlug(leagueSlug);
 
   return {
-    id: `espn-${(league && league.slug) || "soccer"}-${e.id}`,
+    id: `espn-${leagueSlug || "soccer"}-${e.id}`,
     status,
     minute: status === "live" ? (competition.status && (competition.status.displayClock || statusType.shortDetail || statusType.detail)) || "مباشر" : "",
     home: homeTeam.displayName || homeTeam.name || e.name,
@@ -130,7 +176,10 @@ function normalizeEspnEvent(e, league) {
     score: formatScore(home.score, away.score, status),
     time: kickoffUtc ? new Date(parseKickoffMs(kickoffUtc)).toISOString().slice(11, 16) : "—",
     kickoffUtc,
-    league: (league && league.name) || competition.altGameNote || "مباراة",
+    league: (league && league.name) || (competitionMeta && competitionMeta.name) || competition.altGameNote || "مباراة",
+    leagueAr: competitionMeta ? competitionMeta.nameAr : "",
+    leagueSlug,
+    competition: competitionMeta ? competitionMeta.key : "",
     venue: [
       competition.venue && competition.venue.fullName,
       competition.venue && competition.venue.address && competition.venue.address.city,
@@ -177,6 +226,9 @@ function hasScore(m) {
 
 function mergeMatch(existing, incoming) {
   const merged = { ...existing };
+  if (!String(existing.id || "").startsWith("espn-") && String(incoming.id || "").startsWith("espn-")) {
+    merged.id = incoming.id;
+  }
   if (incoming.status === "live") merged.status = "live";
   else if (incoming.status === "ended") merged.status = "ended";
   else if (existing.status === "upcoming") merged.status = incoming.status;
@@ -185,6 +237,9 @@ function mergeMatch(existing, incoming) {
   if (incoming.channel && !merged.channel) merged.channel = incoming.channel;
   if (incoming.commentator && !merged.commentator) merged.commentator = incoming.commentator;
   if (incoming.venue && !merged.venue) merged.venue = incoming.venue;
+  if (incoming.leagueSlug && !merged.leagueSlug) merged.leagueSlug = incoming.leagueSlug;
+  if (incoming.competition && !merged.competition) merged.competition = incoming.competition;
+  if (incoming.leagueAr && !merged.leagueAr) merged.leagueAr = incoming.leagueAr;
   merged.source = existing.source === incoming.source ? existing.source : `${existing.source}+${incoming.source}`;
   return merged;
 }
@@ -238,15 +293,19 @@ function sortMatches(matches) {
 }
 
 module.exports = {
+  COMPETITIONS,
+  ESPN_LEAGUES,
   arabiaDayIso,
   arabiaTodayIso,
   ARABIA_TZ_OFFSET_HOURS,
+  competitionForEspnSlug,
+  competitionForLeagueName,
   filterDisplayMatches,
+  isSupportedLeagueName,
   mergeMatches,
   normalizeEspnEvent,
   normalizeEvent,
   parseKickoffMs,
   sortMatches,
   statusOf,
-  WORLD_CUP_RE,
 };
