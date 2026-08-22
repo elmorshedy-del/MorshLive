@@ -274,18 +274,19 @@ img { max-width: 100%; display: block; }
 .stage-league-monogram,
 .stage-league-copy { position: relative; z-index: 1; }
 .stage-league-monogram {
-  width: 48px;
-  height: 48px;
-  display: grid;
-  place-items: center;
-  border-radius: 10px;
-  font-family: "Space Grotesk", sans-serif;
-  font-size: .72rem;
-  font-weight: 700;
-  color: #fff;
-  background: rgba(0,0,0,.35);
-  border: 1px solid rgba(255,255,255,.16);
+  width: 52px;
+  height: 52px;
+  display: block;
+  border-radius: 12px;
+  background-color: rgba(0,0,0,.32);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 72%;
+  border: 1px solid rgba(255,255,255,.14);
 }
+.stage-league--epl .stage-league-monogram { background-image: url("../img/leagues/epl.png"); }
+.stage-league--laliga .stage-league-monogram { background-image: url("../img/leagues/laliga.png"); }
+.stage-league--ucl .stage-league-monogram { background-image: url("../img/leagues/ucl.png"); }
 .stage-league-copy b,
 .stage-league-copy small { display: block; }
 .stage-league-copy b { font-size: .95rem; line-height: 1.35; }
@@ -322,20 +323,19 @@ img { max-width: 100%; display: block; }
   gap: 6px;
 }
 .season-rail-leagues i {
-  display: grid;
-  place-items: center;
+  display: block;
   width: 34px;
   height: 28px;
   border-radius: 6px;
-  color: #fff;
-  font-family: "Space Grotesk", sans-serif;
-  font-size: .62rem;
-  font-weight: 700;
   font-style: normal;
+  background-color: rgba(0,0,0,.28);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 70%;
 }
-.season-rail-leagues i.epl { background: var(--league-epl); }
-.season-rail-leagues i.ll { background: var(--league-laliga); }
-.season-rail-leagues i.ucl { background: var(--league-ucl); }
+.season-rail-leagues i.epl { background-image: url("../img/leagues/epl.png"); }
+.season-rail-leagues i.ll { background-image: url("../img/leagues/laliga.png"); }
+.season-rail-leagues i.ucl { background-image: url("../img/leagues/ucl.png"); }
 .season-rail a {
   margin-inline-start: auto;
   padding: 7px 10px;
@@ -756,20 +756,24 @@ img { max-width: 100%; display: block; }
   font-size: .68rem;
 }
 .competition-filter-icon, .competition-mark {
-  display: inline-grid;
-  place-items: center;
+  display: inline-block;
   flex: 0 0 auto;
-  color: #fff;
-  font-family: "Space Grotesk", sans-serif;
-  font-size: .6rem;
-  font-weight: 800;
-  letter-spacing: -.02em;
+  background-color: transparent;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: contain;
 }
-.competition-filter-icon { width: 28px; height: 28px; border-radius: var(--radius-sm); }
-.competition-filter-icon--all { background: var(--accent); color: #082016; }
-.competition-filter-icon--epl, .competition-mark--epl { background: #3d2170; }
-.competition-filter-icon--laliga, .competition-mark--laliga { background: #b42338; }
-.competition-filter-icon--ucl, .competition-mark--ucl { background: #163d8a; }
+.competition-filter-icon { width: 28px; height: 28px; }
+.competition-mark { width: 22px; height: 22px; }
+.competition-filter-icon--all {
+  background-color: var(--accent);
+  background-image: url("../img/leagues/all.svg");
+  background-size: 62%;
+  border-radius: var(--radius-sm);
+}
+.competition-filter-icon--epl, .competition-mark--epl { background-image: url("../img/leagues/epl.png"); }
+.competition-filter-icon--laliga, .competition-mark--laliga { background-image: url("../img/leagues/laliga.png"); }
+.competition-filter-icon--ucl, .competition-mark--ucl { background-image: url("../img/leagues/ucl.png"); }
 .status-filters { margin-bottom: 24px; }
 .schedule-days { display: grid; gap: 30px; }
 .schedule-day { min-width: 0; }
@@ -818,7 +822,7 @@ img { max-width: 100%; display: block; }
 .match-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .league-tag, .featured-league, .live-detail-league { display: inline-flex; align-items: center; gap: 7px; }
 .league-tag { font-size: .82rem; color: var(--muted); font-weight: 600; }
-.competition-mark { width: 24px; height: 24px; border-radius: 8px; }
+.competition-mark { width: 22px; height: 22px; }
 .status-pill { font-size: .72rem; font-weight: 700; padding: 4px 8px; border-radius: var(--radius-sm); }
 .status-live { background: rgba(255,59,92,.15); color: var(--danger); }
 .status-live::before { content: "● "; animation: blink 1.3s infinite; }

@@ -106,11 +106,8 @@
   }
 
   function competitionMark(m) {
-    const labels = { epl: "PL", laliga: "LL", ucl: "UCL" };
-    const label = labels[m?.competition];
-    return label
-      ? `<span class="competition-mark competition-mark--${m.competition}" aria-hidden="true">${label}</span>`
-      : "";
+    if (!m?.competition) return "";
+    return `<span class="competition-mark competition-mark--${m.competition}" aria-hidden="true"></span>`;
   }
 
   function coverageBadges(m) {
