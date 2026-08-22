@@ -2306,10 +2306,10 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
  * ==========================================================================*/
 .nav-bookmark {
   display: inline-flex; align-items: center; gap: 6px;
-  background: var(--grad); color: #fff;
+  background: var(--accent); color: #fffaf2;
   border: 0; border-radius: 999px;
   padding: 8px 16px; font: inherit; font-weight: 700; cursor: pointer;
-  box-shadow: 0 6px 18px rgba(123,47,247,.3);
+  box-shadow: var(--shadow-soft);
 }
 .nav-bookmark .ico { width: 18px; height: 18px; }
 .nav-bookmark:hover { filter: brightness(1.08); }
@@ -2355,7 +2355,7 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
   transition: border-color .15s, color .15s, background .15s;
 }
 .nav-pill .ico, .hero-pill .ico { width: 18px; height: 18px; flex-shrink: 0; }
-.nav-pill:hover, .hero-pill:hover { border-color: #3a4454; color: var(--text); background: var(--surface-2); }
+.nav-pill:hover, .hero-pill:hover { border-color: #d2c8b6; color: var(--text); background: var(--surface-2); }
 .nav-pill-tv.is-on, .hero-pill.js-tv-toggle.is-on {
   border-color: var(--accent);
   background: var(--surface-2);
