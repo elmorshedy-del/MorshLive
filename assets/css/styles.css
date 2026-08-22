@@ -2280,7 +2280,7 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
   scroll-margin-top: 96px;
   scroll-margin-bottom: 40px;
 }
-.tv-mode a:focus,
+.tv-mode a:focus:not(.logo),
 .tv-mode button:focus,
 .tv-mode [tabindex]:focus,
 .tv-mode .watch-link:focus,
@@ -2292,10 +2292,14 @@ html.tv-mode { zoom: 1.18; }              /* 720p / 1080p couch distance */
 .tv-mode iframe:focus {
   outline: 4px solid var(--accent);
   outline-offset: 3px;
-  box-shadow: 0 0 0 7px rgba(24,226,154,.28), var(--shadow);
+  box-shadow: 0 0 0 7px rgba(21,32,51,.16), var(--shadow);
   border-radius: 12px;
   position: relative;
   z-index: 5;
+}
+.tv-mode .logo:focus {
+  outline: none;
+  box-shadow: none;
 }
 /* Slight lift on focused cards so the selection reads from across the room. */
 .tv-mode .featured-card:focus,

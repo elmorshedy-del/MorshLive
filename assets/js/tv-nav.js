@@ -75,7 +75,7 @@
     syncTvToggles();
     if (on) {
       revealTvGuide(options.scrollToGuide !== false);
-      const first = focusables()[0];
+      const first = firstControl();
       if (first && !options.skipFocus) setTimeout(() => focusEl(first), 200);
     } else {
       hideTvGuide();
@@ -159,6 +159,10 @@
     return Array.prototype.filter.call(document.querySelectorAll(FOCUSABLE), visible);
   }
 
+  function firstControl() {
+    return focusables().find((el) => !el.classList.contains("logo"));
+  }
+
   function center(rect) {
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   }
@@ -209,14 +213,14 @@
 
     // Back / Escape — step focus out to the header so the user is never stuck.
     if (e.key === "Escape" || e.key === "GoBack" || e.key === "BrowserBack" || e.keyCode === 10009 /* Tizen back */) {
-      const header = document.querySelector(".site-header a, .nav-links a");
+      const header = document.querySelector(".nav-links a") || firstControl();
       if (header) { focusEl(header); e.preventDefault(); }
       return;
     }
 
     if (dir) {
       const active = document.activeElement;
-      const start = active && active !== document.body && visible(active) ? active : focusables()[0];
+      const start = active && active !== document.body && visible(active) ? active : firstControl();
       if (!start) return;
       if (!active || active === document.body) { focusEl(start); e.preventDefault(); return; }
       const next = bestInDirection(start, dir);
@@ -238,7 +242,7 @@
   // On first interaction in tv-mode, make sure something is focused.
   if (isTv) {
     window.addEventListener("DOMContentLoaded", () => {
-      const first = focusables()[0];
+      const first = firstControl();
       if (first) setTimeout(() => focusEl(first), 300);
     });
   }
