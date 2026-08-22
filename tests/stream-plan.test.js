@@ -12,6 +12,7 @@ import {
   normalizePlan,
   normalizeSource,
   playbackUrlForSource,
+  preferNewerCatalog,
   resolveStreamPlan,
   selectPlayableSource,
   shouldHoldPlayer,
@@ -407,5 +408,40 @@ describe("href allowlist", () => {
         NOW,
       ),
     ).toBeNull();
+  });
+});
+
+describe("preferNewerCatalog", () => {
+  it("replaces a stale ASSETS catalog with a newer bundle", () => {
+    const older = {
+      updatedAt: "2026-08-22T11:38:00.000Z",
+      plans: [{ matchId: "old", sources: [{ url: "https://iframe.st/games/hull/" }] }],
+    };
+    const newer = {
+      updatedAt: "2026-08-22T11:49:00.000Z",
+      plans: [{ matchId: "new", sources: [{ url: "https://mo.yallacuo.xyz/albaplayer/sport-1/" }] }],
+    };
+    expect(preferNewerCatalog(older, newer).plans[0].matchId).toBe("new");
+    expect(preferNewerCatalog(newer, older).plans[0].matchId).toBe("new");
+  });
+
+  it("keeps an ASSETS catalog that has no updatedAt", () => {
+    const asset = {
+      plans: [{ matchId: "live-asset", sources: [{ url: "https://example.test/a" }] }],
+    };
+    const bundled = {
+      updatedAt: "2026-08-22T11:49:00.000Z",
+      plans: [{ matchId: "bundled", sources: [] }],
+    };
+    expect(preferNewerCatalog(asset, bundled).plans[0].matchId).toBe("live-asset");
+  });
+
+  it("ignores empty catalogs even if they look newer", () => {
+    const empty = { updatedAt: "2026-08-22T12:00:00.000Z", plans: [] };
+    const filled = {
+      updatedAt: "2026-08-22T11:49:00.000Z",
+      plans: [{ matchId: "ar", sources: [] }],
+    };
+    expect(preferNewerCatalog(empty, filled).plans[0].matchId).toBe("ar");
   });
 });
