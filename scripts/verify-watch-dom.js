@@ -35,6 +35,7 @@ const requiredIds = [
 
 const requiredClasses = [
   "page-watch",
+  "match-plan-chrome",
   "season-rail",
   "season-rail-inner",
   "no-ads-badge",
@@ -55,11 +56,18 @@ const requiredScripts = [
 ];
 
 const forbidden = [
-  { pattern: /<details[^>]*watch-sources-fold/, reason: "channels must stay visible (not collapsed)" },
+  { pattern: /<details[^>]*watch-sources-fold/, reason: "do not wrap sources in a details fold" },
   { pattern: /matches-api\.js[^<]*[\s\S]*matches-api\.js/, reason: "duplicate matches-api.js script" },
+  { pattern: /psg-live-hotfix\.js/, reason: "World Cup PSG hotfix must not load on season watch" },
+  { pattern: /bridge\.js/, reason: "experimental Bridge rail is dead under stream plans" },
 ];
 
 let failed = false;
+
+if (!/class="watch-sources-card" hidden/.test(html)) {
+  console.error("watch-sources-card must ship hidden (stream plans own playback)");
+  failed = true;
+}
 
 for (const id of requiredIds) {
   const re = new RegExp(`id=["']${id}["']`);

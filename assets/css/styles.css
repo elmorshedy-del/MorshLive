@@ -3074,7 +3074,7 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 .kz-hl-banner__teams, .kz-hl-banner__cta { position: relative; z-index: 1; padding-inline: 14px; }
 .kz-hl-banner__teams { font-weight: 800; font-size: .88rem; line-height: 1.35; margin-bottom: 3px; }
 
-/* Watch — layout only (all hooks preserved; channels stay visible above player) */
+/* Watch — layout only (DOM hooks stay in HTML; stream-plan chrome hides the dead rails) */
 .page-watch .shot-ball { display: none; }
 .page-watch .watch-wrap { padding-top: 12px; }
 .page-watch .watch-stage {
@@ -3120,14 +3120,22 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
   .page-watch .watch-sources-card { padding: 10px 12px; }
 }
 
+/* Stream-plan watch: no 24/7 channel grid, server pills, Daddy/Koora tabs, or WC mirrors. */
+.page-watch.match-plan-chrome .watch-sources-card,
+.page-watch.match-plan-chrome #alt-streams,
+.page-watch.match-plan-chrome #manual-mirrors,
+.page-watch.match-plan-chrome .info-item--legacy-source {
+  display: none !important;
+}
+
 /* ── Pinned-player-only mode ────────────────────────────────────
    When a match has a dedicated pinned embed (e.g. Fabor playerv5),
    strip everything except the player + match title so the user
    sees just the stream — no channel buttons, server tabs, or info
-   grid cluttering the view.  Manual mirror cards are still shown
-   when the match has backup mirrors. */
+   grid cluttering the view. */
 .pinned-player-only .watch-sources-card,
 .pinned-player-only #alt-streams,
+.pinned-player-only #manual-mirrors,
 .pinned-player-only .watch-grid,
 .pinned-player-only .no-ads-badge { display: none !important; }
 .pinned-player-only .watch-head { margin-bottom: 8px; }

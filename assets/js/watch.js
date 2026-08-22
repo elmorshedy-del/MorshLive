@@ -61,6 +61,37 @@
   let match = null;
   let matchesReady = false;
   let activePlan = null;
+
+  function allowLegacySourceChrome() {
+    if (xtreamMode) return true;
+    const matchId = (match && match.id) || params.get("match") || "";
+    if (matchId) return false;
+    if (activePlan && activePlan.catalog) return false;
+    if (activePlan && ["operator", "verified", "waiting", "conflict", "pending"].includes(activePlan.status)) {
+      return false;
+    }
+    return false;
+  }
+
+  function applyWatchChrome() {
+    const allow = allowLegacySourceChrome();
+    document.body.classList.toggle("match-plan-chrome", !allow);
+    document.body.classList.toggle("xtream-chrome", !!xtreamMode);
+    const card = document.querySelector(".watch-sources-card");
+    if (card) card.hidden = !allow;
+    if (!allow) {
+      const alt = document.getElementById("alt-streams");
+      const mirrors = document.getElementById("manual-mirrors");
+      if (alt) {
+        alt.hidden = true;
+        alt.innerHTML = "";
+      }
+      if (mirrors) {
+        mirrors.hidden = true;
+        mirrors.innerHTML = "";
+      }
+    }
+  }
   let altStreamsSignature = "";
   let activeAltStreamKind = "daddyLive";
   let altStreamEntries = [];
@@ -732,8 +763,9 @@
       if (activeXtreamChannel) mountXtreamPlayer(activeXtreamChannel);
       return;
     }
-    // Bridge: direct HLS from headless Chromium bridge — no iframe
-    if (activeEmbedKey === "bridge" && window.STREAM_BRIDGE && window.STREAM_BRIDGE.hasStream(channel.id)) {
+    // Bridge and WC pinned mirrors are leftover 24/7 / World Cup rails.
+    // Stream plans own playback — do not offer them on match watch.
+    if (allowLegacySourceChrome() && activeEmbedKey === "bridge" && window.STREAM_BRIDGE && window.STREAM_BRIDGE.hasStream(channel.id)) {
       var bridgeUrl = window.STREAM_BRIDGE.hlsUrl(channel.id);
       if (bridgeUrl) {
         mountInlineHls([bridgeUrl], { onFatal: showBridgeFailure });
@@ -744,11 +776,11 @@
     const planSource = activePlan && activePlan.selected;
     const planReady = planSource && (activePlan.status === "verified" || activePlan.status === "operator");
     if (planReady && mountPlanSource(planSource, activePlan)) {
-      document.body.classList.add("pinned-player-only");
+      applyWatchChrome();
       return;
     }
 
-    const override = mainPlayerOverrideForMatch(match);
+    const override = allowLegacySourceChrome() ? mainPlayerOverrideForMatch(match) : null;
     if (override) {
       mountPinnedMainMirror(override.url, override.fallback, override.iframe);
       document.body.classList.add("pinned-player-only");
@@ -774,11 +806,15 @@
     }
 
     if (planSource && mountPlanSource(planSource, activePlan)) {
-      document.body.classList.remove("pinned-player-only");
+      applyWatchChrome();
       return;
     }
 
-    document.body.classList.remove("pinned-player-only");
+    applyWatchChrome();
+    if (!allowLegacySourceChrome()) {
+      showPlanWaiting((activePlan && activePlan.reason) || "pending");
+      return;
+    }
     loadIframePlayer(embedUrlFor(currentEmbed(), embedQuery(activeServ)), true);
   }
 
@@ -916,6 +952,14 @@
   function renderAltStreams() {
     const card = document.getElementById("alt-streams");
     if (!card) return;
+    if (!allowLegacySourceChrome()) {
+      card.hidden = true;
+      card.innerHTML = "";
+      card.dataset.altTabsBound = "";
+      altStreamsSignature = "";
+      altStreamEntries = [];
+      return;
+    }
     const cfg = window.SITE_DATA.altStreamsForMatch
       ? window.SITE_DATA.altStreamsForMatch(match)
       : null;
@@ -1143,6 +1187,12 @@
   function renderManualMirrors() {
     const wrap = document.getElementById("manual-mirrors");
     if (!wrap) return;
+    if (!allowLegacySourceChrome()) {
+      wrap.hidden = true;
+      wrap.innerHTML = "";
+      wrap.dataset.mirrorsBound = "";
+      return;
+    }
     const cards = manualMirrorsForMatch(match);
     if (!cards || !cards.length) {
       wrap.hidden = true;
@@ -1344,7 +1394,10 @@
     }
     const live = !!(match && match.status === "live");
     const commentary = matchIsCommentary();
-    document.getElementById("ch-name").textContent = channel.name;
+    const matchTitle = match
+      ? `${teamLabel(match.home)} × ${teamLabel(match.away)}`
+      : channel.name;
+    document.getElementById("ch-name").textContent = matchTitle;
     document.getElementById("ch-status").innerHTML = live
       ? liveStatusHtml(match)
       : commentary
@@ -1352,7 +1405,9 @@
         : `<span class="status-pill status-upcoming">${escapeHtml(t("watch.ready"))}</span>`;
     document.title = commentary
       ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} — ${t("watch.commentary")}`
-      : `${channel.name} — ${t("watch.titleSuffix")}`;
+      : match
+        ? `${matchTitle} — ${t("watch.titleSuffix")}`
+        : `${channel.name} — ${t("watch.titleSuffix")}`;
 
     const sub = document.getElementById("now-sub");
     sub.textContent = match
@@ -1424,6 +1479,10 @@
   function renderChannels() {
     const row = document.getElementById("channel-row");
     if (!row) return;
+    if (!allowLegacySourceChrome()) {
+      row.innerHTML = "";
+      return;
+    }
     if (xtreamMode) {
       const name = activeXtreamChannel?.name || params.get("name") || "IPTV";
       row.innerHTML = `<a class="channel-btn active" href="iptv-admin.html"><span class="channel-btn-name">${escapeHtml(name)}</span><span class="channel-btn-tag">إدارة IPTV</span></a>`;
@@ -1467,6 +1526,10 @@
   function renderServers({ rebind } = {}) {
     const row = document.getElementById("servers");
     if (!row) return;
+    if (!allowLegacySourceChrome()) {
+      row.innerHTML = "";
+      return;
+    }
     if (xtreamMode) {
       const portal = activeXtreamChannel?.portalLabel || xtreamPortalId || "IPTV";
       row.innerHTML = `<div class="server-groups server-groups--clean"><div class="server-group"><div class="server-group-label">Xtream</div><div class="server-group-row"><span class="server-status-pill srv-ok">${escapeHtml(portal)} ← ${escapeHtml(activeXtreamChannel?.name || "IPTV")}</span></div></div></div>`;
@@ -1601,6 +1664,7 @@
     MATCHES = meta.matches;
     resolveSelection();
     await fetchAndApplyPlan();
+    applyWatchChrome();
     fillInfo();
     renderAltStreams();
     renderManualMirrors();
@@ -1626,6 +1690,7 @@
   }
 
   document.addEventListener("DOMContentLoaded", async () => {
+    applyWatchChrome();
     initNav();
     initAltStreamHeal();
     initRobustFrameRecovery();
@@ -1660,12 +1725,11 @@
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
     setInterval(() => refreshMatchDetail().catch((e) => console.warn("Detail refresh failed:", e.message)), 60 * 1000);
     setInterval(() => {
+      if (!allowLegacySourceChrome() || !window.StreamCheck) return;
       const chRow = document.getElementById("channel-row");
       const srvRow = document.getElementById("servers");
-      if (window.StreamCheck) {
-        if (chRow) window.StreamCheck.autoHighlight(chRow, { autoSelect: false }).catch(() => {});
-        if (srvRow) window.StreamCheck.autoHighlight(srvRow, { autoSelect: false }).catch(() => {});
-      }
+      if (chRow) window.StreamCheck.autoHighlight(chRow, { autoSelect: false }).catch(() => {});
+      if (srvRow) window.StreamCheck.autoHighlight(srvRow, { autoSelect: false }).catch(() => {});
     }, 120 * 1000);
   });
 })();

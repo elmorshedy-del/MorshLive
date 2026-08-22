@@ -37,13 +37,8 @@ const ALT_STREAM_DEFS = {
 
 // Show backup panel for live, upcoming, and recently ended matches.
 function altStreamsForMatch(m) {
-  // Keep the backup strip visible, but only expose sources that resolve right
-  // now. NTV, Amine, and Sir TV currently return upstream unavailable for this
-  // match; Koora City resolves to an active player wrapper.
-  return {
-    daddyLive: ALT_STREAM_DEFS.daddyLive,
-    kooraCity: ALT_STREAM_DEFS.kooraCity,
-  };
+  // Stream plans own playback. The old 24/7 Daddy / Koora / NTV strip is dead.
+  return {};
 }
 
 function altStreamUrl(kind, match) {
@@ -125,87 +120,10 @@ function streamOptionUrl(opt, channelId, matchId) {
   return embedUrlFor(embed, { mode: opt.mode || "dual", matchId });
 }
 
-// Labeled stream sources for the watch page — honest about MAX vs Sports Arabic fallbacks.
-function streamOptionsFor(channelId, match, embedKey) {
-  const primaryKey = embedKey || embedKeyFor(channelId);
-  const altKey = primaryKey === "kooracity" ? "sirtv" : "kooracity";
-  const isMax = /^bein-max-/.test(channelId || "");
-  const dlhd = DLHD_STREAM_IDS[channelId] || null;
-
-  const opts = [
-    {
-      id: "auto",
-      labelKey: "watch.optAuto",
-      hintKey: "watch.optAutoHint",
-      embedKey: primaryKey,
-      mode: "dual",
-      kind: "reachable",
-      recommended: true,
-    },
-    {
-      id: `vip-${altKey}`,
-      labelKey: "watch.optAltVip",
-      hintKey: "watch.optAltVipHint",
-      labelVars: { slot: altKey.toUpperCase() },
-      embedKey: altKey,
-      mode: "dual",
-      kind: "reachable",
-    },
-    {
-      id: "hls",
-      labelKey: "watch.optHls",
-      hintKey: "watch.optHlsHint",
-      embedKey: primaryKey,
-      mode: "hls",
-      kind: "reachable",
-    },
-    {
-      id: "twitch",
-      labelKey: "watch.optTwitch",
-      hintKey: "watch.optTwitchHint",
-      embedKey: primaryKey,
-      mode: "twitch",
-      kind: "reachable",
-    },
-  ];
-
-  if (isMax && dlhd) {
-    if (dlhd.maxAr) {
-      opts.push({
-        id: "dlhd-max",
-        labelKey: "watch.optMaxAr",
-        hintKey: "watch.optMaxArHint",
-        path: `/dl/${dlhd.maxAr}/`,
-        kind: "reachable",
-        fallback: true,
-      });
-    }
-    if (dlhd.sportsAr) {
-      opts.push({
-        id: "dlhd-sports",
-        labelKey: "watch.optSportsAr",
-        hintKey: "watch.optSportsArHint",
-        path: `/dl/${dlhd.sportsAr}/`,
-        kind: "reachable",
-        fallback: true,
-        sportsOnly: true,
-      });
-    }
-  } else if (dlhd && dlhd.backup) {
-    opts.push({
-      id: "dlhd-backup",
-      labelKey: dlhd.labelKey || "watch.optDlhdBackup",
-      hintKey: "watch.optDlhdBackupHint",
-      path: `/dl/${dlhd.backup}/`,
-      kind: "reachable",
-      fallback: true,
-    });
-  }
-
-  return opts.map((o) => ({
-    ...o,
-    url: streamOptionUrl(o, channelId, match && match.id),
-  }));
+// World Cup 24/7 picker (Auto / VIP / HLS / Twitch / DLHD). Stream plans own
+// playback now — keep the helper so old callers do not crash, but return nothing.
+function streamOptionsFor() {
+  return [];
 }
 
 function servIndexFromParam(embed, raw) {

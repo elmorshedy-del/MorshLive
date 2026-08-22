@@ -129,30 +129,10 @@
 
   function renderServers() {
     const row = document.getElementById("servers");
-    const activeServ = servIndexFromParam(channelEmbed(), params.get("serv"));
-
-    const n = channelEmbed().servers || 1;
-    row.innerHTML = Array.from({ length: n }, (_, i) =>
-      `<button class="server-btn ${i === activeServ ? "active" : ""}" data-srv="${i}" data-kind="reachable" data-url="${embedUrl(i)}" data-label="سيرفر ${i + 1}"><span class="srv-label">سيرفر ${i + 1}</span></button>`
-    ).join("");
-
-    row.querySelectorAll(".server-btn").forEach((btn) => {
-      btn.addEventListener("click", () => {
-        const srv = Number(btn.dataset.srv);
-        row.querySelectorAll(".server-btn").forEach((b) => b.classList.remove("active"));
-        btn.classList.add("active");
-        loadEmbed(srv);
-
-        const next = new URL(location.href);
-        const embed = channelEmbed();
-        const start = embed.servStart != null ? embed.servStart : 0;
-        params.set("serv", start + srv);
-        next.searchParams.set("serv", start + srv);
-        history.replaceState(null, "", next);
-      });
-    });
-
-    if (window.StreamCheck) window.StreamCheck.autoHighlight(row, { autoSelect: false }).catch(() => {});
+    if (!row) return;
+    // Stream plans own playback. The leftover VIP server pills stay off.
+    row.hidden = true;
+    row.innerHTML = "";
   }
 
   function renderSidebar() {
