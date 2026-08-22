@@ -15,14 +15,25 @@
   }
 
   function replayEmbedUrl(embed) {
+    const raw = String(embed || "").trim();
+    if (!raw) return "";
     try {
-      const url = new URL(String(embed || ""), location.href);
+      const url = new URL(raw, location.href);
       if (url.hostname === "nvtboo.vortexvisionworks.com") {
         const m = url.pathname.match(/\/embed\/([A-Za-z0-9]+)/);
         if (m) return `/replay/embed/${encodeURIComponent(m[1])}`;
       }
+      const host = url.hostname.replace(/^www\./, "").toLowerCase();
+      let youtubeId = "";
+      if (host === "youtu.be") youtubeId = url.pathname.split("/").filter(Boolean)[0] || "";
+      else if (host === "youtube.com" || host === "m.youtube.com" || host === "youtube-nocookie.com") {
+        if (url.pathname.startsWith("/embed/") || url.pathname.startsWith("/shorts/")) {
+          youtubeId = url.pathname.split("/").filter(Boolean)[1] || "";
+        } else youtubeId = url.searchParams.get("v") || "";
+      }
+      if (/^[\w-]{11}$/.test(youtubeId)) return `https://www.youtube.com/embed/${youtubeId}?rel=0`;
     } catch { /* direct fallback */ }
-    return embed;
+    return raw;
   }
 
   function isTrueHighlightClip(clip) {
@@ -31,7 +42,8 @@
     const title = String(clip.title || "");
     if (/مباراة\s+كاملة|full\s*match|match\s*replay/i.test(title)) return false;
     return /^(?:ملخص\s+مباراة|(?:اهداف|أهداف)\s+مباراة)/i.test(title)
-      || (/ملخص|اهداف|أهداف/i.test(title) && /مباراة|كأس العالم/i.test(title));
+      || (/ملخص|اهداف|أهداف|highlights?|goals/i.test(title)
+        && /مباراة|كأس العالم|الدوري|أبطال|premier league|la liga|champions/i.test(title));
   }
 
   function clipUsable(clip) {
@@ -226,7 +238,7 @@
       <iframe src="${embed}" title="${escapeHtml(t("card.highlightsTitle"))}" loading="eager"
         allow="autoplay; fullscreen; encrypted-media; picture-in-picture; accelerometer; gyroscope"
         allowfullscreen
-        sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>`;
+        sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"></iframe>`;
     modal.hidden = false;
     document.body.classList.add("tournament-video-modal-open");
   }

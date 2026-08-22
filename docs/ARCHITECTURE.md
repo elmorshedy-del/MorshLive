@@ -17,7 +17,7 @@ Browser → korazero.com
 | Stream proxy | `/wk/hls`, `/dl/hls`, `/sir/hls` | HMAC-signed HLS; host rotation via `STREAM_SIGNING_SECRET` |
 | Replay | `/replay/embed/*`, `/replay/asset` | Vortex embed sanitizer + m3u8 rewrite (`lib/replay-hls.js`) |
 | Memes | `/api/recent-memes`, `/api/match-memes` | Threshold logic in `lib/meme-threshold.js` |
-| Data APIs | `/api/edge`, match detail, etc. | Reads `assets/data` via ASSETS binding |
+| Data APIs | `/api/edge`, match detail, `/api/stream-plan` | Reads `assets/data` via ASSETS binding |
 
 ## Front-end data flow
 
@@ -31,8 +31,16 @@ Browser → korazero.com
 - Build step runs `npm run refresh:matches` then `wrangler deploy`.
 - Secrets: `STREAM_SIGNING_SECRET`, `TWITTER_BEARER_TOKEN`, `YOUTUBE_API_KEY`, Twitch creds.
 
+## Stream plans
+
+Match-scoped playback lives in `assets/data/stream-plans.json`. Pure selection
+rules are in `lib/stream-plan.js`; the worker exposes `GET /api/stream-plan`.
+The watch page waits for that plan before mounting a player so the generic
+embed cannot flash the wrong game. Operator workflow: `docs/STREAM-PLANS.md`.
+
 ## Known fragility (fix incrementally)
 
 - `worker.js` is still large — continue extracting to `lib/`.
 - Front-end globals depend on HTML script order.
 - Upstream mirror hosts (worldkoora, vortex) rotate — update constants or signing.
+- Legacy channel bindings still exist for matches without a catalog plan.

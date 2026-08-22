@@ -5,7 +5,7 @@ Extract **testable, side-effect-free** logic here. `worker.js` imports these mod
 ## Rules
 
 - No `fetch`, no `env`, no Cloudflare APIs — keep functions pure or inject dependencies.
-- Export named functions only; one concern per file (`meme-threshold.js`, `replay-hls.js`).
+- Export named functions only; one concern per file (`meme-threshold.js`, `replay-hls.js`, `stream-plan.js`).
 - Every new file needs tests in `tests/<name>.test.js`.
 - Run `npm test` after changes.
 

@@ -47,8 +47,8 @@ function classifyHighlightTitle(title) {
   if (!t || FULL_MATCH_TITLE_RE.test(t)) return null;
   if (/^(?:اهداف|أهداف)\s+مباراة/i.test(t)) return "goals";
   if (/^ملخص\s+مباراة/i.test(t)) return "full";
-  if (/ملخص/i.test(t) && /مباراة|كأس العالم|world cup/i.test(t)) return "full";
-  if (/(?:اهداف|أهداف)/i.test(t) && /مباراة|كأس العالم|world cup/i.test(t)) return "goals";
+  if (/ملخص/i.test(t) && /مباراة|كأس العالم|world cup|الدوري|أبطال|premier|liga|champions/i.test(t)) return "full";
+  if (/(?:اهداف|أهداف)/i.test(t) && /مباراة|كأس العالم|world cup|الدوري|أبطال|premier|liga|champions/i.test(t)) return "goals";
   return null;
 }
 

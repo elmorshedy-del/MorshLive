@@ -1,33 +1,23 @@
 {
-  "updatedAt": "2026-07-08T05:48:18.934Z",
+  "updatedAt": "2026-08-22T08:41:38.312Z",
   "days": [
     {
-      "date": "2026-07-07",
+      "date": "2026-08-21",
       "matches": [
         {
-          "key": "argentina~egypt",
-          "home": "Argentina",
-          "away": "Egypt",
-          "score": "3 - 2",
-          "kickoffUtc": "2026-07-07T16:00Z",
-          "poster": "https://hlsx2.flashframenetwork.com/upfiles/source/hls/132/318271/poster/0.png?token=UWV6bEQyRnlQVkRCUDZWcGxFVzdiUk0wbFJ5NFc2emZOQjQza1I4Vi9Mcz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy83LzMxODI3MS8wLnBuZzolMkYlMkZobHN4Mi5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTkwNjM2MjExNTk4NzU5&keypair=bUJvbnhYeGpRL2hHVmEwTE1IR0E5V2JUT3dXbTJydXlvSHNjZHo3RHhGVT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy83LzMxODI3MS86JTJGJTJGaGxzeDIuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE5MDYzNjIxMTU5ODc1OQ==",
-          "embed": "https://nvtboo.vortexvisionworks.com/embed/xQIvMCYBsealR",
-          "stage": ""
-        }
-      ]
-    },
-    {
-      "date": "2026-07-06",
-      "matches": [
-        {
-          "key": "england~mexico",
-          "home": "Mexico",
-          "away": "England",
-          "score": "2 - 3",
-          "kickoffUtc": "2026-07-06T01:00Z",
-          "poster": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318219/poster/0.png?token=ajk5VTk4VXhYYVRkRkRwRGIzTzN0MmxNVzVzY0FwR0s0bGUxNk1mL09MYz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS8wLnBuZzolMkYlMkZobHM4Ni5mbGFzaGZyYW1lbmV0d29yay5jb20lMkY6NjM5MTg5NjU2NjM3MTUxNTEz&keypair=ZmRBVlA0OElsbWFCSVJuVjJsbEo1b0JJb09tSFdVRk9uZEVmcFhpdmVycz06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvNy82LzMxODIxOS86JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTE4OTY1NjYzNzE1MTUxMw==",
+          "key": "arsenal~coventrycity",
+          "home": "Arsenal",
+          "away": "Coventry City",
+          "score": "3 - 0",
+          "kickoffUtc": "2026-08-21T19:00Z",
+          "poster": "https://hls86.flashframenetwork.com/upfiles/source/hls/132/318840/poster/0.png?token=endoTXY0ellNZTBJcXdZT0pDN0FzMGREQmkrL0FNOXgwd2FWSEgrbHJ2QT06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvOC8yMS8zMTg4NDAvMC5wbmc6JTJGJTJGaGxzODYuZmxhc2hmcmFtZW5ldHdvcmsuY29tJTJGOjYzOTIyOTg4NDYzMzI0OTM3OQ==&keypair=UWVkUkpyb0VqejNVRmJBbjRKYTY1SHprZzhHME1EQklJM1V4SVJMR29yMD06VXBGaWxlcy9pbXBvcnRhbnQvMTMyLzIwMjYvOC8yMS8zMTg4NDAvOiUyRiUyRmhsczg2LmZsYXNoZnJhbWVuZXR3b3JrLmNvbSUyRjo2MzkyMjk4ODQ2MzMyNDkzNzk=",
+          "embed": "https://nvtboo.vortexvisionworks.com/embed/6BkPxr1tWuNIq",
           "stage": "",
-          "embed": "https://nvtboo.vortexvisionworks.com/embed/WAOCAqgXRSoPe"
+          "league": "English Premier League",
+          "leagueAr": "الدوري الإنجليزي الممتاز",
+          "competition": "epl",
+          "leagueSlug": "eng.1",
+          "id": "espn-eng.1-401879301"
         }
       ]
     }

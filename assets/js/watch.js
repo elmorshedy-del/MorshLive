@@ -47,11 +47,20 @@
     ? rawXtreamStreamId.replace(/[^a-z0-9_-]/gi, "")
     : rawXtreamStreamId.replace(/[^0-9]/g, "");
   const teamLabel = (n) => (window.TeamNames ? window.TeamNames.localize(n) : n);
+  const leagueLabel = (m) => {
+    if (m?.competition) {
+      const translated = t(`league.${m.competition}`);
+      if (translated !== `league.${m.competition}`) return translated;
+    }
+    if (window.I18N?.lang === "ar" && m?.leagueAr) return m.leagueAr;
+    return m?.league || "";
+  };
 
   let MATCHES = [];
   let channel = CHANNELS[0];
   let match = null;
   let matchesReady = false;
+  let activePlan = null;
   let altStreamsSignature = "";
   let activeAltStreamKind = "daddyLive";
   let altStreamEntries = [];
@@ -539,18 +548,108 @@
     schedule(opts.force ? 250 : FRAME_LOAD_TIMEOUT_MS);
   }
 
-  function loadIframePlayer(url, noSandbox) {
+  function loadIframePlayer(url, noSandboxOrOpts) {
     if (!shell || !url) return;
     destroyInlineHls();
     if (loadedUrl === url) return;
     loadedUrl = url;
-    const sandbox = iframeSandboxAttr(noSandbox);
+    const opts = noSandboxOrOpts && typeof noSandboxOrOpts === "object"
+      ? noSandboxOrOpts
+      : { noSandbox: !!noSandboxOrOpts };
+    const sandbox = iframeSandboxAttr(!!opts.noSandbox);
+    const referrer = opts.referrerPolicy || EMBED_REFERRER;
     shell.innerHTML =
       `<iframe class="embed-frame" src="${url}" ` +
       `${sandbox}` +
       `allow="autoplay; encrypted-media; fullscreen; picture-in-picture" allowfullscreen ` +
-      `referrerpolicy="no-referrer" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
+      `referrerpolicy="${referrer}" scrolling="no" loading="eager" fetchpriority="high"></iframe>`;
     installIframeWatchdog(shell.querySelector(".embed-frame"), { role: "main" });
+  }
+
+  function showPlanWaiting(reason) {
+    if (!shell) return;
+    loadedUrl = `plan-wait:${reason || "pending"}`;
+    destroyInlineHls();
+    const title = t("watch.planWaiting");
+    const hint = t("watch.planWaitingHint");
+    shell.innerHTML =
+      `<div class="player-shell-waiting" data-plan-wait="${escapeHtml(reason || "")}">` +
+      `<strong>${escapeHtml(title === "watch.planWaiting" ? "جاري تجهيز البث" : title)}</strong>` +
+      `<span>${escapeHtml(hint === "watch.planWaitingHint" ? "لن يُحمّل مشغّل افتراضي قبل معرفة مصدر هذه المباراة." : hint)}</span>` +
+      `</div>`;
+  }
+
+  function planPlaybackUrl(source) {
+    if (!source) return "";
+    if (source.playbackUrl) {
+      if (source.playbackUrl.startsWith("http") || source.playbackUrl.startsWith("/")) {
+        if (source.kind === "xtream") return "";
+        return source.playbackUrl;
+      }
+    }
+    if (source.url) return source.url;
+    if (source.path) {
+      const url = new URL(source.path, location.origin);
+      if (match && match.channelId) url.searchParams.set("ch", match.channelId);
+      if (match && match.id) url.searchParams.set("match", match.id);
+      if (match && match.home) url.searchParams.set("home", match.home);
+      if (match && match.away) url.searchParams.set("away", match.away);
+      return url.toString();
+    }
+    return "";
+  }
+
+  async function mountPlanXtream(source) {
+    if (!source || !source.portalId || !source.streamId) return false;
+    try {
+      const query = new URLSearchParams({
+        portal: source.portalId,
+        stream: source.streamId,
+        limit: "1",
+      });
+      const response = await fetch(`/api/xtream/live?${query}`, { cache: "no-store" });
+      const data = await response.json().catch(() => ({}));
+      const selected = (data.portals || []).flatMap((block) => block.streams || [])[0];
+      if (!selected) return false;
+      mountXtreamPlayer(selected);
+      loadedUrl = `plan-xtream:${source.portalId}:${source.streamId}`;
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  function mountPlanSource(source, plan) {
+    if (!source) return false;
+    const policy = (plan && plan.profile) || {};
+    if (source.kind === "xtream") {
+      mountPlanXtream(source);
+      return true;
+    }
+    if (source.kind === "hls") {
+      const href = planPlaybackUrl(source);
+      if (!href) return false;
+      mountPinnedMainMirror(href, source.fallbackUrl, false);
+      loadedUrl = `plan-hls:${href}`;
+      return true;
+    }
+    const href = planPlaybackUrl(source);
+    if (!href) return false;
+    loadIframePlayer(href, {
+      noSandbox: policy.noSandbox !== false,
+      referrerPolicy: policy.referrerPolicy || EMBED_REFERRER,
+    });
+    return true;
+  }
+
+  async function fetchAndApplyPlan() {
+    if (!match || !match.id || !window.StreamPlanApi) {
+      activePlan = match ? activePlan : null;
+      return activePlan;
+    }
+    const plan = await window.StreamPlanApi.fetchPlan(match, { timeoutMs: 1500 });
+    if (plan) activePlan = plan;
+    return activePlan;
   }
 
   // hls.js's default ABR starts from a conservative bandwidth guess (~500kbps)
@@ -641,6 +740,14 @@
         return;
       }
     }
+
+    const planSource = activePlan && activePlan.selected;
+    const planReady = planSource && (activePlan.status === "verified" || activePlan.status === "operator");
+    if (planReady && mountPlanSource(planSource, activePlan)) {
+      document.body.classList.add("pinned-player-only");
+      return;
+    }
+
     const override = mainPlayerOverrideForMatch(match);
     if (override) {
       mountPinnedMainMirror(override.url, override.fallback, override.iframe);
@@ -659,6 +766,18 @@
       }
       return;
     }
+
+    if (activePlan && (activePlan.status === "waiting" || activePlan.status === "conflict")) {
+      document.body.classList.remove("pinned-player-only");
+      showPlanWaiting(activePlan.reason);
+      return;
+    }
+
+    if (planSource && mountPlanSource(planSource, activePlan)) {
+      document.body.classList.remove("pinned-player-only");
+      return;
+    }
+
     document.body.classList.remove("pinned-player-only");
     loadIframePlayer(embedUrlFor(currentEmbed(), embedQuery(activeServ)), true);
   }
@@ -1241,22 +1360,29 @@
         ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.score} · ${t("watch.commentary")}`
         : live && match.minute
           ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.score} · ${match.minute}`
-          : `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.league}`
+          : `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${leagueLabel(match)}`
       : channel.quality;
 
     document.getElementById("info-quality").textContent = channel.quality;
     document.getElementById("info-group").textContent = channel.group;
     const infoRoute = document.getElementById("info-route");
     if (infoRoute) {
-      const key = window.SITE_DATA && window.SITE_DATA.embedKeyFor
-        ? window.SITE_DATA.embedKeyFor(channel.id)
-        : "";
-      infoRoute.textContent = key
-        ? `${key} ← ${match && match.channel ? match.channel : channel.name}`
-        : "—";
+      if (activePlan && activePlan.selected) {
+        const label = activePlan.selected.label || activePlan.selected.profile || activePlan.selected.kind;
+        infoRoute.textContent = `${activePlan.status} · ${label}`;
+      } else if (activePlan && (activePlan.status === "waiting" || activePlan.status === "conflict")) {
+        infoRoute.textContent = t("watch.planWaiting");
+      } else {
+        const key = window.SITE_DATA && window.SITE_DATA.embedKeyFor
+          ? window.SITE_DATA.embedKeyFor(channel.id)
+          : "";
+        infoRoute.textContent = key
+          ? `${key} ← ${match && match.channel ? match.channel : channel.name}`
+          : "—";
+      }
     }
     document.getElementById("info-commentator").innerHTML = commentatorHtml(match);
-    document.getElementById("info-league").textContent = (match && match.league) || "—";
+    document.getElementById("info-league").textContent = leagueLabel(match) || "—";
     const infoTimes = document.getElementById("info-times");
     if (infoTimes) infoTimes.innerHTML = timeZoneHtml(match);
     renderMatchDetail();
@@ -1416,7 +1542,7 @@
       return `<a class="side-match ${match && m.id === match.id ? "active" : ""}" href="watch.html?ch=${m.channelId || "live"}&match=${m.id}">
          <span class="side-status status-${m.status}">${escapeHtml(statusText)}</span>
          <span class="side-teams">${escapeHtml(m.home)} <i>×</i> ${escapeHtml(m.away)}</span>
-         <span class="side-league">${escapeHtml(m.league || "")}</span>
+         <span class="side-league">${escapeHtml(leagueLabel(m))}</span>
        </a>`;
     }).join("");
   }
@@ -1474,6 +1600,7 @@
     const meta = await window.getMatches({ force: !!force });
     MATCHES = meta.matches;
     resolveSelection();
+    await fetchAndApplyPlan();
     fillInfo();
     renderAltStreams();
     renderManualMirrors();
@@ -1515,12 +1642,13 @@
       }
       return;
     }
-    loadPlayer();
+    showPlanWaiting("boot");
     try {
       await refreshMatches({ force: false });
     } catch (e) {
       console.warn("Initial match refresh failed:", e.message);
       resolveSelection();
+      await fetchAndApplyPlan();
       fillInfo();
       renderChannels();
       renderServers();

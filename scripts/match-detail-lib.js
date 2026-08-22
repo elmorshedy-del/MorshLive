@@ -9,10 +9,27 @@
  * stats — never a guess or a fallback to something less reliable.
  * ==========================================================================*/
 
-/** "espn-fifa.world-760498" -> { leagueSlug: "fifa.world", eventId: "760498" }. */
+/** "espn-eng.1-401999999" -> { leagueSlug: "eng.1", eventId: "401999999" }. */
 function parseEspnMatchId(id) {
   const m = /^espn-(.+)-(\d+)$/.exec(id || "");
   return m ? { leagueSlug: m[1], eventId: m[2] } : null;
+}
+
+const UPCOMING_DETAIL_WINDOW_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * Lineups are normally published shortly before kickoff. Keep the seven-day
+ * schedule cheap by requesting ESPN summaries only for live/recent matches or
+ * fixtures close enough for an official lineup to exist.
+ */
+function shouldFetchMatchDetail(match, now = Date.now()) {
+  if (!parseEspnMatchId(match && match.id)) return false;
+  if (match.status === "live" || match.status === "ended") return true;
+  if (match.status !== "upcoming") return false;
+  const kickoff = Date.parse(match.kickoffUtc || "");
+  if (Number.isNaN(kickoff)) return false;
+  const untilKickoff = kickoff - now;
+  return untilKickoff >= -3 * 60 * 60 * 1000 && untilKickoff <= UPCOMING_DETAIL_WINDOW_MS;
 }
 
 /** Curated, Arabic-labelled subset of ESPN's ~26 team stat categories. */
@@ -211,6 +228,8 @@ function extractGoals(summary) {
 
 module.exports = {
   parseEspnMatchId,
+  shouldFetchMatchDetail,
+  UPCOMING_DETAIL_WINDOW_MS,
   STAT_DEFS,
   extractMatchStats,
   bandForPosition,

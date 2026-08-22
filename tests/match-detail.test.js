@@ -2,7 +2,7 @@ import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 
 const require = createRequire(import.meta.url);
-const { extractGoals } = require("../scripts/match-detail-lib.js");
+const { extractGoals, shouldFetchMatchDetail } = require("../scripts/match-detail-lib.js");
 
 // Real shape from ESPN event 760499, Australia vs Egypt, final score 1-1.
 // teamId 628 = home = Australia, teamId 2620 = away = Egypt.
@@ -70,5 +70,45 @@ describe("extractGoals", () => {
     const goals = extractGoals(buildSummary([shootoutEvent]));
     expect(goals.some((g) => g.scorer === "S. Player")).toBe(false);
     expect(goals).toHaveLength(2);
+  });
+});
+
+describe("shouldFetchMatchDetail", () => {
+  const now = Date.parse("2026-08-22T08:00:00Z");
+
+  it("fetches live details and near-kickoff lineups", () => {
+    expect(
+      shouldFetchMatchDetail(
+        {
+          id: "espn-eng.1-401999999",
+          status: "live",
+          kickoffUtc: "2026-08-22T07:00:00Z",
+        },
+        now,
+      ),
+    ).toBe(true);
+    expect(
+      shouldFetchMatchDetail(
+        {
+          id: "espn-esp.1-401999998",
+          status: "upcoming",
+          kickoffUtc: "2026-08-22T12:00:00Z",
+        },
+        now,
+      ),
+    ).toBe(true);
+  });
+
+  it("does not request summaries for the distant schedule", () => {
+    expect(
+      shouldFetchMatchDetail(
+        {
+          id: "espn-uefa.champions_qual-401999997",
+          status: "upcoming",
+          kickoffUtc: "2026-08-25T18:00:00Z",
+        },
+        now,
+      ),
+    ).toBe(false);
   });
 });
