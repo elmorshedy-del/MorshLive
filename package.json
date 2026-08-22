@@ -21,6 +21,7 @@
     "sync:streams-lab": "node scripts/sync-streams-lab-catalog.mjs",
     "verify:prekickoff": "node scripts/prekickoff-stream-verify.mjs",
     "verify:prekickoff:live": "node scripts/prekickoff-stream-verify.mjs --live --stress=30",
+    "verify:stream-plan": "node scripts/apply-stream-plan-verify.mjs",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "test": "vitest run",

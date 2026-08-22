@@ -767,6 +767,19 @@ img { max-width: 100%; display: block; }
 }
 .player-shell video { object-fit: contain; }
 .player-shell .embed-frame { border: 0; display: block; }
+.player-shell-waiting {
+  position: absolute; inset: 0; z-index: 2;
+  display: grid; place-content: center; gap: 8px;
+  padding: 28px; text-align: center;
+  background: radial-gradient(circle at 50% 30%, rgba(24,226,154,.12), transparent 46%), #05070d;
+  color: #d7e0ee;
+}
+.player-shell-waiting strong {
+  font-size: 1.05rem; font-weight: 800; letter-spacing: -.02em;
+}
+.player-shell-waiting span {
+  max-width: 28rem; margin: 0 auto; color: #91a0b8; font-size: .9rem; line-height: 1.65;
+}
 .player-dual {
   display: block;
 }

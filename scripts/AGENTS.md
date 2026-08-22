@@ -6,6 +6,8 @@ Node jobs that fetch external data and write `assets/data/*.json`.
 
 `fetch-matches.js` — runs on **every production deploy** (`npm run refresh:matches`).
 
+Match-scoped stream wiring is `assets/data/stream-plans.json` (see `docs/STREAM-PLANS.md`). Record probe results with `scripts/apply-stream-plan-verify.mjs` — do not hand-edit verification timestamps in a second file.
+
 ## Rules
 
 - **Merge, don’t wipe** — ended matches must keep `clips[]`, `highlights.goals/full`, and banner posters from previous JSON + `highlightsIndex`.
