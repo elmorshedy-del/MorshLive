@@ -1173,15 +1173,11 @@ img { max-width: 100%; display: block; }
 /* --------------------------------------------------------- Watch page */
 .watch-wrap { padding: 28px 0 60px; }
 .player-shell {
-  background: #000; border: 1px solid rgba(255,255,255,.1); border-radius: calc(var(--radius) + 4px);
-  overflow: hidden; box-shadow: 0 22px 70px rgba(0,0,0,.5), 0 0 0 1px rgba(123,47,247,.12);
-  position: relative; aspect-ratio: 16 / 9; animation: playerReveal .75s ease both;
+  background: #000; border: 1px solid var(--border); border-radius: var(--radius);
+  overflow: hidden; box-shadow: var(--shadow);
+  position: relative; aspect-ratio: 16 / 9;
 }
-.player-shell::after {
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(135deg, rgba(255,255,255,.12), transparent 24%, transparent 74%, rgba(123,47,247,.18));
-  opacity: .48;
-}
+.player-shell::after { display: none; }
 .player-shell video,
 .player-shell .embed-frame {
   width: 100%; height: 100%; background: #000;
@@ -1193,8 +1189,8 @@ img { max-width: 100%; display: block; }
   position: absolute; inset: 0; z-index: 2;
   display: grid; place-content: center; gap: 8px;
   padding: 28px; text-align: center;
-  background: radial-gradient(circle at 50% 30%, rgba(24,226,154,.12), transparent 46%), #05070d;
-  color: #d7e0ee;
+  background: radial-gradient(circle at 50% 30%, rgba(61,220,151,.08), transparent 46%), #07110c;
+  color: var(--text);
 }
 .player-shell-waiting strong {
   font-size: 1.05rem; font-weight: 800; letter-spacing: -.02em;
@@ -1425,7 +1421,7 @@ img { max-width: 100%; display: block; }
 }
 .channel-btn:hover { border-color: var(--brand); }
 .channel-btn.active { border-color: var(--accent); background: rgba(24,226,154,.12); }
-.channel-btn--match { box-shadow: 0 0 0 1px rgba(192,38,211,.35); }
+.channel-btn--match { box-shadow: none; border-color: var(--accent); }
 .channel-btn-tag { font-size: .68rem; font-weight: 800; color: var(--gold); }
 .channel-btn.srv-ok { border-color: rgba(24,226,154,.55); background: rgba(24,226,154,.1); }
 .channel-btn.srv-ok.active { border-color: var(--accent); box-shadow: 0 0 0 2px rgba(24,226,154,.25); }
@@ -3079,6 +3075,7 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 .kz-hl-banner__teams { font-weight: 800; font-size: .88rem; line-height: 1.35; margin-bottom: 3px; }
 
 /* Watch — layout only (all hooks preserved; channels stay visible above player) */
+.page-watch .shot-ball { display: none; }
 .page-watch .watch-wrap { padding-top: 12px; }
 .page-watch .watch-stage {
   display: flex; flex-direction: column; gap: 12px;

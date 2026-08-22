@@ -265,6 +265,50 @@ describe("resolveStreamPlan", () => {
     expect(resolved.reason).toBe("missing-match");
     expect(shouldHoldPlayer(resolved)).toBe(true);
   });
+
+  it("plays the Hull–United go4score match plan instead of the 24/7 channel", () => {
+    const match = {
+      id: "espn-eng.1-401879322",
+      home: "Hull City",
+      away: "Manchester United",
+      channelId: "bein-sports-1",
+      status: "upcoming",
+      kickoffUtc: "2026-08-22T11:30:00Z",
+    };
+    const resolved = resolveStreamPlan({
+      match,
+      catalog: catalog([
+        {
+          matchId: "espn-eng.1-401879322",
+          teams: [
+            ["hull city", "hull"],
+            ["manchester united", "manchester utd", "man united"],
+          ],
+          contentKey: "match:espn-eng.1-401879322",
+          policy: { sameContentOnly: true, allowLegacy: false },
+          sources: [
+            {
+              id: "primary",
+              role: "primary",
+              kind: "iframe",
+              profile: "koraplus-v1",
+              path: "/wk/albaplayer/koraplus/?m=31055&lang=ar",
+              contentKey: "match:espn-eng.1-401879322",
+              status: "operator",
+            },
+          ],
+        },
+      ]),
+      legacyEmbedKey: "koraplus",
+      now: Date.parse("2026-08-22T11:20:00Z"),
+    });
+    expect(resolved.status).toBe("operator");
+    expect(resolved.selected.playbackUrl).toContain("m=31055");
+    expect(resolved.selected.playbackUrl).not.toContain("/wk/albaplayer/koraplus/?ch=bein-sports-1");
+    expect(resolved.profile.profileId).toBe("koraplus-v1");
+    expect(resolved.profile.noSandbox).toBe(true);
+    expect(shouldHoldPlayer(resolved)).toBe(false);
+  });
 });
 
 describe("conflicts and verification", () => {

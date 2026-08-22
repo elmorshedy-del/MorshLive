@@ -18,6 +18,7 @@ import { resolveStreamUrl, rewriteReplayM3u8 as rewriteReplayM3u8Lines } from ".
 import { resolveWatchArchiveRedirect } from "./lib/watch-archive-redirect.js";
 import { dispatchBackendRoutes } from "./backend/router.js";
 import { backendRoutes } from "./backend/routes/index.js";
+import { chooseGo4scoreEdge, go4scoreFrameUrl, pickGo4scoreChannel } from "./lib/go4score-frame.js";
 
 /**
  * morshlive worker — static site + worldkoora vip proxy without preroll ads.
@@ -2539,12 +2540,31 @@ function amineServerOrder(requestedServ) {
 // iframe wrapper pointing directly to the kora-plus.app edge CDN. The user's
 // browser loads it with real headers, so the Clappr player works.
 // Channel is passed as ?ch= (e.g. /wk/albaplayer/koraplus/?ch=bein-max-1).
-function koraPlusFrameUrl(channel, token, kt, edge) {
-  const e = edge || KORAPLUS_EDGES[Math.floor(Math.random() * KORAPLUS_EDGES.length)];
-  const qs = new URLSearchParams({ ch: channel || "max1", p: "12" });
-  if (token) qs.set("token", token);
-  if (kt) qs.set("kt", String(kt));
-  return `https://${e}.${KORAPLUS_EDGE_DOMAIN}/frame.php?${qs.toString()}`;
+function koraPlusFrameUrl(channel, token, kt, edge, edgeDomain) {
+  return go4scoreFrameUrl({
+    edge: edge || chooseGo4scoreEdge(KORAPLUS_EDGES),
+    edgeDomain: edgeDomain || KORAPLUS_EDGE_DOMAIN,
+    fallbackHost: `${KORAPLUS_EDGES[0]}.${KORAPLUS_EDGE_DOMAIN}`,
+    channel: channel || "max1",
+    token,
+    kt,
+    p: 12,
+  });
+}
+
+async function fetchGo4scoreMatch(matchId, lang) {
+  const id = String(matchId || "").replace(/[^\d]/g, "");
+  if (!id) return null;
+  const locale = String(lang || "ar").replace(/[^a-z]/gi, "") || "ar";
+  try {
+    const res = await fetch(`https://kora-api.space/api/matche/${id}/${locale}?t=${Date.now()}`, {
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
 }
 
 async function proxyKoraPlus(request, env) {
@@ -2570,13 +2590,25 @@ async function proxyKoraPlus(request, env) {
     "bein-sports-2": "b2",
   };
   const rawCh = incoming.searchParams.get("ch") || "bein-max-1";
-  const channel = KZ_TO_KP[rawCh] || rawCh;
+  let channel = KZ_TO_KP[rawCh] || rawCh;
+  let edges = KORAPLUS_EDGES;
+  let edgeDomain = KORAPLUS_EDGE_DOMAIN;
+  const matchId = incoming.searchParams.get("m");
+  if (matchId) {
+    const data = await fetchGo4scoreMatch(matchId, incoming.searchParams.get("lang") || "ar");
+    const picked = pickGo4scoreChannel(data?.channels);
+    if (picked) channel = picked.ch || picked.key || channel;
+    if (Array.isArray(data?.edges) && data.edges.length && data.edge_domain) {
+      edges = data.edges;
+      edgeDomain = data.edge_domain;
+    }
+  }
 
   const token = (typeof crypto !== "undefined" && crypto.randomUUID)
     ? crypto.randomUUID()
     : "kz-" + Date.now() + "-" + Math.random().toString(36).slice(2);
   const kt = String(Math.floor(Date.now() / 1000));
-  const edgeUrl = koraPlusFrameUrl(channel, token, kt);
+  const edgeUrl = koraPlusFrameUrl(channel, token, kt, chooseGo4scoreEdge(edges), edgeDomain);
 
   // Single-iframe topology: 302 straight to the go4score edge frame.php instead
   // of nesting it inside a wrapper iframe. go4score.app loads frame.php in ONE

@@ -1,5 +1,30 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-22T00:00:00.000Z",
-  "plans": []
+  "updatedAt": "2026-08-22T11:22:00.000Z",
+  "plans": [
+    {
+      "matchId": "espn-eng.1-401879322",
+      "teams": [["hull city", "hull"], ["manchester united", "manchester utd", "man united"]],
+      "contentKey": "match:espn-eng.1-401879322",
+      "kickoffUtc": "2026-08-22T11:30:00Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "koraplus-v1",
+          "path": "/wk/albaplayer/koraplus/?m=31055&lang=ar",
+          "contentKey": "match:espn-eng.1-401879322",
+          "status": "operator",
+          "label": "Hull × United"
+        }
+      ]
+    }
+  ]
 }
