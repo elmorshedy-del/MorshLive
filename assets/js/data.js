@@ -512,7 +512,7 @@ function buildArabicSummary(m) {
   const teamLabel = (n) => (window.TeamNames ? window.TeamNames.arabicFor(n) || n : n);
   const homeAr = teamLabel(m.home);
   const awayAr = teamLabel(m.away);
-  const league = m.league || "المباراة";
+  const league = (window.I18N?.lang === "ar" && m.leagueAr) ? m.leagueAr : (m.league || "المباراة");
   const venue = m.venue ? ` على ملعب ${m.venue}` : "";
   const parts = parseScoreParts(m.score);
 

@@ -9,6 +9,14 @@
 
   const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
   const statusLabel = (s) => t("status." + s);
+  const leagueLabel = (m) => {
+    if (m && m.competition) {
+      const translated = t(`league.${m.competition}`);
+      if (translated !== `league.${m.competition}`) return translated;
+    }
+    if (window.I18N?.lang === "ar" && m?.leagueAr) return m.leagueAr;
+    return (m && m.league) || "";
+  };
 
   const ICON = {
     mic: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>',
@@ -91,7 +99,7 @@
     return `
       <article class="match-card" data-status="${m.status}">
         <div class="match-top">
-          <span class="league-tag">${m.league || ""}</span>
+          <span class="league-tag">${leagueLabel(m)}</span>
           <span class="status-pill status-${m.status}">${statusLabel(m.status)}${minute}</span>
         </div>
         <div class="teams">
@@ -117,7 +125,7 @@
   function haystack(m) {
     return norm([
       teamAliases(m.home), teamAliases(m.away), m.homeAbbr, m.awayAbbr,
-      m.league, m.venue, m.channel, commentatorText(m),
+      m.league, m.leagueAr, m.competition, leagueLabel(m), m.venue, m.channel, commentatorText(m),
     ].join(" "));
   }
 

@@ -12,12 +12,13 @@ const https = require("https");
 const {
   arabiaDayIso,
   arabiaTodayIso,
+  ESPN_LEAGUES,
   filterDisplayMatches,
+  isSupportedLeagueName,
   mergeMatches,
   normalizeEspnEvent,
   normalizeEvent,
   sortMatches,
-  WORLD_CUP_RE,
 } = require("./matches-lib");
 const {
   attachCommentators,
@@ -30,7 +31,13 @@ const { attachSummaries, buildHighlightQueries, pickArabicVideo, arabicTeam } = 
 const { findVortexHighlight, fetchVortexEmbedMeta, normalizeHighlightBucket, enrichHighlightMeta, pickPrimaryHighlight, buildHighlightLookup } = require("./vortex-highlights-lib");
 const { scrapeBtolatHighlights, applyBtolatHighlights } = require("./btolat-highlights-lib");
 const { scrapeFilgoalHighlights, applyFilgoalHighlights } = require("./filgoal-highlights-lib");
-const { parseEspnMatchId, extractLineups, extractMatchStats, extractGoals } = require("./match-detail-lib");
+const {
+  parseEspnMatchId,
+  shouldFetchMatchDetail,
+  extractLineups,
+  extractMatchStats,
+  extractGoals,
+} = require("./match-detail-lib");
 const { writeBindingsJs, writeLiveSnapshot } = require("./channel-bindings-lib");
 const { writePollConfig } = require("./match-poll-lib");
 
@@ -42,8 +49,7 @@ const centerDate = process.argv[2] || arabiaTodayIso();
 const OUT = path.join(__dirname, "..", "assets", "data", "today.json");
 const BANNERS_OUT = path.join(__dirname, "..", "assets", "data", "highlights-banners.json");
 const TEAM_AR = path.join(__dirname, "..", "assets", "data", "team-names-ar.json");
-// World Cup only for now.
-const ESPN_LEAGUES = ["fifa.world"];
+const SCHEDULE_DAYS_AHEAD = 7;
 
 function get(url) {
   return new Promise((resolve, reject) => {
@@ -91,17 +97,17 @@ async function fetchDay(date) {
   const url = `https://www.thesportsdb.com/api/v1/json/${KEY}/eventsday.php?d=${date}&s=Soccer`;
   const json = await get(url);
   const events = Array.isArray(json.events) ? json.events : [];
-  return events.filter((e) => WORLD_CUP_RE.test(e.strLeague || ""));
+  return events.filter((e) => isSupportedLeagueName(e.strLeague));
 }
 
 function espnDateRange(center) {
-  return `${shiftDate(center, -1).replace(/-/g, "")}-${shiftDate(center, 1).replace(/-/g, "")}`;
+  return `${shiftDate(center, -1).replace(/-/g, "")}-${shiftDate(center, SCHEDULE_DAYS_AHEAD).replace(/-/g, "")}`;
 }
 
 async function fetchEspnLeague(slug, dateRange) {
   const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${slug}/scoreboard?dates=${dateRange}&limit=100`;
   const json = await get(url);
-  const league = json.leagues && json.leagues[0] ? json.leagues[0] : { slug };
+  const league = { ...(json.leagues && json.leagues[0] ? json.leagues[0] : {}), slug };
   const events = Array.isArray(json.events) ? json.events : [];
   return events.map((event) => normalizeEspnEvent(event, league));
 }
@@ -224,7 +230,9 @@ function mergeReplayFromPrevious(matches, previousPayload) {
     ESPN_LEAGUES.map((slug) => fetchEspnLeague(slug, espnDateRange(centerDate)))
   );
   const espnMatches = espnResults.flatMap((result) => result.status === "fulfilled" ? result.value : []);
-  const matches = filterDisplayMatches(mergeMatches(sportsDbMatches, espnMatches));
+  // ESPN stays primary so its event id survives deduplication and can power the
+  // summary endpoint used for lineups, goal events, and live statistics.
+  const matches = filterDisplayMatches(mergeMatches(espnMatches, sportsDbMatches));
   sortMatches(matches);
   const sourceLabel = sportsDbMatches.length && espnMatches.length
     ? "TheSportsDB + ESPN"
@@ -488,8 +496,8 @@ function mergeReplayFromPrevious(matches, previousPayload) {
   // than a guess from somewhere less trustworthy.
   const detailResults = await Promise.allSettled(
     matches.map(async (m) => {
+      if (!shouldFetchMatchDetail(m)) return null;
       const parsed = parseEspnMatchId(m.id);
-      if (!parsed) return null;
       try {
         const summary = await fetchEspnSummary(parsed.leagueSlug, parsed.eventId);
         return { m, summary };
@@ -532,7 +540,7 @@ function mergeReplayFromPrevious(matches, previousPayload) {
       {
         date: centerDate,
         updatedAt: new Date().toISOString(),
-        source: sportsDbMatches.length ? "thesportsdb" : "espn",
+        source: espnMatches.length ? "espn" : "thesportsdb",
         sourceLabel,
         commentarySource: "almaghrebsport",
         commentaryIndex,

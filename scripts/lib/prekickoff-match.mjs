@@ -16,24 +16,23 @@ export async function loadFreshMatches() {
   try {
     const { createRequire } = await import("node:module");
     const require = createRequire(import.meta.url);
-    const { mergeMatches, normalizeEspnEvent } = require("../matches-lib.js");
+    const { ESPN_LEAGUES, mergeMatches, normalizeEspnEvent } = require("../matches-lib.js");
     const range = espnDateRange();
-    const leagues = ["fifa.world"];
     const settled = await Promise.allSettled(
-      leagues.map(async (slug) => {
+      ESPN_LEAGUES.map(async (slug) => {
         const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${slug}/scoreboard?dates=${range}&limit=100`;
         const res = await fetch(url, {
           headers: { "User-Agent": "morsh-live-prekickoff/1.0", Accept: "application/json" },
         });
         if (!res.ok) throw new Error(`ESPN ${res.status}`);
         const json = await res.json();
-        const league = json.leagues && json.leagues[0] ? json.leagues[0] : { slug };
+        const league = { ...(json.leagues && json.leagues[0] ? json.leagues[0] : {}), slug };
         return (json.events || []).map((e) => normalizeEspnEvent(e, league));
       })
     );
     const espn = settled.flatMap((r) => (r.status === "fulfilled" ? r.value : []));
     if (!espn.length) return cached;
-    return mergeMatches(cached, espn);
+    return mergeMatches(espn, cached);
   } catch (e) {
     console.warn("loadFreshMatches: ESPN merge failed, using today.json only:", e.message);
     return cached;
