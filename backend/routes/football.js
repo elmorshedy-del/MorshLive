@@ -4,9 +4,7 @@ import { getFootballScoreboards, getFootballSummary } from "../services/football
 export const footballRoute = {
   name: "football",
   methods: ["GET"],
-  test: (url) =>
-    url.pathname === "/api/football/scoreboard" ||
-    url.pathname === "/api/football/summary",
+  test: (url) => url.pathname === "/api/football/scoreboard" || url.pathname === "/api/football/summary",
   async handle({ url }) {
     if (url.pathname.endsWith("/summary")) {
       const summary = await getFootballSummary(url.searchParams);

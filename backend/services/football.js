@@ -1,11 +1,6 @@
 import { fetchEspnScoreboard, fetchEspnSummary } from "../adapters/espn.js";
 
-export const FOOTBALL_LEAGUES = Object.freeze([
-  "eng.1",
-  "esp.1",
-  "uefa.champions",
-  "uefa.champions_qual",
-]);
+export const FOOTBALL_LEAGUES = Object.freeze(["eng.1", "esp.1", "uefa.champions", "uefa.champions_qual"]);
 
 function defaultDateRange(now = Date.now()) {
   const day = (offset) => {
@@ -21,7 +16,9 @@ function validDateRange(value) {
   const parse = (raw) => Date.parse(`${raw.slice(0, 4)}-${raw.slice(4, 6)}-${raw.slice(6, 8)}T00:00:00Z`);
   const start = parse(match[1]);
   const end = parse(match[2]);
-  return Number.isFinite(start) && Number.isFinite(end) && end >= start && end - start <= 10 * 24 * 60 * 60 * 1000;
+  return (
+    Number.isFinite(start) && Number.isFinite(end) && end >= start && end - start <= 10 * 24 * 60 * 60 * 1000
+  );
 }
 
 function requireLeague(slug) {
@@ -39,7 +36,7 @@ export async function getFootballScoreboards(params) {
       data: await fetchEspnScoreboard(slug, requested),
     })),
   );
-  const leagues = settled.flatMap((result) => result.status === "fulfilled" ? [result.value] : []);
+  const leagues = settled.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
   if (!leagues.length) throw new Error("Football scoreboards unavailable");
 
   return {

@@ -36,10 +36,11 @@ describe("football routes", () => {
   });
 
   it("proxies an allowlisted ESPN match summary for live detail", async () => {
-    const upstream = vi.fn(async () =>
-      new Response(JSON.stringify({ header: { id: "401999999" }, keyEvents: [] }), {
-        headers: { "Content-Type": "application/json" },
-      })
+    const upstream = vi.fn(
+      async () =>
+        new Response(JSON.stringify({ header: { id: "401999999" }, keyEvents: [] }), {
+          headers: { "Content-Type": "application/json" },
+        }),
     );
     vi.stubGlobal("fetch", upstream);
 

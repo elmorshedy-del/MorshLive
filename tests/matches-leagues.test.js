@@ -11,30 +11,30 @@ const {
 
 describe("major competition configuration", () => {
   it("covers Premier League, La Liga, and both Champions League phases", () => {
-    expect(ESPN_LEAGUES).toEqual([
-      "eng.1",
-      "esp.1",
-      "uefa.champions",
-      "uefa.champions_qual",
-    ]);
+    expect(ESPN_LEAGUES).toEqual(["eng.1", "esp.1", "uefa.champions", "uefa.champions_qual"]);
     expect(competitionForLeagueName("English Premier League")?.key).toBe("epl");
     expect(competitionForLeagueName("Spanish LALIGA")?.key).toBe("laliga");
     expect(competitionForLeagueName("UEFA Champions League Qualifying")?.key).toBe("ucl");
   });
 
   it("keeps the ESPN event identity required for lineups and stats", () => {
-    const espn = normalizeEspnEvent({
-      id: "401999999",
-      date: "2026-08-22T17:00:00Z",
-      competitions: [{
+    const espn = normalizeEspnEvent(
+      {
+        id: "401999999",
         date: "2026-08-22T17:00:00Z",
-        status: { type: { state: "pre" } },
-        competitors: [
-          { homeAway: "home", team: { displayName: "Arsenal" } },
-          { homeAway: "away", team: { displayName: "Liverpool" } },
+        competitions: [
+          {
+            date: "2026-08-22T17:00:00Z",
+            status: { type: { state: "pre" } },
+            competitors: [
+              { homeAway: "home", team: { displayName: "Arsenal" } },
+              { homeAway: "away", team: { displayName: "Liverpool" } },
+            ],
+          },
         ],
-      }],
-    }, { slug: "eng.1", name: "English Premier League" });
+      },
+      { slug: "eng.1", name: "English Premier League" },
+    );
     const sportsDb = {
       ...espn,
       id: "e123",

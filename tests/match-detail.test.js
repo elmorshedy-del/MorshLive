@@ -77,23 +77,38 @@ describe("shouldFetchMatchDetail", () => {
   const now = Date.parse("2026-08-22T08:00:00Z");
 
   it("fetches live details and near-kickoff lineups", () => {
-    expect(shouldFetchMatchDetail({
-      id: "espn-eng.1-401999999",
-      status: "live",
-      kickoffUtc: "2026-08-22T07:00:00Z",
-    }, now)).toBe(true);
-    expect(shouldFetchMatchDetail({
-      id: "espn-esp.1-401999998",
-      status: "upcoming",
-      kickoffUtc: "2026-08-22T12:00:00Z",
-    }, now)).toBe(true);
+    expect(
+      shouldFetchMatchDetail(
+        {
+          id: "espn-eng.1-401999999",
+          status: "live",
+          kickoffUtc: "2026-08-22T07:00:00Z",
+        },
+        now,
+      ),
+    ).toBe(true);
+    expect(
+      shouldFetchMatchDetail(
+        {
+          id: "espn-esp.1-401999998",
+          status: "upcoming",
+          kickoffUtc: "2026-08-22T12:00:00Z",
+        },
+        now,
+      ),
+    ).toBe(true);
   });
 
   it("does not request summaries for the distant schedule", () => {
-    expect(shouldFetchMatchDetail({
-      id: "espn-uefa.champions_qual-401999997",
-      status: "upcoming",
-      kickoffUtc: "2026-08-25T18:00:00Z",
-    }, now)).toBe(false);
+    expect(
+      shouldFetchMatchDetail(
+        {
+          id: "espn-uefa.champions_qual-401999997",
+          status: "upcoming",
+          kickoffUtc: "2026-08-25T18:00:00Z",
+        },
+        now,
+      ),
+    ).toBe(false);
   });
 });
