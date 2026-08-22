@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-22T14:53:00.000Z",
+  "updatedAt": "2026-08-22T16:02:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -109,7 +109,18 @@
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": []
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v1",
+          "url": "https://mo.yallacuo.xyz/albaplayer/sport-1/",
+          "contentKey": "match:espn-eng.1-401879321",
+          "status": "operator",
+          "label": "برينتفورد × توتنهام · عربي"
+        }
+      ]
     },
     {
       "matchId": "espn-esp.1-401882907",
