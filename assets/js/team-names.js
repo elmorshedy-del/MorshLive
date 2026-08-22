@@ -8,7 +8,8 @@
  *                                       and a mapping exists, else the input.
  *   window.TeamNames.aliases(name)   -> [english, arabic, ...] for search.
  *
- * Coverage: FIFA national teams (World Cup 2026 pool) — extend freely.
+ * Coverage: FIFA national teams plus the active Premier League, La Liga, and
+ * Champions League clubs shown by the 2026/27 schedule.
  * ==========================================================================*/
 (function (global) {
   "use strict";
@@ -84,6 +85,77 @@
     "Curaçao": "كوراساو",
     "Curacao": "كوراساو",
     "Haiti": "هايتي",
+    "AFC Bournemouth": "بورنموث",
+    "Arsenal": "أرسنال",
+    "Aston Villa": "أستون فيلا",
+    "Brentford": "برينتفورد",
+    "Brighton & Hove Albion": "برايتون",
+    "Chelsea": "تشيلسي",
+    "Coventry City": "كوفنتري سيتي",
+    "Crystal Palace": "كريستال بالاس",
+    "Everton": "إيفرتون",
+    "Fulham": "فولهام",
+    "Hull City": "هال سيتي",
+    "Ipswich Town": "إيبسويتش تاون",
+    "Leeds United": "ليدز يونايتد",
+    "Liverpool": "ليفربول",
+    "Manchester City": "مانشستر سيتي",
+    "Manchester United": "مانشستر يونايتد",
+    "Newcastle United": "نيوكاسل يونايتد",
+    "Nottingham Forest": "نوتنغهام فورست",
+    "Sunderland": "سندرلاند",
+    "Tottenham Hotspur": "توتنهام هوتسبير",
+    "Alavés": "ألافيس",
+    "Athletic Club": "أتلتيك بيلباو",
+    "Atlético Madrid": "أتلتيكو مدريد",
+    "Barcelona": "برشلونة",
+    "Celta Vigo": "سيلتا فيغو",
+    "Deportivo": "ديبورتيفو لا كورونيا",
+    "Elche": "إلتشي",
+    "Espanyol": "إسبانيول",
+    "Getafe": "خيتافي",
+    "Levante": "ليفانتي",
+    "Málaga": "مالقة",
+    "Osasuna": "أوساسونا",
+    "Racing Santander": "راسينغ سانتاندير",
+    "Rayo Vallecano": "رايو فاييكانو",
+    "Real Betis": "ريال بيتيس",
+    "Real Madrid": "ريال مدريد",
+    "Real Sociedad": "ريال سوسيداد",
+    "Sevilla": "إشبيلية",
+    "Valencia": "فالنسيا",
+    "Villarreal": "فياريال",
+    "AEK Athens": "آيك أثينا",
+    "Bodo/Glimt": "بودو غليمت",
+    "Celtic": "سلتيك",
+    "Dinamo Zagreb": "دينامو زغرب",
+    "Fenerbahce": "فنربخشة",
+    "Hapoel Be'er": "هابوعيل بئر السبع",
+    "LASK Linz": "لاسك لينتس",
+    "Levski Sofia": "ليفسكي صوفيا",
+    "Lyon": "ليون",
+    "NEC Nijmegen": "إن إي سي نيميغن",
+    "NK Celje": "تسيله",
+    "Sabah FK": "صباح",
+    "Slovan Bratislava": "سلوفان براتيسلافا",
+    "Viking FK": "فايكينغ",
+    "Paris Saint-Germain": "باريس سان جيرمان",
+    "Bayern Munich": "بايرن ميونخ",
+    "Borussia Dortmund": "بوروسيا دورتموند",
+    "Inter Milan": "إنتر ميلان",
+    "AC Milan": "ميلان",
+    "Juventus": "يوفنتوس",
+    "Napoli": "نابولي",
+    "Atalanta": "أتالانتا",
+    "Marseille": "مارسيليا",
+    "Monaco": "موناكو",
+    "Benfica": "بنفيكا",
+    "Sporting CP": "سبورتينغ لشبونة",
+    "FC Porto": "بورتو",
+    "Ajax Amsterdam": "أياكس",
+    "PSV Eindhoven": "آيندهوفن",
+    "Galatasaray": "غلطة سراي",
+    "Club Brugge": "كلوب بروج",
   };
 
   const norm = (s) => (s || "")
@@ -168,6 +240,8 @@
 
   function matchPageHref(m) {
     if (!m?.home || !m?.away) return "";
+    const worldCup = m.leagueSlug === "fifa.world" || /^espn-fifa\.world-/.test(m.id || "");
+    if (!worldCup) return "";
     const slug = matchSlug(m.home, m.away);
     return slug ? `/world-cup-2026/${slug}` : "";
   }

@@ -47,6 +47,14 @@
     ? rawXtreamStreamId.replace(/[^a-z0-9_-]/gi, "")
     : rawXtreamStreamId.replace(/[^0-9]/g, "");
   const teamLabel = (n) => (window.TeamNames ? window.TeamNames.localize(n) : n);
+  const leagueLabel = (m) => {
+    if (m?.competition) {
+      const translated = t(`league.${m.competition}`);
+      if (translated !== `league.${m.competition}`) return translated;
+    }
+    if (window.I18N?.lang === "ar" && m?.leagueAr) return m.leagueAr;
+    return m?.league || "";
+  };
 
   let MATCHES = [];
   let channel = CHANNELS[0];
@@ -1241,7 +1249,7 @@
         ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.score} · ${t("watch.commentary")}`
         : live && match.minute
           ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.score} · ${match.minute}`
-          : `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${match.league}`
+          : `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${leagueLabel(match)}`
       : channel.quality;
 
     document.getElementById("info-quality").textContent = channel.quality;
@@ -1256,7 +1264,7 @@
         : "—";
     }
     document.getElementById("info-commentator").innerHTML = commentatorHtml(match);
-    document.getElementById("info-league").textContent = (match && match.league) || "—";
+    document.getElementById("info-league").textContent = leagueLabel(match) || "—";
     const infoTimes = document.getElementById("info-times");
     if (infoTimes) infoTimes.innerHTML = timeZoneHtml(match);
     renderMatchDetail();
@@ -1416,7 +1424,7 @@
       return `<a class="side-match ${match && m.id === match.id ? "active" : ""}" href="watch.html?ch=${m.channelId || "live"}&match=${m.id}">
          <span class="side-status status-${m.status}">${escapeHtml(statusText)}</span>
          <span class="side-teams">${escapeHtml(m.home)} <i>×</i> ${escapeHtml(m.away)}</span>
-         <span class="side-league">${escapeHtml(m.league || "")}</span>
+         <span class="side-league">${escapeHtml(leagueLabel(m))}</span>
        </a>`;
     }).join("");
   }

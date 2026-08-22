@@ -97,6 +97,128 @@ img { max-width: 100%; display: block; }
 .nav-toggle { display: none; background: var(--surface-2); border: 1px solid var(--border);
   color: var(--text); width: 42px; height: 42px; border-radius: 10px; font-size: 1.2rem; cursor: pointer; }
 
+/* --------------------------------------------------------- 2026/27 season hub */
+.season-hub-banner {
+  position: relative;
+  overflow: hidden;
+  border-bottom: 1px solid rgba(255,255,255,.1);
+  background:
+    linear-gradient(110deg, rgba(7,10,19,.96), rgba(20,16,45,.92) 52%, rgba(5,31,38,.88)),
+    #090d17;
+  isolation: isolate;
+}
+.season-hub-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: .2;
+  background-image:
+    linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(90deg, transparent, #000 35%, #000 70%, transparent);
+}
+.season-hub-glow {
+  position: absolute;
+  z-index: -1;
+  width: 320px;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  filter: blur(75px);
+  opacity: .2;
+}
+.season-hub-glow--one { inset-inline-start: -90px; top: -170px; background: #8b5cf6; }
+.season-hub-glow--two { inset-inline-end: -80px; bottom: -220px; background: var(--accent); }
+.season-hub-inner {
+  display: grid;
+  grid-template-columns: minmax(250px, .8fr) minmax(500px, 1.6fr) auto;
+  align-items: center;
+  gap: 22px;
+  padding-block: 24px;
+}
+.season-hub-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #9ef6d4;
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .03em;
+}
+.season-hub-live i {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 6px rgba(24,226,154,.1), 0 0 18px rgba(24,226,154,.75);
+  animation: blink 1.4s infinite;
+}
+.season-hub-copy h2 {
+  margin-top: 7px;
+  max-width: 430px;
+  font-size: clamp(1.35rem, 2.4vw, 2.15rem);
+  line-height: 1.18;
+  letter-spacing: -.025em;
+}
+.season-hub-copy p { margin-top: 7px; color: var(--muted); font-size: .88rem; }
+.season-leagues { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.season-league-card {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 13px;
+  color: var(--text);
+  text-align: start;
+  font: inherit;
+  cursor: pointer;
+  border-radius: 15px;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.055);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.06);
+  backdrop-filter: blur(12px);
+  transition: transform .2s ease, border-color .2s ease, background .2s ease;
+}
+.season-league-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255,255,255,.28);
+  background: rgba(255,255,255,.09);
+}
+.season-league-monogram {
+  flex: 0 0 43px;
+  width: 43px;
+  height: 43px;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: .72rem;
+  font-weight: 800;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(0,0,0,.2);
+}
+.season-league-card--epl .season-league-monogram { background: linear-gradient(135deg, #32105b, #8b2cff); }
+.season-league-card--laliga .season-league-monogram { background: linear-gradient(135deg, #ff3d56, #ff8a2c); }
+.season-league-card--ucl .season-league-monogram { background: linear-gradient(135deg, #0544ac, #22d3ee); }
+.season-league-card b, .season-league-card small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.season-league-card b { font-size: .82rem; }
+.season-league-card small { margin-top: 2px; color: var(--muted); font-size: .68rem; }
+.season-archive-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 13px;
+  border-radius: 12px;
+  color: #ffe59a;
+  border: 1px solid rgba(255,201,77,.24);
+  background: rgba(255,201,77,.07);
+  font-size: .75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.season-archive-link:hover { border-color: rgba(255,201,77,.55); background: rgba(255,201,77,.12); }
+
 /* ---------------------------------------------------------------- Hero */
 .hero { padding: 62px 0 34px; position: relative; }
 .hero::after {
@@ -113,6 +235,13 @@ img { max-width: 100%; display: block; }
 .hero h1 span {
   background: linear-gradient(135deg, #fff, var(--gold) 24%, var(--brand-2) 58%, var(--accent));
   -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(135deg, #fff, var(--gold) 28%, var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 .hero p { color: var(--muted); margin-top: 14px; max-width: 680px; font-size: 1.08rem; animation: fadeUp .7s .18s ease both; }
 .hero-intro-card {
@@ -403,6 +532,77 @@ img { max-width: 100%; display: block; }
 .section-head .count { margin-inline-start: auto; color: var(--muted); font-size: .9rem; }
 
 /* --------------------------------------------------------- Matches */
+.schedule-lede { color: var(--muted); margin: -10px 0 15px; max-width: 760px; }
+.competition-filters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.competition-filter {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 12px;
+  color: var(--muted);
+  text-align: start;
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 800;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(255,255,255,.03), transparent), var(--surface);
+  transition: transform .18s ease, border-color .18s ease, color .18s ease, background .18s ease;
+}
+.competition-filter:hover { transform: translateY(-2px); color: var(--text); border-color: rgba(255,255,255,.2); }
+.competition-filter.active {
+  color: #fff;
+  border-color: rgba(123,47,247,.65);
+  background: linear-gradient(135deg, rgba(123,47,247,.3), rgba(24,226,154,.09)), var(--surface);
+  box-shadow: 0 12px 30px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.08);
+}
+.competition-filter > span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.competition-filter > b {
+  min-width: 25px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: var(--text);
+  text-align: center;
+  background: rgba(255,255,255,.08);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: .68rem;
+}
+.competition-filter-icon, .competition-mark {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  color: #fff;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: .6rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+}
+.competition-filter-icon { width: 32px; height: 32px; border-radius: 10px; }
+.competition-filter-icon--all { background: linear-gradient(135deg, var(--brand), var(--accent)); }
+.competition-filter-icon--epl, .competition-mark--epl { background: linear-gradient(135deg, #32105b, #8b2cff); }
+.competition-filter-icon--laliga, .competition-mark--laliga { background: linear-gradient(135deg, #ff3d56, #ff8a2c); }
+.competition-filter-icon--ucl, .competition-mark--ucl { background: linear-gradient(135deg, #0544ac, #22d3ee); }
+.status-filters { margin-bottom: 24px; }
+.schedule-days { display: grid; gap: 30px; }
+.schedule-day { min-width: 0; }
+.schedule-day-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 13px;
+  padding-inline-start: 13px;
+  border-inline-start: 3px solid var(--accent);
+}
+.schedule-day-head h3 { font-size: 1.02rem; font-weight: 800; }
+.schedule-day-head span { color: var(--muted); font-size: .76rem; }
 .matches { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
 .match-card {
   background: linear-gradient(180deg, rgba(255,255,255,.035), transparent), var(--glass);
@@ -419,13 +619,21 @@ img { max-width: 100%; display: block; }
 }
 .match-card:hover { border-color: rgba(123,47,247,.75); transform: translateY(-5px); box-shadow: var(--shadow-soft); }
 .match-card:hover::before { transform: translateX(-55%); opacity: 1; }
+.match-card.competition-laliga::before { background: linear-gradient(90deg, transparent, #ff3d56, #ff8a2c, transparent); }
+.match-card.competition-ucl::before { background: linear-gradient(90deg, transparent, #2563eb, #22d3ee, transparent); }
+.match-card.is-live {
+  border-color: rgba(255,59,92,.34);
+  box-shadow: 0 0 0 1px rgba(255,59,92,.05), 0 18px 45px rgba(255,59,92,.08);
+}
 .match-card:nth-child(2) { animation-delay: .05s; }
 .match-card:nth-child(3) { animation-delay: .1s; }
 .match-card:nth-child(4) { animation-delay: .15s; }
 .match-card:nth-child(5) { animation-delay: .2s; }
 .match-card:nth-child(6) { animation-delay: .25s; }
 .match-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.league-tag, .featured-league, .live-detail-league { display: inline-flex; align-items: center; gap: 7px; }
 .league-tag { font-size: .82rem; color: var(--muted); font-weight: 600; }
+.competition-mark { width: 24px; height: 24px; border-radius: 8px; }
 .status-pill { font-size: .75rem; font-weight: 800; padding: 4px 10px; border-radius: 999px; }
 .status-live { background: rgba(255,59,92,.15); color: var(--danger); }
 .status-live::before { content: "● "; animation: blink 1.3s infinite; }
@@ -454,6 +662,27 @@ img { max-width: 100%; display: block; }
 .team .tname { font-weight: 700; font-size: .92rem; }
 .score { font-size: 1.45rem; font-weight: 800; min-width: 70px; text-align: center; }
 .score small { display: block; font-size: .72rem; color: var(--muted); font-weight: 600; margin-top: 2px; }
+.coverage-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 13px;
+}
+.coverage-badge {
+  padding: 4px 8px;
+  border-radius: 999px;
+  color: #b9c5da;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.08);
+  font-size: .67rem;
+  font-weight: 800;
+}
+.coverage-badge--live {
+  color: #ff9bab;
+  border-color: rgba(255,59,92,.24);
+  background: rgba(255,59,92,.08);
+}
 
 .time-zone-row {
   display: grid;
@@ -2692,3 +2921,38 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 .pinned-player-only .no-ads-badge { display: none !important; }
 .pinned-player-only .watch-head { margin-bottom: 8px; }
 .pinned-player-only .watch-topline__title { font-size: 1.15rem; }
+
+@media (max-width: 960px) {
+  .season-hub-inner { grid-template-columns: 1fr; gap: 16px; }
+  .season-hub-copy h2, .season-hub-copy p { max-width: 720px; }
+  .season-archive-link { justify-self: start; }
+  .competition-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 600px) {
+  .season-hub-inner { padding-block: 18px; }
+  .season-hub-copy h2 { font-size: 1.45rem; }
+  .season-leagues {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 3px;
+  }
+  .season-leagues::-webkit-scrollbar { display: none; }
+  .season-league-card { flex: 0 0 82%; scroll-snap-align: start; }
+  .season-archive-link { white-space: normal; }
+  .competition-filters {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding-bottom: 4px;
+  }
+  .competition-filters::-webkit-scrollbar { display: none; }
+  .competition-filter { flex: 0 0 auto; min-width: 185px; scroll-snap-align: start; }
+  .competition-filter:first-child { min-width: 145px; }
+  .schedule-day-head { align-items: flex-start; flex-direction: column; gap: 2px; }
+  .matches { grid-template-columns: minmax(0, 1fr); }
+  .match-card { padding: 15px; }
+}

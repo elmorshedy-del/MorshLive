@@ -8,6 +8,14 @@
   const t = (k, v) => (window.I18N ? window.I18N.t(k, v) : k);
   const statusLabel = (s) => t("status." + s);
   const teamLabel = (n) => (window.TeamNames ? window.TeamNames.localize(n) : n);
+  const leagueLabel = (m) => {
+    if (m && m.competition) {
+      const translated = t(`league.${m.competition}`);
+      if (translated !== `league.${m.competition}`) return translated;
+    }
+    if (window.I18N?.lang === "ar" && m?.leagueAr) return m.leagueAr;
+    return (m && m.league) || "";
+  };
 
   const ICON = {
     mic: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>',
@@ -35,9 +43,13 @@
       : `<div class="crest">${ab || "?"}</div>`;
   }
 
+  function isWorldCupMatch(m) {
+    return m?.leagueSlug === "fifa.world" || /^espn-fifa\.world-/.test(m?.id || "");
+  }
+
   // Where a match's watch button points. Ended fixtures → archive; live/upcoming → player.
   function watchHref(m) {
-    if (m.status === "ended" && m.key) {
+    if (m.status === "ended" && m.key && isWorldCupMatch(m)) {
       const href = window.TeamNames?.matchPageHref?.(m);
       if (href) return href;
       return `/tournament?match=${encodeURIComponent(m.key)}`;
@@ -76,7 +88,7 @@
     const comm = commentatorText(m);
     if (comm) parts.push(`${ICON.mic} <b>${comm}</b>`);
     if (m.channel) parts.push(`${ICON.tv} ${m.channel}`);
-    if (!parts.length) parts.push(m.venue ? `${ICON.pin} ${m.venue}` : `${ICON.trophy} ${m.league || ""}`);
+    if (!parts.length) parts.push(m.venue ? `${ICON.pin} ${m.venue}` : `${ICON.trophy} ${leagueLabel(m)}`);
     return parts.join(" · ");
   }
 
@@ -91,6 +103,23 @@
             <b>${z.value}</b>
           </div>`).join("")}
       </div>`;
+  }
+
+  function competitionMark(m) {
+    const labels = { epl: "PL", laliga: "LL", ucl: "UCL" };
+    const label = labels[m?.competition];
+    return label
+      ? `<span class="competition-mark competition-mark--${m.competition}" aria-hidden="true">${label}</span>`
+      : "";
+  }
+
+  function coverageBadges(m) {
+    const badges = [];
+    if (m.status === "live") badges.push(`<span class="coverage-badge coverage-badge--live">${t("coverage.live")}</span>`);
+    if (m.lineups) badges.push(`<span class="coverage-badge">${t("coverage.lineups")}</span>`);
+    if (m.stats) badges.push(`<span class="coverage-badge">${t("coverage.stats")}</span>`);
+    if (m.goals?.length) badges.push(`<span class="coverage-badge">${t("coverage.goals", { n: m.goals.length })}</span>`);
+    return badges.length ? `<div class="coverage-badges">${badges.join("")}</div>` : "";
   }
 
   /* -------------------------------------------------- Featured live (auto) */
@@ -113,7 +142,7 @@
       <div class="featured-grid">
         ${live.map((m) => `
           <a class="featured-card" href="${watchHref(m)}">
-            <div class="featured-league">${m.league}${m.minute ? ` · ${m.minute}` : ""}</div>
+            <div class="featured-league">${competitionMark(m)}${leagueLabel(m)}${m.minute ? ` · ${m.minute}` : ""}</div>
             <div class="featured-teams">
               <span>${teamLabel(m.home)}</span>
               <b class="featured-score">${m.score}${window.liveMinuteLabel && window.liveMinuteLabel(m) ? ` · ${window.liveMinuteLabel(m)}` : (m.minute ? ` · ${m.minute}` : "")}</b>
@@ -131,7 +160,7 @@
       <div class="featured-grid">
         ${recentEnded.map((m) => `
           <a class="featured-card featured-card--commentary" href="${watchHref(m)}">
-            <div class="featured-league">${m.league} · ${t("status.ended")}</div>
+            <div class="featured-league">${competitionMark(m)}${leagueLabel(m)} · ${t("status.ended")}</div>
             <div class="featured-teams">
               <span>${teamLabel(m.home)}</span>
               <b class="featured-score">${m.score}</b>
@@ -188,7 +217,7 @@
       <div class="live-detail-card ${live ? "is-live" : "is-ended"}">
         <div class="live-detail-top">
           ${statusHtml}
-          <span class="live-detail-league">${ICON.trophy} ${m.league || ""}</span>
+          <span class="live-detail-league">${competitionMark(m)}${leagueLabel(m)}</span>
         </div>
         <div class="live-detail-teams">
           <div class="team">
@@ -281,9 +310,9 @@
     const minute = window.liveMinuteLabel ? window.liveMinuteLabel(m) : (m.status === "live" && m.minute ? String(m.minute).trim() : "");
     const minuteSuffix = minute ? ` · ${minute}` : "";
     return `
-      <article class="match-card" data-status="${m.status}">
+      <article class="match-card competition-${m.competition || "other"}${m.status === "live" ? " is-live" : ""}" data-status="${m.status}" data-competition="${m.competition || "other"}">
         <div class="match-top">
-          <span class="league-tag">${m.league}</span>
+          <span class="league-tag">${competitionMark(m)}${leagueLabel(m)}</span>
           <span class="match-top-end">
             <span class="status-pill status-${m.status}">${statusLabel(m.status)}${minuteSuffix}</span>
             ${favStar(m)}
@@ -301,6 +330,7 @@
           </div>
         </div>
         ${window.buildGoalsHtml ? window.buildGoalsHtml(m) : ""}
+        ${coverageBadges(m)}
         ${timeZoneChips(m)}
         <div class="match-foot">
           <span class="match-meta">${footMeta(m)}</span>
@@ -313,14 +343,75 @@
       </article>`;
   }
 
+  function arabiaDayKey(kickoffUtc) {
+    const kickoff = Date.parse(kickoffUtc || "");
+    if (Number.isNaN(kickoff)) return "";
+    return new Date(kickoff + 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  }
+
+  function shiftIsoDay(day, offset) {
+    const d = new Date(`${day}T12:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + offset);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function scheduleDayLabel(day) {
+    if (!day) return t("schedule.other");
+    const today = arabiaDayKey(new Date().toISOString());
+    const prefix = day === today
+      ? t("schedule.today")
+      : day === shiftIsoDay(today, 1)
+        ? t("schedule.tomorrow")
+        : day === shiftIsoDay(today, -1)
+          ? t("schedule.yesterday")
+          : "";
+    const locale = window.I18N?.lang === "en" ? "en-GB" : "ar";
+    const formatted = new Intl.DateTimeFormat(locale, {
+      weekday: "long",
+      day: "numeric",
+      month: "short",
+    }).format(new Date(`${day}T12:00:00Z`));
+    return prefix ? `${prefix} · ${formatted}` : formatted;
+  }
+
+  function scheduleGroupsHtml(matches) {
+    const groups = new Map();
+    for (const match of matches) {
+      const day = arabiaDayKey(match.kickoffUtc);
+      if (!groups.has(day)) groups.set(day, []);
+      groups.get(day).push(match);
+    }
+    const today = arabiaDayKey(new Date().toISOString());
+    const rank = (day) => {
+      if (!day) return Number.MAX_SAFE_INTEGER;
+      if (day === today) return 0;
+      if (day > today) return 1 + (Date.parse(day) - Date.parse(today));
+      return 1e12 + (Date.parse(today) - Date.parse(day));
+    };
+    return [...groups.entries()]
+      .sort(([a], [b]) => rank(a) - rank(b))
+      .map(([day, dayMatches]) => `
+        <section class="schedule-day" data-day="${day}">
+          <div class="schedule-day-head">
+            <h3>${scheduleDayLabel(day)}</h3>
+            <span>${t("matches.count", { n: dayMatches.length })}</span>
+          </div>
+          <div class="matches">${dayMatches.map(matchCard).join("")}</div>
+        </section>`)
+      .join("");
+  }
+
   function renderMatches(filter) {
     const grid = document.getElementById("matches-grid");
     if (!grid) return;
-    const list = filter && filter !== "all"
-      ? MATCHES.filter((m) => m.status === filter)
-      : MATCHES;
+    const statusFilter = filter || activeStatusFilter;
+    const list = MATCHES.filter((m) => {
+      const statusMatch = statusFilter === "all" || m.status === statusFilter;
+      const leagueMatch = activeCompetitionFilter === "all" || m.competition === activeCompetitionFilter;
+      return statusMatch && leagueMatch;
+    });
     grid.innerHTML = list.length
-      ? list.map(matchCard).join("")
+      ? scheduleGroupsHtml(list)
       : `<p style="color:var(--muted)">${t("matches.none")}</p>`;
     // Panels re-opened from `openPanels` state don't fire a native `toggle`
     // event (that only fires on user interaction), so activate their bars here.
@@ -333,6 +424,7 @@
     if (window.KZHighlights) window.KZHighlights.bindReplayLaunch(grid);
     const count = document.getElementById("matches-count");
     if (count) count.textContent = t("matches.count", { n: list.length });
+    updateCompetitionCounts();
   }
 
   /* -------------------------------------------------- Saved matches */
@@ -341,7 +433,7 @@
     return `
       <article class="match-card saved-card">
         <div class="match-top">
-          <span class="league-tag">${m.league || ""}</span>
+          <span class="league-tag">${competitionMark(m)}${leagueLabel(m)}</span>
           <button class="fav-star is-saved" data-unsave-id="${m.id}" type="button"
             aria-label="${t("card.removeSaved")}" title="${t("card.removeSaved")}">${ICON.trash}</button>
         </div>
@@ -381,19 +473,47 @@
       if (rm) window.KZFav.remove(rm.dataset.unsaveId);
     });
     // Re-paint stars + saved list whenever the favorites change.
-    window.KZFav.subscribe(() => { renderMatches(activeFilter); renderFeaturedLive(); renderSaved(); });
+    window.KZFav.subscribe(() => { renderMatches(activeStatusFilter); renderFeaturedLive(); renderSaved(); });
   }
 
   /* -------------------------------------------------- Filters */
-  let activeFilter = "all";
+  let activeStatusFilter = "all";
+  let activeCompetitionFilter = "all";
+
+  function updateCompetitionCounts() {
+    document.querySelectorAll("[data-league-filter]").forEach((btn) => {
+      const key = btn.dataset.leagueFilter;
+      const count = key === "all"
+        ? MATCHES.length
+        : MATCHES.filter((m) => m.competition === key).length;
+      const el = btn.querySelector("[data-league-count]");
+      if (el) el.textContent = count;
+      btn.hidden = key !== "all" && count === 0;
+    });
+  }
 
   function initFilters() {
-    document.querySelectorAll(".filter-btn").forEach((btn) => {
+    document.querySelectorAll("[data-status-filter]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        document.querySelectorAll(".filter-btn").forEach((b) => b.classList.remove("active"));
+        document.querySelectorAll("[data-status-filter]").forEach((b) => b.classList.remove("active"));
         btn.classList.add("active");
-        activeFilter = btn.dataset.filter;
-        renderMatches(activeFilter);
+        activeStatusFilter = btn.dataset.statusFilter;
+        renderMatches(activeStatusFilter);
+      });
+    });
+    document.querySelectorAll("[data-league-filter]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-league-filter]").forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        activeCompetitionFilter = btn.dataset.leagueFilter;
+        renderMatches(activeStatusFilter);
+      });
+    });
+    document.querySelectorAll("[data-league-jump]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const filter = document.querySelector(`[data-league-filter="${btn.dataset.leagueJump}"]`);
+        if (filter && !filter.hidden) filter.click();
+        document.getElementById("matches")?.scrollIntoView({ behavior: "smooth", block: "start" });
       });
     });
   }
@@ -442,7 +562,7 @@
     showUpdated(meta);
     renderFeaturedLive();
     renderLiveDetail();
-    renderMatches(activeFilter);
+    renderMatches(activeStatusFilter);
     renderSaved();
     const defer = window.requestIdleCallback || ((cb) => setTimeout(cb, 150));
     defer(() => { if (window.loadRecentTweets) window.loadRecentTweets().catch(() => {}); });
@@ -453,7 +573,7 @@
     MATCHES = matches;
     renderFeaturedLive();
     renderLiveDetail();
-    renderMatches(activeFilter);
+    renderMatches(activeStatusFilter);
   };
 
   document.addEventListener("DOMContentLoaded", async () => {
@@ -463,11 +583,23 @@
     initPanelToggles();
     renderSaved();
     await loadMatches();
-    setInterval(() => loadMatches({ force: true }), 90 * 1000);
+    const pollMatches = async () => {
+      const delay = MATCHES.some((m) => m.status === "live") ? 30 * 1000 : 90 * 1000;
+      setTimeout(async () => {
+        try {
+          await loadMatches({ force: true });
+        } finally {
+          pollMatches();
+        }
+      }, delay);
+    };
+    pollMatches();
     setInterval(() => {
       const defer = window.requestIdleCallback || ((cb) => setTimeout(cb, 0));
       defer(() => { if (window.loadRecentTweets) window.loadRecentTweets().catch(() => {}); });
     }, 10 * 60 * 1000);
-    setInterval(() => refreshLiveMatchPanels().catch(() => {}), 60 * 1000);
+    setInterval(() => {
+      if (MATCHES.some((m) => m.status === "live")) refreshLiveMatchPanels().catch(() => {});
+    }, 30 * 1000);
   });
 })();
