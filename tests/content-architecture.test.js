@@ -7,11 +7,12 @@ const highlightsJs = readFileSync("assets/js/highlights-page.js", "utf8");
 const searchJs = readFileSync("assets/js/search.js", "utf8");
 const i18nLoader = readFileSync("assets/js/i18n.js", "utf8");
 const seoPages = readFileSync("lib/seo-pages.js", "utf8");
+const seoBuilder = readFileSync("scripts/build-seo-pages.mjs", "utf8");
 
 describe("KoraZero content architecture", () => {
   it("has separate primary destinations for current highlights and the World Cup archive", () => {
-    expect(architecture).toContain('/highlights.html');
-    expect(architecture).toContain('/tournament');
+    expect(architecture).toContain("/highlights.html");
+    expect(architecture).toContain("/tournament");
     expect(architecture).toContain('highlights: "الملخصات"');
     expect(architecture).toContain('worldCup: "كأس العالم 2026"');
   });
@@ -31,7 +32,14 @@ describe("KoraZero content architecture", () => {
   it("never sends ended club search results into the World Cup archive", () => {
     expect(searchJs).toContain("if (isWorldCupMatch(m))");
     expect(searchJs).toContain("return currentRecapHref(m)");
-    expect(searchJs).toContain('/highlights.html?match=');
+    expect(searchJs).toContain("/highlights.html?match=");
+  });
+
+  it("normalizes legacy live shortcuts to the player rather than the World Cup archive", () => {
+    expect(seoBuilder).toContain("normalizeLegacyRoutes");
+    expect(seoBuilder).toContain('"/live               /watch?ch=live              301"');
+    expect(seoBuilder).toContain('"/bein               /watch?ch=live              301"');
+    expect(seoBuilder).toContain('"/vip                /watch?ch=live              301"');
   });
 
   it("loads the shared architecture everywhere and exposes highlights to generated SEO navigation", () => {
