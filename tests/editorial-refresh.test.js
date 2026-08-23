@@ -15,7 +15,7 @@ describe("KoraZero editorial refresh", () => {
   it("uses standard football Arabic for own goals and trims FAQ schema to three useful questions", () => {
     expect(refresh).toContain("هدف في مرماه");
     expect(refresh).not.toContain('"faq.q6": "هل كورة زيرو بديل');
-    expect(refresh).toContain('[1, 2, 3].map');
+    expect(refresh).toContain("[1, 2, 3].map");
   });
 
   it("keeps high-intent SEO language natural in Arabic and English", () => {
