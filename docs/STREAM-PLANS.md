@@ -156,6 +156,42 @@ Recommended loop, outside GitHub Actions (Playwright is too heavy for Actions):
 If the probe fails, mark `--fail` and leave `allowLegacy: false`. The player
 holds. That is better than a silent wrong match.
 
+## Match-day bind loop (lesson from 23 Aug 2026)
+
+Cloudflare Workers Builds runs `npm run refresh:matches` **before**
+`npx wrangler deploy`. That crawl is slow. A catalog commit on `main` can sit
+unpublished for several minutes. Until then
+`GET /api/stream-plan?match=<id>` returns `no-catalog-legacy` and the watch
+page mounts a blank koraplus player. That is what “nothing” looked like for
+Elche–Barcelona.
+
+Do this for every remaining fixture:
+
+1. **T-15** — `npm run probe:wrappers`. If no scorebug for this match, stop
+   the visual tour. Arm a **kickoff** one-shot. Do not bind a studio, FT
+   graphic, or another league.
+2. **Kickoff** — probe again. A new inner Fabor id on a slot is the reuse
+   signal. Confirm the scorebug (2 URLs max: the likely BeIN slot + its
+   yallacuo twin). Bind only `mo.yallacuo.xyz/albaplayer/…` or
+   `pl.koralive1.cc/albaplayer/…`.
+3. **Never** bind `reddit-soccer-streams.online`, `iframe.st`,
+   `kora-plus.li` / `kora-plus.app`, or a go4score **listing** page.
+4. **Never** steal a slot from a still-live catalog match.
+5. Write `stream-plans.json` (`contentKey: match:<espn-id>`), commit, push,
+   merge to `main`.
+6. **Not live yet.** Run:
+
+   ```bash
+   npm run confirm:stream-plan -- --match=espn-esp.1-401882913 --url=yallacuo.xyz/albaplayer/sport-2
+   ```
+
+   Poll until `catalog: true` and the playback URL is the wrapper you bound.
+   Only then tell the user to hard-refresh. If confirm times out, say
+   production has not deployed — do not claim the bind is on the site.
+
+If a match has no Arabic wrapper after kickoff (Getafe–Racing that Sunday),
+leave it unbound. A hold is better than the wrong game.
+
 ## What this replaces, and what it does not
 
 The catalog is the new authority for matches you have actually wired.
