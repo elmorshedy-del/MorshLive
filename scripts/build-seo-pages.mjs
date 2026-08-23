@@ -24,8 +24,15 @@ function readJson(file, fallback) {
   }
 }
 
+function normalizeLegacyRoutes(text) {
+  return String(text)
+    .replace(/^\/live\s+\/tournament\s+301\s*$/m, "/live               /watch?ch=live              301")
+    .replace(/^\/bein\s+\/tournament\s+301\s*$/m, "/bein               /watch?ch=live              301")
+    .replace(/^\/vip\s+\/tournament\s+301\s*$/m, "/vip                /watch?ch=live              301");
+}
+
 function installRedirects(lines) {
-  let text = fs.readFileSync(REDIRECTS, "utf8");
+  let text = normalizeLegacyRoutes(fs.readFileSync(REDIRECTS, "utf8"));
   const blockRe = new RegExp(`${BEGIN}[\\s\\S]*?${END}\\n?`, "g");
   text = text.replace(blockRe, "");
   const block = `${BEGIN}\n${lines.join("\n")}\n${END}\n`;
