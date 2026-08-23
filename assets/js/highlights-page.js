@@ -10,6 +10,12 @@
     return (window.I18N && window.I18N.lang === "en") || document.documentElement.lang === "en";
   }
 
+  function escapeHtml(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (char) => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]
+    ));
+  }
+
   function teamLabel(name) {
     return window.TeamNames ? window.TeamNames.localize(name) : name;
   }
@@ -46,7 +52,10 @@
     if (!day) return "";
     try {
       return new Intl.DateTimeFormat(isEnglish() ? "en-GB" : "ar", {
-        weekday: "long", day: "numeric", month: "long", year: "numeric",
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
       }).format(new Date(`${day}T12:00:00Z`));
     } catch {
       return day;
@@ -93,15 +102,27 @@
     };
   }
 
-  async function loadStaticHighlights() {
+  function flattenHighlightDoc(data) {
+    return (data?.days || [])
+      .flatMap((day) => (day.matches || []).map((m) => bannerToMatch(m, day.date)))
+      .filter(Boolean);
+  }
+
+  async function fetchHighlightDoc(url) {
     try {
-      const res = await fetch("/assets/data/highlights-banners.json", { cache: "default" });
-      if (!res.ok) return [];
-      const data = await res.json();
-      return (data.days || []).flatMap((day) => (day.matches || []).map((m) => bannerToMatch(m, day.date))).filter(Boolean);
+      const res = await fetch(url, { cache: "default" });
+      if (!res.ok) return null;
+      return await res.json();
     } catch {
-      return [];
+      return null;
     }
+  }
+
+  async function loadStaticHighlights() {
+    const season = await fetchHighlightDoc("/assets/data/season-highlights.json");
+    if (season?.days?.length) return flattenHighlightDoc(season);
+    const recent = await fetchHighlightDoc("/assets/data/highlights-banners.json");
+    return flattenHighlightDoc(recent);
   }
 
   async function loadLiveEnded() {
@@ -125,7 +146,7 @@
         ...m,
         highlight: m.highlight || prev.highlight,
         highlights: m.highlights || prev.highlights,
-        clips: (m.clips && m.clips.length) ? m.clips : prev.clips,
+        clips: m.clips?.length ? m.clips : prev.clips,
         summaryAr: m.summaryAr || prev.summaryAr,
       });
     }
@@ -138,7 +159,6 @@
           kicker: "2026/27 season",
           title: "Highlights & match recaps",
           lede: "A dedicated home for current-season recaps: results, key moments, goals and available video from the Premier League, La Liga and UEFA Champions League.",
-          all: "All",
           count: (n) => `${n} recap${n === 1 ? "" : "s"}`,
           dayCount: (n) => `${n} match${n === 1 ? "" : "es"}`,
           empty: "No current-season recaps are available for this filter yet.",
@@ -150,7 +170,6 @@
           kicker: "الموسم 2026/27",
           title: "ملخصات ومراجعات المباريات",
           lede: "صفحة مستقلة لمباريات الموسم الحالي: النتائج، مراجعة سريعة، الأهداف وأبرز اللقطات للدوري الإنجليزي والدوري الإسباني ودوري أبطال أوروبا عند توفرها.",
-          all: "الكل",
           count: (n) => `${n} ملخص`,
           dayCount: (n) => `${n} مباراة`,
           empty: "لا توجد ملخصات متاحة حالياً لهذا الاختيار.",
@@ -168,19 +187,20 @@
   }
 
   function renderCard(m) {
-    const id = encodeURIComponent(m.id || m.key || pairKey(m));
-    const home = teamLabel(m.home);
-    const away = teamLabel(m.away);
-    const summary = (!isEnglish() && m.summaryAr) ? m.summaryAr : fallbackSummary(m);
+    const rawId = String(m.id || m.key || pairKey(m));
+    const id = encodeURIComponent(rawId);
+    const home = escapeHtml(teamLabel(m.home));
+    const away = escapeHtml(teamLabel(m.away));
+    const summary = escapeHtml(!isEnglish() && m.summaryAr ? m.summaryAr : fallbackSummary(m));
     return `
-      <article class="current-review-card" data-review-id="${id}" data-review-raw-id="${String(m.id || m.key || "").replace(/"/g, "&quot;")}">
+      <article class="current-review-card" data-review-id="${id}" data-review-raw-id="${escapeHtml(rawId)}">
         <div class="current-review-meta">
-          <span class="current-review-league">${competitionLabel(m)}</span>
-          <span>${formatDay(arabiaDayIso(m.kickoffUtc))}</span>
+          <span class="current-review-league">${escapeHtml(competitionLabel(m))}</span>
+          <span>${escapeHtml(formatDay(arabiaDayIso(m.kickoffUtc)))}</span>
         </div>
         <div class="current-review-scoreline">
           <span class="current-review-team">${home}</span>
-          <strong class="current-review-score">${m.score || "—"}</strong>
+          <strong class="current-review-score">${escapeHtml(m.score || "—")}</strong>
           <span class="current-review-team">${away}</span>
         </div>
         <p class="current-review-summary">${summary}</p>
@@ -194,8 +214,10 @@
     const labels = isEnglish()
       ? { all: "All", epl: "Premier League", laliga: "La Liga", ucl: "Champions League" }
       : { all: "الكل", epl: "الدوري الإنجليزي", laliga: "الدوري الإسباني", ucl: "دوري الأبطال" };
-    host.innerHTML = Object.entries(labels).map(([key, label]) => `
-      <button type="button" class="current-highlights-filter${activeCompetition === key ? " active" : ""}" data-filter="${key}">${label}</button>`).join("");
+    host.innerHTML = Object.entries(labels)
+      .map(([key, label]) => `
+        <button type="button" class="current-highlights-filter${activeCompetition === key ? " active" : ""}" data-filter="${key}">${label}</button>`)
+      .join("");
     host.querySelectorAll("[data-filter]").forEach((btn) => {
       btn.addEventListener("click", () => {
         activeCompetition = btn.dataset.filter;
@@ -207,8 +229,9 @@
   function focusQuery() {
     const wanted = new URLSearchParams(location.search).get("match");
     if (!wanted) return;
-    const card = [...document.querySelectorAll(".current-review-card")]
-      .find((el) => el.dataset.reviewRawId === wanted || decodeURIComponent(el.dataset.reviewId || "") === wanted);
+    const card = [...document.querySelectorAll(".current-review-card")].find(
+      (el) => el.dataset.reviewRawId === wanted || decodeURIComponent(el.dataset.reviewId || "") === wanted,
+    );
     if (!card) return;
     card.classList.add("is-target");
     setTimeout(() => card.scrollIntoView({ behavior: "smooth", block: "center" }), 60);
@@ -246,11 +269,13 @@
       if (!groups.has(day)) groups.set(day, []);
       groups.get(day).push(m);
     }
-    host.innerHTML = [...groups.entries()].map(([day, matches]) => `
-      <section class="current-review-day">
-        <div class="current-review-day__head"><h2>${formatDay(day)}</h2><span>${c.dayCount(matches.length)}</span></div>
-        <div class="current-review-grid">${matches.map(renderCard).join("")}</div>
-      </section>`).join("");
+    host.innerHTML = [...groups.entries()]
+      .map(([day, matches]) => `
+        <section class="current-review-day">
+          <div class="current-review-day__head"><h2>${escapeHtml(formatDay(day))}</h2><span>${c.dayCount(matches.length)}</span></div>
+          <div class="current-review-grid">${matches.map(renderCard).join("")}</div>
+        </section>`)
+      .join("");
     if (window.KZHighlights) window.KZHighlights.bindReplayLaunch(host);
     focusQuery();
   }
