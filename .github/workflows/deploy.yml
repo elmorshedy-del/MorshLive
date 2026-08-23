@@ -13,6 +13,10 @@ on:
         description: "Cloudflare account ID (optional if CLOUDFLARE_ACCOUNT_ID secret is set)"
         required: false
         type: string
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/deploy.yml"
 
 jobs:
   deploy:
