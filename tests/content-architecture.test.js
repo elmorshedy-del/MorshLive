@@ -8,6 +8,8 @@ const searchJs = readFileSync("assets/js/search.js", "utf8");
 const i18nLoader = readFileSync("assets/js/i18n.js", "utf8");
 const seoPages = readFileSync("lib/seo-pages.js", "utf8");
 const seoBuilder = readFileSync("scripts/build-seo-pages.mjs", "utf8");
+const seasonArchive = readFileSync("scripts/update-season-highlights.mjs", "utf8");
+const packageJson = JSON.parse(readFileSync("package.json", "utf8"));
 
 describe("KoraZero content architecture", () => {
   it("has separate primary destinations for current highlights and the World Cup archive", () => {
@@ -27,6 +29,14 @@ describe("KoraZero content architecture", () => {
     expect(highlightsPage).toContain('href="/tournament"');
     expect(highlightsJs).toContain('const SUPPORTED = new Set(["epl", "laliga", "ucl"])');
     expect(highlightsJs).toContain("isWorldCup(m)");
+    expect(highlightsJs).toContain("/assets/data/season-highlights.json");
+  });
+
+  it("persists current-season highlights instead of limiting the collection to the three-day home rail", () => {
+    expect(seasonArchive).toContain('const SUPPORTED = new Set(["epl", "laliga", "ucl"])');
+    expect(seasonArchive).toContain("previous.season === currentSeason");
+    expect(seasonArchive).toContain("season-highlights.json");
+    expect(packageJson.scripts["refresh:matches"]).toContain("update-season-highlights.mjs");
   });
 
   it("never sends ended club search results into the World Cup archive", () => {
