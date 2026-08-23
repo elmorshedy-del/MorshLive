@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-23T15:32:00.000Z",
+  "updatedAt": "2026-08-23T19:32:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -279,6 +279,34 @@
           "verifiedAt": "2026-08-23T15:32:00.000Z",
           "label": "نيوكاسل × ليفربول · عربي",
           "note": "yallacuo sport-1 shows Newcastle–Liverpool Arabic, live"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882913",
+      "teams": [["elche", "elche cf"], ["barcelona", "barça", "barca"]],
+      "contentKey": "match:espn-esp.1-401882913",
+      "kickoffUtc": "2026-08-23T19:30:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-23T19:32:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v1",
+          "url": "https://mo.yallacuo.xyz/albaplayer/sport-2/",
+          "contentKey": "match:espn-esp.1-401882913",
+          "status": "verified",
+          "verifiedAt": "2026-08-23T19:32:00.000Z",
+          "label": "التشي × برشلونة · عربي",
+          "note": "yallacuo sport-2 shows Elche–Barcelona Arabic, live 0-0"
         }
       ]
     }
