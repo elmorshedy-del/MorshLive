@@ -1,0 +1,290 @@
+/* KoraZero 2026 dark refresh — energetic sports UI with restrained neon accents. */
+:root {
+  color-scheme: dark;
+  --bg: #060914;
+  --bg-2: #0a101d;
+  --surface: #101827;
+  --surface-2: #151f31;
+  --border: rgba(255, 255, 255, .09);
+  --text: #f4f7fb;
+  --muted: #9ba8bb;
+  --brand: #18e29a;
+  --brand-2: #8b5cf6;
+  --accent: #18e29a;
+  --danger: #ff526d;
+  --gold: #f6c85f;
+  --stat-home: #18e29a;
+  --stat-away: #58b8ff;
+  --shadow: 0 24px 70px rgba(0, 0, 0, .42);
+  --shadow-soft: 0 12px 34px rgba(0, 0, 0, .28);
+  --glass: rgba(8, 13, 24, .78);
+  --grad: linear-gradient(135deg, #18e29a 0%, #24c7dd 44%, #8b5cf6 100%);
+}
+
+html, body { background: var(--bg); }
+body {
+  background:
+    radial-gradient(900px 520px at 92% -10%, rgba(139, 92, 246, .16), transparent 58%),
+    radial-gradient(780px 460px at 5% 10%, rgba(24, 226, 154, .11), transparent 56%),
+    linear-gradient(180deg, #070b16 0%, #060914 44%, #080d18 100%);
+  color: var(--text);
+}
+
+.site-header {
+  background: rgba(6, 9, 20, .78);
+  border-bottom-color: rgba(255, 255, 255, .08);
+  box-shadow: 0 10px 35px rgba(0, 0, 0, .18);
+}
+.kz-word { color: #f7f9fd; text-shadow: 0 8px 30px rgba(0, 0, 0, .35); }
+.kz-word b {
+  background: linear-gradient(118deg, #18e29a 0%, #72f5c5 34%, #9b7cff 72%, #18e29a 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.nav-links a, .nav-links .nav-bookmark { color: #a7b2c4; }
+.nav-links a:hover, .nav-links a.active, .nav-links .nav-bookmark:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, .055);
+}
+.nav-links a.nav-link--primary { color: #eaf0f7; }
+.nav-pill, .nav-toggle, .nav-lang {
+  background: rgba(255, 255, 255, .045);
+  border-color: rgba(255, 255, 255, .1);
+  color: #edf2f8;
+}
+.nav-pill:hover, .nav-toggle:hover, .nav-lang:hover {
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(24, 226, 154, .34);
+}
+.nav-bookmark {
+  color: #07140f !important;
+  background: linear-gradient(135deg, #18e29a, #5ce6bd) !important;
+  box-shadow: 0 8px 24px rgba(24, 226, 154, .16);
+}
+
+.season-notice {
+  background: linear-gradient(90deg, rgba(24, 226, 154, .055), rgba(139, 92, 246, .045)), #0a101d;
+  border-bottom-color: rgba(255, 255, 255, .075);
+}
+.season-notice-pulse {
+  box-shadow: 0 0 0 5px rgba(24, 226, 154, .08), 0 0 24px rgba(24, 226, 154, .38);
+}
+.season-notice-kicker { color: #7ef0c9; }
+.archive-strip {
+  background: rgba(12, 18, 32, .96);
+  border-bottom-color: rgba(255, 255, 255, .075);
+}
+
+.hero { padding-top: 44px; }
+.hero::before {
+  content: "";
+  position: absolute;
+  width: min(48vw, 620px);
+  height: 320px;
+  inset-inline-end: -8%;
+  top: -20px;
+  pointer-events: none;
+  background: radial-gradient(circle, rgba(139, 92, 246, .13), transparent 68%);
+  filter: blur(10px);
+}
+.hero-copy { position: relative; z-index: 1; }
+.hero h1 {
+  color: #f7f9fd;
+  font-weight: 800;
+  text-wrap: balance;
+  letter-spacing: -.045em;
+}
+.hero h1 span {
+  background: linear-gradient(100deg, #18e29a 0%, #77f5cc 36%, #9b7cff 82%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.hero-lede { color: #adb8c9; }
+.hero-intro-card::before {
+  width: 3px;
+  background: linear-gradient(180deg, #18e29a, #8b5cf6);
+  box-shadow: 0 0 18px rgba(24, 226, 154, .2);
+}
+.hero-keywords { border-top-color: rgba(255, 255, 255, .08); }
+.hero-keyword, .hero-usps .usp, .no-ads-badge {
+  color: #e8edf5;
+  background: rgba(255, 255, 255, .045);
+  border-color: rgba(255, 255, 255, .09);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .025);
+}
+.hero-keyword--accent {
+  color: #9af3d3;
+  background: rgba(24, 226, 154, .08);
+  border-color: rgba(24, 226, 154, .24);
+}
+.hero-league, .season-league-card {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, .045), transparent 62%),
+    rgba(14, 21, 35, .86);
+  border-color: rgba(255, 255, 255, .085);
+  box-shadow: var(--shadow-soft);
+}
+.hero-league:hover, .season-league-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(24, 226, 154, .28);
+  box-shadow: 0 18px 44px rgba(0, 0, 0, .34), 0 0 0 1px rgba(24, 226, 154, .05);
+}
+.btn-primary, .watch-link, .filter-btn.active, .search-submit {
+  color: #04130e;
+  background: linear-gradient(135deg, #18e29a, #50e5bd);
+  border-color: transparent;
+  box-shadow: 0 10px 28px rgba(24, 226, 154, .16);
+}
+.btn-primary:hover, .watch-link:hover { background: linear-gradient(135deg, #40ecb0, #74efce); }
+.btn-ghost, .btn-secondary, .btn-gold, .wc-archive-btn {
+  color: #edf2f8;
+  background: rgba(255, 255, 255, .045);
+  border-color: rgba(255, 255, 255, .1);
+}
+.btn-ghost:hover, .btn-secondary:hover, .btn-gold:hover, .wc-archive-btn:hover {
+  background: rgba(255, 255, 255, .08);
+  border-color: rgba(255, 255, 255, .16);
+}
+
+.section-head .bar, .live-refresh-dot, .kz-hl-day__title::before { background: #18e29a; }
+.section-head h2, .schedule-day-head h3 { color: #f2f5fa; }
+.schedule-lede, .updated-line { color: #96a4b8; }
+.competition-filter, .filter-btn {
+  color: #a3aec0;
+  background: rgba(255, 255, 255, .035);
+  border-color: rgba(255, 255, 255, .085);
+}
+.competition-filter:hover, .filter-btn:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, .065);
+  border-color: rgba(255, 255, 255, .15);
+}
+.competition-filter.active {
+  color: #f8fbff;
+  background: linear-gradient(135deg, rgba(24, 226, 154, .11), rgba(139, 92, 246, .075));
+  border-color: rgba(24, 226, 154, .32);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
+}
+.competition-filter > b { color: #dbe3ee; background: rgba(255, 255, 255, .065); }
+
+.match-card, .featured-card, .live-detail-card, .faq-item, .info-item, .now-playing, .side-panel,
+.search-bar, .tournament-hero, .kz-tweet-rail--home .kz-tweet--compact {
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, .045), transparent 45%),
+    rgba(14, 21, 35, .9);
+  border-color: rgba(255, 255, 255, .085);
+  box-shadow: var(--shadow-soft);
+}
+.match-card {
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+.match-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(420px 140px at 50% 0%, rgba(24, 226, 154, .07), transparent 70%);
+  transition: opacity .2s ease;
+}
+.match-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, .16);
+  box-shadow: 0 20px 52px rgba(0, 0, 0, .38);
+}
+.match-card:hover::after { opacity: 1; }
+.match-card.is-live, .live-detail-card.is-live, .featured-card.is-live {
+  border-color: rgba(255, 82, 109, .48);
+  box-shadow: 0 14px 38px rgba(0, 0, 0, .32), 0 0 0 1px rgba(255, 82, 109, .05);
+}
+.team .crest, .tournament-scoreboard__team .crest {
+  background: #0b1220;
+  border-color: rgba(255, 255, 255, .1);
+}
+.score, .live-detail-score { color: #f6f8fc; }
+.time-chip {
+  background: rgba(255, 255, 255, .035);
+  border-color: rgba(255, 255, 255, .085);
+}
+.time-chip-ksa { border-color: rgba(24, 226, 154, .18); }
+.time-chip-et { border-color: rgba(139, 92, 246, .22); }
+.match-foot, .match-panel, .kz-tweet__compact-body { border-color: rgba(255, 255, 255, .075); }
+.goal-tag, .lineup-formation {
+  color: #c0cad8;
+  background: rgba(255, 255, 255, .055);
+  border-color: rgba(255, 255, 255, .08);
+}
+.stat-bar { background: rgba(255, 255, 255, .06); }
+
+.watch-wrap { background: transparent; }
+.player-shell {
+  border-color: rgba(255, 255, 255, .11);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, .5);
+}
+.player-shell-waiting {
+  background: radial-gradient(circle at 50% 24%, rgba(24, 226, 154, .09), transparent 46%), #050912;
+}
+.watch-sources-card, .alt-streams-card {
+  background: rgba(10, 16, 29, .9) !important;
+  border-color: rgba(255, 255, 255, .085) !important;
+  box-shadow: var(--shadow-soft);
+}
+.channel-btn, .server-btn, .player-switch-btn, .player-reload-btn {
+  color: #e8edf5;
+  background: rgba(255, 255, 255, .045);
+  border-color: rgba(255, 255, 255, .09);
+}
+.channel-btn:hover, .server-btn:hover, .player-switch-btn:hover, .player-reload-btn:hover {
+  border-color: rgba(24, 226, 154, .32);
+  background: rgba(24, 226, 154, .055);
+}
+.server-btn.active, .player-switch-btn.active {
+  color: #06140f;
+  background: linear-gradient(135deg, #18e29a, #5ce6bd);
+}
+.server-hint { color: #9aa8bb; }
+.server-hint.ok { color: #72efc6; }
+
+.faq { max-width: 880px; }
+.faq-item { padding: 16px 18px; }
+.faq-item summary { color: #edf2f8; }
+.faq-item summary::before { color: #18e29a; }
+.faq-item p { color: #9daabc; }
+
+.site-footer {
+  background: #080d18;
+  border-top-color: rgba(255, 255, 255, .075);
+}
+.site-footer h4 { color: #eef3fa; }
+.site-footer p, .site-footer a, .footer-bottom { color: #8f9daf; }
+.disclaimer {
+  color: #d9c68e;
+  background: rgba(246, 200, 95, .06);
+  border-color: rgba(246, 200, 95, .19);
+}
+
+.tournament-page, .page-watch, .page-search { color: var(--text); }
+.tournament-recap, .tournament-video-shell, .tournament-clip-card, .kz-tweet {
+  background-color: rgba(12, 18, 31, .82);
+  border-color: rgba(255, 255, 255, .08);
+}
+.home-tweets-more, .home-hl-banners-all, .wc-team-back a, .team-archive-link:hover {
+  color: #56ebbc;
+}
+
+@media (max-width: 860px) {
+  .nav-links {
+    background: rgba(8, 13, 24, .98);
+    border-bottom-color: rgba(255, 255, 255, .09);
+    box-shadow: 0 22px 50px rgba(0, 0, 0, .45);
+  }
+}
+
+@media (max-width: 600px) {
+  .hero { padding-top: 28px; }
+  .hero h1 { font-size: clamp(1.65rem, 8vw, 2.15rem); line-height: 1.23; }
+  .hero-intro-card { padding-inline-start: 14px; }
+  .match-card { border-radius: 18px; }
+}
