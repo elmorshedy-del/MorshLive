@@ -2,7 +2,7 @@
  * editorial, visual, and content-architecture layers across every page. */
 (function () {
   "use strict";
-  const stamp = "20260823architecture";
+  const stamp = "20260823architecture2";
 
   function writeSharedAssets() {
     document.write(`<link rel="stylesheet" href="/assets/css/dark-refresh.css?v=${stamp}">`);
