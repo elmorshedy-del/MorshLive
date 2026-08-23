@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-22T18:31:00.000Z",
+  "updatedAt": "2026-08-23T13:22:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -167,6 +167,62 @@
           "contentKey": "match:espn-esp.1-401882912",
           "status": "operator",
           "label": "إسبانيول × ريال مدريد · عربي"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879320",
+      "teams": [["manchester city", "man city", "city"], ["afc bournemouth", "bournemouth"]],
+      "contentKey": "match:espn-eng.1-401879320",
+      "kickoffUtc": "2026-08-23T13:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-23T13:22:34.450Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v1",
+          "url": "https://pl.koralive1.cc/albaplayer/bein1/",
+          "contentKey": "match:espn-eng.1-401879320",
+          "status": "verified",
+          "verifiedAt": "2026-08-23T13:22:34.450Z",
+          "label": "مانشستر سيتي × بورنموث · عربي",
+          "note": "koralive bein1 shows City–Bournemouth Arabic, live"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879297",
+      "teams": [["brighton", "brighton & hove albion"], ["aston villa", "villa"]],
+      "contentKey": "match:espn-eng.1-401879297",
+      "kickoffUtc": "2026-08-23T13:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-23T13:22:34.474Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v1",
+          "url": "https://mo.yallacuo.xyz/albaplayer/sport-2/",
+          "contentKey": "match:espn-eng.1-401879297",
+          "status": "verified",
+          "verifiedAt": "2026-08-23T13:22:34.474Z",
+          "label": "برايتون × أستون فيلا · عربي",
+          "note": "yallacuo sport-2 shows Brighton–Villa Arabic, live"
         }
       ]
     }
