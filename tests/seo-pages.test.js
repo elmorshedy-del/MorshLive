@@ -45,9 +45,7 @@ describe("seo-pages", () => {
   it("creates stable ASCII slugs and dated match URLs", () => {
     expect(slugify("Türkiye")).toBe("turkiye");
     expect(slugify("Newcastle United")).toBe("newcastle-united");
-    expect(matchPagePath(payload.matches[0])).toBe(
-      "/match/2026-08-23/liverpool-vs-newcastle-united",
-    );
+    expect(matchPagePath(payload.matches[0])).toBe("/match/2026-08-23/liverpool-vs-newcastle-united");
   });
 
   it("generates crawlable today, date, league and match pages", () => {
@@ -88,9 +86,7 @@ describe("seo-pages", () => {
   it("publishes every generated route in both redirects and the schedule sitemap", () => {
     const result = buildSeoPages(payload, { teamNamesAr });
 
-    expect(result.redirectLines).toContain(
-      "/matches/today  /generated/seo/matches-today.html  200",
-    );
+    expect(result.redirectLines).toContain("/matches/today  /generated/seo/matches-today.html  200");
     expect(result.sitemapXml).toContain("https://korazero.com/league/premier-league");
     expect(result.sitemapXml).toContain(
       "https://korazero.com/match/2026-08-23/liverpool-vs-newcastle-united",
