@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-23T15:02:00.000Z",
+  "updatedAt": "2026-08-23T15:32:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -251,6 +251,34 @@
           "verifiedAt": "2026-08-23T15:02:00.000Z",
           "label": "أتلتيكو مدريد × فياريال · عربي",
           "note": "yallacuo sport-3 shows Atlético–Villarreal Arabic, live 0-0"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879319",
+      "teams": [["newcastle united", "newcastle"], ["liverpool"]],
+      "contentKey": "match:espn-eng.1-401879319",
+      "kickoffUtc": "2026-08-23T15:30:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-23T15:32:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v1",
+          "url": "https://mo.yallacuo.xyz/albaplayer/sport-1/",
+          "contentKey": "match:espn-eng.1-401879319",
+          "status": "verified",
+          "verifiedAt": "2026-08-23T15:32:00.000Z",
+          "label": "نيوكاسل × ليفربول · عربي",
+          "note": "yallacuo sport-1 shows Newcastle–Liverpool Arabic, live"
         }
       ]
     }
