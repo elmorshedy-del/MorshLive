@@ -1,0 +1,44 @@
+name: One-time architecture cache bust
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  cache-bust:
+    if: github.event.head_commit.message == 'Trigger architecture cache bust'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Bump architecture asset versions
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          stamp = "20260823architecture2"
+
+          for path in Path('.').glob('*.html'):
+              text = path.read_text(encoding='utf-8')
+              text = re.sub(r'assets/js/i18n\.js\?v=[^"\']+', f'assets/js/i18n.js?v={stamp}', text)
+              text = re.sub(r'assets/js/highlights-ui\.js\?v=[^"\']+', f'assets/js/highlights-ui.js?v={stamp}', text)
+              text = re.sub(r'assets/js/highlights-page\.js\?v=[^"\']+', f'assets/js/highlights-page.js?v={stamp}', text)
+              path.write_text(text, encoding='utf-8')
+
+          loader = Path('assets/js/i18n.js')
+          text = loader.read_text(encoding='utf-8')
+          text = re.sub(r'const stamp = "[^"]+";', f'const stamp = "{stamp}";', text)
+          loader.write_text(text, encoding='utf-8')
+
+          Path('.github/workflows/cache-bust-once.yml').unlink()
+          PY
+      - name: Commit cache bust
+        run: |
+          git config user.name "KoraZero Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "Apply architecture cache bust"
+          git push
