@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-23T19:32:00.000Z",
+  "updatedAt": "2026-08-25T19:05:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -307,6 +307,34 @@
           "verifiedAt": "2026-08-23T19:32:00.000Z",
           "label": "التشي × برشلونة · عربي",
           "note": "yallacuo sport-2 shows Elche–Barcelona Arabic, live 0-0"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882917",
+      "teams": [["valencia"], ["real betis", "betis"]],
+      "contentKey": "match:espn-esp.1-401882917",
+      "kickoffUtc": "2026-08-25T19:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-25T19:05:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v1",
+          "url": "https://pl.koralive1.cc/albaplayer/bein3/",
+          "contentKey": "match:espn-esp.1-401882917",
+          "status": "verified",
+          "verifiedAt": "2026-08-25T19:05:00.000Z",
+          "label": "فالنسيا × ريال بيتيس · عربي",
+          "note": "koralive bein3 shows Valencia–Betis Arabic, live 0-0; yallacuo sport-3 404"
         }
       ]
     }
