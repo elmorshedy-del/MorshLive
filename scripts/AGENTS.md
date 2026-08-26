@@ -10,6 +10,8 @@ Match-scoped stream wiring is `assets/data/stream-plans.json` (see `docs/STREAM-
 
 Match-day binds: `npm run probe:wrappers` then, after push to `main`, `npm run confirm:stream-plan -- --match=<id> --url=<host/path>`. A git push is not live until that confirm exits 0.
 
+`verify-channel-bindings.js` (end of `refresh:matches`) warns on shared koraplus slots but does not fail Workers Builds unless `KZ_BINDINGS_STRICT=1`. A hard fail here blocked Valencia and Madrid catalog deploys.
+
 ## Rules
 
 - **Merge, don’t wipe** — ended matches must keep `clips[]`, `highlights.goals/full`, and banner posters from previous JSON + `highlightsIndex`.

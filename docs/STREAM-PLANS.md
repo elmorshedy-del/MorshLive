@@ -189,6 +189,12 @@ Do this for every remaining fixture:
    Only then tell the user to hard-refresh. If confirm times out, say
    production has not deployed — do not claim the bind is on the site.
 
+Workers Builds runs `npm run refresh:matches` first. That job used to
+`process.exit(1)` on koraplus channel conflicts (several live UCL games
+sharing BeIN 1). That abort is what left Valencia and Madrid on
+`no-catalog-legacy`. The verify script now warns and continues unless
+`KZ_BINDINGS_STRICT=1`.
+
 If a match has no Arabic wrapper after kickoff (Getafe–Racing that Sunday),
 leave it unbound. A hold is better than the wrong game.
 
