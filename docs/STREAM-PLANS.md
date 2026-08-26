@@ -116,10 +116,9 @@ Do not edit v1 in place — old verified rows keep the policy they were tested
 with.
 
 Arabic AlbaPlayer wrappers (`yallacuo.xyz`, `koralive1.cc`) always play through
-`/wk/operator/` as `operator-iframe-v2`, even when the catalog row still says
-`operator-iframe-v1`. That proxy strips `aclib.runPop` / popunder scripts and
-uses a sandbox without `allow-popups`. Do not iframe those hosts raw — clicking
-the player would open spam windows.
+`/wk/operator/` as `operator-iframe-v2`. That proxy peels the WP chrome (menus,
+`aclib.runPop`) and plays the **inner HLS embed** (`AlbaPlayerControl`, often a
+`.css` disguise) in KoraZero’s own player. Do not iframe those hosts raw.
 
 `allowAutoHeal` defaults to false. Auto-heal is what swapped a match onto a
 generic 24/7 channel during the World Cup. Same-content `fallbackUrl` on an

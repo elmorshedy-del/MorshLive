@@ -1,15 +1,19 @@
 import { describe, expect, it } from "vitest";
 import {
+  decodeAlbaPlayerControlSource,
+  extractAlbaHlsSources,
   isOperatorAlbaPlayerUrl,
   OPERATOR_EMBED_PATH,
-  OPERATOR_IFRAME_SANDBOX,
   operatorEmbedProxyPath,
+  operatorHlsRefererForHost,
   sanitizeOperatorEmbedHtml,
   unwrapOperatorEmbedUrl,
 } from "../lib/operator-embed.js";
 
 const KORALIVE = "https://pl.koralive1.cc/albaplayer/bein1/";
 const YALLA = "https://mo.yallacuo.xyz/albaplayer/sport-1/";
+const HLS_B64 = "aHR0cHM6Ly9rb3JhMTEuc3J0eTE0NS5kcGRucy5vcmcvbGl2ZS9rb3JhMTEvaW5kZXguY3Nz";
+const HLS_URL = "https://kora11.srty145.dpdns.org/live/kora11/index.css";
 
 const POP_HTML = `<!DOCTYPE html><html><head>
 <script src="https://llvpn.com/tag.min.js"></script>
@@ -20,7 +24,9 @@ const POP_HTML = `<!DOCTYPE html><html><head>
 <script src="https://pl.koralive1.cc/wp-content/plugins/AlbaPlayer//assets/js/albaplayer.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/hls.js/8.0.0-beta.3/hls.min.js"></script>
 </head><body>
-<iframe id="streamFrame" src="https://pl.koralive1.cc/albaplayer/1bein1/?serv=0"></iframe>
+<video id="aplr-video" class="hlsjs" controls></video>
+<script>AlbaPlayerControl('${HLS_B64}','hls');</script>
+<textarea id="aplr-embed-code"><iframe src="https://pl.koralive1.cc/albaplayer/1bein1/?serv=0"></iframe></textarea>
 </body></html>`;
 
 describe("operator alba URLs", () => {
@@ -50,18 +56,32 @@ describe("operator embed proxy path", () => {
   });
 });
 
+describe("inner AlbaPlayer HLS embed", () => {
+  it("decodes the disguised .css stream the wrapper already embeds", () => {
+    expect(decodeAlbaPlayerControlSource(HLS_B64)).toBe(HLS_URL);
+    expect(extractAlbaHlsSources(POP_HTML)).toEqual([{ source: HLS_URL, player: "hls" }]);
+  });
+
+  it("uses a koralive referer for that CDN — korazero.com gets 403", () => {
+    expect(operatorHlsRefererForHost("kora11.srty145.dpdns.org")).toEqual({
+      referer: "https://pl.koralive1.cc/",
+      origin: "https://pl.koralive1.cc",
+    });
+    expect(operatorHlsRefererForHost("cdn.example.test")).toBeNull();
+  });
+});
+
 describe("sanitizeOperatorEmbedHtml", () => {
-  it("strips popunder scripts and sandboxes nested iframes without allow-popups", () => {
+  it("strips popunder scripts and keeps the inner HLS control", () => {
     const out = sanitizeOperatorEmbedHtml(POP_HTML, KORALIVE);
     expect(out).not.toMatch(/aclib/i);
     expect(out).not.toMatch(/runPop/);
     expect(out).not.toMatch(/llvpn/i);
     expect(out).not.toMatch(/widthwidow/i);
     expect(out).toContain("albaplayer.js");
-    expect(out).toContain("hls.min.js");
-    expect(out).toContain("PlayerPoster");
-    expect(out).toContain(`sandbox="${OPERATOR_IFRAME_SANDBOX}"`);
-    expect(out).not.toMatch(/allow-popups/);
+    expect(out).toContain("AlbaPlayerControl");
+    expect(out).toContain(HLS_B64);
+    expect(out).not.toMatch(/sandbox=/);
     expect(out).toMatch(/<base href="https:\/\/pl\.koralive1\.cc\/albaplayer\/bein1\/">/);
   });
 });

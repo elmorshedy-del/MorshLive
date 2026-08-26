@@ -19,7 +19,7 @@ import { resolveWatchArchiveRedirect } from "./lib/watch-archive-redirect.js";
 import { dispatchBackendRoutes } from "./backend/router.js";
 import { backendRoutes } from "./backend/routes/index.js";
 import { chooseGo4scoreEdge, go4scoreFrameUrl, pickGo4scoreChannel } from "./lib/go4score-frame.js";
-import { isOperatorAlbaPlayerUrl, sanitizeOperatorEmbedHtml } from "./lib/operator-embed.js";
+import { extractAlbaHlsSources, isOperatorAlbaPlayerUrl, operatorHlsRefererForHost, sanitizeOperatorEmbedHtml } from "./lib/operator-embed.js";
 
 /**
  * morshlive worker — static site + worldkoora vip proxy without preroll ads.
@@ -548,7 +548,10 @@ function extractHlsCandidates(html) {
   const text = String(html || "");
   for (const m of text.matchAll(/AlbaPlayerControl\('([A-Za-z0-9+/=]*)','([^']+)'\)/g)) {
     const source = decodeBase64(m[1]);
-    if (isHlsUrl(source) && !isBlockedStreamUrl(source)) out.push({ source, player: m[2] || "clappr" });
+    const hlsTyped = String(m[2] || "").toLowerCase() === "hls";
+    if (source && /^https?:\/\//i.test(source) && !isBlockedStreamUrl(source) && (hlsTyped || isHlsUrl(source))) {
+      out.push({ source, player: m[2] || "hls" });
+    }
   }
   for (const m of text.matchAll(/<(?:source|video)\b[^>]*\ssrc=(["'])(https?:\/\/[^"']+)["']/gi)) {
     if (isHlsUrl(m[2]) && !isBlockedStreamUrl(m[2])) out.push({ source: m[2], player: "clappr" });
@@ -1652,6 +1655,15 @@ async function proxyHls(request, env) {
       if (/syria-llive\.live$/i.test(host)) {
         return { "User-Agent": ua, Accept: "*/*", Referer: "https://mysportv.live/" };
       }
+      const operatorRef = operatorHlsRefererForHost(host);
+      if (operatorRef) {
+        return {
+          "User-Agent": ua,
+          Accept: "*/*",
+          Referer: operatorRef.referer,
+          Origin: operatorRef.origin,
+        };
+      }
     } catch { /* noop */ }
     return {
       "User-Agent": ua,
@@ -2285,9 +2297,11 @@ function injectOperatorEmbedShim(html) {
   return out;
 }
 
-async function proxyOperatorEmbed(request) {
+async function proxyOperatorEmbed(request, env) {
   const incoming = new URL(request.url);
   const target = incoming.searchParams.get("u") || "";
+  const origin = incoming.origin;
+  const secret = env && env.STREAM_SIGNING_SECRET;
   const htmlHeaders = {
     "Content-Type": "text/html; charset=utf-8",
     "Cache-Control": "no-store, no-cache, must-revalidate",
@@ -2302,20 +2316,35 @@ async function proxyOperatorEmbed(request) {
   try {
     const page = await fetchAltStreamHtml(target, request, new URL(target).origin + "/");
     if (page?.html) {
-      const cleaned = injectOperatorEmbedShim(sanitizeOperatorEmbedHtml(page.html, page.url || target));
-      return new Response(cleaned, {
+      const seen = new Set();
+      const pool = [];
+      for (const candidate of extractAlbaHlsSources(page.html)) {
+        if (!candidate.source || seen.has(candidate.source)) continue;
+        seen.add(candidate.source);
+        const sig = await signTarget(candidate.source, secret);
+        pool.push(hlsProxyUrl(candidate.source, origin, sig));
+      }
+      if (pool.length) {
+        return new Response(cleanHlsPlayerHtml(pool, "KoraZero"), {
+          status: 200,
+          headers: { ...htmlHeaders, "X-KZ-Mode": "hls-embed" },
+        });
+      }
+      const rewritten = await rewriteStreamUrlsInHtml(
+        sanitizeOperatorEmbedHtml(page.html, page.url || target),
+        origin,
+        secret,
+      );
+      return new Response(injectOperatorEmbedShim(rewritten), {
         status: 200,
         headers: { ...htmlHeaders, "X-KZ-Mode": "sanitized" },
       });
     }
   } catch {
-    // Fall through to the sandboxed iframe wrapper so a blocked fetch cannot black out a live match.
+    // Fall through to a last-resort wrapper. Prefer a black page over a popunder host.
   }
 
-  return new Response(cleanAltEmbedWrapperHtml(target, "KoraZero", "operator-embed"), {
-    status: 200,
-    headers: { ...htmlHeaders, "X-KZ-Mode": "iframe-heal" },
-  });
+  return new Response("Upstream unavailable", { status: 502, headers: htmlHeaders });
 }
 
 function cleanNtvEmbedWrapperHtml(embedUrl) {
@@ -6113,7 +6142,7 @@ export default {
       return proxyAerozast(request, env);
     }
     if (OPERATOR_EMBED_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
-      return proxyOperatorEmbed(request);
+      return proxyOperatorEmbed(request, env);
     }
     if (HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
       if (method === "OPTIONS") {
