@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-25T19:05:00.000Z",
+  "updatedAt": "2026-08-26T19:08:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -335,6 +335,34 @@
           "verifiedAt": "2026-08-25T19:05:00.000Z",
           "label": "فالنسيا × ريال بيتيس · عربي",
           "note": "koralive bein3 shows Valencia–Betis Arabic, live 0-0; yallacuo sport-3 404"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882919",
+      "teams": [["real madrid", "madrid"], ["real sociedad", "sociedad"]],
+      "contentKey": "match:espn-esp.1-401882919",
+      "kickoffUtc": "2026-08-26T19:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-26T19:08:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v1",
+          "url": "https://pl.koralive1.cc/albaplayer/bein1/",
+          "contentKey": "match:espn-esp.1-401882919",
+          "status": "verified",
+          "verifiedAt": "2026-08-26T19:08:00.000Z",
+          "label": "ريال مدريد × ريال سوسييداد · عربي",
+          "note": "koralive bein1 live 0-0 at 3'; Real Madrid vs Real Sociedad scorebug; yallacuo 404"
         }
       ]
     }
