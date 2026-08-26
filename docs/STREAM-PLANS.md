@@ -102,6 +102,7 @@ These used to be guessed in `watch.js` per incident. They now live in
 | Profile | Kind | Sandbox | When to use |
 | --- | --- | --- | --- |
 | `operator-iframe-v1` | iframe | none | Default for a pasted embed |
+| `operator-iframe-v2` | iframe | scripts + same-origin, **no popups** | yallacuo / koralive via `/wk/operator/` |
 | `operator-hls-v1` | hls | n/a | Pasted `.m3u8` |
 | `koraplus-v1` | iframe | none | go4score / frame.php (iOS breaks inside sandbox) |
 | `kooracity-v1` | iframe | none | Nested wrappers inherit sandbox |
@@ -113,6 +114,12 @@ These used to be guessed in `watch.js` per incident. They now live in
 If a host later needs a different referrer or sandbox, **add a v2 profile**.
 Do not edit v1 in place — old verified rows keep the policy they were tested
 with.
+
+Arabic AlbaPlayer wrappers (`yallacuo.xyz`, `koralive1.cc`) always play through
+`/wk/operator/` as `operator-iframe-v2`, even when the catalog row still says
+`operator-iframe-v1`. That proxy strips `aclib.runPop` / popunder scripts and
+uses a sandbox without `allow-popups`. Do not iframe those hosts raw — clicking
+the player would open spam windows.
 
 `allowAutoHeal` defaults to false. Auto-heal is what swapped a match onto a
 generic 24/7 channel during the World Cup. Same-content `fallbackUrl` on an
@@ -185,9 +192,10 @@ Do this for every remaining fixture:
    npm run confirm:stream-plan -- --match=espn-esp.1-401882913 --url=yallacuo.xyz/albaplayer/sport-2
    ```
 
-   Poll until `catalog: true` and the playback URL is the wrapper you bound.
-   Only then tell the user to hard-refresh. If confirm times out, say
-   production has not deployed — do not claim the bind is on the site.
+   Poll until `catalog: true` and the selected source is the wrapper you bound
+   (playback may be `/wk/operator/?u=…` — that is the ad-free proxy, not a
+   different game). Only then tell the user to hard-refresh. If confirm times
+   out, say production has not deployed — do not claim the bind is on the site.
 
 Workers Builds runs `npm run refresh:matches` first. That job used to
 `process.exit(1)` on koraplus channel conflicts (several live UCL games

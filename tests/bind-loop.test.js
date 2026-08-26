@@ -77,6 +77,22 @@ describe("productionPlanIsLive", () => {
       ),
     ).toBe(true);
   });
+
+  it("treats the ad-free /wk/operator proxy as the same live wrapper", () => {
+    const encoded = encodeURIComponent("https://pl.koralive1.cc/albaplayer/bein1/");
+    expect(
+      productionPlanIsLive(
+        {
+          matchId: "espn-esp.1-401882919",
+          catalog: true,
+          reason: "selected:primary",
+          status: "verified",
+          selected: { playbackUrl: `/wk/operator/?u=${encoded}` },
+        },
+        { matchId: "espn-esp.1-401882919", urlIncludes: "koralive1.cc/albaplayer/bein1" },
+      ),
+    ).toBe(true);
+  });
 });
 
 describe("nextBindCheck", () => {

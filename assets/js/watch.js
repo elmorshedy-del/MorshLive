@@ -506,8 +506,36 @@
     // run UNSANDBOXED on mobile: an outer sandbox applies to every descendant
     // frame, and iOS Safari blocks the player's media/service-worker init inside a
     // sandbox — go4score.app itself embeds frame.php with no sandbox and plays.
+    // yallacuo/koralive AlbaPlayer is the opposite: those pages run popunders on
+    // click, so they must keep a sandbox that omits allow-popups.
     if (noSandbox) return "";
     return 'sandbox="allow-scripts allow-same-origin allow-presentation allow-forms" ';
+  }
+
+  function operatorAlbaHref(href) {
+    try {
+      const host = new URL(href, location.origin).hostname.replace(/^www\./, "").toLowerCase();
+      return (
+        host === "yallacuo.xyz" || host.endsWith(".yallacuo.xyz") ||
+        host === "koralive1.cc" || host.endsWith(".koralive1.cc") ||
+        host === "koralive.online" || host.endsWith(".koralive.online")
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  function operatorEmbedPlaybackUrl(href) {
+    const raw = String(href || "");
+    if (!raw) return raw;
+    try {
+      const parsed = new URL(raw, location.origin);
+      if (/\/wk\/operator\/?$/i.test(parsed.pathname)) return parsed.pathname + parsed.search;
+      if (!operatorAlbaHref(parsed.href) || !/\/albaplayer\//i.test(parsed.pathname)) return raw;
+      return "/wk/operator/?u=" + encodeURIComponent(parsed.toString());
+    } catch {
+      return raw;
+    }
   }
 
   function removeFrameRecovery(frame, role) {
@@ -582,12 +610,14 @@
   function loadIframePlayer(url, noSandboxOrOpts) {
     if (!shell || !url) return;
     destroyInlineHls();
+    url = operatorEmbedPlaybackUrl(url);
     if (loadedUrl === url) return;
     loadedUrl = url;
     const opts = noSandboxOrOpts && typeof noSandboxOrOpts === "object"
       ? noSandboxOrOpts
       : { noSandbox: !!noSandboxOrOpts };
-    const sandbox = iframeSandboxAttr(!!opts.noSandbox);
+    const forceNoPopups = /\/wk\/operator\/?/i.test(url) || operatorAlbaHref(url);
+    const sandbox = iframeSandboxAttr(forceNoPopups ? false : !!opts.noSandbox);
     const referrer = opts.referrerPolicy || EMBED_REFERRER;
     shell.innerHTML =
       `<iframe class="embed-frame" src="${url}" ` +
@@ -664,10 +694,11 @@
       loadedUrl = `plan-hls:${href}`;
       return true;
     }
-    const href = planPlaybackUrl(source);
+    const href = operatorEmbedPlaybackUrl(planPlaybackUrl(source));
     if (!href) return false;
+    const operatorProxy = /\/wk\/operator\/?/i.test(href) || operatorAlbaHref(href);
     loadIframePlayer(href, {
-      noSandbox: policy.noSandbox !== false,
+      noSandbox: operatorProxy ? false : policy.noSandbox !== false,
       referrerPolicy: policy.referrerPolicy || EMBED_REFERRER,
     });
     return true;

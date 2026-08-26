@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import catalogJson from "../assets/data/stream-plans.json";
+import { unwrapOperatorEmbedUrl } from "../lib/operator-embed.js";
 import {
   allowlistedHref,
   applyConflicts,
@@ -305,10 +306,14 @@ describe("resolveStreamPlan", () => {
       now: Date.parse("2026-08-22T11:20:00Z"),
     });
     expect(resolved.status).toBe("operator");
-    expect(resolved.selected.playbackUrl).toContain("yallacuo.xyz/albaplayer/sport-1");
+    expect(unwrapOperatorEmbedUrl(resolved.selected.playbackUrl)).toContain(
+      "yallacuo.xyz/albaplayer/sport-1",
+    );
+    expect(resolved.selected.playbackUrl).toContain("/wk/operator/");
     expect(resolved.selected.playbackUrl).not.toContain("/wk/albaplayer/koraplus/");
-    expect(resolved.profile.profileId).toBe("operator-iframe-v1");
-    expect(resolved.profile.noSandbox).toBe(true);
+    expect(resolved.profile.profileId).toBe("operator-iframe-v2");
+    expect(resolved.profile.noSandbox).toBe(false);
+    expect(resolved.profile.sandbox).not.toContain("allow-popups");
     expect(shouldHoldPlayer(resolved)).toBe(false);
   });
 });
@@ -367,6 +372,8 @@ describe("provider profiles", () => {
     expect(iframePolicyForProfile("koraplus-v1").noSandbox).toBe(true);
     expect(iframePolicyForProfile("operator-iframe-v1").sandbox).toBe("");
     expect(iframePolicyForProfile("sirtv-v1").sandbox).toContain("allow-scripts");
+    expect(iframePolicyForProfile("operator-iframe-v2").noSandbox).toBe(false);
+    expect(iframePolicyForProfile("operator-iframe-v2").sandbox).not.toContain("allow-popups");
   });
 
   it("builds a same-origin worker path for legacy iframes", () => {
@@ -471,7 +478,33 @@ describe("today's stream-plans catalog", () => {
       now: Date.parse("2026-08-22T14:20:00Z"),
     });
     expect(resolved.status).toBe("operator");
-    expect(resolved.selected.playbackUrl).toContain("yallacuo.xyz/albaplayer/sport-1");
+    expect(unwrapOperatorEmbedUrl(resolved.selected.playbackUrl)).toContain(
+      "yallacuo.xyz/albaplayer/sport-1",
+    );
+    expect(resolved.selected.playbackUrl).toContain("/wk/operator/");
     expect(shouldHoldPlayer(resolved)).toBe(false);
+  });
+
+  it("plays Madrid through the ad-free operator proxy instead of a raw koralive iframe", () => {
+    const match = {
+      id: "espn-esp.1-401882919",
+      home: "Real Madrid",
+      away: "Real Sociedad",
+      channelId: "bein-sports-1",
+      status: "live",
+      kickoffUtc: "2026-08-26T19:00:00Z",
+    };
+    const resolved = resolveStreamPlan({
+      match,
+      catalog: catalogJson,
+      legacyEmbedKey: "koraplus",
+      now: Date.parse("2026-08-26T19:20:00Z"),
+    });
+    expect(resolved.status).toBe("verified");
+    expect(resolved.selected.playbackUrl).toContain("/wk/operator/");
+    expect(unwrapOperatorEmbedUrl(resolved.selected.playbackUrl)).toContain("koralive1.cc/albaplayer/bein1");
+    expect(resolved.profile.profileId).toBe("operator-iframe-v2");
+    expect(resolved.profile.noSandbox).toBe(false);
+    expect(resolved.profile.sandbox).not.toContain("allow-popups");
   });
 });

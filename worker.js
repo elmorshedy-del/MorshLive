@@ -19,6 +19,7 @@ import { resolveWatchArchiveRedirect } from "./lib/watch-archive-redirect.js";
 import { dispatchBackendRoutes } from "./backend/router.js";
 import { backendRoutes } from "./backend/routes/index.js";
 import { chooseGo4scoreEdge, go4scoreFrameUrl, pickGo4scoreChannel } from "./lib/go4score-frame.js";
+import { isOperatorAlbaPlayerUrl, sanitizeOperatorEmbedHtml } from "./lib/operator-embed.js";
 
 /**
  * morshlive worker — static site + worldkoora vip proxy without preroll ads.
@@ -2273,6 +2274,50 @@ function cleanAltEmbedWrapperHtml(embedUrl, title, healTag) {
 </body></html>`;
 }
 
+function injectOperatorEmbedShim(html) {
+  let out = String(html || "");
+  const headOpen = /<head[^>]*>/i;
+  if (headOpen.test(out)) out = out.replace(headOpen, (m) => m + EMBED_SHIM);
+  else out = EMBED_SHIM + out;
+  const headClose = /<\/head>/i;
+  if (headClose.test(out)) out = out.replace(headClose, HIDE_OVERLAY_STYLE + "</head>");
+  else out = HIDE_OVERLAY_STYLE + out;
+  return out;
+}
+
+async function proxyOperatorEmbed(request) {
+  const incoming = new URL(request.url);
+  const target = incoming.searchParams.get("u") || "";
+  const htmlHeaders = {
+    "Content-Type": "text/html; charset=utf-8",
+    "Cache-Control": "no-store, no-cache, must-revalidate",
+    "Pragma": "no-cache",
+    "X-KZ-Proxy": "operator-embed",
+  };
+  if (!isOperatorAlbaPlayerUrl(target)) {
+    return new Response("Unknown operator embed", { status: 400, headers: htmlHeaders });
+  }
+  if (request.method === "HEAD") return new Response(null, { status: 200, headers: htmlHeaders });
+
+  try {
+    const page = await fetchAltStreamHtml(target, request, new URL(target).origin + "/");
+    if (page?.html) {
+      const cleaned = injectOperatorEmbedShim(sanitizeOperatorEmbedHtml(page.html, page.url || target));
+      return new Response(cleaned, {
+        status: 200,
+        headers: { ...htmlHeaders, "X-KZ-Mode": "sanitized" },
+      });
+    }
+  } catch {
+    // Fall through to the sandboxed iframe wrapper so a blocked fetch cannot black out a live match.
+  }
+
+  return new Response(cleanAltEmbedWrapperHtml(target, "KoraZero", "operator-embed"), {
+    status: 200,
+    headers: { ...htmlHeaders, "X-KZ-Mode": "iframe-heal" },
+  });
+}
+
 function cleanNtvEmbedWrapperHtml(embedUrl) {
   return cleanAltEmbedWrapperHtml(embedUrl, "NTV", "ntv-heal");
 }
@@ -2383,6 +2428,7 @@ const KORAPLUS_EDGE_DOMAIN = "kora-plus.li";
 const DADDY_RE = /^\/wk\/albaplayer\/daddy\/?$/i;
 const AEROZAST = "https://yallashooot.tv/albaplayer/aerozast/";
 const AEROZAST_RE = /^\/wk\/albaplayer\/aerozast\/?$/i;
+const OPERATOR_EMBED_RE = /^\/wk\/operator\/?$/i;
 const YALASHOT_CARD = "https://tt.yalashot.online/2026/06/ch1.html?m=1";
 
 async function fetchAerozastHtml(request, serv) {
@@ -6065,6 +6111,9 @@ export default {
     }
     if (AEROZAST_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
       return proxyAerozast(request, env);
+    }
+    if (OPERATOR_EMBED_RE.test(url.pathname) && (method === "GET" || method === "HEAD")) {
+      return proxyOperatorEmbed(request);
     }
     if (HLS_RE.test(url.pathname) && (method === "GET" || method === "HEAD" || method === "OPTIONS")) {
       if (method === "OPTIONS") {
