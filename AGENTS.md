@@ -54,6 +54,7 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 - Branch from `main`: `cursor/<name>-f540`
 - Small commits; imperative subject (`Fix replay m3u8 rewrite`).
 - Before push: `npm run lint && npm test`
+- When a PR is finished (requested work done, lint/tests pass, CI green), **merge it**. Do not leave finished PRs open for the user to merge.
 
 ## Boundaries
 
@@ -64,6 +65,7 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 - Bump `?v=` on changed JS/CSS in HTML when users must see updates.
 - Put new `/api/*` handlers in `backend/routes/` with logic in `backend/services/`.
 - Put new pure logic in `lib/` with tests.
+- Merge the PR once the work is finished and CI is green.
 
 **Ask first**
 
