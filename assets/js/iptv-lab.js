@@ -23,8 +23,8 @@
   const recBtn = document.getElementById("recBtn");
 
   const SPORT_RE = /bein|sport|dazn|espn|sky|ssn|tnt|premiere|liga|football/i;
-  const RECOMMENDED_RE = /abu\s*dhabi\s+nat\s*geo\.?\s*hd/i;
-  const REC_DEFAULT_LABEL = "▶ AE ★ ABU DHABI NAT GEO. HD";
+  const RECOMMENDED_RE = /bein\s+sports\s+1\s+sd$/i;
+  const REC_DEFAULT_LABEL = "▶ BEIN SPORTS 1 SD";
 
   let categories = [];
   let channels = [];
@@ -401,13 +401,13 @@
     try {
       let ch = findRecommendedChannel();
       if (!ch) {
-        searchInput.value = "abu dhabi nat geo";
+        searchInput.value = "bein sports 1 sd";
         categorySelect.value = "";
         await loadChannels();
         ch = findRecommendedChannel();
       }
       if (!ch) {
-        setError("لم تُعثر على قناة ABU DHABI NAT GEO HD في البيانات المتاحة.");
+        setError("لم تُعثر على قناة BEIN SPORTS 1 SD في البيانات المتاحة.");
         return;
       }
       const card = channelGrid.querySelector(`[data-stream-id="${ch.streamId}"]`);
