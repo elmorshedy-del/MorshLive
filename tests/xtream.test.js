@@ -174,6 +174,27 @@ describe("Xtream adapter", () => {
     expect(body).not.toContain("seg1.ts");
     expect(body).not.toContain("key.bin");
   });
+
+  it("maps invalid upstream status codes to 502 instead of throwing", async () => {
+    const upstream = "http://example.test:8080/live/owner/secret/123.ts";
+    const token = await createMediaToken(env, upstream, 60);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: false,
+        status: 0,
+        headers: new Headers({ "Content-Type": "text/plain" }),
+        body: null,
+      }),
+    );
+    const response = await proxyXtreamMedia(
+      new Request(`https://korazero.com/api/xtream/media/${token}`),
+      env,
+      token,
+    );
+    expect(response.status).toBe(502);
+    expect(await response.text()).toContain("Upstream error");
+  });
 });
 
 describe("Xtream service", () => {

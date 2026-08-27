@@ -470,10 +470,15 @@ function mediaHeaders(response, extra = {}) {
     ...extra,
   };
   for (const name of ["Content-Range", "Accept-Ranges"]) {
-    const value = response.headers.get(name);
+    const value = response?.headers?.get?.(name);
     if (value) headers[name] = value;
   }
   return headers;
+}
+
+function safeHttpStatus(status, fallback = 502) {
+  const code = Number(status);
+  return Number.isInteger(code) && code >= 200 && code <= 599 ? code : fallback;
 }
 
 export async function redirectXtreamMedia(env, token) {
@@ -504,8 +509,9 @@ export async function proxyXtreamMedia(request, env, token) {
     redirect: "follow",
   });
   if (!response.ok) {
-    return new Response(request.method === "HEAD" ? null : `Upstream error ${response.status}`, {
-      status: response.status,
+    const status = safeHttpStatus(response.status, 502);
+    return new Response(request.method === "HEAD" ? null : `Upstream error ${status}`, {
+      status,
       headers: mediaHeaders(response),
     });
   }
@@ -527,7 +533,7 @@ export async function proxyXtreamMedia(request, env, token) {
   }
 
   return new Response(request.method === "HEAD" ? null : response.body, {
-    status: response.status,
+    status: safeHttpStatus(response.status, 200),
     headers: mediaHeaders(response, {
       "Content-Type": response.headers.get("Content-Type") || "application/octet-stream",
     }),

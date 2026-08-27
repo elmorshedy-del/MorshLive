@@ -214,6 +214,14 @@
     video.load();
   }
 
+  function playbackUrl(path) {
+    try {
+      return new URL(path, window.location.origin).toString();
+    } catch {
+      return path;
+    }
+  }
+
   function playChannel(channel) {
     destroyPlayer();
     playerEmpty.hidden = true;
@@ -222,6 +230,8 @@
     const onPlaying = () => { playerState.textContent = usingHls ? "يعمل · HLS" : "يعمل · TS"; };
     const onError = () => { playerState.textContent = "تعذر التشغيل"; };
     video.addEventListener("playing", onPlaying, { once: true });
+    const hlsUrl = playbackUrl(channel.playbackUrl);
+    const tsUrl = playbackUrl(channel.tsPlaybackUrl);
 
     const playHls = () => {
       usingHls = true;
@@ -239,7 +249,7 @@
       video.load();
       playerState.textContent = "جارٍ تجربة HLS";
       if (video.canPlayType("application/vnd.apple.mpegurl")) {
-        video.src = channel.playbackUrl;
+        video.src = hlsUrl;
         video.addEventListener("error", onError, { once: true });
         const attempt = video.play();
         if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
@@ -263,7 +273,7 @@
         }
         onError();
       });
-      hls.loadSource(channel.playbackUrl);
+      hls.loadSource(hlsUrl);
       hls.attachMedia(video);
       const attempt = video.play();
       if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
@@ -272,8 +282,8 @@
     if (channel.tsPlaybackUrl && window.mpegts?.isSupported()) {
       playerState.textContent = "جارٍ تجربة TS";
       mpegTsPlayer = window.mpegts.createPlayer(
-        { type: "mpegts", isLive: true, url: channel.tsPlaybackUrl },
-        { enableWorker: true, enableStashBuffer: false, stashInitialSize: 128 },
+        { type: "mpegts", isLive: true, url: tsUrl },
+        { enableWorker: false, enableStashBuffer: false, stashInitialSize: 128 },
       );
       mpegTsPlayer.attachMediaElement(video);
       mpegTsPlayer.on(window.mpegts.Events.ERROR, playHls);
