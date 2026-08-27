@@ -19,7 +19,7 @@ import { resolveWatchArchiveRedirect } from "./lib/watch-archive-redirect.js";
 import { dispatchBackendRoutes } from "./backend/router.js";
 import { backendRoutes } from "./backend/routes/index.js";
 import { chooseGo4scoreEdge, go4scoreFrameUrl, pickGo4scoreChannel } from "./lib/go4score-frame.js";
-import { effectiveEdgeCacheTtl } from "./lib/hls-cache.js";
+import { applyClientEdgeCacheHeaders, effectiveEdgeCacheTtl } from "./lib/hls-cache.js";
 import { extractAlbaHlsSources, isOperatorAlbaPlayerUrl, operatorHlsRefererForHost, sanitizeOperatorEmbedHtml } from "./lib/operator-embed.js";
 
 /**
@@ -448,12 +448,18 @@ function fetchWithTimeout(url, init, ms = FETCH_TIMEOUT_MS) {
   return fetch(url, merged).finally(() => clearTimeout(timer));
 }
 
+function clientEdgeCachedResponse(res) {
+  const headers = new Headers(res.headers);
+  applyClientEdgeCacheHeaders(headers);
+  return new Response(res.body, { status: res.status, headers });
+}
+
 // Edge-cache GET responses to cut Worker invocations (Error 1027 = 100k/day free limit).
 async function withEdgeCache(request, ttlSeconds, producer) {
   if (request.method !== "GET") return producer();
   const cache = caches.default;
   const hit = await cache.match(request);
-  if (hit) return hit;
+  if (hit) return clientEdgeCachedResponse(hit);
   const res = await producer();
   if (!res || res.status !== 200) return res;
   const headers = new Headers(res.headers);
@@ -461,7 +467,7 @@ async function withEdgeCache(request, ttlSeconds, producer) {
   headers.set("Cache-Control", `public, max-age=${effectiveTtl}`);
   const cached = new Response(res.body, { status: 200, headers });
   await cache.put(request, cached.clone());
-  return cached;
+  return clientEdgeCachedResponse(cached);
 }
 
 function manifestIsStale(text) {

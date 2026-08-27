@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { effectiveEdgeCacheTtl } from "../lib/hls-cache.js";
+import { applyClientEdgeCacheHeaders, effectiveEdgeCacheTtl } from "../lib/hls-cache.js";
 
 describe("effectiveEdgeCacheTtl", () => {
   it("keeps a producer's shorter live-manifest TTL", () => {
@@ -15,5 +15,23 @@ describe("effectiveEdgeCacheTtl", () => {
     expect(effectiveEdgeCacheTtl("public, max-age=60, s-maxage=3", 60)).toBe(3);
     expect(effectiveEdgeCacheTtl("no-store", 60)).toBe(60);
     expect(effectiveEdgeCacheTtl("", 2)).toBe(2);
+  });
+});
+
+describe("applyClientEdgeCacheHeaders", () => {
+  it("blocks CDN and browser caching of live manifests", () => {
+    const headers = new Headers({ "Cache-Control": "public, max-age=2" });
+    applyClientEdgeCacheHeaders(headers);
+    expect(headers.get("Cache-Control")).toBe("no-store");
+    expect(headers.get("CDN-Cache-Control")).toBe("no-store");
+    expect(headers.get("Cloudflare-CDN-Cache-Control")).toBe("no-store");
+  });
+
+  it("keeps longer TTLs for media segments", () => {
+    const headers = new Headers({ "Cache-Control": "public, max-age=60" });
+    applyClientEdgeCacheHeaders(headers);
+    expect(headers.get("Cache-Control")).toBe("public, max-age=60");
+    expect(headers.get("CDN-Cache-Control")).toBeNull();
+    expect(headers.get("Cloudflare-CDN-Cache-Control")).toBeNull();
   });
 });
