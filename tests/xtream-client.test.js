@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   isHttpRedirectStatus,
-  looksLikeIpHostname,
+  publicIpv4WildcardHost,
   rewriteXtreamRedirect,
   shouldRetryXtreamMediaWithoutRange,
   XTREAM_CLIENT_USER_AGENT,
@@ -51,21 +51,18 @@ describe("shouldRetryXtreamMediaWithoutRange", () => {
 
 describe("rewriteXtreamRedirect", () => {
   it("detects IPv4 origin hosts and HTTP redirect statuses", () => {
-    expect(looksLikeIpHostname("203.0.113.10")).toBe(true);
-    expect(looksLikeIpHostname("edge.example.test")).toBe(false);
+    expect(publicIpv4WildcardHost("8.8.8.8")).toBe("8-8-8-8.sslip.io");
+    expect(publicIpv4WildcardHost("edge.example.test")).toBeNull();
     expect(isHttpRedirectStatus(302)).toBe(true);
     expect(isHttpRedirectStatus(200)).toBe(false);
   });
 
-  it("keeps the panel host and copies the signed origin path when Location is a raw IP", () => {
+  it("gives a public origin IP a hostname and preserves its signed path", () => {
     const follow = rewriteXtreamRedirect(
       "http://panel.example.test:8080/live/owner/secret/123.ts",
-      "http://203.0.113.10:80/live/owner/secret/123.ts?token=abc",
+      "http://8.8.8.8:80/live/owner/secret/123.ts?token=abc",
     );
-    expect(follow).toEqual({
-      url: "http://panel.example.test:8080/live/owner/secret/123.ts?token=abc",
-      resolveOverride: "203.0.113.10",
-    });
+    expect(follow).toBe("http://8-8-8-8.sslip.io/live/owner/secret/123.ts?token=abc");
   });
 
   it("follows a non-IP Location as-is", () => {
@@ -73,9 +70,23 @@ describe("rewriteXtreamRedirect", () => {
       "http://panel.example.test/live/owner/secret/123.m3u8",
       "https://cdn.example.test/hls/123.m3u8",
     );
-    expect(follow).toEqual({
-      url: "https://cdn.example.test/hls/123.m3u8",
-      resolveOverride: null,
-    });
+    expect(follow).toBe("https://cdn.example.test/hls/123.m3u8");
+  });
+
+  it("never turns private or reserved addresses into outbound hosts", () => {
+    for (const host of [
+      "0.0.0.0",
+      "10.0.0.1",
+      "100.64.0.1",
+      "127.0.0.1",
+      "169.254.169.254",
+      "172.16.0.1",
+      "192.168.1.1",
+      "198.18.0.1",
+      "203.0.113.10",
+      "224.0.0.1",
+    ]) {
+      expect(publicIpv4WildcardHost(host)).toBeNull();
+    }
   });
 });

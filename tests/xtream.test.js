@@ -259,7 +259,7 @@ describe("Xtream adapter", () => {
     expect(fetchMock.mock.calls[1][1].headers["User-Agent"]).toBe(XTREAM_CLIENT_USER_AGENT);
   });
 
-  it("follows a live 302 to an origin IP using the panel host and resolveOverride", async () => {
+  it("follows a live 302 through a hostname that resolves to the origin IP", async () => {
     const upstream = "http://panel.example.test:8080/live/owner/secret/123.ts";
     const token = await createMediaToken(env, upstream, 60);
     const fetchMock = vi.fn(async (input) => {
@@ -267,7 +267,7 @@ describe("Xtream adapter", () => {
       if (url === upstream) {
         return new Response(null, {
           status: 302,
-          headers: { Location: "http://203.0.113.10:80/live/owner/secret/123.ts?token=abc" },
+          headers: { Location: "http://8.8.8.8:80/live/owner/secret/123.ts?token=abc" },
         });
       }
       return new Response(new Uint8Array([0x47, 0x40]), {
@@ -285,9 +285,8 @@ describe("Xtream adapter", () => {
     expect(response.status).toBe(200);
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(String(fetchMock.mock.calls[1][0])).toBe(
-      "http://panel.example.test:8080/live/owner/secret/123.ts?token=abc",
+      "http://8-8-8-8.sslip.io/live/owner/secret/123.ts?token=abc",
     );
-    expect(fetchMock.mock.calls[1][1].cf).toEqual({ resolveOverride: "203.0.113.10" });
     expect(fetchMock.mock.calls[1][1].redirect).toBe("manual");
     expect(fetchMock.mock.calls[0][1].redirect).toBe("manual");
   });

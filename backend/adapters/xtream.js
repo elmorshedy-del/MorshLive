@@ -284,20 +284,8 @@ async function followXtreamRedirect(url, buildInit) {
   const first = await fetch(url, buildInit());
   const location = first.headers.get("Location");
   if (!isHttpRedirectStatus(first.status) || !location) return first;
-  const follow = rewriteXtreamRedirect(url, location);
-  if (!follow) return first;
-  const second = await fetch(follow.url, buildInit(follow.resolveOverride));
-  if (second.ok) return second;
-  if (!follow.resolveOverride) return second;
-  let raw = "";
-  try {
-    raw = new URL(location, url).toString();
-  } catch {
-    raw = "";
-  }
-  if (!raw || raw === follow.url) return second;
-  const third = await fetch(raw, buildInit());
-  return third.ok ? third : second;
+  const followUrl = rewriteXtreamRedirect(url, location);
+  return followUrl ? fetch(followUrl, buildInit()) : first;
 }
 
 async function fetchProbeBytes(url, accept, timeoutMs = 8000) {
@@ -308,15 +296,13 @@ async function fetchProbeBytes(url, accept, timeoutMs = 8000) {
       Accept: accept,
       Range: "bytes=0-13159",
     });
-    const response = await followXtreamRedirect(url, (resolveOverride) => {
-      const init = {
+    const response = await followXtreamRedirect(url, () => {
+      return {
         method: "GET",
         headers,
         redirect: "manual",
         signal: controller.signal,
       };
-      if (resolveOverride) init.cf = { resolveOverride };
-      return init;
     });
     if (!response.ok || !response.body) return { response, bytes: new Uint8Array() };
     const reader = response.body.getReader();
@@ -523,14 +509,12 @@ export async function redirectXtreamMedia(env, token) {
 
 async function fetchXtreamTarget(target, request, { includeRange = true } = {}) {
   const method = request.method === "HEAD" ? "HEAD" : "GET";
-  return followXtreamRedirect(target, (resolveOverride) => {
-    const init = {
+  return followXtreamRedirect(target, () => {
+    return {
       method,
       headers: xtreamMediaHeaders(request, { includeRange }),
       redirect: "manual",
     };
-    if (resolveOverride) init.cf = { resolveOverride };
-    return init;
   });
 }
 
