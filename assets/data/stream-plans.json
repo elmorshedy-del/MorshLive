@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-26T19:08:00.000Z",
+  "updatedAt": "2026-08-27T19:18:00.446Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -363,6 +363,34 @@
           "verifiedAt": "2026-08-26T19:08:00.000Z",
           "label": "ريال مدريد × ريال سوسييداد · عربي",
           "note": "koralive bein1 live 0-0 at 3'; Real Madrid vs Real Sociedad scorebug; yallacuo 404"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882921",
+      "teams": [["barcelona", "barça", "barca"], ["athletic club", "athletic bilbao", "athletic"]],
+      "contentKey": "match:espn-esp.1-401882921",
+      "kickoffUtc": "2026-08-27T19:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-27T19:18:00.445Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v2",
+          "url": "https://pl.koralive1.cc/albaplayer/1bein1/?serv=0",
+          "contentKey": "match:espn-esp.1-401882921",
+          "status": "verified",
+          "verifiedAt": "2026-08-27T19:18:00.445Z",
+          "label": "برشلونة × أتلتيك · عربي",
+          "note": "Clean inner beIN1 embed; scorebug showed both crests, 0-0 at 09:44, and #BarçaAthletic"
         }
       ]
     }
