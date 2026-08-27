@@ -16,7 +16,11 @@
   const selectedMeta = document.getElementById("selectedMeta");
   const selectedMetaChip = document.getElementById("selectedMetaChip");
 
+  const recBtn = document.getElementById("recBtn");
+
   const SPORT_RE = /bein|sport|dazn|espn|sky|ssn|tnt|premiere|liga|football/i;
+  const RECOMMENDED_RE = /sportsnet\s+east\s+hd/i;
+  const REC_DEFAULT_LABEL = "▶ CA ★ SPORTSNET EAST HD";
 
   let categories = [];
   let channels = [];
@@ -123,6 +127,7 @@
     const button = document.createElement("button");
     button.type = "button";
     button.className = "channel";
+    button.dataset.streamId = String(channel.streamId || "");
 
     let logo;
     if (channel.icon) {
@@ -159,6 +164,17 @@
     return button;
   }
 
+  function findRecommendedChannel() {
+    return channels.find((ch) => RECOMMENDED_RE.test(ch.name)) || null;
+  }
+
+  function highlightRecommended() {
+    const ch = findRecommendedChannel();
+    if (!ch) return;
+    const card = channelGrid.querySelector(`[data-stream-id="${ch.streamId}"]`);
+    if (card) card.classList.add("recommended");
+  }
+
   function renderChannels() {
     channelGrid.replaceChildren();
     resultCount.textContent = `${channels.length} قناة`;
@@ -170,6 +186,7 @@
       return;
     }
     channels.forEach((channel) => channelGrid.appendChild(channelCard(channel)));
+    highlightRecommended();
   }
 
   async function loadChannels() {
@@ -303,6 +320,34 @@
     selectedMetaChip.textContent = "تشغيل داخل المختبر";
     playChannel(channel);
   }
+
+  recBtn.addEventListener("click", async () => {
+    recBtn.disabled = true;
+    recBtn.textContent = "جارٍ البحث…";
+    try {
+      let ch = findRecommendedChannel();
+      if (!ch) {
+        searchInput.value = "sportsnet east";
+        categorySelect.value = "";
+        await loadChannels();
+        ch = findRecommendedChannel();
+      }
+      if (!ch) {
+        setError("لم تُعثر على قناة SPORTSNET EAST في البيانات المتاحة.");
+        return;
+      }
+      const card = channelGrid.querySelector(`[data-stream-id="${ch.streamId}"]`);
+      if (card) {
+        card.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        selectChannel(ch, card);
+      }
+    } catch (err) {
+      setError(`تعذر تحميل القناة المقترحة: ${err.message || err}`);
+    } finally {
+      recBtn.textContent = REC_DEFAULT_LABEL;
+      recBtn.disabled = false;
+    }
+  });
 
   filterForm.addEventListener("submit", (event) => {
     event.preventDefault();
