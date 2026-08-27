@@ -74,7 +74,13 @@
     const scored = categories
       .map((category) => ({
         category,
-        score: /bein/i.test(category.name) ? 3 : SPORT_RE.test(category.name) ? 2 : 0,
+        score: /ca/i.test(category.name) && SPORT_RE.test(category.name)
+          ? 4
+          : /bein/i.test(category.name)
+            ? 3
+            : SPORT_RE.test(category.name)
+              ? 2
+              : 0,
       }))
       .filter((row) => row.score > 0)
       .sort((a, b) => b.score - a.score || a.category.name.localeCompare(b.category.name, "ar"));
@@ -212,39 +218,37 @@
     destroyPlayer();
     playerEmpty.hidden = true;
     playerState.textContent = "جارٍ التحميل";
-    let usingTsFallback = false;
-    const onPlaying = () => { playerState.textContent = usingTsFallback ? "يعمل · TS" : "يعمل · HLS"; };
+    let usingHls = false;
+    const onPlaying = () => { playerState.textContent = usingHls ? "يعمل · HLS" : "يعمل · TS"; };
     const onError = () => { playerState.textContent = "تعذر التشغيل"; };
+    video.addEventListener("playing", onPlaying, { once: true });
 
-    const playTsFallback = () => {
-      if (usingTsFallback || !channel.tsPlaybackUrl || !window.mpegts?.isSupported()) {
-        onError();
-        return;
-      }
-      usingTsFallback = true;
-      if (hls) {
-        try { hls.destroy(); } catch (_) { /* noop */ }
-        hls = null;
+    const playHls = () => {
+      usingHls = true;
+      if (mpegTsPlayer) {
+        try {
+          mpegTsPlayer.pause();
+          mpegTsPlayer.unload();
+          mpegTsPlayer.detachMediaElement();
+          mpegTsPlayer.destroy();
+        } catch (_) { /* noop */ }
+        mpegTsPlayer = null;
       }
       video.pause();
       video.removeAttribute("src");
       video.load();
-      playerState.textContent = "جارٍ تجربة TS";
-      mpegTsPlayer = window.mpegts.createPlayer(
-        { type: "mpegts", isLive: true, url: channel.tsPlaybackUrl },
-        { enableWorker: true, enableStashBuffer: false, stashInitialSize: 128 },
-      );
-      mpegTsPlayer.attachMediaElement(video);
-      mpegTsPlayer.on(window.mpegts.Events.ERROR, onError);
-      mpegTsPlayer.load();
-      const attempt = mpegTsPlayer.play();
-      if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
-    };
-
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
-      video.src = channel.playbackUrl;
-      video.addEventListener("error", playTsFallback, { once: true });
-    } else if (window.Hls && window.Hls.isSupported()) {
+      playerState.textContent = "جارٍ تجربة HLS";
+      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = channel.playbackUrl;
+        video.addEventListener("error", onError, { once: true });
+        const attempt = video.play();
+        if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
+        return;
+      }
+      if (!(window.Hls && window.Hls.isSupported())) {
+        onError();
+        return;
+      }
       hls = new window.Hls({
         enableWorker: true,
         manifestLoadingMaxRetry: 3,
@@ -255,19 +259,30 @@
       hls.on(window.Hls.Events.ERROR, (_event, data) => {
         if (!data?.fatal) return;
         if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR) {
-          try { hls.recoverMediaError(); return; } catch (_) { /* use TS below */ }
+          try { hls.recoverMediaError(); return; } catch (_) { /* give up */ }
         }
-        playTsFallback();
+        onError();
       });
       hls.loadSource(channel.playbackUrl);
       hls.attachMedia(video);
-    } else {
-      playTsFallback();
+      const attempt = video.play();
+      if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
+    };
+
+    if (channel.tsPlaybackUrl && window.mpegts?.isSupported()) {
+      playerState.textContent = "جارٍ تجربة TS";
+      mpegTsPlayer = window.mpegts.createPlayer(
+        { type: "mpegts", isLive: true, url: channel.tsPlaybackUrl },
+        { enableWorker: true, enableStashBuffer: false, stashInitialSize: 128 },
+      );
+      mpegTsPlayer.attachMediaElement(video);
+      mpegTsPlayer.on(window.mpegts.Events.ERROR, playHls);
+      mpegTsPlayer.load();
+      const attempt = mpegTsPlayer.play();
+      if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
       return;
     }
-    video.addEventListener("playing", onPlaying, { once: true });
-    const attempt = video.play();
-    if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
+    playHls();
   }
 
   function selectChannel(channel, button) {
