@@ -23,6 +23,7 @@
     "verify:prekickoff:live": "node scripts/prekickoff-stream-verify.mjs --live --stress=30",
     "verify:stream-plan": "node scripts/apply-stream-plan-verify.mjs",
     "probe:wrappers": "node scripts/probe-arabic-wrappers.mjs",
+    "verify:scorebug": "node scripts/verify-scorebug.mjs",
     "confirm:stream-plan": "node scripts/confirm-stream-plan-prod.mjs",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",

@@ -3,6 +3,7 @@ import {
   decodeAlbaPlayerControlSource,
   extractAlbaHlsSources,
   isOperatorAlbaPlayerUrl,
+  isScoreBugUrl,
   OPERATOR_EMBED_PATH,
   operatorEmbedProxyPath,
   operatorHlsRefererForHost,
@@ -68,6 +69,34 @@ describe("inner AlbaPlayer HLS embed", () => {
       origin: "https://pl.koralive1.cc",
     });
     expect(operatorHlsRefererForHost("cdn.example.test")).toBeNull();
+  });
+});
+
+describe("isScoreBugUrl", () => {
+  it("accepts a production KoraZero proxy around an allowed operator target", () => {
+    expect(
+      isScoreBugUrl(
+        "https://korazero.com/wk/operator/?u=https%3A%2F%2Fmo.yallacuo.xyz%2Falbaplayer%2Fsport-2%2F",
+      ),
+    ).toBe(true);
+  });
+
+  it("accepts allowed AlbaPlayer wrapper URLs", () => {
+    expect(isScoreBugUrl("https://mo.yallacuo.xyz/albaplayer/sport-2/")).toBe(true);
+    expect(isScoreBugUrl("https://pl.koralive1.cc/albaplayer/bein1/")).toBe(true);
+    expect(isScoreBugUrl("https://pl.koralive.online/albaplayer/bein2/")).toBe(true);
+  });
+
+  it("rejects arbitrary URLs, empty strings, and forbidden hosts", () => {
+    expect(isScoreBugUrl("")).toBe(false);
+    expect(isScoreBugUrl("https://example.com/embed/foo")).toBe(false);
+    expect(isScoreBugUrl("https://reddit-soccer-streams.online/")).toBe(false);
+    expect(isScoreBugUrl("https://korazero.com/watch?ch=bein-sports-1")).toBe(false);
+    expect(isScoreBugUrl("https://korazero.com/wk/albaplayer/koraplus/?ch=bein-sports-1")).toBe(false);
+    expect(isScoreBugUrl("https://staging.korazero.com/wk/operator/")).toBe(false);
+    expect(isScoreBugUrl("https://korazero.com/wk/operator/?u=https%3A%2F%2Fexample.com%2Fembed%2Ffoo")).toBe(
+      false,
+    );
   });
 });
 

@@ -8,7 +8,16 @@ Node jobs that fetch external data and write `assets/data/*.json`.
 
 Match-scoped stream wiring is `assets/data/stream-plans.json` (see `docs/STREAM-PLANS.md`). Record probe results with `scripts/apply-stream-plan-verify.mjs` — do not hand-edit verification timestamps in a second file.
 
-Match-day binds: `npm run probe:wrappers` then, after push to `main`, `npm run confirm:stream-plan -- --match=<id> --url=<host/path>`. A git push is not live until that confirm exits 0.
+Match-day binds: `npm run probe:wrappers` then, after a visual scorebug check with
+`npm run verify:scorebug -- --url=<url> --match=<espn-id>`, push to `main` and run
+`npm run confirm:stream-plan -- --match=<id> --url=<host/path>`. A git push is not live until that confirm exits 0.
+
+`verify:scorebug` opens exactly one allowed URL (a KoraZero `/wk/operator/` proxy URL or a
+yallacuo/koralive AlbaPlayer URL), waits up to 5 seconds for video, captures one screenshot,
+and prints concise diagnostics (HTTP status, video state, screenshot path, elapsed ms).
+Read that screenshot directly — do not launch a computer-use browsing tour. It does **not**
+auto-bind or record a verification; use `apply-stream-plan-verify.mjs` after reviewing both
+teams in the scorebug. Reusable for any match; pass the active ESPN id as `--match`.
 
 Lock each loop to its explicitly requested ESPN id. When the user says one
 match (for example Barcelona only), do not probe or edit any other fixture.

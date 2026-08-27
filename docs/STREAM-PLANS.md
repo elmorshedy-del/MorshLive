@@ -174,14 +174,15 @@ Elche–Barcelona.
 ### Scope lock
 
 Before probing, write down the one active ESPN match id. If the user says
-“Barcelona only”, the timer prompt, probes, catalog edit, deploy, and
-confirmation must all name that Barcelona id. Do not iterate the rest of the
-fixture list. A later agent may widen the scope only after an explicit user
-instruction.
+“Barcelona only”, the timer prompt, probes, `verify:scorebug` call, catalog
+edit, deploy, and confirmation must all name that Barcelona ESPN id. Do not
+iterate the rest of the fixture list. A later agent may widen the scope only
+after an explicit user instruction.
 
 Use one timer per active match (for example `loop-bind-barcelona`). Stop and
 unsubscribe it after the plan is confirmed in production or the match ends
-without verification.
+without verification. Timer scope remains the exact ESPN id named at the start
+of that bind loop — do not reuse a running timer for a different fixture.
 
 ### Probe and bind
 
@@ -193,6 +194,21 @@ without verification.
    yallacuo twin. Require a visible two-team scorebug, both names, or both
    crests. Kits, league graphics, a BeIN logo, and pre-match branding are not
    enough.
+
+   Once a candidate URL is identified, run the fast visual check (no computer-use
+   tour required):
+
+   ```bash
+   npm run verify:scorebug -- --url=<url> --match=<espn-id>
+   ```
+
+   `verify:scorebug` accepts a KoraZero `/wk/operator/` URL or an allowed
+   yallacuo/koralive AlbaPlayer URL, opens exactly one headless Chrome tab,
+   waits up to 5 seconds for video, saves a screenshot under
+   `reports/scorebug/`, and prints: final URL, HTTP status, video state,
+   screenshot path, elapsed ms. Read that image directly; do not launch a
+   computer-use browsing tour. The command does **not** auto-bind or record a
+   verification result. If a scorebug with both teams is visible, proceed.
 3. Prefer the wrapper’s **inner AlbaPlayer `iframeSrc`** when it remains on an
    allowed operator host. Preflight it through
    `/wk/operator/?u=<encoded-inner-url>`: HTTP 200 with
@@ -215,7 +231,7 @@ without verification.
 8. **Not live yet.** Run:
 
    ```bash
-   npm run confirm:stream-plan -- --match=espn-esp.1-401882913 --url=yallacuo.xyz/albaplayer/sport-2
+   npm run confirm:stream-plan -- --match=<active-espn-id> --url=<confirmed-host/albaplayer/slot>
    ```
 
    Poll until `catalog: true` and the selected source unwraps to the exact
