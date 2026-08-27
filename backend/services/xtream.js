@@ -348,9 +348,10 @@ export async function getXtreamLive(env, searchParams) {
     selected.portals.map(async (portal) => {
       const safe = publicPortal(portal);
       try {
+        const streamParams = /^\d+$/.test(category) ? { category_id: category } : undefined;
         const [categoryRows, streamRows] = await Promise.all([
           fetchXtreamJson(portal, "get_live_categories", 14000).catch(() => []),
-          fetchXtreamJson(portal, "get_live_streams", 20000).catch(() => []),
+          fetchXtreamJson(portal, "get_live_streams", 20000, streamParams).catch(() => []),
         ]);
         const apiRows = Array.isArray(streamRows) ? streamRows : [];
         const needExactSources =

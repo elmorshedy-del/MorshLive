@@ -110,11 +110,17 @@ export function loadXtreamPortals(env) {
   }
 }
 
-function apiUrl(portal, action) {
+function apiUrl(portal, action, extraParams) {
   const url = new URL(`${portal.url}/player_api.php`);
   url.searchParams.set("username", portal.username);
   url.searchParams.set("password", portal.password);
   if (action) url.searchParams.set("action", action);
+  if (extraParams && typeof extraParams === "object") {
+    for (const [key, value] of Object.entries(extraParams)) {
+      if (value == null || value === "") continue;
+      url.searchParams.set(key, String(value));
+    }
+  }
   return url.toString();
 }
 
@@ -357,11 +363,11 @@ export async function probeXtreamPlayback(portal, streamId, sources = {}) {
   return ts.ok ? ts : { ok: false, hls, ts };
 }
 
-export async function fetchXtreamJson(portal, action, timeoutMs = 14000) {
+export async function fetchXtreamJson(portal, action, timeoutMs = 14000, extraParams) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetch(apiUrl(portal, action), {
+    const response = await fetch(apiUrl(portal, action, extraParams), {
       headers: {
         Accept: "application/json,text/plain,*/*",
         "User-Agent": "Mozilla/5.0 (KoraZero Xtream Importer)",

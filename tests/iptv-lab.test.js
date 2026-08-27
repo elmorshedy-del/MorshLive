@@ -1,0 +1,149 @@
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { dispatchBackendRoutes } from "../backend/router.js";
+import { backendRoutes } from "../backend/routes/index.js";
+import { getIptvLabLive, getIptvLabStatus } from "../backend/services/iptv-lab.js";
+import { iptvLabWorkerEnv, parseIptvLabSecret } from "../lib/iptv-lab.js";
+
+const labJson = JSON.stringify({
+  url: "http://lab.example.test",
+  username: "labuser",
+  password: "labpass",
+  label: "Trial",
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
+});
+
+describe("parseIptvLabSecret", () => {
+  it("returns a clear error when the secret is missing", () => {
+    expect(parseIptvLabSecret("")).toMatchObject({
+      ok: false,
+      error: "IPTV_LAB_JSON secret is not configured",
+    });
+    expect(parseIptvLabSecret(undefined)).toMatchObject({ ok: false });
+  });
+
+  it("rejects invalid JSON and non-http URLs", () => {
+    expect(parseIptvLabSecret("{").ok).toBe(false);
+    expect(
+      parseIptvLabSecret(JSON.stringify({ url: "javascript:alert(1)", username: "u", password: "p" })).ok,
+    ).toBe(false);
+    expect(parseIptvLabSecret(JSON.stringify({ url: "http://x.test", username: "u" })).ok).toBe(false);
+  });
+
+  it("accepts host/user/pass aliases and strips query strings", () => {
+    const parsed = parseIptvLabSecret(
+      JSON.stringify({
+        host: "http://64188644.example.test/unused?x=1",
+        user: "trial",
+        pass: "secret",
+      }),
+    );
+    expect(parsed).toMatchObject({
+      ok: true,
+      portal: {
+        url: "http://64188644.example.test/unused",
+        username: "trial",
+        password: "secret",
+        label: "lab",
+      },
+    });
+  });
+});
+
+describe("iptvLabWorkerEnv", () => {
+  it("overlays the lab portal without keeping production Xtream portals", () => {
+    const original = {
+      XTREAM_PORTALS_JSON: JSON.stringify({
+        portals: [{ url: "http://prod.example.test", username: "prod", password: "prodpass" }],
+      }),
+      IPTV_LAB_JSON: labJson,
+      STREAM_SIGNING_SECRET: "test-signing-secret-not-production",
+    };
+    const lab = iptvLabWorkerEnv(original);
+    expect(lab.ok).toBe(true);
+    expect(original.XTREAM_PORTALS_JSON).toContain("prod.example.test");
+    expect(lab.env.XTREAM_PORTALS_JSON).toContain("lab.example.test");
+    expect(lab.env.XTREAM_PORTALS_JSON).not.toContain("prod.example.test");
+    expect(lab.env.XTREAM_PORTALS_JSON).toContain("labuser");
+  });
+});
+
+describe("iptv-lab service", () => {
+  it("returns 404 when the lab secret is missing", async () => {
+    const result = await getIptvLabStatus({}, new URLSearchParams());
+    expect(result.status).toBe(404);
+    expect(result.body).toMatchObject({
+      ok: false,
+      isolated: true,
+      error: "IPTV_LAB_JSON secret is not configured",
+    });
+  });
+
+  it("lists lab channels through signed media URLs and never leaks credentials", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input) => {
+        const url = String(input);
+        expect(url).not.toContain("prod.example.test");
+        if (url.includes("get_live_categories")) {
+          return new Response(JSON.stringify([{ category_id: "8974", category_name: "BEIN SPORTS TOD" }]), {
+            status: 200,
+          });
+        }
+        if (url.includes("get_live_streams")) {
+          expect(url).toContain("category_id=8974");
+          return new Response(
+            JSON.stringify([{ stream_id: 42, name: "beIN Sports 1", category_id: "8974" }]),
+            { status: 200 },
+          );
+        }
+        return new Response(JSON.stringify({ user_info: { auth: 1, status: "Active" } }), { status: 200 });
+      }),
+    );
+
+    const env = {
+      XTREAM_PORTALS_JSON: JSON.stringify({
+        portals: [{ url: "http://prod.example.test", username: "prod", password: "prodpass" }],
+      }),
+      IPTV_LAB_JSON: labJson,
+      STREAM_SIGNING_SECRET: "test-signing-secret-not-production",
+    };
+    const result = await getIptvLabLive(
+      env,
+      new URLSearchParams({ category: "8974", limit: "5", direct: "1" }),
+    );
+    expect(result.status).toBe(200);
+    expect(result.body.isolated).toBe(true);
+    expect(result.body.source).toBe("IPTV_LAB_JSON");
+    const stream = result.body.portals[0].streams[0];
+    expect(stream).toMatchObject({ name: "beIN Sports 1", streamId: 42 });
+    expect(stream.playbackUrl).toMatch(/^\/api\/xtream\/media\//);
+    expect(stream.directPlaybackUrl).toBeUndefined();
+    const serialized = JSON.stringify(result.body);
+    expect(serialized).not.toContain("labpass");
+    expect(serialized).not.toContain("labuser");
+    expect(serialized).not.toContain("prodpass");
+  });
+
+  it("routes /api/iptv-lab/status independently of XTREAM_PORTALS_JSON", async () => {
+    const response = await dispatchBackendRoutes(
+      backendRoutes,
+      new Request("https://korazero.com/api/iptv-lab/status"),
+      {
+        XTREAM_PORTALS_JSON: JSON.stringify({
+          portals: [{ url: "http://prod.test", username: "u", password: "p" }],
+        }),
+      },
+      {},
+    );
+    expect(response.status).toBe(404);
+    const body = await response.json();
+    expect(body).toMatchObject({
+      ok: false,
+      isolated: true,
+      error: "IPTV_LAB_JSON secret is not configured",
+    });
+  });
+});

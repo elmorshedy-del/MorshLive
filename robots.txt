@@ -2,6 +2,7 @@
 # Allow all search engines to crawl everything
 User-agent: *
 Allow: /
+Disallow: /iptv-lab.html
 
 # Point crawlers to your sitemap
 Sitemap: https://korazero.com/sitemap.xml
