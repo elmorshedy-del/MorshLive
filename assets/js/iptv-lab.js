@@ -23,8 +23,28 @@
   const recBtn = document.getElementById("recBtn");
 
   const SPORT_RE = /bein|sport|dazn|espn|sky|ssn|tnt|premiere|liga|football/i;
-  const RECOMMENDED_RE = /bein\s+sports\s+1\s+sd$/i;
-  const REC_DEFAULT_LABEL = "▶ BEIN SPORTS 1 SD";
+  const REC_DEFAULT_LABEL = "▶ AR BEIN SPORTS 1 SD";
+
+  function isArBeinSportsSdCategory(name) {
+    const text = String(name || "");
+    if (!/^\s*ar\b/i.test(text)) return false;
+    if (!/bein/i.test(text)) return false;
+    if (!/\bsd\b/i.test(text)) return false;
+    if (/\btod\b/i.test(text) || /english/i.test(text)) return false;
+    return true;
+  }
+
+  function isArBeinSports1SdChannel(channel) {
+    const name = String(channel?.name || "").trim();
+    if (/english/i.test(name)) return false;
+    if (!/bein\s+sports?\s+(?:1\s+sd|sd\s*1)$/i.test(name)) return false;
+    return isArBeinSportsSdCategory(channel?.categoryName);
+  }
+
+  function pickArBeinSports1Sd(list) {
+    const matches = (Array.isArray(list) ? list : []).filter(isArBeinSports1SdChannel);
+    return matches.find((channel) => String(channel.streamId) === "991") || matches[0] || null;
+  }
 
   let categories = [];
   let channels = [];
@@ -79,6 +99,8 @@
   }
 
   function preferredCategoryId() {
+    const arBeinSd = categories.find((category) => isArBeinSportsSdCategory(category.name));
+    if (arBeinSd?.categoryId) return String(arBeinSd.categoryId);
     const scored = categories
       .map((category) => ({
         category,
@@ -169,7 +191,12 @@
   }
 
   function findRecommendedChannel() {
-    return channels.find((ch) => RECOMMENDED_RE.test(ch.name)) || null;
+    return pickArBeinSports1Sd(channels);
+  }
+
+  function arBeinSportsSdCategoryId() {
+    const match = categories.find((category) => isArBeinSportsSdCategory(category.name));
+    return match?.categoryId ? String(match.categoryId) : "";
   }
 
   function highlightRecommended() {
@@ -402,12 +429,18 @@
       let ch = findRecommendedChannel();
       if (!ch) {
         searchInput.value = "bein sports 1 sd";
+        categorySelect.value = arBeinSportsSdCategoryId();
+        await loadChannels();
+        ch = findRecommendedChannel();
+      }
+      if (!ch) {
+        searchInput.value = "bein sports 1 sd";
         categorySelect.value = "";
         await loadChannels();
         ch = findRecommendedChannel();
       }
       if (!ch) {
-        setError("لم تُعثر على قناة BEIN SPORTS 1 SD في البيانات المتاحة.");
+        setError("لم تُعثر على قناة AR BEIN SPORTS 1 SD في البيانات المتاحة.");
         return;
       }
       const card = channelGrid.querySelector(`[data-stream-id="${ch.streamId}"]`);

@@ -2,7 +2,14 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { dispatchBackendRoutes } from "../backend/router.js";
 import { backendRoutes } from "../backend/routes/index.js";
 import { getIptvLabLive, getIptvLabStatus } from "../backend/services/iptv-lab.js";
-import { iptvLabWorkerEnv, parseIptvLabSecret } from "../lib/iptv-lab.js";
+import {
+  iptvLabWorkerEnv,
+  isArBeinSports1SdChannel,
+  isArBeinSportsSdCategory,
+  parseIptvLabSecret,
+  pickArBeinSports1Sd,
+  preferredIptvLabCategoryId,
+} from "../lib/iptv-lab.js";
 
 const labJson = JSON.stringify({
   url: "http://lab.example.test",
@@ -13,6 +20,57 @@ const labJson = JSON.stringify({
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe("AR beIN Sports 1 SD matcher", () => {
+  it("accepts the Arabic SD bouquet and rejects TOD / English packs", () => {
+    expect(isArBeinSportsSdCategory("AR ❖ BEIN SPORTS SD")).toBe(true);
+    expect(isArBeinSportsSdCategory("AR BEIN SPORTS SD")).toBe(true);
+    expect(isArBeinSportsSdCategory("BEIN SPORTS TOD")).toBe(false);
+    expect(isArBeinSportsSdCategory("BEIN SPORTS 1 ENGLISH SD")).toBe(false);
+    expect(isArBeinSportsSdCategory("CA SPORTS")).toBe(false);
+    expect(isArBeinSportsSdCategory("FR ❖ BEIN SPORTS SD")).toBe(false);
+  });
+
+  it("picks AR BEIN SPORTS 1 SD (991) over English / SD² / other regions", () => {
+    const english = {
+      streamId: 1003,
+      name: "BEIN SPORTS 1 ENGLISH SD",
+      categoryName: "AR ❖ BEIN SPORTS SD",
+    };
+    const sd2 = {
+      streamId: 992,
+      name: "BEIN SPORTS 1 SD²",
+      categoryName: "AR ❖ BEIN SPORTS SD",
+    };
+    const otherRegion = {
+      streamId: 50,
+      name: "BEIN SPORTS 1 SD",
+      categoryName: "FR ❖ BEIN SPORTS SD",
+    };
+    const arOne = {
+      streamId: 991,
+      name: "BEIN SPORTS 1 SD",
+      categoryName: "AR ❖ BEIN SPORTS SD",
+    };
+    expect(isArBeinSports1SdChannel(arOne)).toBe(true);
+    expect(isArBeinSports1SdChannel(english)).toBe(false);
+    expect(isArBeinSports1SdChannel(sd2)).toBe(false);
+    expect(isArBeinSports1SdChannel(otherRegion)).toBe(false);
+    expect(pickArBeinSports1Sd([english, sd2, otherRegion, arOne])).toMatchObject({
+      streamId: 991,
+    });
+  });
+
+  it("prefers the Arabic SD category over CA SPORTS on first load", () => {
+    expect(
+      preferredIptvLabCategoryId([
+        { categoryId: "ca", name: "CA SPORTS" },
+        { categoryId: "tod", name: "BEIN SPORTS TOD" },
+        { categoryId: "ar-sd", name: "AR ❖ BEIN SPORTS SD" },
+      ]),
+    ).toBe("ar-sd");
+  });
 });
 
 describe("parseIptvLabSecret", () => {
