@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { applyClientEdgeCacheHeaders, effectiveEdgeCacheTtl } from "../lib/hls-cache.js";
+import {
+  applyClientEdgeCacheHeaders,
+  effectiveEdgeCacheTtl,
+  workerOnlyCacheKeyUrl,
+} from "../lib/hls-cache.js";
 
 describe("effectiveEdgeCacheTtl", () => {
   it("keeps a producer's shorter live-manifest TTL", () => {
@@ -33,5 +37,17 @@ describe("applyClientEdgeCacheHeaders", () => {
     expect(headers.get("Cache-Control")).toBe("public, max-age=60");
     expect(headers.get("CDN-Cache-Control")).toBeNull();
     expect(headers.get("Cloudflare-CDN-Cache-Control")).toBeNull();
+  });
+});
+
+describe("workerOnlyCacheKeyUrl", () => {
+  it("moves Cache API keys off the public host so CDN HITs cannot reuse them", () => {
+    const keyed = new URL(
+      workerOnlyCacheKeyUrl("https://korazero.com/wk/hls?u=https://cdn.example/index.css&sig=abc"),
+    );
+    expect(keyed.host).toBe("kz-worker-cache.internal");
+    expect(keyed.pathname).toBe("/wk/hls");
+    expect(keyed.searchParams.get("u")).toBe("https://cdn.example/index.css");
+    expect(keyed.searchParams.get("sig")).toBe("abc");
   });
 });

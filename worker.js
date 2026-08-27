@@ -19,7 +19,7 @@ import { resolveWatchArchiveRedirect } from "./lib/watch-archive-redirect.js";
 import { dispatchBackendRoutes } from "./backend/router.js";
 import { backendRoutes } from "./backend/routes/index.js";
 import { chooseGo4scoreEdge, go4scoreFrameUrl, pickGo4scoreChannel } from "./lib/go4score-frame.js";
-import { applyClientEdgeCacheHeaders, effectiveEdgeCacheTtl } from "./lib/hls-cache.js";
+import { applyClientEdgeCacheHeaders, effectiveEdgeCacheTtl, workerOnlyCacheKeyUrl } from "./lib/hls-cache.js";
 import { extractAlbaHlsSources, isOperatorAlbaPlayerUrl, operatorHlsRefererForHost, sanitizeOperatorEmbedHtml } from "./lib/operator-embed.js";
 
 /**
@@ -436,7 +436,7 @@ function stripBlockedScripts(html) {
 }
 
 function hlsProxyUrl(target, origin, sig, basePath) {
-  const path = basePath || "/wk/stream.m3u8";
+  const path = basePath || "/wk/hls";
   const signature = sig ? `&sig=${encodeURIComponent(sig)}` : "";
   return `${origin}${path}?u=${encodeURIComponent(target)}${signature}`;
 }
@@ -458,7 +458,8 @@ function clientEdgeCachedResponse(res) {
 async function withEdgeCache(request, ttlSeconds, producer) {
   if (request.method !== "GET") return producer();
   const cache = caches.default;
-  const hit = await cache.match(request);
+  const key = new Request(workerOnlyCacheKeyUrl(request.url), { method: "GET" });
+  const hit = await cache.match(key);
   if (hit) return clientEdgeCachedResponse(hit);
   const res = await producer();
   if (!res || res.status !== 200) return res;
@@ -466,7 +467,7 @@ async function withEdgeCache(request, ttlSeconds, producer) {
   const effectiveTtl = effectiveEdgeCacheTtl(headers.get("Cache-Control"), ttlSeconds);
   headers.set("Cache-Control", `public, max-age=${effectiveTtl}`);
   const cached = new Response(res.body, { status: 200, headers });
-  await cache.put(request, cached.clone());
+  await cache.put(key, cached.clone());
   return clientEdgeCachedResponse(cached);
 }
 
