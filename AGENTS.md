@@ -79,6 +79,8 @@ Do not treat an in-flight `main` Workers Build as “good enough” while koraze
 - Put new pure logic in `lib/` with tests.
 - Merge the PR once the work is finished and CI is green.
 - After merge, curl live `korazero.com`. If it is still the old `?v=` / markup, run `npm run deploy` immediately. Do not wait for Workers Builds `refresh:matches`.
+- Keep match-day binding scope explicit. If the user names one match, probe, bind, deploy, and confirm only that ESPN id; do not advance through the remaining fixture list.
+- For yallacuo/koralive, prefer a verified inner AlbaPlayer `iframeSrc` through `/wk/operator/` when it returns `X-KZ-Mode: hls-embed`; otherwise keep the existing allowed-wrapper flow. Never bind from kits or branding without a two-team scorebug/names/crests.
 
 **Ask first**
 

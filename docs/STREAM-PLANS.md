@@ -171,30 +171,58 @@ unpublished for several minutes. Until then
 page mounts a blank koraplus player. That is what “nothing” looked like for
 Elche–Barcelona.
 
-Do this for every remaining fixture:
+### Scope lock
 
-1. **T-15** — `npm run probe:wrappers`. If no scorebug for this match, stop
-   the visual tour. Arm a **kickoff** one-shot. Do not bind a studio, FT
-   graphic, or another league.
-2. **Kickoff** — probe again. A new inner Fabor id on a slot is the reuse
-   signal. Confirm the scorebug (2 URLs max: the likely BeIN slot + its
-   yallacuo twin). Bind only `mo.yallacuo.xyz/albaplayer/…` or
-   `pl.koralive1.cc/albaplayer/…`.
-3. **Never** bind `reddit-soccer-streams.online`, `iframe.st`,
-   `kora-plus.li` / `kora-plus.app`, or a go4score **listing** page.
-4. **Never** steal a slot from a still-live catalog match.
-5. Write `stream-plans.json` (`contentKey: match:<espn-id>`), commit, push,
-   merge to `main`.
-6. **Not live yet.** Run:
+Before probing, write down the one active ESPN match id. If the user says
+“Barcelona only”, the timer prompt, probes, catalog edit, deploy, and
+confirmation must all name that Barcelona id. Do not iterate the rest of the
+fixture list. A later agent may widen the scope only after an explicit user
+instruction.
+
+Use one timer per active match (for example `loop-bind-barcelona`). Stop and
+unsubscribe it after the plan is confirmed in production or the match ends
+without verification.
+
+### Probe and bind
+
+1. **T-15** — `npm run probe:wrappers`. If no scorebug for the active match,
+   stop the visual tour and arm a **kickoff** check. Do not bind a studio, FT
+   graphic, another league, or a page that merely shows one club.
+2. **Kickoff** — probe again. A changed inner Fabor id or `iframeSrc` is only
+   a reuse signal, not proof. Inspect no more than the likely BeIN slot and its
+   yallacuo twin. Require a visible two-team scorebug, both names, or both
+   crests. Kits, league graphics, a BeIN logo, and pre-match branding are not
+   enough.
+3. Prefer the wrapper’s **inner AlbaPlayer `iframeSrc`** when it remains on an
+   allowed operator host. Preflight it through
+   `/wk/operator/?u=<encoded-inner-url>`: HTTP 200 with
+   `X-KZ-Mode: hls-embed` is the clean path. It extracts the inner HLS into
+   KoraZero’s player, so upstream menus, popunders, and page chrome never load.
+   The outer wrapper can fail from Cloudflare while this inner embed works.
+4. Store that allowed inner URL in the plan as `kind: iframe`, profile
+   `operator-iframe-v2`. Plan resolution rewrites it to `/wk/operator/`
+   automatically. Do not store a temporary `/wk/hls` signature.
+5. If there is no working clean inner embed, keep the previous wrapper method:
+   an allowed `mo.yallacuo.xyz/albaplayer/…` or
+   `pl.koralive1.cc/albaplayer/…` URL through `/wk/operator/`. Do not add a new
+   player path during match-day binding.
+6. **Never** bind `reddit-soccer-streams.online`, `iframe.st`,
+   `kora-plus.li` / `kora-plus.app`, or a go4score **listing** page. Never steal
+   a slot from a still-live catalog match. If neither allowed path proves the
+   exact match, leave it unbound.
+7. Write `stream-plans.json` (`contentKey: match:<espn-id>`), record the
+   verification, commit, push, and merge to `main`.
+8. **Not live yet.** Run:
 
    ```bash
    npm run confirm:stream-plan -- --match=espn-esp.1-401882913 --url=yallacuo.xyz/albaplayer/sport-2
    ```
 
-   Poll until `catalog: true` and the selected source is the wrapper you bound
-   (playback may be `/wk/operator/?u=…` — that is the ad-free proxy, not a
-   different game). Only then tell the user to hard-refresh. If confirm times
-   out, say production has not deployed — do not claim the bind is on the site.
+   Poll until `catalog: true` and the selected source unwraps to the exact
+   inner or outer URL you bound. The returned playback URL should normally be
+   `/wk/operator/?u=…`; that is the clean player proxy, not a different game.
+   Only then tell the user to hard-refresh. If confirm times out, force the
+   Cloudflare deploy and confirm again — do not claim the bind is live early.
 
 Workers Builds runs `npm run refresh:matches` first. That job used to
 `process.exit(1)` on koraplus channel conflicts (several live UCL games
