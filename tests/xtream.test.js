@@ -11,6 +11,7 @@ import {
   redirectXtreamMedia,
 } from "../backend/adapters/xtream.js";
 import { getXtreamLive } from "../backend/services/xtream.js";
+import { XTREAM_CLIENT_USER_AGENT } from "../lib/xtream-client.js";
 
 const env = {
   XTREAM_PORTALS_JSON: JSON.stringify({
@@ -194,6 +195,68 @@ describe("Xtream adapter", () => {
     );
     expect(response.status).toBe(502);
     expect(await response.text()).toContain("Upstream error");
+  });
+
+  it("sends the VLC Xtream client user-agent instead of the browser UA", async () => {
+    const upstream = "http://example.test:8080/live/owner/secret/123.ts";
+    const token = await createMediaToken(env, upstream, 60);
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(new Uint8Array([0x47, 0x40]), {
+        status: 200,
+        headers: { "Content-Type": "video/mp2t" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await proxyXtreamMedia(
+      new Request(`https://korazero.com/api/xtream/media/${token}`, {
+        headers: {
+          Range: "bytes=0-",
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/124.0.0.0",
+        },
+      }),
+      env,
+      token,
+    );
+    expect(response.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const headers = fetchMock.mock.calls[0][1].headers;
+    expect(headers["User-Agent"]).toBe(XTREAM_CLIENT_USER_AGENT);
+    expect(headers.Range).toBe("bytes=0-");
+    expect(headers["User-Agent"]).not.toContain("Chrome");
+  });
+
+  it("retries a 403 ranged live request without Range", async () => {
+    const upstream = "http://example.test:8080/live/owner/secret/123.ts";
+    const token = await createMediaToken(env, upstream, 60);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 403,
+        headers: new Headers({ "Content-Type": "text/html" }),
+        body: null,
+      })
+      .mockResolvedValueOnce(
+        new Response(new Uint8Array([0x47, 0x40]), {
+          status: 200,
+          headers: { "Content-Type": "video/mp2t" },
+        }),
+      );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await proxyXtreamMedia(
+      new Request(`https://korazero.com/api/xtream/media/${token}`, {
+        headers: { Range: "bytes=0-" },
+      }),
+      env,
+      token,
+    );
+    expect(response.status).toBe(200);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0][1].headers.Range).toBe("bytes=0-");
+    expect(fetchMock.mock.calls[1][1].headers.Range).toBeUndefined();
+    expect(fetchMock.mock.calls[1][1].headers["User-Agent"]).toBe(XTREAM_CLIENT_USER_AGENT);
   });
 });
 

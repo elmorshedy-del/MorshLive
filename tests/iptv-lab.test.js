@@ -84,7 +84,7 @@ describe("iptv-lab service", () => {
   it("lists lab channels through signed media URLs and never leaks credentials", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn(async (input) => {
+      vi.fn(async (input, init) => {
         const url = String(input);
         expect(url).not.toContain("prod.example.test");
         if (url.includes("get_live_categories")) {
@@ -94,6 +94,7 @@ describe("iptv-lab service", () => {
         }
         if (url.includes("get_live_streams")) {
           expect(url).toContain("category_id=8974");
+          expect(init.headers["User-Agent"]).toBe("VLC/3.0.18 LibVLC/3.0.18");
           return new Response(
             JSON.stringify([{ stream_id: 42, name: "beIN Sports 1", category_id: "8974" }]),
             { status: 200 },

@@ -1,3 +1,9 @@
+import {
+  shouldRetryXtreamMediaWithoutRange,
+  xtreamClientHeaders,
+  xtreamMediaHeaders,
+} from "../../lib/xtream-client.js";
+
 const TOKEN_TTL_SECONDS = 6 * 60 * 60;
 const PLAYLIST_CACHE_MS = 60 * 1000;
 const keyCache = new Map();
@@ -190,10 +196,7 @@ export async function fetchXtreamSourceMaps(portal) {
 
   const fetchPlaylist = async (output) => {
     const response = await fetch(playlistUrl(portal, output), {
-      headers: {
-        Accept: "application/x-mpegURL,text/plain,*/*",
-        "User-Agent": "Mozilla/5.0 (KoraZero Xtream Playlist)",
-      },
+      headers: xtreamClientHeaders({ Accept: "application/x-mpegURL,text/plain,*/*" }),
       redirect: "follow",
     });
     if (!response.ok) throw new Error(`Playlist HTTP ${response.status}`);
@@ -280,11 +283,10 @@ async function fetchProbeBytes(url, accept, timeoutMs = 8000) {
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(url, {
-      headers: {
+      headers: xtreamClientHeaders({
         Accept: accept,
         Range: "bytes=0-13159",
-        "User-Agent": "Mozilla/5.0 (KoraZero Xtream Probe)",
-      },
+      }),
       redirect: "follow",
       signal: controller.signal,
     });
@@ -368,10 +370,7 @@ export async function fetchXtreamJson(portal, action, timeoutMs = 14000, extraPa
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetch(apiUrl(portal, action, extraParams), {
-      headers: {
-        Accept: "application/json,text/plain,*/*",
-        "User-Agent": "Mozilla/5.0 (KoraZero Xtream Importer)",
-      },
+      headers: xtreamClientHeaders({ Accept: "application/json,text/plain,*/*" }),
       redirect: "follow",
       signal: controller.signal,
     });
@@ -494,20 +493,32 @@ export async function redirectXtreamMedia(env, token) {
   });
 }
 
-export async function proxyXtreamMedia(request, env, token) {
-  const target = await decodeMediaToken(env, token);
-  const upstreamHeaders = {
-    Accept: request.headers.get("Accept") || "*/*",
-    "User-Agent": request.headers.get("User-Agent") || "Mozilla/5.0",
-  };
-  const range = request.headers.get("Range");
-  if (range) upstreamHeaders.Range = range;
-
+async function fetchXtreamMedia(target, request) {
+  const method = request.method === "HEAD" ? "HEAD" : "GET";
+  const rangedHeaders = xtreamMediaHeaders(request);
   const response = await fetch(target, {
-    method: request.method === "HEAD" ? "HEAD" : "GET",
-    headers: upstreamHeaders,
+    method,
+    headers: rangedHeaders,
     redirect: "follow",
   });
+  if (
+    method === "GET" &&
+    !response.ok &&
+    shouldRetryXtreamMediaWithoutRange(response.status, Boolean(rangedHeaders.Range))
+  ) {
+    const retry = await fetch(target, {
+      method: "GET",
+      headers: xtreamMediaHeaders(request, { includeRange: false }),
+      redirect: "follow",
+    });
+    if (retry.ok) return retry;
+  }
+  return response;
+}
+
+export async function proxyXtreamMedia(request, env, token) {
+  const target = await decodeMediaToken(env, token);
+  const response = await fetchXtreamMedia(target, request);
   if (!response.ok) {
     const status = safeHttpStatus(response.status, 502);
     return new Response(request.method === "HEAD" ? null : `Upstream error ${status}`, {
