@@ -103,6 +103,22 @@ img { max-width: 100%; display: block; }
 .nav-toggle { display: none; background: var(--surface); border: 1px solid var(--border);
   color: var(--text); width: 40px; height: 40px; border-radius: 8px; font-size: 1.1rem; cursor: pointer; }
 
+.home-showdown {
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  line-height: 0;
+  background: #05070c;
+  border-bottom: 1px solid var(--border);
+}
+.home-showdown img {
+  display: block;
+  width: 100%;
+  height: clamp(168px, 38vw, 420px);
+  object-fit: cover;
+  object-position: center 42%;
+}
+
 /* --------------------------------------------------------- Season stage (European nights) */
 .season-stage {
   position: relative;
