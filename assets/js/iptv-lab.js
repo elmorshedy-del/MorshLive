@@ -10,8 +10,12 @@
   const channelGrid = document.getElementById("channelGrid");
   const errorBox = document.getElementById("errorBox");
   const video = document.getElementById("previewVideo");
+  const playerBox = document.getElementById("playerBox");
   const playerEmpty = document.getElementById("playerEmpty");
   const playerState = document.getElementById("playerState");
+  const playerTools = document.getElementById("playerTools");
+  const fsBtn = document.getElementById("fsBtn");
+  const pipBtn = document.getElementById("pipBtn");
   const selectedName = document.getElementById("selectedName");
   const selectedMeta = document.getElementById("selectedMeta");
   const selectedMetaChip = document.getElementById("selectedMetaChip");
@@ -212,6 +216,60 @@
     }
   }
 
+  function setPlayingUi(playing) {
+    playerBox.classList.toggle("is-playing", Boolean(playing));
+    playerEmpty.hidden = Boolean(playing);
+    if (playerTools) playerTools.hidden = !playing;
+  }
+
+  function isFullscreen() {
+    return Boolean(
+      document.fullscreenElement
+      || document.webkitFullscreenElement
+      || video.webkitDisplayingFullscreen,
+    );
+  }
+
+  function toggleFullscreen() {
+    if (isFullscreen()) {
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exit) exit.call(document);
+      else if (video.webkitExitFullscreen) video.webkitExitFullscreen();
+      return;
+    }
+    if (playerBox.requestFullscreen) {
+      playerBox.requestFullscreen().catch(() => {
+        if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
+      });
+    } else if (playerBox.webkitRequestFullscreen) {
+      playerBox.webkitRequestFullscreen();
+    } else if (video.webkitEnterFullscreen) {
+      video.webkitEnterFullscreen();
+    }
+  }
+
+  function canPictureInPicture() {
+    return Boolean(
+      (document.pictureInPictureEnabled && video.requestPictureInPicture)
+      || (video.webkitSupportsPresentationMode && typeof video.webkitSetPresentationMode === "function"),
+    );
+  }
+
+  function togglePictureInPicture() {
+    if (document.pictureInPictureElement) {
+      document.exitPictureInPicture().catch(() => {});
+      return;
+    }
+    if (video.webkitSupportsPresentationMode && typeof video.webkitSetPresentationMode === "function") {
+      const next = video.webkitPresentationMode === "picture-in-picture" ? "inline" : "picture-in-picture";
+      video.webkitSetPresentationMode(next);
+      return;
+    }
+    if (video.requestPictureInPicture) {
+      video.requestPictureInPicture().catch(() => {});
+    }
+  }
+
   function destroyPlayer() {
     if (hls) {
       try { hls.destroy(); } catch (_) { /* noop */ }
@@ -241,7 +299,8 @@
 
   function playChannel(channel) {
     destroyPlayer();
-    playerEmpty.hidden = true;
+    setPlayingUi(true);
+    if (pipBtn) pipBtn.hidden = !canPictureInPicture();
     playerState.textContent = "جارٍ التحميل";
     let usingHls = false;
     const onPlaying = () => { playerState.textContent = usingHls ? "يعمل · HLS" : "يعمل · TS"; };
@@ -320,6 +379,21 @@
     selectedMetaChip.textContent = "تشغيل داخل المختبر";
     playChannel(channel);
   }
+
+  fsBtn?.addEventListener("click", toggleFullscreen);
+  pipBtn?.addEventListener("click", togglePictureInPicture);
+  document.addEventListener("fullscreenchange", () => {
+    if (fsBtn) fsBtn.textContent = isFullscreen() ? "⤢ إغلاق ملء الشاشة" : "⛶ ملء الشاشة";
+  });
+  document.addEventListener("webkitfullscreenchange", () => {
+    if (fsBtn) fsBtn.textContent = isFullscreen() ? "⤢ إغلاق ملء الشاشة" : "⛶ ملء الشاشة";
+  });
+  video.addEventListener("webkitbeginfullscreen", () => {
+    if (fsBtn) fsBtn.textContent = "⤢ إغلاق ملء الشاشة";
+  });
+  video.addEventListener("webkitendfullscreen", () => {
+    if (fsBtn) fsBtn.textContent = "⛶ ملء الشاشة";
+  });
 
   recBtn.addEventListener("click", async () => {
     recBtn.disabled = true;

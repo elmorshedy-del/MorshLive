@@ -65,10 +65,14 @@
     .channel-name { display: block; font-weight: 800; line-height: 1.35; overflow-wrap: anywhere; }
     .channel-meta { display: flex; flex-wrap: wrap; gap: 5px 9px; margin-top: 7px; color: var(--muted); font-size: .74rem; }
     .empty { grid-column: 1 / -1; min-height: 220px; display: grid; place-items: center; color: var(--muted); text-align: center; padding: 30px; }
+    [hidden] { display: none !important; }
     .player { position: relative; aspect-ratio: 16/9; background: #000; }
-    .player video { width: 100%; height: 100%; display: block; background: #000; }
-    .player-empty { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); text-align: center; padding: 24px; }
-    .player-state { position: absolute; top: 12px; right: 12px; z-index: 3; padding: 6px 9px; border-radius: 999px; background: rgba(8,11,18,.86); color: var(--muted); font-size: .72rem; }
+    .player video { width: 100%; height: 100%; display: block; background: #000; position: relative; z-index: 1; }
+    .player-empty { position: absolute; inset: 0; z-index: 2; display: grid; place-items: center; color: var(--muted); text-align: center; padding: 24px; pointer-events: none; }
+    .player.is-playing .player-empty { display: none !important; }
+    .player-state { position: absolute; top: 12px; inset-inline-end: 12px; z-index: 2; padding: 6px 9px; border-radius: 999px; background: rgba(8,11,18,.86); color: var(--muted); font-size: .72rem; pointer-events: none; }
+    .player-tools { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-top: 1px solid var(--line); background: #0a101a; }
+    .player-tools .action-btn { flex: 1; min-width: 140px; display: inline-flex; align-items: center; justify-content: center; }
     .preview-body { padding: 17px; }
     .preview-body h2 { margin: 0 0 7px; font-size: 1.15rem; overflow-wrap: anywhere; }
     .preview-body p { margin: 0; color: var(--muted); font-size: .83rem; line-height: 1.6; }
@@ -98,9 +102,13 @@
       <div class="panel" aria-labelledby="previewTitle">
         <div class="panel-head"><h2 id="previewTitle">المعاينة</h2><span class="count" id="selectedMetaChip">لم تُحدد قناة</span></div>
         <div class="player" id="playerBox">
-          <video id="previewVideo" controls playsinline></video>
+          <video id="previewVideo" controls playsinline webkit-playsinline></video>
           <div class="player-empty" id="playerEmpty">اختر قناة للتشغيل هنا. هذه الصفحة لا تفتح المشاهدة العامة.</div>
           <span class="player-state" id="playerState">جاهز</span>
+        </div>
+        <div class="player-tools" id="playerTools" hidden>
+          <button class="action-btn" id="fsBtn" type="button">⛶ ملء الشاشة</button>
+          <button class="action-btn" id="pipBtn" type="button">⧉ نافذة مصغّرة</button>
         </div>
         <div class="preview-body">
           <h2 id="selectedName">لا توجد قناة محددة</h2>
@@ -135,6 +143,6 @@
     </section>
   </main>
 
-  <script src="assets/js/iptv-lab.js?v=20260827lab5"></script>
+  <script src="assets/js/iptv-lab.js?v=20260827lab6"></script>
 </body>
 </html>
