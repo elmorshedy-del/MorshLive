@@ -9,7 +9,10 @@ tests/**
 vendor/**
 .env
 .env.*
+.dev.vars
+.dev.vars.*
 .wrangler/**
+storage/**
 README.md
 wrangler.toml
 .assetsignore

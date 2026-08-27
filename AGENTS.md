@@ -58,15 +58,15 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 
 ## Production freshness
 
-`korazero.com` is the **production Worker** (`npx wrangler deploy` on `main`). PR Workers Builds only run `wrangler versions upload` and do **not** update the live site.
+`korazero.com` is the **production Worker**. PR Workers Builds only run `wrangler versions upload` and do **not** update the live site. Production Workers Builds on `main` run `npm run refresh:matches` first, which can take several minutes before `npx wrangler deploy`.
 
-When the user says a change “didn’t show up”:
+After merging user-facing HTML/JS/CSS to `main`:
 
-1. **Check live first** — curl the page (and the bumped `?v=` asset). Compare to `origin/main`.
-2. **Still old + production build running** (`refresh:matches` then deploy) — that lag is harmless. Do not debug the feature. Wait for that `main` build to finish, or tell them it is still deploying. Then re-curl.
-3. **Live already has the new markup / `?v=`** — skip deploy archaeology. Hard-refresh / cache, or it is a real product bug.
+1. **Curl live** — the page and the bumped `?v=` asset. Compare to `origin/main`.
+2. **Still old** — **force deploy now**: `npm run deploy` (Wrangler; skips the match crawl). Do not wait for Workers Builds. Re-curl until the new markup / `?v=` is live, then tell the user to hard-refresh.
+3. **Live already has the new files** — skip deploy. Hard-refresh / cache, or it is a real product bug.
 
-Do not treat an in-flight `main` Workers Build as a failed deploy.
+Do not treat an in-flight `main` Workers Build as “good enough” while korazero.com is still serving the previous `?v=`.
 
 ## Boundaries
 
@@ -78,7 +78,7 @@ Do not treat an in-flight `main` Workers Build as a failed deploy.
 - Put new `/api/*` handlers in `backend/routes/` with logic in `backend/services/`.
 - Put new pure logic in `lib/` with tests.
 - Merge the PR once the work is finished and CI is green.
-- If live `korazero.com` looks unchanged after merge: curl it. In-flight production Builds are not a code bug — wait or tell the user; only investigate if live already has the new files.
+- After merge, curl live `korazero.com`. If it is still the old `?v=` / markup, run `npm run deploy` immediately. Do not wait for Workers Builds `refresh:matches`.
 
 **Ask first**
 
