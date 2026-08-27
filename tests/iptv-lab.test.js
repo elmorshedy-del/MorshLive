@@ -57,6 +57,20 @@ describe("AR beIN Sports 1 SD matcher", () => {
     expect(isArBeinSports1SdChannel(english)).toBe(false);
     expect(isArBeinSports1SdChannel(sd2)).toBe(false);
     expect(isArBeinSports1SdChannel(otherRegion)).toBe(false);
+    expect(
+      isArBeinSports1SdChannel({
+        streamId: 158887,
+        name: "BEIN SPORTS XTRA 1 SD",
+        categoryName: "AR ❖ BEIN SPORTS SD",
+      }),
+    ).toBe(false);
+    expect(
+      isArBeinSports1SdChannel({
+        streamId: 852257,
+        name: "BEIN SPORTS AFC 1 SD",
+        categoryName: "AR ❖ BEIN SPORTS SD",
+      }),
+    ).toBe(false);
     expect(pickArBeinSports1Sd([english, sd2, otherRegion, arOne])).toMatchObject({
       streamId: 991,
     });
