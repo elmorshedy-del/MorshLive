@@ -40,6 +40,9 @@
   }
 
   const xtreamMode = params.get("source") === "xtream";
+  const premiumRequested = params.get("source") === "iptv-premium";
+  const PREMIUM_STREAM_ID = "991";
+  const PREMIUM_CATEGORY_ID = "6454";
   const xtreamDirect = params.get("direct") === "1";
   const xtreamPortalId = params.get("portal") || "";
   const rawXtreamStreamId = String(params.get("stream") || "");
@@ -61,6 +64,16 @@
   let match = null;
   let matchesReady = false;
   let activePlan = null;
+  let activePremiumChannel = null;
+  let premiumRecoveryCount = 0;
+
+  function isBarcelonaMatch(m) {
+    return [m?.home, m?.away].some((name) => /^(?:fc\s+)?barcelona$/i.test(String(name || "").trim()));
+  }
+
+  function premiumMode() {
+    return premiumRequested && isBarcelonaMatch(match);
+  }
 
   function allowLegacySourceChrome() {
     if (xtreamMode) return true;
@@ -77,6 +90,7 @@
     const allow = allowLegacySourceChrome();
     document.body.classList.toggle("match-plan-chrome", !allow);
     document.body.classList.toggle("xtream-chrome", !!xtreamMode);
+    document.body.classList.toggle("premium-watch-chrome", premiumMode());
     const card = document.querySelector(".watch-sources-card");
     if (card) card.hidden = !allow;
     if (!allow) {
@@ -501,6 +515,105 @@
     renderSidebar();
   }
 
+  async function fetchPremiumChannel() {
+    const query = new URLSearchParams({
+      category: PREMIUM_CATEGORY_ID,
+      stream: PREMIUM_STREAM_ID,
+      limit: "1",
+    });
+    const response = await fetch(`/api/iptv-lab/live?${query}`, { cache: "no-store" });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) throw new Error(data.error || `HTTP ${response.status}`);
+    const selected = (data.portals || []).flatMap((block) => block.streams || [])[0];
+    const exactChannel =
+      selected
+      && String(selected.streamId) === PREMIUM_STREAM_ID
+      && /^bein\s+sports?\s+1\s+sd$/i.test(String(selected.name || "").trim())
+      && /^ar\b.*\bbein\b.*\bsd\b/i.test(String(selected.categoryName || ""));
+    if (!exactChannel) throw new Error(t("watch.premiumUnavailable"));
+    activePremiumChannel = selected;
+    return selected;
+  }
+
+  function mountPremiumPlayer(selected) {
+    destroyInlineHls();
+    if (!shell || !selected?.playbackUrl) return;
+    shell.innerHTML = `<video class="kz-main-video" controls autoplay muted playsinline webkit-playsinline></video>`;
+    const video = shell.querySelector(".kz-main-video");
+    if (!video) return;
+    const hlsUrl = selected.playbackUrl;
+    const tsUrl = selected.tsPlaybackUrl;
+
+    const refreshToken = () => {
+      if (premiumRecoveryCount >= 1) {
+        showXtreamError(t("watch.premiumUnavailable"));
+        return;
+      }
+      premiumRecoveryCount += 1;
+      loadPremiumChannel().catch(() => showXtreamError(t("watch.premiumUnavailable")));
+    };
+
+    const playHls = () => {
+      if (activeMpegTs) {
+        try {
+          activeMpegTs.pause();
+          activeMpegTs.unload();
+          activeMpegTs.detachMediaElement();
+          activeMpegTs.destroy();
+        } catch {
+          /* noop */
+        }
+        activeMpegTs = null;
+      }
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+        video.src = hlsUrl;
+        video.addEventListener("error", refreshToken, { once: true });
+      } else if (window.Hls?.isSupported()) {
+        activeHls = new window.Hls({
+          enableWorker: true,
+          manifestLoadingMaxRetry: 3,
+          levelLoadingMaxRetry: 3,
+          fragLoadingMaxRetry: 4,
+          liveSyncDurationCount: 3,
+        });
+        activeHls.on(window.Hls.Events.ERROR, (_event, details) => {
+          if (details?.fatal) refreshToken();
+        });
+        activeHls.loadSource(hlsUrl);
+        activeHls.attachMedia(video);
+      } else {
+        refreshToken();
+        return;
+      }
+      const attempt = video.play();
+      if (attempt?.catch) attempt.catch(() => bindUnmuteOverlay(video));
+    };
+
+    if (tsUrl && window.mpegts?.isSupported()) {
+      activeMpegTs = window.mpegts.createPlayer(
+        { type: "mpegts", isLive: true, url: tsUrl },
+        { enableWorker: false, enableStashBuffer: false, stashInitialSize: 128 },
+      );
+      activeMpegTs.attachMediaElement(video);
+      activeMpegTs.on(window.mpegts.Events.ERROR, playHls);
+      activeMpegTs.load();
+      const attempt = activeMpegTs.play();
+      if (attempt?.catch) attempt.catch(() => bindUnmuteOverlay(video));
+    } else {
+      playHls();
+    }
+    bindUnmuteOverlay(video);
+    loadedUrl = `iptv-premium:${selected.streamId}`;
+  }
+
+  async function loadPremiumChannel() {
+    const selected = await fetchPremiumChannel();
+    mountPremiumPlayer(selected);
+  }
+
   function iframeSandboxAttr(noSandbox) {
     // The go4score/koraplus player (and other third-party frame.php players) must
     // run UNSANDBOXED on mobile: an outer sandbox applies to every descendant
@@ -794,6 +907,14 @@
       if (activeXtreamChannel) mountXtreamPlayer(activeXtreamChannel);
       return;
     }
+    if (premiumMode()) {
+      if (activePremiumChannel) {
+        mountPremiumPlayer(activePremiumChannel);
+      } else {
+        loadPremiumChannel().catch(() => showXtreamError(t("watch.premiumUnavailable")));
+      }
+      return;
+    }
     // Bridge and WC pinned mirrors are leftover 24/7 / World Cup rails.
     // Stream plans own playback — do not offer them on match watch.
     if (allowLegacySourceChrome() && activeEmbedKey === "bridge" && window.STREAM_BRIDGE && window.STREAM_BRIDGE.hasStream(channel.id)) {
@@ -855,6 +976,11 @@
     if (xtreamMode) {
       xtreamRecoveryCount = 0;
       loadXtreamChannel().catch((error) => showXtreamError(error.message || error));
+      return;
+    }
+    if (premiumMode()) {
+      premiumRecoveryCount = 0;
+      loadPremiumChannel().catch(() => showXtreamError(t("watch.premiumUnavailable")));
       return;
     }
     loadPlayer();
@@ -1667,6 +1793,31 @@
     host.appendChild(btn);
   }
 
+  function renderPremiumSourceTabs() {
+    const host = document.getElementById("player-toolbar");
+    if (!host) return;
+    host.querySelector(".premium-source-tabs")?.remove();
+    if (!isBarcelonaMatch(match)) return;
+
+    const originalUrl = new URL(location.href);
+    originalUrl.searchParams.delete("source");
+    const premiumUrl = new URL(originalUrl);
+    premiumUrl.searchParams.set("source", "iptv-premium");
+    const premiumActive = premiumMode();
+    const tabs = document.createElement("div");
+    tabs.className = "premium-source-tabs";
+    tabs.setAttribute("role", "tablist");
+    tabs.setAttribute("aria-label", t("watch.sourceTabsAria"));
+    tabs.innerHTML = `
+      <a class="premium-source-tab${premiumActive ? " is-active" : ""}" role="tab" aria-selected="${premiumActive}" href="${premiumUrl}">
+        ${t("card.watchPremium")} <small>${t("card.experimental")}</small>
+      </a>
+      <a class="premium-source-tab${premiumActive ? "" : " is-active"}" role="tab" aria-selected="${!premiumActive}" href="${originalUrl}">
+        ${t("card.watchOriginal")}
+      </a>`;
+    host.prepend(tabs);
+  }
+
   function resolveSelection() {
     const picked = window.resolveWatchSelection
       ? window.resolveWatchSelection(MATCHES, CHANNELS, params)
@@ -1694,6 +1845,7 @@
     const meta = await window.getMatches({ force: !!force });
     MATCHES = meta.matches;
     resolveSelection();
+    renderPremiumSourceTabs();
     await fetchAndApplyPlan();
     applyWatchChrome();
     fillInfo();
@@ -1744,6 +1896,7 @@
     } catch (e) {
       console.warn("Initial match refresh failed:", e.message);
       resolveSelection();
+      renderPremiumSourceTabs();
       await fetchAndApplyPlan();
       fillInfo();
       renderChannels();

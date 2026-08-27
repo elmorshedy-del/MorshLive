@@ -59,6 +59,16 @@
       : `watch.html?ch=live&match=${m.id}`;
   }
 
+  function isBarcelonaMatch(m) {
+    return [m?.home, m?.away].some((name) => /^(?:fc\s+)?barcelona$/i.test(String(name || "").trim()));
+  }
+
+  function premiumWatchHref(m) {
+    const url = new URL(watchHref(m), location.href);
+    url.searchParams.set("source", "iptv-premium");
+    return `${url.pathname.replace(/^\//, "")}${url.search}`;
+  }
+
   function isCommentaryAvailable(m) {
     return window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(m);
   }
@@ -69,6 +79,13 @@
         return `<a class="watch-link watch-link--commentary" href="${watchHref(m)}">${ICON.mic} ${t("card.watchCommentary")}</a>`;
       }
       return `<span class="watch-link watch-link--disabled">${t("card.ended")}</span>`;
+    }
+    if (isBarcelonaMatch(m)) {
+      return `
+        <div class="match-watch-tabs" role="group" aria-label="${t("watch.sourceTabsAria")}">
+          <a class="watch-link watch-link--premium" href="${premiumWatchHref(m)}">${ICON.play} ${t("card.watchPremium")} <small>${t("card.experimental")}</small></a>
+          <a class="watch-link watch-link--original" href="${watchHref(m)}">${t("card.watchOriginal")}</a>
+        </div>`;
     }
     const label = m.status === "live" ? t("card.watchNow") : t("card.watch");
     return `<a class="watch-link" href="${watchHref(m)}">${ICON.play} ${label}</a>`;

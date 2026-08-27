@@ -997,6 +997,21 @@ img { max-width: 100%; display: block; }
   box-shadow: var(--shadow-soft);
 }
 .watch-link:hover { transform: translateY(-2px); }
+.match-watch-tabs {
+  display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px;
+}
+.match-watch-tabs .watch-link { justify-content: center; }
+.watch-link--premium {
+  background: linear-gradient(135deg, #c9a227, #e8c547); color: #171000;
+}
+.watch-link--premium small {
+  padding: 2px 6px; border-radius: 999px; background: rgba(23,16,0,.12);
+  font-size: .65rem; font-weight: 800;
+}
+.watch-link--original {
+  border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+  box-shadow: none;
+}
 .watch-link--commentary {
   background: linear-gradient(135deg, #c9a227, #e8c547);
   color: #1a1200;
@@ -1598,6 +1613,27 @@ img { max-width: 100%; display: block; }
 .player-toolbar {
   display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between;
   gap: 10px; margin-bottom: 10px;
+}
+.premium-source-tabs {
+  display: inline-flex; flex-wrap: wrap; gap: 6px; padding: 4px;
+  border: 1px solid var(--border); border-radius: 12px; background: var(--surface-2);
+}
+.premium-source-tab {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 34px; padding: 6px 10px; border-radius: 8px;
+  color: var(--muted); font-size: .78rem; font-weight: 800;
+}
+.premium-source-tab small {
+  padding: 1px 5px; border-radius: 999px; background: rgba(201,162,39,.14);
+  color: var(--gold); font-size: .62rem;
+}
+.premium-source-tab:hover,
+.premium-source-tab.is-active {
+  background: var(--surface); color: var(--text); box-shadow: var(--shadow-soft);
+}
+.premium-source-tab.is-active:first-child {
+  background: linear-gradient(135deg, rgba(201,162,39,.22), rgba(232,197,71,.12));
+  color: var(--gold);
 }
 
 /* Match-scoped ops notice (apology / incident banner) */
@@ -3295,6 +3331,7 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
   .match-foot { align-items: stretch; flex-direction: column; gap: 12px; }
   .match-meta { line-height: 1.55; overflow-wrap: anywhere; }
   .watch-link { justify-content: center; min-height: 44px; width: 100%; }
+  .match-watch-tabs .watch-link { flex: 1 1 150px; width: auto; }
   .match-panel-toggle { min-height: 44px; }
 }
 
