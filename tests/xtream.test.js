@@ -182,8 +182,8 @@ describe("Xtream adapter", () => {
       "fetch",
       vi.fn().mockResolvedValue({
         ok: false,
-        status: 0,
-        headers: new Headers({ "Content-Type": "text/plain" }),
+        status: 999,
+        headers: new Headers({ "Content-Type": "text/html" }),
         body: null,
       }),
     );
