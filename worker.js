@@ -19,6 +19,7 @@ import { resolveWatchArchiveRedirect } from "./lib/watch-archive-redirect.js";
 import { dispatchBackendRoutes } from "./backend/router.js";
 import { backendRoutes } from "./backend/routes/index.js";
 import { chooseGo4scoreEdge, go4scoreFrameUrl, pickGo4scoreChannel } from "./lib/go4score-frame.js";
+import { effectiveEdgeCacheTtl } from "./lib/hls-cache.js";
 import { extractAlbaHlsSources, isOperatorAlbaPlayerUrl, operatorHlsRefererForHost, sanitizeOperatorEmbedHtml } from "./lib/operator-embed.js";
 
 /**
@@ -456,7 +457,8 @@ async function withEdgeCache(request, ttlSeconds, producer) {
   const res = await producer();
   if (!res || res.status !== 200) return res;
   const headers = new Headers(res.headers);
-  headers.set("Cache-Control", `public, max-age=${ttlSeconds}`);
+  const effectiveTtl = effectiveEdgeCacheTtl(headers.get("Cache-Control"), ttlSeconds);
+  headers.set("Cache-Control", `public, max-age=${effectiveTtl}`);
   const cached = new Response(res.body, { status: 200, headers });
   await cache.put(request, cached.clone());
   return cached;
