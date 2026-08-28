@@ -63,6 +63,14 @@
     return [m?.home, m?.away].some((name) => /^(?:fc\s+)?barcelona$/i.test(String(name || "").trim()));
   }
 
+  function isManchesterCityMatch(m) {
+    return [m?.home, m?.away].some((name) => /^manchester\s+city$/i.test(String(name || "").trim()));
+  }
+
+  function hasPremiumWatchTab(m) {
+    return isBarcelonaMatch(m) || isManchesterCityMatch(m);
+  }
+
   function premiumWatchHref(m) {
     const url = new URL(watchHref(m), location.href);
     url.searchParams.set("source", "iptv-premium");
@@ -80,7 +88,7 @@
       }
       return `<span class="watch-link watch-link--disabled">${t("card.ended")}</span>`;
     }
-    if (isBarcelonaMatch(m)) {
+    if (hasPremiumWatchTab(m)) {
       return `
         <div class="match-watch-tabs" role="group" aria-label="${t("watch.sourceTabsAria")}">
           <a class="watch-link watch-link--premium" href="${premiumWatchHref(m)}">${ICON.play} ${t("card.watchPremium")} <small>${t("card.experimental")}</small></a>

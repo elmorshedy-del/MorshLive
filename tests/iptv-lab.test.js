@@ -5,9 +5,11 @@ import { getIptvLabLive, getIptvLabStatus } from "../backend/services/iptv-lab.j
 import {
   iptvLabWorkerEnv,
   isArBeinSports1SdChannel,
+  isArBeinSports2SdChannel,
   isArBeinSportsSdCategory,
   parseIptvLabSecret,
   pickArBeinSports1Sd,
+  pickArBeinSports2Sd,
   preferredIptvLabCategoryId,
 } from "../lib/iptv-lab.js";
 
@@ -73,6 +75,43 @@ describe("AR beIN Sports 1 SD matcher", () => {
     ).toBe(false);
     expect(pickArBeinSports1Sd([english, sd2, otherRegion, arOne])).toMatchObject({
       streamId: 991,
+    });
+  });
+
+  it("picks AR BEIN SPORTS 2 SD (992) over English / SD² / other regions", () => {
+    const english = {
+      streamId: 1004,
+      name: "BEIN SPORTS 2 ENGLISH SD",
+      categoryName: "AR ❖ BEIN SPORTS SD",
+    };
+    const sd2 = {
+      streamId: 397649,
+      name: "BEIN SPORTS 2 SD²",
+      categoryName: "AR ❖ BEIN SPORTS SD",
+    };
+    const otherRegion = {
+      streamId: 51,
+      name: "BEIN SPORTS 2 SD",
+      categoryName: "FR ❖ BEIN SPORTS SD",
+    };
+    const arTwo = {
+      streamId: 992,
+      name: "BEIN SPORTS 2 SD",
+      categoryName: "AR ❖ BEIN SPORTS SD",
+    };
+    expect(isArBeinSports2SdChannel(arTwo)).toBe(true);
+    expect(isArBeinSports2SdChannel(english)).toBe(false);
+    expect(isArBeinSports2SdChannel(sd2)).toBe(false);
+    expect(isArBeinSports2SdChannel(otherRegion)).toBe(false);
+    expect(
+      isArBeinSports2SdChannel({
+        streamId: 991,
+        name: "BEIN SPORTS 1 SD",
+        categoryName: "AR ❖ BEIN SPORTS SD",
+      }),
+    ).toBe(false);
+    expect(pickArBeinSports2Sd([english, sd2, otherRegion, arTwo])).toMatchObject({
+      streamId: 992,
     });
   });
 

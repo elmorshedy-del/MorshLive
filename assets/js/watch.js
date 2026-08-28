@@ -41,8 +41,11 @@
 
   const xtreamMode = params.get("source") === "xtream";
   const premiumRequested = params.get("source") === "iptv-premium";
-  const PREMIUM_STREAM_ID = "991";
   const PREMIUM_CATEGORY_ID = "6454";
+  const PREMIUM_CHANNELS = {
+    barcelona: { streamId: "991", nameRe: /^bein\s+sports?\s+1\s+sd$/i },
+    mancity: { streamId: "992", nameRe: /^bein\s+sports?\s+2\s+sd$/i },
+  };
   const xtreamDirect = params.get("direct") === "1";
   const xtreamPortalId = params.get("portal") || "";
   const rawXtreamStreamId = String(params.get("stream") || "");
@@ -71,8 +74,18 @@
     return [m?.home, m?.away].some((name) => /^(?:fc\s+)?barcelona$/i.test(String(name || "").trim()));
   }
 
+  function isManchesterCityMatch(m) {
+    return [m?.home, m?.away].some((name) => /^manchester\s+city$/i.test(String(name || "").trim()));
+  }
+
+  function premiumChannelFor(m) {
+    if (isBarcelonaMatch(m)) return PREMIUM_CHANNELS.barcelona;
+    if (isManchesterCityMatch(m)) return PREMIUM_CHANNELS.mancity;
+    return null;
+  }
+
   function premiumMode() {
-    return premiumRequested && isBarcelonaMatch(match);
+    return premiumRequested && !!premiumChannelFor(match);
   }
 
   function allowLegacySourceChrome() {
@@ -516,9 +529,11 @@
   }
 
   async function fetchPremiumChannel() {
+    const config = premiumChannelFor(match);
+    if (!config) throw new Error(t("watch.premiumUnavailable"));
     const query = new URLSearchParams({
       category: PREMIUM_CATEGORY_ID,
-      stream: PREMIUM_STREAM_ID,
+      stream: config.streamId,
       limit: "1",
     });
     const response = await fetch(`/api/iptv-lab/live?${query}`, { cache: "no-store" });
@@ -527,8 +542,8 @@
     const selected = (data.portals || []).flatMap((block) => block.streams || [])[0];
     const exactChannel =
       selected
-      && String(selected.streamId) === PREMIUM_STREAM_ID
-      && /^bein\s+sports?\s+1\s+sd$/i.test(String(selected.name || "").trim())
+      && String(selected.streamId) === config.streamId
+      && config.nameRe.test(String(selected.name || "").trim())
       && /^ar\b.*\bbein\b.*\bsd\b/i.test(String(selected.categoryName || ""));
     if (!exactChannel) throw new Error(t("watch.premiumUnavailable"));
     activePremiumChannel = selected;
@@ -1797,7 +1812,7 @@
     const host = document.getElementById("player-toolbar");
     if (!host) return;
     host.querySelector(".premium-source-tabs")?.remove();
-    if (!isBarcelonaMatch(match)) return;
+    if (!premiumChannelFor(match)) return;
 
     const originalUrl = new URL(location.href);
     originalUrl.searchParams.delete("source");
