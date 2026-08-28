@@ -263,10 +263,13 @@
   }
 
   video.addEventListener("loadedmetadata", () => {
-    updateVideoMetrics();
+    const hasVideo = updateVideoMetrics();
     updateFrameHealth();
+    if (hasVideo && !video.paused) markPlaybackCompatibility();
   });
-  video.addEventListener("resize", updateVideoMetrics);
+  video.addEventListener("resize", () => {
+    if (updateVideoMetrics() && !video.paused) markPlaybackCompatibility();
+  });
   video.addEventListener("playing", () => {
     startFrameMonitor();
     updateActualProtocol();
