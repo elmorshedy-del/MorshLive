@@ -7,6 +7,7 @@ import {
   isArBeinSports1SdChannel,
   isArBeinSports2SdChannel,
   isArBeinSportsSdCategory,
+  isHevcIptvChannel,
   parseIptvLabSecret,
   pickArBeinSports1Sd,
   pickArBeinSports2Sd,
@@ -123,6 +124,20 @@ describe("AR beIN Sports 1 SD matcher", () => {
         { categoryId: "ar-sd", name: "AR ❖ BEIN SPORTS SD" },
       ]),
     ).toBe("ar-sd");
+  });
+
+  it("detects HEVC / H.265 channels and bouquets, not the H.264 SD originals", () => {
+    expect(isHevcIptvChannel({ name: "BEIN SPORTS 1 HEVC", categoryName: "AR ❖ BEIN SPORTS HEVC" })).toBe(
+      true,
+    );
+    expect(isHevcIptvChannel({ name: "BEIN SPORTS 1 HEVC²", categoryName: "AR ❖ BEIN SPORTS HEVC" })).toBe(
+      true,
+    );
+    expect(isHevcIptvChannel({ name: "BEIN SPORTS 1 H.265", categoryName: "AR ❖ BEIN SPORTS SD" })).toBe(
+      true,
+    );
+    expect(isHevcIptvChannel({ name: "BEIN SPORTS 1 SD", categoryName: "AR ❖ BEIN SPORTS SD" })).toBe(false);
+    expect(isHevcIptvChannel({ name: "BEIN SPORTS 1 SD²", categoryName: "AR ❖ BEIN SPORTS SD" })).toBe(false);
   });
 });
 

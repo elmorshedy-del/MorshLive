@@ -302,15 +302,7 @@
       try { hls.destroy(); } catch (_) { /* noop */ }
       hls = null;
     }
-    if (mpegTsPlayer) {
-      try {
-        mpegTsPlayer.pause();
-        mpegTsPlayer.unload();
-        mpegTsPlayer.detachMediaElement();
-        mpegTsPlayer.destroy();
-      } catch (_) { /* noop */ }
-      mpegTsPlayer = null;
-    }
+    releaseTsPlayer();
     video.pause();
     video.removeAttribute("src");
     video.load();
@@ -324,33 +316,47 @@
     }
   }
 
+  function isHevcChannel(channel) {
+    const text = `${channel?.name || ""} ${channel?.categoryName || ""}`;
+    return /\bhevc\b/i.test(text) || /\bh\.?265\b/i.test(text);
+  }
+
+  function releaseTsPlayer() {
+    if (!mpegTsPlayer) return;
+    try {
+      mpegTsPlayer.pause();
+      mpegTsPlayer.unload();
+      mpegTsPlayer.detachMediaElement();
+      mpegTsPlayer.destroy();
+    } catch (_) { /* noop */ }
+    mpegTsPlayer = null;
+  }
+
   function playChannel(channel) {
     destroyPlayer();
     setPlayingUi(true);
     if (pipBtn) pipBtn.hidden = !canPictureInPicture();
     playerState.textContent = "جارٍ التحميل";
     let usingHls = false;
+    let hlsRecoveries = 0;
+    const hevc = isHevcChannel(channel);
     const onPlaying = () => { playerState.textContent = usingHls ? "يعمل · HLS" : "يعمل · TS"; };
-    const onError = () => { playerState.textContent = "تعذر التشغيل"; };
+    const onError = () => {
+      playerState.textContent = hevc
+        ? "HEVC غير مدعوم هنا · استخدم BEIN SD"
+        : "تعذر التشغيل";
+    };
     video.addEventListener("playing", onPlaying, { once: true });
     const hlsUrl = playbackUrl(channel.playbackUrl);
     const tsUrl = playbackUrl(channel.tsPlaybackUrl);
 
     const playHls = () => {
       usingHls = true;
-      if (mpegTsPlayer) {
-        try {
-          mpegTsPlayer.pause();
-          mpegTsPlayer.unload();
-          mpegTsPlayer.detachMediaElement();
-          mpegTsPlayer.destroy();
-        } catch (_) { /* noop */ }
-        mpegTsPlayer = null;
-      }
+      releaseTsPlayer();
       video.pause();
       video.removeAttribute("src");
       video.load();
-      playerState.textContent = "جارٍ تجربة HLS";
+      playerState.textContent = hevc ? "HEVC · HLS" : "جارٍ تجربة HLS";
       if (video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = hlsUrl;
         video.addEventListener("error", onError, { once: true });
@@ -371,7 +377,8 @@
       });
       hls.on(window.Hls.Events.ERROR, (_event, data) => {
         if (!data?.fatal) return;
-        if (data.type === window.Hls.ErrorTypes.MEDIA_ERROR) {
+        if (!hevc && data.type === window.Hls.ErrorTypes.MEDIA_ERROR && hlsRecoveries < 1) {
+          hlsRecoveries += 1;
           try { hls.recoverMediaError(); return; } catch (_) { /* give up */ }
         }
         onError();
@@ -382,14 +389,18 @@
       if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
     };
 
-    if (channel.tsPlaybackUrl && window.mpegts?.isSupported()) {
+    if (!hevc && channel.tsPlaybackUrl && window.mpegts?.isSupported()) {
       playerState.textContent = "جارٍ تجربة TS";
       mpegTsPlayer = window.mpegts.createPlayer(
         { type: "mpegts", isLive: true, url: tsUrl },
         { enableWorker: false, enableStashBuffer: false, stashInitialSize: 128 },
       );
       mpegTsPlayer.attachMediaElement(video);
-      mpegTsPlayer.on(window.mpegts.Events.ERROR, playHls);
+      mpegTsPlayer.on(window.mpegts.Events.ERROR, () => {
+        releaseTsPlayer();
+        playerState.textContent = "TS توقف · انتظار تحرير الاتصال";
+        setTimeout(playHls, 500);
+      });
       mpegTsPlayer.load();
       const attempt = mpegTsPlayer.play();
       if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
