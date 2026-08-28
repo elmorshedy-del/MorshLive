@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-27T19:18:00.446Z",
+  "updatedAt": "2026-08-28T18:47:03.290Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -391,6 +391,34 @@
           "verifiedAt": "2026-08-27T19:18:00.445Z",
           "label": "برشلونة × أتلتيك · عربي",
           "note": "Clean inner beIN1 embed; scorebug showed both crests, 0-0 at 09:44, and #BarçaAthletic"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879294",
+      "teams": [["crystal palace", "palace"], ["manchester city", "man city", "mancity"]],
+      "contentKey": "match:espn-eng.1-401879294",
+      "kickoffUtc": "2026-08-28T19:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-28T18:47:03.290Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v2",
+          "url": "https://pl.koralive1.cc/albaplayer/bein22/?serv=0",
+          "contentKey": "match:espn-eng.1-401879294",
+          "status": "verified",
+          "verifiedAt": "2026-08-28T18:47:03.290Z",
+          "label": "كريستال بالاس × مانشستر سيتي · عربي",
+          "note": "Clean inner beIN2 embed; T-15 studio showed City and Palace crests with VS. yallacuo 404."
         }
       ]
     }
