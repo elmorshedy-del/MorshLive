@@ -2,7 +2,7 @@
  * editorial, visual, and content-architecture layers across every page. */
 (function () {
   "use strict";
-  const stamp = "20260829toggle2";
+  const stamp = "20260829editorial";
 
   function writeSharedAssets() {
     document.write(`<link rel="stylesheet" href="/assets/css/dark-refresh.css?v=${stamp}">`);
@@ -10,6 +10,7 @@
     document.write(`<script src="/assets/js/i18n-core.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/site-refresh.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/content-architecture.js?v=${stamp}"><\/script>`);
+    document.write(`<script src="/assets/js/arabic-editorial.js?v=${stamp}"><\/script>`);
   }
 
   if (document.readyState === "loading") {
@@ -34,7 +35,9 @@
   addCss(`/assets/css/content-architecture.css?v=${stamp}`);
   addScript(`/assets/js/i18n-core.js?v=${stamp}`, () => {
     addScript(`/assets/js/site-refresh.js?v=${stamp}`, () => {
-      addScript(`/assets/js/content-architecture.js?v=${stamp}`);
+      addScript(`/assets/js/content-architecture.js?v=${stamp}`, () => {
+        addScript(`/assets/js/arabic-editorial.js?v=${stamp}`);
+      });
     });
   });
 })();
