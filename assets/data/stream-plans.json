@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-28T18:47:03.290Z",
+  "updatedAt": "2026-08-29T16:26:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -419,6 +419,34 @@
           "verifiedAt": "2026-08-28T18:47:03.290Z",
           "label": "كريستال بالاس × مانشستر سيتي · عربي",
           "note": "Clean inner beIN2 embed; T-15 studio showed City and Palace crests with VS. yallacuo 404."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879312",
+      "teams": [["tottenham hotspur", "tottenham", "spurs"], ["newcastle united", "newcastle"]],
+      "contentKey": "match:espn-eng.1-401879312",
+      "kickoffUtc": "2026-08-29T16:30:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-29T16:26:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v2",
+          "url": "https://pl.koralive1.cc/albaplayer/1bein1/?serv=0",
+          "contentKey": "match:espn-eng.1-401879312",
+          "status": "verified",
+          "verifiedAt": "2026-08-29T16:26:00.000Z",
+          "label": "توتنهام × نيوكاسل · عربي",
+          "note": "User instructed bind; clean inner beIN1 (hls-embed)."
         }
       ]
     }
