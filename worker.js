@@ -438,7 +438,7 @@ function stripBlockedScripts(html) {
 function hlsProxyUrl(target, origin, sig, basePath) {
   const path = basePath || "/wk/hls";
   const signature = sig ? `&sig=${encodeURIComponent(sig)}` : "";
-  return `${origin}${path}?u=${encodeURIComponent(target)}${signature}`;
+  return `${origin}${path}?u=${encodeURIComponent(target)}${signature}&kz=2`;
 }
 
 function fetchWithTimeout(url, init, ms = FETCH_TIMEOUT_MS) {
@@ -1426,7 +1426,7 @@ async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
 // Contract: lib/hls-recover.js — startLoad(-1) on waiting rewinds a 2-seg edge.
 const HLS_BOOT_FN = `function kzHlsOpts(){
   return {
-    enableWorker: true,
+    enableWorker: false,
     lowLatencyMode: false,
     startPosition: -1,
     maxBufferLength: 14,
