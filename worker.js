@@ -1453,15 +1453,13 @@ const HLS_BOOT_FN = `function kzHlsOpts(){
     abrEwmaSlowLive: 9,
     capLevelToPlayerSize: true,
     fetchSetup: function(ctx, init){
-      var headers=new Headers((init&&init.headers)||{});
-      headers.delete('Range');
-      var url=ctx.url||'';
+      var url=(ctx&&ctx.url)||'';
       var target='';
-      try{ target=decodeURIComponent((url.match(/[?&]u=([^&]+)/)||[])[1]||''); }catch(e){}
-      if(!/\.(ts|sss|m4s|cmfv)(\?|$)/i.test(target)){
-        url+= (url.indexOf('?')>=0?'&':'?')+'_='+Date.now();
+      try{ target=decodeURIComponent((url.split('u=')[1]||'').split('&')[0]); }catch(e){}
+      if(target.indexOf('.sss')<0 && target.indexOf('.ts')<0 && target.indexOf('.m4s')<0){
+        url+=(url.indexOf('?')>=0?'&':'?')+'_='+Date.now();
       }
-      return new Request(url, Object.assign({}, init, {headers:headers, cache:'no-store'}));
+      return new Request(url, init||{});
     },
   };
 }
