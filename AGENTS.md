@@ -58,7 +58,7 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 
 ## Production freshness
 
-`korazero.com` is the **production Worker**. PR Workers Builds only run `wrangler versions upload` and do **not** update the live site. Production Workers Builds on `main` run `npm run refresh:matches` first, which can take several minutes before `npx wrangler deploy`.
+`korazero.com` is the **production Worker**. PR Workers Builds only run `wrangler versions upload` and do **not** update the live site. Production Workers Builds on `main` run `npm run refresh:matches` first, which can take several minutes before `npx wrangler deploy`. That crawl now exits 1 if `origin/main` moved, so a stale build cannot overwrite a newer wrangler deploy.
 
 After merging user-facing HTML/JS/CSS to `main`:
 
