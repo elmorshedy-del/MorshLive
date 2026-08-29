@@ -39,11 +39,11 @@ describe("generated SEO page editorial polish", () => {
     expect(combined).not.toContain("بتوقيت السعودية");
     expect(combined).not.toContain("بتوقيت الرياض");
     expect(combined).toContain("حسب توقيتك المحلي");
-    expect(combined).toContain('/assets/js/seo-local-time.js?v=20260829');
+    expect(combined).toContain("/assets/js/seo-local-time.js?v=20260829");
   });
 
   it("uses the dedicated SEO stylesheet shared by generated pages", () => {
     const result = buildSeoPages(payload);
-    expect(result.pages[0].html).toContain('/assets/css/seo-pages.css?v=20260829');
+    expect(result.pages[0].html).toContain("/assets/css/seo-pages.css?v=20260829");
   });
 });
