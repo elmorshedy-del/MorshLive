@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#090b12" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>KoraZero Street — نموذج لعبة كرة الشوارع</title>
+    <meta
+      name="description"
+      content="نموذج تجريبي سريع للعبة كرة شوارع 3 ضد 3 من كورة زيرو. العب مباشرة من المتصفح على الكمبيوتر أو الهاتف."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@500;600;700&family=Space+Grotesk:wght@600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="assets/css/street-game.css?v=20260829a" />
+  </head>
+  <body>
+    <main class="street-page">
+      <header class="street-header">
+        <a class="street-brand" href="/" aria-label="العودة إلى كورة زيرو">
+          <span class="brand-ball" aria-hidden="true">◆</span>
+          <span>Kora<span>Zero</span></span>
+        </a>
+        <div class="prototype-tag"><i></i> نموذج تجريبي 01</div>
+        <a class="exit-link" href="/">العودة للموقع <span aria-hidden="true">↗</span></a>
+      </header>
+
+      <section class="game-frame" aria-labelledby="street-title">
+        <div class="game-topline" aria-hidden="true">
+          <span>CAIRO // AFTER DARK</span>
+          <span>3V3 STREET FOOTBALL</span>
+        </div>
+
+        <div class="game-stage" id="gameStage">
+          <canvas
+            id="streetGame"
+            width="1280"
+            height="720"
+            tabindex="0"
+            aria-label="ملعب كرة شوارع تفاعلي. استخدم الأسهم أو WASD للحركة وJ للتمرير وK للتسديد وL للمهارة وQ لتبديل اللاعب."
+          ></canvas>
+
+          <div class="start-screen" id="startScreen">
+            <div class="start-noise" aria-hidden="true"></div>
+            <p class="eyebrow">KORAZERO ORIGINAL PROTOTYPE</p>
+            <h1 id="street-title"><span>KoraZero</span> STREET</h1>
+            <p class="start-lede">كرة شوارع سريعة. 3 ضد 3. بدون أخطاء. أول فريق يصل إلى 5 يفوز.</p>
+
+            <div class="start-features" aria-label="خصائص اللعبة">
+              <span>مراوغات</span>
+              <span>ارتداد من الحائط</span>
+              <span>مهارات ونقاط أسلوب</span>
+            </div>
+
+            <button class="play-button" id="playButton" type="button">
+              <span>ابدأ المباراة</span>
+              <b aria-hidden="true">▶</b>
+            </button>
+            <p class="start-hint">على الهاتف: الأفضل اللعب بالوضع الأفقي</p>
+          </div>
+
+          <div class="match-end" id="matchEnd" hidden>
+            <p id="endKicker">انتهت المباراة</p>
+            <h2 id="endTitle">الفوز لك</h2>
+            <div class="end-score" id="endScore">5 — 2</div>
+            <button class="play-button play-button--small" id="replayButton" type="button">
+              العب مرة أخرى <b aria-hidden="true">↻</b>
+            </button>
+          </div>
+
+          <div class="touch-controls" id="touchControls" aria-label="أزرار التحكم باللمس">
+            <div class="joystick-zone" id="joystickZone" aria-label="عصا الحركة">
+              <div class="joystick-base"><div class="joystick-stick" id="joystickStick"></div></div>
+            </div>
+            <div class="action-cluster">
+              <button class="game-control game-control--switch" type="button" data-action="switch" aria-label="تبديل اللاعب">
+                <small>Q</small><span>بدّل</span>
+              </button>
+              <button class="game-control game-control--skill" type="button" data-action="skill" aria-label="تنفيذ مهارة">
+                <small>L</small><span>مهارة</span>
+              </button>
+              <button class="game-control game-control--pass" type="button" data-action="pass" aria-label="تمرير أو افتكاك الكرة">
+                <small>J</small><span>مرّر</span>
+              </button>
+              <button class="game-control game-control--shoot" type="button" data-action="shoot" aria-label="اضغط مطولاً للتسديد">
+                <small>K</small><span>سدّد</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="rotate-hint" aria-hidden="true">
+            <span>↻</span>
+            <b>لف الهاتف للوضع الأفقي</b>
+          </div>
+          <p class="sr-only" id="gameStatus" aria-live="polite"></p>
+        </div>
+
+        <div class="keyboard-guide" aria-label="اختصارات لوحة المفاتيح">
+          <div><kbd>WASD</kbd><kbd>↑↓←→</kbd><span>الحركة</span></div>
+          <div><kbd>J</kbd><span>تمرير / افتكاك</span></div>
+          <div><kbd>K</kbd><span>اضغط للتسديد</span></div>
+          <div><kbd>L</kbd><span>مهارة</span></div>
+          <div><kbd>Q</kbd><span>تبديل اللاعب</span></div>
+          <div><kbd>SHIFT</kbd><span>سرعة</span></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="assets/js/street-game.js?v=20260829a" defer></script>
+  </body>
+</html>
