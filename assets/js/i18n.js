@@ -2,7 +2,43 @@
  * editorial, visual, and content-architecture layers across every page. */
 (function () {
   "use strict";
-  const stamp = "20260829editorial4";
+  const stamp = "20260829editorial5";
+
+  // Install the match-time formatter before data.js loads. data.js still assigns
+  // getMatchTimeZones later, so intercept that assignment and keep one universal
+  // visitor-local badge instead of the old Riyadh + ET pair.
+  function localMatchTimeZones(match) {
+    const kickoff = match && match.kickoffUtc ? Date.parse(match.kickoffUtc) : NaN;
+    if (Number.isNaN(kickoff)) return [];
+    const lang = window.I18N && window.I18N.lang === "en" ? "en" : "ar";
+    let zone = "";
+    try {
+      zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
+    } catch (_) {}
+    const value = new Intl.DateTimeFormat(lang, {
+      weekday: "short",
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    }).format(new Date(kickoff));
+    return [{
+      key: "local",
+      label: lang === "en" ? "Your local time" : "توقيتك المحلي",
+      shortLabel: lang === "en" ? "Local" : "محلي",
+      value,
+      timeZone: zone,
+    }];
+  }
+
+  try {
+    Object.defineProperty(window, "getMatchTimeZones", {
+      configurable: true,
+      get() { return localMatchTimeZones; },
+      set() { /* Keep visitor-local formatter when legacy data.js assigns its function. */ },
+    });
+  } catch (_) {
+    window.getMatchTimeZones = localMatchTimeZones;
+  }
 
   function writeSharedAssets() {
     document.write(`<link rel="stylesheet" href="/assets/css/dark-refresh.css?v=${stamp}">`);
