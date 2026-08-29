@@ -169,11 +169,12 @@ holds. That is better than a silent wrong match.
 ## Match-day bind loop (lesson from 23 Aug 2026)
 
 Cloudflare Workers Builds runs `npm run refresh:matches` **before**
-`npx wrangler deploy`. That crawl is slow. A catalog commit on `main` can sit
-unpublished for several minutes. Until then
-`GET /api/stream-plan?match=<id>` returns `no-catalog-legacy` and the watch
-page mounts a blank koraplus player. That is what “nothing” looked like for
-Elche–Barcelona.
+`npx wrangler deploy`. On Workers CI that refresh **skips the match crawl**
+so the catalog commit deploys immediately. Until the Worker is live,
+`GET /api/stream-plan?match=<id>` can still return `no-catalog-legacy` and
+the watch page mounts a blank koraplus player — that is what “nothing”
+looked like for Elche–Barcelona. Confirm with `npm run confirm:stream-plan`
+or a force `npx wrangler deploy`.
 
 ### Scope lock
 
@@ -248,7 +249,7 @@ of that bind loop — do not reuse a running timer for a different fixture.
    Only then tell the user to hard-refresh. If confirm times out, force the
    Cloudflare deploy and confirm again — do not claim the bind is live early.
 
-Workers Builds runs `npm run refresh:matches` first. That job used to
+Workers Builds still runs `npm run refresh:matches` first (fast on CI). That job used to
 `process.exit(1)` on koraplus channel conflicts (several live UCL games
 sharing BeIN 1). That abort is what left Valencia and Madrid on
 `no-catalog-legacy`. The verify script now warns and continues unless

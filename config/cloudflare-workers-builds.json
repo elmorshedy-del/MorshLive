@@ -17,7 +17,7 @@
       "Connect → GitHub → authorize → select elmorshedy-del/MorshLive",
       "Production branch: main",
       "Root directory: / (repo root)",
-      "Build command (optional, refreshes match JSON before deploy): npm run refresh:matches",
+      "Build command: npm run refresh:matches (fast on Workers CI; full crawl is npm run refresh:matches:full)",
       "Deploy command: npx wrangler deploy",
       "Save — push to main to verify"
     ],

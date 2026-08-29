@@ -4,9 +4,10 @@ Node jobs that fetch external data and write `assets/data/*.json`.
 
 ## Key script
 
-`fetch-matches.js` — runs on **every production deploy** (`npm run refresh:matches`).
-That script chain starts and ends with `refuse-stale-main-deploy.mjs` so a Workers
-Build whose commit is no longer `origin/main` exits 1 and never reaches
+`fetch-matches.js` — local / `npm run refresh:matches:full` only. Workers Builds
+`refresh:matches` skips the crawl (`lib/refresh-for-deploy.js`) so the commit
+can deploy; it still starts and ends with `refuse-stale-main-deploy.mjs` so a
+job whose SHA is no longer `origin/main` exits 1 and never reaches
 `npx wrangler deploy`.
 
 Match-scoped stream wiring is `assets/data/stream-plans.json` (see `docs/STREAM-PLANS.md`). Record probe results with `scripts/apply-stream-plan-verify.mjs` — do not hand-edit verification timestamps in a second file.

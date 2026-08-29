@@ -28,7 +28,7 @@ Browser → korazero.com
 ## Deploy
 
 - **Production:** Cloudflare Workers Builds on push to `main`.
-- Build step runs `npm run refresh:matches` then `wrangler deploy`.
+- Build step runs `npm run refresh:matches` then `wrangler deploy`. Workers CI skips the match crawl.
 - Secrets: `STREAM_SIGNING_SECRET`, `TWITTER_BEARER_TOKEN`, `YOUTUBE_API_KEY`, Twitch creds.
 
 ## Stream plans

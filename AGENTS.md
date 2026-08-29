@@ -58,7 +58,7 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 
 ## Production freshness
 
-`korazero.com` is the **production Worker**. PR Workers Builds only run `wrangler versions upload` and do **not** update the live site. Production Workers Builds on `main` run `npm run refresh:matches` first, which can take several minutes before `npx wrangler deploy`. That crawl now exits 1 if `origin/main` moved, so a stale build cannot overwrite a newer wrangler deploy.
+`korazero.com` is the **production Worker**. PR Workers Builds only run `wrangler versions upload` and do **not** update the live site. Production Workers Builds on `main` run `npm run refresh:matches` then `npx wrangler deploy`. On Workers CI that refresh **skips the match crawl** (SEO pages from the committed `today.json` only) so a new commit is not stuck behind a multi-minute queue. A stale job whose SHA is no longer `origin/main` still exits 1 and does not deploy. Run `npm run refresh:matches:full` locally when the crawl itself is the work.
 
 After merging user-facing HTML/JS/CSS to `main`:
 

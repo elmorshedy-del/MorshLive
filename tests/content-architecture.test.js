@@ -36,7 +36,7 @@ describe("KoraZero content architecture", () => {
     expect(seasonArchive).toContain('const SUPPORTED = new Set(["epl", "laliga", "ucl"])');
     expect(seasonArchive).toContain("previous.season === currentSeason");
     expect(seasonArchive).toContain("season-highlights.json");
-    expect(packageJson.scripts["refresh:matches"]).toContain("update-season-highlights.mjs");
+    expect(packageJson.scripts["refresh:matches:full"]).toContain("update-season-highlights.mjs");
   });
 
   it("never sends ended club search results into the World Cup archive", () => {

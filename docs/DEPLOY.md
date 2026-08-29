@@ -42,8 +42,8 @@ Previously `update-matches.yml` ran every 30 minutes on GitHub Actions.
 
 Now:
 
-- **On each merge to main:** Cloudflare build runs `npm run refresh:matches` before deploy (fresh `today.json` on site).
-- **To commit match files to git:** run `npm run refresh:matches`, commit, merge — same as any other code change.
+- **On each merge to main:** Cloudflare build runs `npm run refresh:matches` then `npx wrangler deploy`. On Workers CI that refresh is fast (SEO from committed `today.json`). It does **not** wait on the third-party crawl.
+- **To refresh match files in git:** run `npm run refresh:matches:full`, commit, merge.
 
 ## GitHub Actions
 
