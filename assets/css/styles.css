@@ -105,6 +105,7 @@ img { max-width: 100%; display: block; }
 
 .home-showdown {
   display: block;
+  direction: ltr;
   width: 100%;
   overflow: hidden;
   line-height: 0;
@@ -114,7 +115,6 @@ img { max-width: 100%; display: block; }
 .home-showdown-track {
   display: flex;
   width: 200%;
-  direction: ltr;
   animation: home-showdown-slide 10s ease-in-out infinite;
 }
 .home-showdown:hover .home-showdown-track,
