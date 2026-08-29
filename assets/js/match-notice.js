@@ -7,6 +7,20 @@
   let _config = null;
   let _configAt = 0;
 
+  // Keep the homepage focused on the schedule: a live fixture should appear once,
+  // while lineups/stats remain available in the deeper match/watch experience.
+  if (document.getElementById("matches")) {
+    const style = document.createElement("style");
+    style.dataset.homeMatchCleanup = "true";
+    style.textContent = `
+      #featured-live { display: none !important; }
+      section:has(#live-detail) { display: none !important; }
+      #matches .match-panel { display: none !important; }
+      #matches .coverage-badge:not(.coverage-badge--live) { display: none !important; }
+    `;
+    document.head.appendChild(style);
+  }
+
   function t(key, fallback) {
     return global.I18N ? global.I18N.t(key) : fallback;
   }
