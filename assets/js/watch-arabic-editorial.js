@@ -71,6 +71,8 @@
     [/\bSubstitute\b/gi, "بديل"],
     [/\bStarting XI\b/gi, "التشكيل الأساسي"],
     [/\bStarters\b/gi, "التشكيل الأساسي"],
+    [/\bاحتياط\b/g, "البدلاء"],
+    [/\bانضباط\b/g, "البطاقات"],
     [/Possession(?: Percentage| %)?/gi, "الاستحواذ على الكرة"],
     [/Total Shots/gi, "مجموع التسديدات"],
     [/Shots on Target/gi, "تسديدات على المرمى"],
