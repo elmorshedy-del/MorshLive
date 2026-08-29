@@ -29,6 +29,7 @@ describe("applyClientEdgeCacheHeaders", () => {
     expect(headers.get("Cache-Control")).toBe("no-store");
     expect(headers.get("CDN-Cache-Control")).toBe("no-store");
     expect(headers.get("Cloudflare-CDN-Cache-Control")).toBe("no-store");
+    expect(headers.get("Accept-Ranges")).toBe("none");
   });
 
   it("keeps longer TTLs for media segments", () => {

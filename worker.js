@@ -1450,6 +1450,11 @@ const HLS_BOOT_FN = `function kzHlsOpts(){
     abrEwmaFastLive: 3,
     abrEwmaSlowLive: 9,
     capLevelToPlayerSize: true,
+    fetchSetup: function(ctx, init){
+      var headers=new Headers((init&&init.headers)||{});
+      headers.delete('Range');
+      return new Request(ctx.url, Object.assign({}, init, {headers:headers, cache:'no-store'}));
+    },
   };
 }
 function kzAttachHls(v,src,onFatal){
