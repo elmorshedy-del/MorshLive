@@ -4,6 +4,7 @@ import {
   shouldRemountMainPlayer,
   shouldRotateLiveSources,
   shouldStartLoadOnWaiting,
+  shouldUseNativeHls,
 } from "../lib/hls-recover.js";
 
 describe("shouldStartLoadOnWaiting", () => {
@@ -31,6 +32,18 @@ describe("shouldReloadAfterSourceCycles", () => {
   it("reloads only after the multi-source pool is exhausted", () => {
     expect(shouldReloadAfterSourceCycles(2, 12)).toBe(false);
     expect(shouldReloadAfterSourceCycles(2, 13)).toBe(true);
+  });
+});
+
+describe("shouldUseNativeHls", () => {
+  it("prefers hls.js on Chrome maybe so the playlist is not Range-probed", () => {
+    expect(shouldUseNativeHls("maybe", true)).toBe(false);
+    expect(shouldUseNativeHls("probably", true)).toBe(false);
+  });
+
+  it("keeps native HLS on Safari where hls.js is unavailable", () => {
+    expect(shouldUseNativeHls("probably", false)).toBe(true);
+    expect(shouldUseNativeHls("maybe", false)).toBe(false);
   });
 });
 

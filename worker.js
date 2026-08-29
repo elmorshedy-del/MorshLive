@@ -438,7 +438,7 @@ function stripBlockedScripts(html) {
 function hlsProxyUrl(target, origin, sig, basePath) {
   const path = basePath || "/wk/hls";
   const signature = sig ? `&sig=${encodeURIComponent(sig)}` : "";
-  return `${origin}${path}?u=${encodeURIComponent(target)}${signature}&kz=2`;
+  return `${origin}${path}?u=${encodeURIComponent(target)}${signature}&kz=3`;
 }
 
 function fetchWithTimeout(url, init, ms = FETCH_TIMEOUT_MS) {
@@ -1534,11 +1534,11 @@ ${HLS_BOOT_FN}
   function load(){
     var src=sources[i]; if(!src) return;
     destroy();
-    if(v.canPlayType('application/vnd.apple.mpegurl')){
-      v.src=src; v.addEventListener('error', function(){ onStall('native-error'); }, {once:true});
-    } else if(window.Hls&&window.Hls.isSupported()){
+    if(window.Hls&&window.Hls.isSupported()){
       hls=kzAttachHls(v, src, function(){ onStall('fatal'); });
       stopStall=kzWatchStall(v, hls, function(){ onStall('watch-stall'); });
+    } else if(v.canPlayType('application/vnd.apple.mpegurl')==='probably'){
+      v.src=src; v.addEventListener('error', function(){ onStall('native-error'); }, {once:true});
     } else { v.src=src; }
     var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
   }
