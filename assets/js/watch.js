@@ -82,8 +82,23 @@
     return [m?.home, m?.away].some((name) => /^liverpool$/i.test(String(name || "").trim()));
   }
 
+  function isTottenhamMatch(m) {
+    return [m?.home, m?.away].some((name) => /^tottenham(?:\s+hotspur)?$/i.test(String(name || "").trim()));
+  }
+
+  function isAtleticoMadridMatch(m) {
+    return [m?.home, m?.away].some((name) => /^atl[eé]tico\s+madrid$/i.test(String(name || "").trim()));
+  }
+
   function premiumChannelFor(m) {
-    if (isBarcelonaMatch(m) || isLiverpoolMatch(m)) return PREMIUM_CHANNELS.barcelona;
+    if (
+      isBarcelonaMatch(m)
+      || isLiverpoolMatch(m)
+      || isTottenhamMatch(m)
+      || isAtleticoMadridMatch(m)
+    ) {
+      return PREMIUM_CHANNELS.barcelona;
+    }
     if (isManchesterCityMatch(m)) return PREMIUM_CHANNELS.mancity;
     return null;
   }

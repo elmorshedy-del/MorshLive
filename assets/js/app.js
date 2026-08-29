@@ -71,8 +71,22 @@
     return [m?.home, m?.away].some((name) => /^liverpool$/i.test(String(name || "").trim()));
   }
 
+  function isTottenhamMatch(m) {
+    return [m?.home, m?.away].some((name) => /^tottenham(?:\s+hotspur)?$/i.test(String(name || "").trim()));
+  }
+
+  function isAtleticoMadridMatch(m) {
+    return [m?.home, m?.away].some((name) => /^atl[eé]tico\s+madrid$/i.test(String(name || "").trim()));
+  }
+
   function hasPremiumWatchTab(m) {
-    return isBarcelonaMatch(m) || isManchesterCityMatch(m) || isLiverpoolMatch(m);
+    return (
+      isBarcelonaMatch(m)
+      || isManchesterCityMatch(m)
+      || isLiverpoolMatch(m)
+      || isTottenhamMatch(m)
+      || isAtleticoMadridMatch(m)
+    );
   }
 
   function premiumWatchHref(m) {
