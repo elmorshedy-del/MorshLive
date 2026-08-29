@@ -20,6 +20,7 @@ const payload = {
       status: "upcoming",
       score: "VS",
       channel: "beIN Sports 1",
+      channelId: "bein-sports-1",
       commentator: "حفيظ دراجي",
     },
     {
@@ -48,11 +49,11 @@ describe("seo-pages", () => {
     expect(matchPagePath(payload.matches[0])).toBe("/match/2026-08-23/liverpool-vs-newcastle-united");
   });
 
-  it("generates crawlable today, date, league and match pages", () => {
+  it("generates a crawlable matches hub, date, league and match pages", () => {
     const result = buildSeoPages(payload, { teamNamesAr });
     const routes = result.pages.map((page) => page.route);
 
-    expect(routes).toContain("/matches/today");
+    expect(routes).toContain("/matches");
     expect(routes).toContain("/matches/2026-08-23");
     expect(routes).toContain("/league/premier-league");
     expect(routes).toContain("/league/la-liga");
@@ -68,25 +69,28 @@ describe("seo-pages", () => {
     expect(routes).not.toContain("/team/elche");
   });
 
-  it("puts real match facts and SportsEvent structured data in the HTML", () => {
+  it("puts real match facts, watch CTA and SportsEvent structured data in the HTML", () => {
     const result = buildSeoPages(payload, { teamNamesAr });
     const page = result.pages.find(
       (candidate) => candidate.route === "/match/2026-08-23/liverpool-vs-newcastle-united",
     );
 
-    expect(page.html).toContain("ليفربول ضد نيوكاسل");
+    expect(page.html).toContain("ليفربول ضد نيوكاسل بث مباشر اليوم");
     expect(page.html).toContain("beIN Sports 1");
     expect(page.html).toContain("حفيظ دراجي");
+    expect(page.html).toContain("/watch?ch=bein-sports-1");
     expect(page.html).toContain('"@type":"SportsEvent"');
     expect(page.html).toContain(
       '<link rel="canonical" href="https://korazero.com/match/2026-08-23/liverpool-vs-newcastle-united">',
     );
   });
 
-  it("publishes every generated route in both redirects and the schedule sitemap", () => {
+  it("publishes canonical hub routes and redirects the old today URL", () => {
     const result = buildSeoPages(payload, { teamNamesAr });
 
-    expect(result.redirectLines).toContain("/matches/today  /generated/seo/matches-today.html  200");
+    expect(result.redirectLines).toContain("/matches  /generated/seo/matches-hub.html  200");
+    expect(result.redirectLines).toContain("/matches/today  /matches  301");
+    expect(result.sitemapXml).toContain("https://korazero.com/matches");
     expect(result.sitemapXml).toContain("https://korazero.com/league/premier-league");
     expect(result.sitemapXml).toContain(
       "https://korazero.com/match/2026-08-23/liverpool-vs-newcastle-united",

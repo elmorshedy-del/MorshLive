@@ -32,9 +32,18 @@ describe("generated SEO page editorial polish", () => {
     expect(combined).not.toContain("بدون الاعتماد على JavaScript");
   });
 
-  it("uses the same dark visual direction as the main product", () => {
+  it("keeps the audience pan-Arabic and localizes kickoff time in the browser", () => {
     const result = buildSeoPages(payload);
-    expect(result.pages[0].html).toContain("color-scheme:dark");
-    expect(result.pages[0].html).toContain("background:#060914");
+    const combined = result.pages.map((page) => page.html).join("\n");
+
+    expect(combined).not.toContain("بتوقيت السعودية");
+    expect(combined).not.toContain("بتوقيت الرياض");
+    expect(combined).toContain("حسب توقيتك المحلي");
+    expect(combined).toContain("/assets/js/seo-local-time.js?v=20260829");
+  });
+
+  it("uses the dedicated SEO stylesheet shared by generated pages", () => {
+    const result = buildSeoPages(payload);
+    expect(result.pages[0].html).toContain("/assets/css/seo-pages.css?v=20260829");
   });
 });
