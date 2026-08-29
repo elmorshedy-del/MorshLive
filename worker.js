@@ -1426,8 +1426,27 @@ async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
 // docs + community guidance: smaller forward buffer, live-edge sync, playback-rate
 // catch-up, and no startLoad() on non-fatal stalls (causes freeze loops — #7433).
 // Contract: lib/hls-recover.js — startLoad(-1) on waiting rewinds a 2-seg edge.
-const HLS_BOOT_FN = `function kzHlsOpts(){
+const HLS_BOOT_FN = `function kzBustPlaylist(url){
+  var target='';
+  try{ target=decodeURIComponent((url.split('u=')[1]||'').split('&')[0]); }catch(e){}
+  if(!url || target.indexOf('.sss')>=0 || target.indexOf('.ts')>=0 || target.indexOf('.m4s')>=0) return url;
+  var base=url.split('&_=')[0];
+  return base+(base.indexOf('?')>=0?'&':'?')+'_='+Date.now();
+}
+function KzLoader(config){
+  var Inner=Hls.DefaultConfig.loader;
+  var inner=new Inner(config);
+  this.load=function(context,cfg,cb){
+    try{ if(context&&context.url) context.url=kzBustPlaylist(context.url); }catch(e){}
+    return inner.load(context,cfg,cb);
+  };
+  this.abort=function(){ if(inner.abort) inner.abort(); };
+  this.destroy=function(){ if(inner.destroy) inner.destroy(); };
+  Object.defineProperty(this,'stats',{get:function(){return inner.stats;},set:function(v){inner.stats=v;}});
+}
+function kzHlsOpts(){
   return {
+    loader: KzLoader,
     enableWorker: false,
     lowLatencyMode: false,
     startPosition: -1,
@@ -1453,13 +1472,7 @@ const HLS_BOOT_FN = `function kzHlsOpts(){
     abrEwmaSlowLive: 9,
     capLevelToPlayerSize: true,
     fetchSetup: function(ctx, init){
-      var url=(ctx&&ctx.url)||'';
-      var target='';
-      try{ target=decodeURIComponent((url.split('u=')[1]||'').split('&')[0]); }catch(e){}
-      if(target.indexOf('.sss')<0 && target.indexOf('.ts')<0 && target.indexOf('.m4s')<0){
-        url+=(url.indexOf('?')>=0?'&':'?')+'_='+Date.now();
-      }
-      return new Request(url, init||{});
+      return new Request(kzBustPlaylist((ctx&&ctx.url)||''), init||{});
     },
   };
 }

@@ -26,10 +26,11 @@ describe("applyClientEdgeCacheHeaders", () => {
   it("blocks CDN and browser caching of live manifests", () => {
     const headers = new Headers({ "Cache-Control": "public, max-age=2" });
     applyClientEdgeCacheHeaders(headers);
-    expect(headers.get("Cache-Control")).toBe("no-store");
+    expect(headers.get("Cache-Control")).toBe("private, no-store, no-cache, max-age=0, must-revalidate");
     expect(headers.get("CDN-Cache-Control")).toBe("no-store");
     expect(headers.get("Cloudflare-CDN-Cache-Control")).toBe("no-store");
     expect(headers.get("Accept-Ranges")).toBe("none");
+    expect(headers.get("Vary")).toBe("*");
   });
 
   it("keeps longer TTLs for media segments", () => {
