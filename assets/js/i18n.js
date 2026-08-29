@@ -2,11 +2,10 @@
  * editorial, visual, and content-architecture layers across every page. */
 (function () {
   "use strict";
-  const stamp = "20260829editorial5";
+  const stamp = "20260829editorial6";
 
-  // Install the match-time formatter before data.js loads. data.js still assigns
-  // getMatchTimeZones later, so intercept that assignment and keep one universal
-  // visitor-local badge instead of the old Riyadh + ET pair.
+  // Install the match-time formatter before data.js loads. Every visitor sees
+  // their own browser/device-local kickoff time plus a constant Makkah reference.
   function localMatchTimeZones(match) {
     const kickoff = match && match.kickoffUtc ? Date.parse(match.kickoffUtc) : NaN;
     if (Number.isNaN(kickoff)) return [];
@@ -15,26 +14,36 @@
     try {
       zone = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
     } catch (_) {}
-    const value = new Intl.DateTimeFormat(lang, {
+    const format = (timeZone) => new Intl.DateTimeFormat(lang, {
+      ...(timeZone ? { timeZone } : {}),
       weekday: "short",
       hour: "numeric",
       minute: "2-digit",
       hour12: true,
     }).format(new Date(kickoff));
-    return [{
-      key: "local",
-      label: lang === "en" ? "Your local time" : "توقيتك المحلي",
-      shortLabel: lang === "en" ? "Local" : "محلي",
-      value,
-      timeZone: zone,
-    }];
+    return [
+      {
+        key: "local",
+        label: lang === "en" ? "Your local time" : "توقيتك المحلي",
+        shortLabel: lang === "en" ? "Local" : "محلي",
+        value: format(),
+        timeZone: zone,
+      },
+      {
+        key: "makkah",
+        label: lang === "en" ? "Makkah time" : "بتوقيت مكة",
+        shortLabel: lang === "en" ? "Makkah" : "مكة",
+        value: format("Asia/Riyadh"),
+        timeZone: "Asia/Riyadh",
+      },
+    ];
   }
 
   try {
     Object.defineProperty(window, "getMatchTimeZones", {
       configurable: true,
       get() { return localMatchTimeZones; },
-      set() { /* Keep visitor-local formatter when legacy data.js assigns its function. */ },
+      set() { /* Keep the global local + Makkah formatter when legacy data.js assigns its function. */ },
     });
   } catch (_) {
     window.getMatchTimeZones = localMatchTimeZones;
