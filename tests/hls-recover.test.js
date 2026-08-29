@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  operatorLiveSyncDurationCount,
   shouldReloadAfterSourceCycles,
   shouldRemountMainPlayer,
   shouldRotateLiveSources,
+  shouldStartLoadOnFatalNetworkError,
   shouldStartLoadOnWaiting,
   shouldUseNativeHls,
 } from "../lib/hls-recover.js";
@@ -10,6 +12,18 @@ import {
 describe("shouldStartLoadOnWaiting", () => {
   it("never rewinds a live edge on a non-fatal waiting stall", () => {
     expect(shouldStartLoadOnWaiting()).toBe(false);
+  });
+});
+
+describe("shouldStartLoadOnFatalNetworkError", () => {
+  it("does not call startLoad after a fatal network error on 2s live HLS", () => {
+    expect(shouldStartLoadOnFatalNetworkError()).toBe(false);
+  });
+});
+
+describe("operatorLiveSyncDurationCount", () => {
+  it("stays more than three 2-second segments behind the live edge", () => {
+    expect(operatorLiveSyncDurationCount()).toBeGreaterThan(3);
   });
 });
 

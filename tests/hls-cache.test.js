@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   applyClientEdgeCacheHeaders,
   effectiveEdgeCacheTtl,
+  hlsProxyBasePath,
+  isLivePlaylistTarget,
+  shouldEdgeCacheHlsTarget,
   workerOnlyCacheKeyUrl,
 } from "../lib/hls-cache.js";
 
@@ -22,6 +25,37 @@ describe("effectiveEdgeCacheTtl", () => {
   });
 });
 
+describe("isLivePlaylistTarget", () => {
+  it("treats disguised index.css live playlists as manifests", () => {
+    expect(isLivePlaylistTarget("https://kora1.dkorea.dpdns.org/live/kora1/index.css")).toBe(true);
+    expect(isLivePlaylistTarget("https://cdn.example/video.m3u8")).toBe(true);
+  });
+
+  it("leaves .sss and .ts media segments as segments", () => {
+    expect(
+      isLivePlaylistTarget("https://kora1.dkorea.dpdns.org/live/kora1/runs/20260829T160633Z/seg-06127.sss"),
+    ).toBe(false);
+    expect(isLivePlaylistTarget("https://cdn.example/seg.ts")).toBe(false);
+  });
+});
+
+describe("hlsProxyBasePath", () => {
+  it("does not use a .m3u8 or .css path that CF Browser Cache TTL can pin", () => {
+    expect(hlsProxyBasePath("https://kora1.dkorea.dpdns.org/live/kora1/index.css")).toBe("/wk/live");
+    expect(hlsProxyBasePath("https://cdn.example/video.m3u8")).toBe("/wk/live");
+    expect(hlsProxyBasePath("https://cdn.example/seg-06127.sss")).toBe("/wk/seg");
+    expect(hlsProxyBasePath("https://cdn.example/seg.ts")).toBe("/wk/seg");
+  });
+});
+
+describe("shouldEdgeCacheHlsTarget", () => {
+  it("never puts a live playlist in the Worker Cache API", () => {
+    expect(shouldEdgeCacheHlsTarget("https://kora1.dkorea.dpdns.org/live/kora1/index.css")).toBe(false);
+    expect(shouldEdgeCacheHlsTarget("https://cdn.example/video.m3u8")).toBe(false);
+    expect(shouldEdgeCacheHlsTarget("https://cdn.example/seg-06127.sss")).toBe(true);
+  });
+});
+
 describe("applyClientEdgeCacheHeaders", () => {
   it("blocks CDN and browser caching of live manifests", () => {
     const headers = new Headers({ "Cache-Control": "public, max-age=2" });
@@ -31,6 +65,13 @@ describe("applyClientEdgeCacheHeaders", () => {
     expect(headers.get("Cloudflare-CDN-Cache-Control")).toBe("no-store");
     expect(headers.get("Accept-Ranges")).toBe("none");
     expect(headers.get("Vary")).toBe("*");
+  });
+
+  it("no-stores a live manifest even when the producer used a segment TTL", () => {
+    const headers = new Headers({ "Cache-Control": "public, max-age=60" });
+    applyClientEdgeCacheHeaders(headers, { liveManifest: true });
+    expect(headers.get("Cache-Control")).toBe("private, no-store, no-cache, max-age=0, must-revalidate");
+    expect(headers.get("CDN-Cache-Control")).toBe("no-store");
   });
 
   it("keeps longer TTLs for media segments", () => {

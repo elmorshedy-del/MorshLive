@@ -19,7 +19,14 @@ import { resolveWatchArchiveRedirect } from "./lib/watch-archive-redirect.js";
 import { dispatchBackendRoutes } from "./backend/router.js";
 import { backendRoutes } from "./backend/routes/index.js";
 import { chooseGo4scoreEdge, go4scoreFrameUrl, pickGo4scoreChannel } from "./lib/go4score-frame.js";
-import { applyClientEdgeCacheHeaders, effectiveEdgeCacheTtl, workerOnlyCacheKeyUrl } from "./lib/hls-cache.js";
+import {
+  applyClientEdgeCacheHeaders,
+  effectiveEdgeCacheTtl,
+  hlsProxyBasePath,
+  isLivePlaylistTarget,
+  shouldEdgeCacheHlsTarget,
+  workerOnlyCacheKeyUrl,
+} from "./lib/hls-cache.js";
 import { extractAlbaHlsSources, isOperatorAlbaPlayerUrl, operatorHlsRefererForHost, sanitizeOperatorEmbedHtml } from "./lib/operator-embed.js";
 
 /**
@@ -209,7 +216,7 @@ async function pollTeamsFor(pollId, env, origin) {
   if (hit && hit.homeKey && hit.awayKey) return [hit.homeKey, hit.awayKey];
   return null;
 }
-const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8)$/i;
+const HLS_RE = /^\/wk\/(?:hls|stream\.m3u8|live|seg)$/i;
 // Worldkoora exposes "البث 1..N" as redundant servers for the SAME channel in a
 // slot. We probe them in order so a dead/blank server this game falls over to a
 // live one WITHIN the same slot (never to a different channel/slot).
@@ -436,9 +443,9 @@ function stripBlockedScripts(html) {
 }
 
 function hlsProxyUrl(target, origin, sig, basePath) {
-  // /wk/stream.m3u8 — not /wk/hls?u=...index.css. Cloudflare's 4h Browser
-  // Cache TTL treats a .css query as static CSS and freezes the live playlist.
-  const path = basePath || "/wk/stream.m3u8";
+  // /wk/live and /wk/seg — no .m3u8 / .css extension. CF Browser Cache TTL
+  // pins *.m3u8 and ?u=...index.css for 4h and freezes MEDIA-SEQUENCE.
+  const path = hlsProxyBasePath(target, basePath);
   const signature = sig ? `&sig=${encodeURIComponent(sig)}` : "";
   return `${origin}${path}?u=${encodeURIComponent(target)}${signature}`;
 }
@@ -1453,8 +1460,8 @@ function kzHlsOpts(){
     maxBufferLength: 14,
     maxMaxBufferLength: 28,
     backBufferLength: 30,
-    liveSyncDurationCount: 3,
-    liveMaxLatencyDurationCount: 8,
+    liveSyncDurationCount: 7,
+    liveMaxLatencyDurationCount: 16,
     liveDurationInfinity: true,
     maxLiveSyncPlaybackRate: 1.35,
     highBufferWatchdogPeriod: 2,
@@ -1482,7 +1489,7 @@ function kzAttachHls(v,src,onFatal){
   hls.on(Hls.Events.ERROR,function(_e,d){
     if(!d||!d.fatal) return;
     if(d.type==='networkError'){
-      setTimeout(function(){ try{ hls.startLoad(); }catch(e){ onFatal(); } }, 1000);
+      kzSoftRecover(v);
       return;
     }
     if(d.type==='mediaError'){
@@ -1721,32 +1728,31 @@ async function proxyHls(request, env) {
     }
 
     const type = (res.headers.get("Content-Type") || "").toLowerCase();
-    const isManifest = type.includes("mpegurl") || type.includes("m3u8") || target.includes(".m3u8");
+    const isManifest =
+      type.includes("mpegurl") || type.includes("m3u8") || isLivePlaylistTarget(target);
 
     if (isManifest && !isHead) {
       const text = await res.text();
       const rewritten = await rewriteM3u8(text, target, origin, secret);
-      return new Response(rewritten, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/vnd.apple.mpegurl",
-          "Cache-Control": "public, max-age=2",
-          "Access-Control-Allow-Origin": "*",
-          "X-KZ-Proxy": "hls-manifest",
-        },
+      const headers = new Headers({
+        "Content-Type": "application/vnd.apple.mpegurl",
+        "Cache-Control": "public, max-age=2",
+        "Access-Control-Allow-Origin": "*",
+        "X-KZ-Proxy": "hls-manifest",
       });
+      applyClientEdgeCacheHeaders(headers, { liveManifest: true });
+      return new Response(rewritten, { status: 200, headers });
     }
 
     if (isManifest && isHead) {
-      return new Response(null, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/vnd.apple.mpegurl",
-          "Cache-Control": "public, max-age=2",
-          "Access-Control-Allow-Origin": "*",
-          "X-KZ-Proxy": "hls-manifest",
-        },
+      const headers = new Headers({
+        "Content-Type": "application/vnd.apple.mpegurl",
+        "Cache-Control": "public, max-age=2",
+        "Access-Control-Allow-Origin": "*",
+        "X-KZ-Proxy": "hls-manifest",
       });
+      applyClientEdgeCacheHeaders(headers, { liveManifest: true });
+      return new Response(null, { status: 200, headers });
     }
 
     const headers = {
@@ -6193,8 +6199,9 @@ export default {
           },
         });
       }
-      const ttl = (url.searchParams.get("u") || "").includes(".m3u8") ? 2 : 60;
-      return withEdgeCache(request, ttl, () => proxyHls(request, env));
+      const target = url.searchParams.get("u") || "";
+      if (!shouldEdgeCacheHlsTarget(target)) return proxyHls(request, env);
+      return withEdgeCache(request, 60, () => proxyHls(request, env));
     }
     const dl = url.pathname.match(DL_EMBED_RE);
     if (dl && (method === "GET" || method === "HEAD")) {
