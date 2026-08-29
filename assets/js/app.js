@@ -67,8 +67,12 @@
     return [m?.home, m?.away].some((name) => /^manchester\s+city$/i.test(String(name || "").trim()));
   }
 
+  function isLiverpoolMatch(m) {
+    return [m?.home, m?.away].some((name) => /^liverpool$/i.test(String(name || "").trim()));
+  }
+
   function hasPremiumWatchTab(m) {
-    return isBarcelonaMatch(m) || isManchesterCityMatch(m);
+    return isBarcelonaMatch(m) || isManchesterCityMatch(m) || isLiverpoolMatch(m);
   }
 
   function premiumWatchHref(m) {
