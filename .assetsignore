@@ -13,6 +13,7 @@ vendor/**
 .dev.vars.*
 .wrangler/**
 storage/**
+reports/**
 README.md
 wrangler.toml
 .assetsignore

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-29T16:26:00.000Z",
+  "updatedAt": "2026-08-29T19:41:30.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -447,6 +447,34 @@
           "verifiedAt": "2026-08-29T16:26:00.000Z",
           "label": "توتنهام × نيوكاسل · عربي",
           "note": "User instructed bind; clean inner beIN1 (hls-embed)."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882897",
+      "teams": [["sevilla"], ["atlético madrid", "atletico madrid", "atleti"]],
+      "contentKey": "match:espn-esp.1-401882897",
+      "kickoffUtc": "2026-08-29T19:30:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-29T19:41:30.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v2",
+          "url": "https://pl.koralive1.cc/albaplayer/1bein1/?serv=0",
+          "contentKey": "match:espn-esp.1-401882897",
+          "status": "verified",
+          "verifiedAt": "2026-08-29T19:41:30.000Z",
+          "label": "إشبيلية × أتلتيكو مدريد · عربي",
+          "note": "Kickoff bind; 1bein1 scorebug Sevilla 0-1 Atleti at 10:15, #SevillaAtleti. Tottenham FT so slot is free. bein3 black."
         }
       ]
     }

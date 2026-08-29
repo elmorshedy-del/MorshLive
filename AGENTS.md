@@ -79,7 +79,7 @@ Do not treat an in-flight `main` Workers Build as “good enough” while koraze
 - Put new pure logic in `lib/` with tests.
 - Merge the PR once the work is finished and CI is green.
 - After merge, curl live `korazero.com`. If it is still the old `?v=` / markup, run `npm run deploy` immediately. Do not wait for Workers Builds `refresh:matches`.
-- Keep match-day binding scope explicit. If the user names one match, probe, bind, deploy, and confirm only that ESPN id; do not advance through the remaining fixture list.
+- Keep match-day binding scope explicit. If the user names one match, probe, bind, deploy, and confirm only that ESPN id; do not advance through the remaining fixture list. If they ask for **today and tomorrow**, cover remaining EPL/La Liga in that UTC window (`lib/bind-schedule.js`): execute any fixture already inside T-15 / T-5 / kickoff, and arm one T-15 timer per later ESPN id.
 - For yallacuo/koralive, prefer a verified inner AlbaPlayer `iframeSrc` through `/wk/operator/` when it returns `X-KZ-Mode: hls-embed`; otherwise keep the existing allowed-wrapper flow. Bind when a few signals already point at this match (listed channel + venue/city/one team). A 100% two-team scorebug is not required. If T-15 is still unclear, retry at **T-5**, then kickoff.
 
 **Ask first**

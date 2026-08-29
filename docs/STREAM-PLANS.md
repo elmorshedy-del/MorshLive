@@ -189,6 +189,13 @@ unsubscribe it after the plan is confirmed in production or the match ends
 without verification. Timer scope remains the exact ESPN id named at the start
 of that bind loop — do not reuse a running timer for a different fixture.
 
+When the user asks to run the bind loop for **today and tomorrow**, use
+`planBindLoop` in `lib/bind-schedule.js` on remaining EPL / La Liga fixtures
+in that UTC window. Execute immediately if a match is already inside T-15,
+T-5, or kickoff. Arm one `loop-bind-<espn-id>` timer at T-15 for each later
+Sunday/Monday fixture. Skip matches that finished more than 150 minutes ago.
+Do not steal a still-live catalog slot.
+
 ### Probe and bind
 
 1. **T-15** — `npm run probe:wrappers`, then `verify:scorebug` on the likely
