@@ -288,3 +288,14 @@ body {
   .hero-intro-card { padding-inline-start: 14px; }
   .match-card { border-radius: 18px; }
 }
+
+.watch-source-toggle__kicker { color: #e8c547; }
+.watch-source-toggle__track {
+  background: #070b12;
+  border-color: #e8c547;
+}
+.watch-source-toggle__opt {
+  background: #3d4658;
+  color: #fff;
+}
+.watch-source-toggle__opt--premium { background: #5a4a28; }
