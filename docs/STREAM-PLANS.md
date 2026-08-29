@@ -121,8 +121,12 @@ Arabic AlbaPlayer wrappers (`yallacuo.xyz`, `koralive1.cc`) always play through
 `.css` disguise) in KoraZero’s own player. Do not iframe those hosts raw.
 
 `allowAutoHeal` defaults to false. Auto-heal is what swapped a match onto a
-generic 24/7 channel during the World Cup. Same-content `fallbackUrl` on an
-HLS source is allowed; switching to a different content key is not.
+generic 24/7 channel during the World Cup. The watch page must **not** remount
+a catalog `/wk/operator/` iframe on inner `kz-alt-reload` stall. The clean HLS
+player must **not** call `hls.startLoad(-1)` on `waiting` — that rewinds a
+2-segment live edge (today’s koralive feeds use 2s segments). Same-content
+`fallbackUrl` on an HLS source is allowed; switching to a different content
+key is not.
 
 ## IPTV you own
 

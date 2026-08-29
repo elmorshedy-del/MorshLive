@@ -1423,6 +1423,7 @@ async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
 // hls.js tuning for third-party live HLS (worldkoora/dlhd CDNs). Based on hls.js
 // docs + community guidance: smaller forward buffer, live-edge sync, playback-rate
 // catch-up, and no startLoad() on non-fatal stalls (causes freeze loops — #7433).
+// Contract: lib/hls-recover.js — startLoad(-1) on waiting rewinds a 2-seg edge.
 const HLS_BOOT_FN = `function kzHlsOpts(){
   return {
     enableWorker: true,
@@ -1431,8 +1432,8 @@ const HLS_BOOT_FN = `function kzHlsOpts(){
     maxBufferLength: 14,
     maxMaxBufferLength: 28,
     backBufferLength: 30,
-    liveSyncDurationCount: 2,
-    liveMaxLatencyDurationCount: 6,
+    liveSyncDurationCount: 3,
+    liveMaxLatencyDurationCount: 8,
     liveDurationInfinity: true,
     maxLiveSyncPlaybackRate: 1.35,
     highBufferWatchdogPeriod: 2,
@@ -1457,7 +1458,7 @@ function kzAttachHls(v,src,onFatal){
   hls.on(Hls.Events.ERROR,function(_e,d){
     if(!d||!d.fatal) return;
     if(d.type==='networkError'){
-      setTimeout(function(){ try{ hls.startLoad(-1); }catch(e){ onFatal(); } }, 1000);
+      setTimeout(function(){ try{ hls.startLoad(); }catch(e){ onFatal(); } }, 1000);
       return;
     }
     if(d.type==='mediaError'){
@@ -1467,9 +1468,7 @@ function kzAttachHls(v,src,onFatal){
   });
   return hls;
 }
-function kzSoftRecover(v,hls){
-  if(!hls) return;
-  try{ hls.startLoad(-1); }catch(e){}
+function kzSoftRecover(v){
   var p=v.play&&v.play(); if(p&&p.catch)p.catch(function(){});
 }
 function kzWatchStall(v,hls,onStall){
@@ -1480,7 +1479,7 @@ function kzWatchStall(v,hls,onStall){
       stallMs+=3000;
       if(!softTried&&stallMs>=6000){
         softTried=true;
-        kzSoftRecover(v,hls);
+        kzSoftRecover(v);
       } else if(stallMs>=12000){
         stallMs=0; softTried=false; onStall();
       }
@@ -1512,10 +1511,15 @@ ${HLS_BOOT_FN}
   }
   function destroy(){ if(stopStall){ stopStall(); stopStall=null; } if(hls){ try{hls.destroy();}catch(e){} hls=null; } }
   function onStall(reason){
+    if(sources.length<=1){
+      kzSoftRecover(v);
+      return;
+    }
     pingParent(reason||'stall');
     next();
   }
   function next(){
+    if(sources.length<=1) return;
     i=(i+1)%sources.length; tries++;
     if(tries<=sources.length*6){ setTimeout(load, 400); return; }
     pingParent('exhausted');
@@ -1535,7 +1539,7 @@ ${HLS_BOOT_FN}
   }
   if(!v.dataset.kzWait){
     v.dataset.kzWait='1';
-    v.addEventListener('waiting', function(){ kzSoftRecover(v, hls); });
+    v.addEventListener('waiting', function(){ kzSoftRecover(v); });
   }
   var blackMs=0;
   setInterval(function(){

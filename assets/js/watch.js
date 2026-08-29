@@ -1254,7 +1254,10 @@
     lastStreamHealAt = now;
     showStreamHealToast();
     reloadAltStreamIframes(reason);
-    if (includeMain || reason === "exhausted" || reason === "stall" || reason === "black") {
+    // Catalog plans set allowAutoHeal:false. Remounting the main iframe on
+    // inner stall/waiting rewinds a 2-second live HLS and looks like a loop.
+    const allowAutoHeal = !activePlan || activePlan.policy?.allowAutoHeal === true;
+    if (allowAutoHeal && (includeMain || reason === "exhausted" || reason === "black")) {
       bumpMainPlayer(reason);
     }
   }
