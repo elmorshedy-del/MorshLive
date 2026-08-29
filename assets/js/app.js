@@ -20,7 +20,7 @@
   const ICON = {
     mic: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>',
     play: '<svg class="ico ico-fill" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg>',
-    trophy: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.7V17c0 .6-.5 1-1 1.2C7.9 18.8 7 20.2 7 22"/><path d="M14 14.7V17c0 .6.5 1 1 1.2 1.1.6 2 2 2 2.8"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>',
+    trophy: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.7V17c0 .6-.5 1-1 1.2C7.9 18.8 7 20.2 7 22"/><path d="M14 14.7V17c0 .6-.5 1 1 1.2 1.1.6 2 2 2 2.8"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>',
     pin: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>',
     tv: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="7" width="20" height="15" rx="2"/><polyline points="17 2 12 7 7 2"/></svg>',
     star: '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.1 8.6 22 9.3 17 14 18.3 21 12 17.5 5.7 21 7 14 2 9.3 8.9 8.6 12 2"/></svg>',
@@ -47,7 +47,6 @@
     return m?.leagueSlug === "fifa.world" || /^espn-fifa\.world-/.test(m?.id || "");
   }
 
-  // Where a match's watch button points. Ended fixtures → archive; live/upcoming → player.
   function watchHref(m) {
     if (m.status === "ended" && m.key && isWorldCupMatch(m)) {
       const href = window.TeamNames?.matchPageHref?.(m);
@@ -170,67 +169,28 @@
     return badges.length ? `<div class="coverage-badges">${badges.join("")}</div>` : "";
   }
 
-  /* -------------------------------------------------- Featured live (auto) */
   function renderFeaturedLive() {
     const wrap = document.getElementById("featured-live");
     if (!wrap) return;
     const live = MATCHES.filter((m) => m.status === "live");
     const recentEnded = MATCHES.filter((m) => isCommentaryAvailable(m));
     if (!live.length && !recentEnded.length) {
-      wrap.innerHTML = `
-        <div class="live-empty">
-          <span class="live-empty-dot"></span>
-          ${t("live.empty")}
-        </div>`;
+      wrap.innerHTML = `<div class="live-empty"><span class="live-empty-dot"></span>${t("live.empty")}</div>`;
       return;
     }
     const liveBlock = live.length
-      ? `
-      <div class="featured-head"><span class="rec-dot"></span> ${t("live.now")}</div>
-      <div class="featured-grid">
-        ${live.map((m) => `
-          <a class="featured-card" href="${watchHref(m)}">
-            <div class="featured-league">${competitionMark(m)}${leagueLabel(m)}${m.minute ? ` · ${m.minute}` : ""}</div>
-            <div class="featured-teams">
-              <span>${teamLabel(m.home)}</span>
-              <b class="featured-score">${m.score}${window.liveMinuteLabel && window.liveMinuteLabel(m) ? ` · ${window.liveMinuteLabel(m)}` : (m.minute ? ` · ${m.minute}` : "")}</b>
-              <span>${teamLabel(m.away)}</span>
-            </div>
-            ${commentatorText(m) ? `<div class="featured-commentator">${ICON.mic} ${commentatorText(m)}</div>` : ""}
-            ${timeZoneChips(m, { compact: true })}
-            <div class="featured-foot">${ICON.play} ${t("card.watchNow")}</div>
-          </a>`).join("")}
-      </div>`
+      ? `<div class="featured-head"><span class="rec-dot"></span> ${t("live.now")}</div><div class="featured-grid">${live.map((m) => `<a class="featured-card" href="${watchHref(m)}"><div class="featured-league">${competitionMark(m)}${leagueLabel(m)}${m.minute ? ` · ${m.minute}` : ""}</div><div class="featured-teams"><span>${teamLabel(m.home)}</span><b class="featured-score">${m.score}${window.liveMinuteLabel && window.liveMinuteLabel(m) ? ` · ${window.liveMinuteLabel(m)}` : (m.minute ? ` · ${m.minute}` : "")}</b><span>${teamLabel(m.away)}</span></div>${commentatorText(m) ? `<div class="featured-commentator">${ICON.mic} ${commentatorText(m)}</div>` : ""}${timeZoneChips(m, { compact: true })}<div class="featured-foot">${ICON.play} ${t("card.watchNow")}</div></a>`).join("")}</div>`
       : "";
     const endedBlock = recentEnded.length
-      ? `
-      <div class="featured-head featured-head--commentary"><span class="rec-dot rec-dot--muted"></span> ${t("live.recentEnded")}</div>
-      <div class="featured-grid">
-        ${recentEnded.map((m) => `
-          <a class="featured-card featured-card--commentary" href="${watchHref(m)}">
-            <div class="featured-league">${competitionMark(m)}${leagueLabel(m)} · ${t("status.ended")}</div>
-            <div class="featured-teams">
-              <span>${teamLabel(m.home)}</span>
-              <b class="featured-score">${m.score}</b>
-              <span>${teamLabel(m.away)}</span>
-            </div>
-            ${commentatorText(m) ? `<div class="featured-commentator">${ICON.mic} ${commentatorText(m)}</div>` : ""}
-            <div class="featured-foot">${ICON.mic} ${t("card.watchCommentary")}</div>
-          </a>`).join("")}
-      </div>`
+      ? `<div class="featured-head featured-head--commentary"><span class="rec-dot rec-dot--muted"></span> ${t("live.recentEnded")}</div><div class="featured-grid">${recentEnded.map((m) => `<a class="featured-card featured-card--commentary" href="${watchHref(m)}"><div class="featured-league">${competitionMark(m)}${leagueLabel(m)} · ${t("status.ended")}</div><div class="featured-teams"><span>${teamLabel(m.home)}</span><b class="featured-score">${m.score}</b><span>${teamLabel(m.away)}</span></div>${commentatorText(m) ? `<div class="featured-commentator">${ICON.mic} ${commentatorText(m)}</div>` : ""}<div class="featured-foot">${ICON.mic} ${t("card.watchCommentary")}</div></a>`).join("")}</div>`
       : "";
     wrap.innerHTML = liveBlock + endedBlock;
     const noticeSlot = document.getElementById("match-notice-home");
     if (noticeSlot && window.MatchNotice) {
-      window.MatchNotice.showForHome(noticeSlot, MATCHES).catch(() => {
-        noticeSlot.innerHTML = "";
-      });
+      window.MatchNotice.showForHome(noticeSlot, MATCHES).catch(() => { noticeSlot.innerHTML = ""; });
     }
   }
 
-  /* -------------------------------------------------- Live match center
-     Full pitch + stats for the headline match, shown open (not tucked behind
-     a toggle) right below "بث مباشر الآن" and above "مباريات اليوم". */
   function renderLiveDetail() {
     const wrap = document.getElementById("live-detail");
     if (!wrap) return;
@@ -243,81 +203,33 @@
       return;
     }
     if (section) section.hidden = false;
-
     const live = m.status === "live";
     const minute = window.liveMinuteLabel ? window.liveMinuteLabel(m) : (live && m.minute ? String(m.minute).trim() : "");
     const statusHtml = `<span class="status-pill status-${m.status}">${live ? '<span class="live-dot-i"></span> ' : ""}${statusLabel(m.status)}${minute ? ` · ${minute}` : ""}</span>`;
     const sections = [
-      m.lineups ? `
-        <div class="live-detail-section">
-          <h3>${ICON.trophy} ${t("card.lineups")}</h3>
-          ${window.buildLineupsHtml(m)}
-        </div>` : "",
-      m.stats ? `
-        <div class="live-detail-section">
-          <div id="live-stats-notice-slot" class="match-notice-slot"></div>
-          <h3>${ICON.trophy} ${t("card.stats")}</h3>
-          ${window.buildStatsHtml(m)}
-        </div>` : "",
+      m.lineups ? `<div class="live-detail-section"><h3>${ICON.trophy} ${t("card.lineups")}</h3>${window.buildLineupsHtml(m)}</div>` : "",
+      m.stats ? `<div class="live-detail-section"><div id="live-stats-notice-slot" class="match-notice-slot"></div><h3>${ICON.trophy} ${t("card.stats")}</h3>${window.buildStatsHtml(m)}</div>` : "",
     ].join("");
-
-    wrap.innerHTML = `
-      <div class="live-detail-card ${live ? "is-live" : "is-ended"}">
-        <div class="live-detail-top">
-          ${statusHtml}
-          <span class="live-detail-league">${competitionMark(m)}${leagueLabel(m)}</span>
-        </div>
-        <div class="live-detail-teams">
-          <div class="team">
-            ${crest(m.homeBadge, m.homeAbbr)}
-            <div class="tname">${teamLabel(m.home)}</div>
-          </div>
-          <div class="live-detail-score">${m.score}</div>
-          <div class="team">
-            ${crest(m.awayBadge, m.awayAbbr)}
-            <div class="tname">${teamLabel(m.away)}</div>
-          </div>
-        </div>
-        ${window.buildGoalsHtml ? window.buildGoalsHtml(m) : ""}
-        <div class="live-detail-meta">${footMeta(m)}</div>
-        <a class="watch-link live-detail-watch" href="${watchHref(m)}">${ICON.play} ${live ? t("card.watchNow") : t("card.watchCommentary")}</a>
-        ${!live && window.KZHighlights && window.KZHighlights.hasSummaryContent(m)
-          ? `<div class="live-detail-section live-detail-section--highlights">
-               <h3>${ICON.trophy} ${t("card.summary")}</h3>
-               ${window.KZHighlights.summaryBodyHtml(m)}
-             </div>`
-          : ""}
-        ${sections}
-      </div>`;
+    wrap.innerHTML = `<div class="live-detail-card ${live ? "is-live" : "is-ended"}"><div class="live-detail-top">${statusHtml}<span class="live-detail-league">${competitionMark(m)}${leagueLabel(m)}</span></div><div class="live-detail-teams"><div class="team">${crest(m.homeBadge, m.homeAbbr)}<div class="tname">${teamLabel(m.home)}</div></div><div class="live-detail-score">${m.score}</div><div class="team">${crest(m.awayBadge, m.awayAbbr)}<div class="tname">${teamLabel(m.away)}</div></div></div>${window.buildGoalsHtml ? window.buildGoalsHtml(m) : ""}<div class="live-detail-meta">${footMeta(m)}</div><a class="watch-link live-detail-watch" href="${watchHref(m)}">${ICON.play} ${live ? t("card.watchNow") : t("card.watchCommentary")}</a>${!live && window.KZHighlights && window.KZHighlights.hasSummaryContent(m) ? `<div class="live-detail-section live-detail-section--highlights"><h3>${ICON.trophy} ${t("card.summary")}</h3>${window.KZHighlights.summaryBodyHtml(m)}</div>` : ""}${sections}</div>`;
     if (window.activateStatBars) window.activateStatBars(wrap);
     if (window.KZHighlights) window.KZHighlights.bindReplayLaunch(wrap);
     if (m.stats && window.MatchNotice) {
       const statsSlot = document.getElementById("live-stats-notice-slot");
-      window.MatchNotice.showStatsBeta(statsSlot).catch(() => {
-        if (statsSlot) statsSlot.innerHTML = "";
-      });
+      window.MatchNotice.showStatsBeta(statsSlot).catch(() => { if (statsSlot) statsSlot.innerHTML = ""; });
     }
   }
 
-  /* -------------------------------------------------- ملخص المباراة (summary) */
   function escapeHtml(s) {
-    return String(s || "").replace(/[&<>"']/g, (c) => (
-      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]
-    ));
+    return String(s || "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
-  // Which collapsible panels are expanded, kept across the 90s auto-refresh re-render.
   const openPanels = new Set();
 
   function panel(id, kind, iconHtml, label, bodyHtml) {
     if (!bodyHtml) return "";
     const panelId = `${id}:${kind}`;
     const open = openPanels.has(panelId) ? " open" : "";
-    return `
-      <details class="match-panel" data-panel-id="${panelId}"${open}>
-        <summary class="match-panel-toggle">${iconHtml} ${label}</summary>
-        <div class="match-panel-body">${bodyHtml}</div>
-      </details>`;
+    return `<details class="match-panel" data-panel-id="${panelId}"${open}><summary class="match-panel-toggle">${iconHtml} ${label}</summary><div class="match-panel-body">${bodyHtml}</div></details>`;
   }
 
   function matchSummaryHtml(m) {
@@ -336,7 +248,6 @@
     return panel(m.id, "stats", ICON.trophy, t("card.stats"), window.buildStatsHtml(m));
   }
 
-  // `toggle` on <details> doesn't bubble, so track it in the capture phase.
   function initPanelToggles() {
     document.addEventListener("toggle", (e) => {
       const el = e.target;
@@ -352,100 +263,69 @@
     }, true);
   }
 
-  /* -------------------------------------------------- Matches rendering */
   function matchCard(m) {
     const liveBtn = watchAction(m);
     const minute = window.liveMinuteLabel ? window.liveMinuteLabel(m) : (m.status === "live" && m.minute ? String(m.minute).trim() : "");
     const minuteSuffix = minute ? ` · ${minute}` : "";
-    return `
-      <article class="match-card competition-${m.competition || "other"}${m.status === "live" ? " is-live" : ""}" data-status="${m.status}" data-competition="${m.competition || "other"}">
-        <div class="match-top">
-          <span class="league-tag">${competitionMark(m)}${leagueLabel(m)}</span>
-          <span class="match-top-end">
-            <span class="status-pill status-${m.status}">${statusLabel(m.status)}${minuteSuffix}</span>
-            ${favStar(m)}
-          </span>
-        </div>
-        <div class="teams">
-          <div class="team">
-            ${crest(m.homeBadge, m.homeAbbr)}
-            <div class="tname">${teamLabel(m.home)}</div>
-          </div>
-          <div class="score">${m.score}</div>
-          <div class="team">
-            ${crest(m.awayBadge, m.awayAbbr)}
-            <div class="tname">${teamLabel(m.away)}</div>
-          </div>
-        </div>
-        ${window.buildGoalsHtml ? window.buildGoalsHtml(m) : ""}
-        ${coverageBadges(m)}
-        ${timeZoneChips(m)}
-        <div class="match-foot">
-          <span class="match-meta">${footMeta(m)}</span>
-          ${liveBtn}
-        </div>
-        ${matchLineupsHtml(m)}
-        ${matchStatsHtml(m)}
-        ${matchSummaryHtml(m)}
-        ${window.KZMatchMemes ? window.KZMatchMemes.panelShell(m) : ""}
-      </article>`;
+    return `<article class="match-card competition-${m.competition || "other"}${m.status === "live" ? " is-live" : ""}" data-status="${m.status}" data-competition="${m.competition || "other"}"><div class="match-top"><span class="league-tag">${competitionMark(m)}${leagueLabel(m)}</span><span class="match-top-end"><span class="status-pill status-${m.status}">${statusLabel(m.status)}${minuteSuffix}</span>${favStar(m)}</span></div><div class="teams"><div class="team">${crest(m.homeBadge, m.homeAbbr)}<div class="tname">${teamLabel(m.home)}</div></div><div class="score">${m.score}</div><div class="team">${crest(m.awayBadge, m.awayAbbr)}<div class="tname">${teamLabel(m.away)}</div></div></div>${window.buildGoalsHtml ? window.buildGoalsHtml(m) : ""}${coverageBadges(m)}${timeZoneChips(m)}<div class="match-foot"><span class="match-meta">${footMeta(m)}</span>${liveBtn}</div>${matchLineupsHtml(m)}${matchStatsHtml(m)}${matchSummaryHtml(m)}${window.KZMatchMemes ? window.KZMatchMemes.panelShell(m) : ""}</article>`;
   }
 
-  function arabiaDayKey(kickoffUtc) {
-    const kickoff = Date.parse(kickoffUtc || "");
-    if (Number.isNaN(kickoff)) return "";
-    return new Date(kickoff + 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
+  function localDayKey(value) {
+    const d = value instanceof Date ? value : new Date(value || "");
+    if (Number.isNaN(d.getTime())) return "";
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
   }
 
-  function shiftIsoDay(day, offset) {
-    const d = new Date(`${day}T12:00:00Z`);
-    d.setUTCDate(d.getUTCDate() + offset);
-    return d.toISOString().slice(0, 10);
+  function shiftLocalDay(day, offset) {
+    const [y, m, d] = String(day || "").split("-").map(Number);
+    if (!y || !m || !d) return "";
+    const date = new Date(y, m - 1, d, 12, 0, 0, 0);
+    date.setDate(date.getDate() + offset);
+    return localDayKey(date);
   }
 
   function scheduleDayLabel(day) {
     if (!day) return t("schedule.other");
-    const today = arabiaDayKey(new Date().toISOString());
+    const today = localDayKey(new Date());
     const prefix = day === today
       ? t("schedule.today")
-      : day === shiftIsoDay(today, 1)
+      : day === shiftLocalDay(today, 1)
         ? t("schedule.tomorrow")
-        : day === shiftIsoDay(today, -1)
+        : day === shiftLocalDay(today, -1)
           ? t("schedule.yesterday")
           : "";
     const locale = window.I18N?.lang === "en" ? "en-GB" : "ar";
+    const [y, m, d] = day.split("-").map(Number);
     const formatted = new Intl.DateTimeFormat(locale, {
       weekday: "long",
       day: "numeric",
       month: "short",
-    }).format(new Date(`${day}T12:00:00Z`));
+    }).format(new Date(y, m - 1, d, 12, 0, 0, 0));
     return prefix ? `${prefix} · ${formatted}` : formatted;
   }
 
   function scheduleGroupsHtml(matches) {
     const groups = new Map();
+    const today = localDayKey(new Date());
     for (const match of matches) {
-      const day = arabiaDayKey(match.kickoffUtc);
+      // A match that is still live belongs to the visitor's current "Today"
+      // bucket even when it started before local midnight.
+      const day = match.status === "live" ? today : localDayKey(match.kickoffUtc);
       if (!groups.has(day)) groups.set(day, []);
       groups.get(day).push(match);
     }
-    const today = arabiaDayKey(new Date().toISOString());
     const rank = (day) => {
       if (!day) return Number.MAX_SAFE_INTEGER;
       if (day === today) return 0;
-      if (day > today) return 1 + (Date.parse(day) - Date.parse(today));
-      return 1e12 + (Date.parse(today) - Date.parse(day));
+      if (day > today) return 1 + (Date.parse(`${day}T12:00:00`) - Date.parse(`${today}T12:00:00`));
+      return 1e12 + (Date.parse(`${today}T12:00:00`) - Date.parse(`${day}T12:00:00`));
     };
     return [...groups.entries()]
       .sort(([a], [b]) => rank(a) - rank(b))
-      .map(([day, dayMatches]) => `
-        <section class="schedule-day" data-day="${day}">
-          <div class="schedule-day-head">
-            <h3>${scheduleDayLabel(day)}</h3>
-            <span>${t("matches.count", { n: dayMatches.length })}</span>
-          </div>
-          <div class="matches">${dayMatches.map(matchCard).join("")}</div>
-        </section>`)
+      .map(([day, dayMatches]) => `<section class="schedule-day" data-day="${day}"><div class="schedule-day-head"><h3>${scheduleDayLabel(day)}</h3><span>${t("matches.count", { n: dayMatches.length })}</span></div><div class="matches">${dayMatches.map(matchCard).join("")}</div></section>`)
       .join("");
   }
 
@@ -458,43 +338,18 @@
       const leagueMatch = activeCompetitionFilter === "all" || m.competition === activeCompetitionFilter;
       return statusMatch && leagueMatch;
     });
-    grid.innerHTML = list.length
-      ? scheduleGroupsHtml(list)
-      : `<p style="color:var(--muted)">${t("matches.none")}</p>`;
-    // Panels re-opened from `openPanels` state don't fire a native `toggle`
-    // event (that only fires on user interaction), so activate their bars here.
-    if (window.activateStatBars) {
-      grid.querySelectorAll(".match-panel[open]").forEach((el) => window.activateStatBars(el));
-    }
-    if (window.KZMatchMemes) {
-      window.KZMatchMemes.hydrateMatchMemes(grid, list).catch(() => { /* optional */ });
-    }
+    grid.innerHTML = list.length ? scheduleGroupsHtml(list) : `<p style="color:var(--muted)">${t("matches.none")}</p>`;
+    if (window.activateStatBars) grid.querySelectorAll(".match-panel[open]").forEach((el) => window.activateStatBars(el));
+    if (window.KZMatchMemes) window.KZMatchMemes.hydrateMatchMemes(grid, list).catch(() => {});
     if (window.KZHighlights) window.KZHighlights.bindReplayLaunch(grid);
     const count = document.getElementById("matches-count");
     if (count) count.textContent = t("matches.count", { n: list.length });
     updateCompetitionCounts();
   }
 
-  /* -------------------------------------------------- Saved matches */
   function savedCard(m) {
     const liveBtn = watchAction(m);
-    return `
-      <article class="match-card saved-card">
-        <div class="match-top">
-          <span class="league-tag">${competitionMark(m)}${leagueLabel(m)}</span>
-          <button class="fav-star is-saved" data-unsave-id="${m.id}" type="button"
-            aria-label="${t("card.removeSaved")}" title="${t("card.removeSaved")}">${ICON.trash}</button>
-        </div>
-        <div class="teams">
-          <div class="team">${crest(m.homeBadge, m.homeAbbr)}<div class="tname">${teamLabel(m.home)}</div></div>
-          <div class="score">×</div>
-          <div class="team">${crest(m.awayBadge, m.awayAbbr)}<div class="tname">${teamLabel(m.away)}</div></div>
-        </div>
-        <div class="match-foot">
-          <span class="match-meta">${m.channel ? `${ICON.tv} ${m.channel}` : ""}</span>
-          ${liveBtn}
-        </div>
-      </article>`;
+    return `<article class="match-card saved-card"><div class="match-top"><span class="league-tag">${competitionMark(m)}${leagueLabel(m)}</span><button class="fav-star is-saved" data-unsave-id="${m.id}" type="button" aria-label="${t("card.removeSaved")}" title="${t("card.removeSaved")}">${ICON.trash}</button></div><div class="teams"><div class="team">${crest(m.homeBadge, m.homeAbbr)}<div class="tname">${teamLabel(m.home)}</div></div><div class="score">×</div><div class="team">${crest(m.awayBadge, m.awayAbbr)}<div class="tname">${teamLabel(m.away)}</div></div></div><div class="match-foot"><span class="match-meta">${m.channel ? `${ICON.tv} ${m.channel}` : ""}</span>${liveBtn}</div></article>`;
   }
 
   function renderSaved() {
@@ -506,8 +361,6 @@
     grid.innerHTML = saved.map(savedCard).join("");
   }
 
-  // One delegated handler covers ☆ on match cards and the remove button in the
-  // saved section, even though both grids re-render on the live refresh.
   function initFavorites() {
     if (!window.KZFav) return;
     document.addEventListener("click", (e) => {
@@ -520,20 +373,16 @@
       const rm = e.target.closest("[data-unsave-id]");
       if (rm) window.KZFav.remove(rm.dataset.unsaveId);
     });
-    // Re-paint stars + saved list whenever the favorites change.
     window.KZFav.subscribe(() => { renderMatches(activeStatusFilter); renderFeaturedLive(); renderSaved(); });
   }
 
-  /* -------------------------------------------------- Filters */
   let activeStatusFilter = "all";
   let activeCompetitionFilter = "all";
 
   function updateCompetitionCounts() {
     document.querySelectorAll("[data-league-filter]").forEach((btn) => {
       const key = btn.dataset.leagueFilter;
-      const count = key === "all"
-        ? MATCHES.length
-        : MATCHES.filter((m) => m.competition === key).length;
+      const count = key === "all" ? MATCHES.length : MATCHES.filter((m) => m.competition === key).length;
       const el = btn.querySelector("[data-league-count]");
       if (el) el.textContent = count;
       btn.hidden = key !== "all" && count === 0;
@@ -566,7 +415,6 @@
     });
   }
 
-  /* -------------------------------------------------- Mobile nav */
   function initNav() {
     const toggle = document.querySelector(".nav-toggle");
     const links = document.querySelector(".nav-links");
@@ -592,8 +440,7 @@
     const before = { lineups: headline.lineups, stats: headline.stats };
     try {
       const enriched = await window.MatchDetailAPI.enrichMatch(headline, { force: true });
-      const changed = JSON.stringify(before.lineups) !== JSON.stringify(enriched.lineups)
-        || JSON.stringify(before.stats) !== JSON.stringify(enriched.stats);
+      const changed = JSON.stringify(before.lineups) !== JSON.stringify(enriched.lineups) || JSON.stringify(before.stats) !== JSON.stringify(enriched.stats);
       if (!changed) return;
       const idx = MATCHES.findIndex((m) => m.id === headline.id);
       if (idx >= 0) MATCHES[idx] = enriched;
