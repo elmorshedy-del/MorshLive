@@ -2,7 +2,7 @@
  * editorial, visual, and content-architecture layers across every page. */
 (function () {
   "use strict";
-  const stamp = "20260829editorial3";
+  const stamp = "20260829editorial4";
 
   function writeSharedAssets() {
     document.write(`<link rel="stylesheet" href="/assets/css/dark-refresh.css?v=${stamp}">`);
@@ -12,6 +12,8 @@
     document.write(`<script src="/assets/js/content-architecture.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/arabic-editorial.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/watch-arabic-editorial.js?v=${stamp}"><\/script>`);
+    document.write(`<script src="/assets/js/english-editorial.js?v=${stamp}"><\/script>`);
+    document.write(`<script src="/assets/js/match-stats-editorial.js?v=${stamp}"><\/script>`);
   }
 
   if (document.readyState === "loading") {
@@ -38,7 +40,11 @@
     addScript(`/assets/js/site-refresh.js?v=${stamp}`, () => {
       addScript(`/assets/js/content-architecture.js?v=${stamp}`, () => {
         addScript(`/assets/js/arabic-editorial.js?v=${stamp}`, () => {
-          addScript(`/assets/js/watch-arabic-editorial.js?v=${stamp}`);
+          addScript(`/assets/js/watch-arabic-editorial.js?v=${stamp}`, () => {
+            addScript(`/assets/js/english-editorial.js?v=${stamp}`, () => {
+              addScript(`/assets/js/match-stats-editorial.js?v=${stamp}`);
+            });
+          });
         });
       });
     });
