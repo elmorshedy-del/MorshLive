@@ -38,9 +38,7 @@ describe("shouldRemountMainPlayer", () => {
   it("does not remount a catalog iframe when auto-heal is off", () => {
     expect(shouldRemountMainPlayer("stall", { allowAutoHeal: false })).toBe(false);
     expect(shouldRemountMainPlayer("watch-stall", { allowAutoHeal: false })).toBe(false);
-    expect(shouldRemountMainPlayer("exhausted", { allowAutoHeal: false, includeMain: true })).toBe(
-      false,
-    );
+    expect(shouldRemountMainPlayer("exhausted", { allowAutoHeal: false, includeMain: true })).toBe(false);
   });
 
   it("does not remount the main player on a stall when heal is allowed", () => {
