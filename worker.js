@@ -1455,7 +1455,13 @@ const HLS_BOOT_FN = `function kzHlsOpts(){
     fetchSetup: function(ctx, init){
       var headers=new Headers((init&&init.headers)||{});
       headers.delete('Range');
-      return new Request(ctx.url, Object.assign({}, init, {headers:headers, cache:'no-store'}));
+      var url=ctx.url||'';
+      var target='';
+      try{ target=decodeURIComponent((url.match(/[?&]u=([^&]+)/)||[])[1]||''); }catch(e){}
+      if(!/\.(ts|sss|m4s|cmfv)(\?|$)/i.test(target)){
+        url+= (url.indexOf('?')>=0?'&':'?')+'_='+Date.now();
+      }
+      return new Request(url, Object.assign({}, init, {headers:headers, cache:'no-store'}));
     },
   };
 }
