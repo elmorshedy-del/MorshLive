@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  hasEnoughBindSignals,
   isAllowedArabicWrapperUrl,
   isForbiddenStreamUrl,
   nextBindCheck,
@@ -95,10 +96,39 @@ describe("productionPlanIsLive", () => {
   });
 });
 
+describe("hasEnoughBindSignals", () => {
+  it("binds on a few matching signals, not only a full two-team scorebug", () => {
+    expect(
+      hasEnoughBindSignals({
+        listedChannelMatchesSlot: true,
+        venueOrStadium: true,
+      }),
+    ).toBe(true);
+    expect(
+      hasEnoughBindSignals({
+        listedChannelMatchesSlot: true,
+        oneTeamNameOrCrest: true,
+        city: true,
+      }),
+    ).toBe(true);
+    expect(hasEnoughBindSignals({ bothNames: true })).toBe(true);
+    expect(hasEnoughBindSignals({ listedChannelMatchesSlot: true })).toBe(false);
+    expect(hasEnoughBindSignals({ venueOrStadium: true })).toBe(false);
+  });
+});
+
 describe("nextBindCheck", () => {
-  it("does not sit in a T-15 tour when the scorebug is not up yet", () => {
-    expect(nextBindCheck({ foundScorebug: false, minutesToKickoff: 15 })).toBe("arm-kickoff");
+  it("retries at T-5 when T-15 is not a clear scorebug, then binds on enough signals", () => {
+    expect(nextBindCheck({ foundScorebug: false, enoughSignals: false, minutesToKickoff: 15 })).toBe(
+      "arm-t5",
+    );
+    expect(nextBindCheck({ foundScorebug: false, enoughSignals: true, minutesToKickoff: 15 })).toBe("bind");
+    expect(nextBindCheck({ foundScorebug: false, enoughSignals: false, minutesToKickoff: 5 })).toBe(
+      "arm-kickoff",
+    );
     expect(nextBindCheck({ foundScorebug: true, minutesToKickoff: 1 })).toBe("bind");
-    expect(nextBindCheck({ foundScorebug: false, minutesToKickoff: 0 })).toBe("bind-or-skip");
+    expect(nextBindCheck({ foundScorebug: false, enoughSignals: false, minutesToKickoff: 0 })).toBe(
+      "bind-or-skip",
+    );
   });
 });

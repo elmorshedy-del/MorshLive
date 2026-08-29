@@ -186,14 +186,18 @@ of that bind loop — do not reuse a running timer for a different fixture.
 
 ### Probe and bind
 
-1. **T-15** — `npm run probe:wrappers`. If no scorebug for the active match,
-   stop the visual tour and arm a **kickoff** check. Do not bind a studio, FT
-   graphic, another league, or a page that merely shows one club.
-2. **Kickoff** — probe again. A changed inner Fabor id or `iframeSrc` is only
-   a reuse signal, not proof. Inspect no more than the likely BeIN slot and its
-   yallacuo twin. Require a visible two-team scorebug, both names, or both
-   crests. Kits, league graphics, a BeIN logo, and pre-match branding are not
-   enough.
+1. **T-15** — `npm run probe:wrappers`, then `verify:scorebug` on the likely
+   slot. A 100% two-team scorebug is enough to bind. So are **a few signals**
+   that this is the correct game: listed channel matches the slot, plus venue /
+   stadium, city, or one team name or crest. Tottenham T-15 (29 Aug 2026) on
+   beIN 1 showed ملعب توتنهام هوتسبير / لندن — that is enough. A BeIN logo or
+   an ad alone is not. If the picture is still unclear, stop the tour and arm
+   **T-5** (not kickoff).
+2. **T-5** — probe the same ESPN id again. Bind on a few matching signals or a
+   scorebug. If it is still only ads / no match signals, arm **kickoff**.
+3. **Kickoff** — last look at the likely BeIN slot and its yallacuo twin. A
+   changed inner Fabor id or `iframeSrc` is only a reuse signal, not proof.
+   Bind on a few matching signals. If there are still none, leave it unbound.
 
    Once a candidate URL is identified, run the fast visual check (no computer-use
    tour required):
@@ -208,27 +212,27 @@ of that bind loop — do not reuse a running timer for a different fixture.
    `reports/scorebug/`, and prints: final URL, HTTP status, video state,
    screenshot path, elapsed ms. Read that image directly; do not launch a
    computer-use browsing tour. The command does **not** auto-bind or record a
-   verification result. If a scorebug with both teams is visible, proceed.
-3. Prefer the wrapper’s **inner AlbaPlayer `iframeSrc`** when it remains on an
+   verification result. If a few signals already point at this match, proceed.
+4. Prefer the wrapper’s **inner AlbaPlayer `iframeSrc`** when it remains on an
    allowed operator host. Preflight it through
    `/wk/operator/?u=<encoded-inner-url>`: HTTP 200 with
    `X-KZ-Mode: hls-embed` is the clean path. It extracts the inner HLS into
    KoraZero’s player, so upstream menus, popunders, and page chrome never load.
    The outer wrapper can fail from Cloudflare while this inner embed works.
-4. Store that allowed inner URL in the plan as `kind: iframe`, profile
+5. Store that allowed inner URL in the plan as `kind: iframe`, profile
    `operator-iframe-v2`. Plan resolution rewrites it to `/wk/operator/`
    automatically. Do not store a temporary `/wk/hls` signature.
-5. If there is no working clean inner embed, keep the previous wrapper method:
+6. If there is no working clean inner embed, keep the previous wrapper method:
    an allowed `mo.yallacuo.xyz/albaplayer/…` or
    `pl.koralive1.cc/albaplayer/…` URL through `/wk/operator/`. Do not add a new
    player path during match-day binding.
-6. **Never** bind `reddit-soccer-streams.online`, `iframe.st`,
+7. **Never** bind `reddit-soccer-streams.online`, `iframe.st`,
    `kora-plus.li` / `kora-plus.app`, or a go4score **listing** page. Never steal
-   a slot from a still-live catalog match. If neither allowed path proves the
-   exact match, leave it unbound.
-7. Write `stream-plans.json` (`contentKey: match:<espn-id>`), record the
+   a slot from a still-live catalog match. If neither allowed path has even a
+   few matching signals, leave it unbound.
+8. Write `stream-plans.json` (`contentKey: match:<espn-id>`), record the
    verification, commit, push, and merge to `main`.
-8. **Not live yet.** Run:
+9. **Not live yet.** Run:
 
    ```bash
    npm run confirm:stream-plan -- --match=<active-espn-id> --url=<confirmed-host/albaplayer/slot>
