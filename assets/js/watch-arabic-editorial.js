@@ -72,22 +72,21 @@
     [/\bStarting XI\b/gi, "التشكيل الأساسي"],
     [/\bStarters\b/gi, "التشكيل الأساسي"],
     [/\bاحتياط\b/g, "البدلاء"],
-    [/\bانضباط\b/g, "البطاقات"],
     [/Possession(?: Percentage| %)?/gi, "الاستحواذ على الكرة"],
     [/Total Shots/gi, "مجموع التسديدات"],
     [/Shots on Target/gi, "تسديدات على المرمى"],
     [/Corners?/gi, "ركنيات"],
-    [/Fouls(?: Committed)?/gi, "أخطاء مرتكبة"],
-    [/Offsides?/gi, "تسللات"],
-    [/Yellow Cards?/gi, "بطاقات صفراء"],
-    [/Red Cards?/gi, "بطاقات حمراء"],
+    [/Fouls(?: Committed)?/gi, "الأخطاء المرتكبة"],
+    [/Offsides?/gi, "التسلل"],
+    [/Yellow Cards?/gi, "البطاقات الصفراء"],
+    [/Red Cards?/gi, "البطاقات الحمراء"],
     [/Total Passes/gi, "مجموع التمريرات"],
     [/Pass Accuracy/gi, "دقة التمرير"],
-    [/Tackles?/gi, "التحامات"],
-    [/Interceptions?/gi, "اعتراضات"],
-    [/Clearances?/gi, "تشتيتات"],
-    [/Crosses?/gi, "عرضيات"],
-    [/Saves?/gi, "تصديات"],
+    [/Tackles?/gi, "الالتحامات"],
+    [/Interceptions?/gi, "الاعتراضات"],
+    [/Clearances?/gi, "التشتيتات"],
+    [/Crosses?/gi, "العرضيات"],
+    [/Saves?/gi, "التصديات"],
     [/Subbed for/gi, "خرج وشارك بدلاً منه"],
     [/Came on for/gi, "شارك بدلاً من"]
   ];
@@ -104,12 +103,50 @@
     }
   }
 
+  function statRowKind(row) {
+    const label = row.querySelector(".stat-label")?.textContent?.trim() || "";
+    if (/الأخطاء|Fouls?/i.test(label)) return "fouls";
+    if (/التسلل|Offsides?/i.test(label)) return "offsides";
+    if (/البطاقات|Cards?/i.test(label)) return "cards";
+    return "";
+  }
+
+  function splitMixedStats(root) {
+    root.querySelectorAll?.(".stat-group:not([data-kz-split])").forEach((group) => {
+      const rows = Array.from(group.querySelectorAll(":scope > .stat-row"));
+      const kinds = rows.map(statRowKind).filter(Boolean);
+      if (!kinds.includes("fouls") || !kinds.includes("offsides") || !kinds.includes("cards")) return;
+
+      const buckets = [
+        { kind: "fouls", title: "الأخطاء" },
+        { kind: "offsides", title: "التسلل" },
+        { kind: "cards", title: "البطاقات" }
+      ];
+      const fragment = document.createDocumentFragment();
+      buckets.forEach(({ kind, title }) => {
+        const selected = rows.filter((row) => statRowKind(row) === kind);
+        if (!selected.length) return;
+        const section = document.createElement("div");
+        section.className = "stat-group";
+        section.dataset.kzSplit = "1";
+        const head = document.createElement("div");
+        head.className = "stat-group-head";
+        head.innerHTML = `<span>${title}</span>`;
+        section.appendChild(head);
+        selected.forEach((row) => section.appendChild(row));
+        fragment.appendChild(section);
+      });
+      group.replaceWith(fragment);
+    });
+  }
+
   function relabel(root) {
     root.querySelectorAll?.("[data-i18n]").forEach((el) => {
       const key = el.getAttribute("data-i18n");
       if (WATCH_COPY[key] != null) el.textContent = window.I18N.t(key);
     });
     clean(root === document ? document.body : root);
+    splitMixedStats(root === document ? document.body : root);
   }
 
   function start() {
