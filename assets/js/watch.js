@@ -1830,6 +1830,7 @@
   function renderPremiumSourceTabs() {
     const host = document.getElementById("player-toolbar");
     if (!host) return;
+    host.querySelector(".watch-source-toggle")?.remove();
     host.querySelector(".premium-source-tabs")?.remove();
     if (!premiumChannelFor(match)) return;
 
@@ -1839,16 +1840,20 @@
     premiumUrl.searchParams.set("source", "iptv-premium");
     const premiumActive = premiumMode();
     const tabs = document.createElement("div");
-    tabs.className = "premium-source-tabs";
+    tabs.className = "watch-source-toggle";
     tabs.setAttribute("role", "tablist");
     tabs.setAttribute("aria-label", t("watch.sourceTabsAria"));
     tabs.innerHTML = `
-      <a class="premium-source-tab${premiumActive ? " is-active" : ""}" role="tab" aria-selected="${premiumActive}" href="${premiumUrl}">
-        ${t("card.watchPremium")} <small>${t("card.experimental")}</small>
-      </a>
-      <a class="premium-source-tab${premiumActive ? "" : " is-active"}" role="tab" aria-selected="${!premiumActive}" href="${originalUrl}">
-        ${t("card.watchOriginal")}
-      </a>`;
+      <span class="watch-source-toggle__kicker">${t("watch.sourceToggle")}</span>
+      <div class="watch-source-toggle__track">
+        <a class="watch-source-toggle__opt watch-source-toggle__opt--premium${premiumActive ? " is-active" : ""}" role="tab" aria-selected="${premiumActive}" href="${premiumUrl.pathname}${premiumUrl.search}">
+          <span>${t("card.watchPremium")}</span>
+          <small>${t("card.experimental")}</small>
+        </a>
+        <a class="watch-source-toggle__opt watch-source-toggle__opt--original${premiumActive ? "" : " is-active"}" role="tab" aria-selected="${!premiumActive}" href="${originalUrl.pathname}${originalUrl.search}">
+          <span>${t("card.watchOriginal")}</span>
+        </a>
+      </div>`;
     host.prepend(tabs);
   }
 

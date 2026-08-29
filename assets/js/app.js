@@ -108,9 +108,17 @@
     }
     if (hasPremiumWatchTab(m)) {
       return `
-        <div class="match-watch-tabs" role="group" aria-label="${t("watch.sourceTabsAria")}">
-          <a class="watch-link watch-link--premium" href="${premiumWatchHref(m)}">${ICON.play} ${t("card.watchPremium")} <small>${t("card.experimental")}</small></a>
-          <a class="watch-link watch-link--original" href="${watchHref(m)}">${t("card.watchOriginal")}</a>
+        <div class="watch-source-toggle" role="group" aria-label="${t("watch.sourceTabsAria")}">
+          <span class="watch-source-toggle__kicker">${t("watch.sourceToggle")}</span>
+          <div class="watch-source-toggle__track">
+            <a class="watch-source-toggle__opt watch-source-toggle__opt--premium" href="${premiumWatchHref(m)}">
+              <span>${t("card.watchPremium")}</span>
+              <small>${t("card.experimental")}</small>
+            </a>
+            <a class="watch-source-toggle__opt watch-source-toggle__opt--original" href="${watchHref(m)}">
+              <span>${t("card.watchOriginal")}</span>
+            </a>
+          </div>
         </div>`;
     }
     const label = m.status === "live" ? t("card.watchNow") : t("card.watch");
