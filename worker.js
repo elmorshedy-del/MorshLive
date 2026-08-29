@@ -436,9 +436,11 @@ function stripBlockedScripts(html) {
 }
 
 function hlsProxyUrl(target, origin, sig, basePath) {
-  const path = basePath || "/wk/hls";
+  // /wk/stream.m3u8 — not /wk/hls?u=...index.css. Cloudflare's 4h Browser
+  // Cache TTL treats a .css query as static CSS and freezes the live playlist.
+  const path = basePath || "/wk/stream.m3u8";
   const signature = sig ? `&sig=${encodeURIComponent(sig)}` : "";
-  return `${origin}${path}?u=${encodeURIComponent(target)}${signature}&kz=3`;
+  return `${origin}${path}?u=${encodeURIComponent(target)}${signature}`;
 }
 
 function fetchWithTimeout(url, init, ms = FETCH_TIMEOUT_MS) {
