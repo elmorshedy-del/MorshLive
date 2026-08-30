@@ -5,9 +5,11 @@ import {
   isOperatorAlbaPlayerUrl,
   isScoreBugUrl,
   OPERATOR_EMBED_PATH,
+  OPERATOR_PLAYER_BOOT,
   operatorEmbedProxyPath,
   operatorHlsRefererForHost,
   sanitizeOperatorEmbedHtml,
+  shouldRemountOperatorPlayback,
   unwrapOperatorEmbedUrl,
 } from "../lib/operator-embed.js";
 
@@ -48,8 +50,15 @@ describe("operator embed proxy path", () => {
   it("rewrites koralive through /wk/operator so the watch page is not a raw popup host", () => {
     const path = operatorEmbedProxyPath(KORALIVE);
     expect(path.startsWith(`${OPERATOR_EMBED_PATH}?u=`)).toBe(true);
+    expect(path).toContain(`kz=${OPERATOR_PLAYER_BOOT}`);
     expect(unwrapOperatorEmbedUrl(`https://korazero.com${path}`)).toBe(KORALIVE);
     expect(path).not.toContain("allow-popups");
+  });
+
+  it("remounts an already-live iframe when the player boot stamp changes", () => {
+    const next = operatorEmbedProxyPath(KORALIVE);
+    expect(shouldRemountOperatorPlayback(`/wk/operator/?u=${encodeURIComponent(KORALIVE)}`, next)).toBe(true);
+    expect(shouldRemountOperatorPlayback(next, next)).toBe(false);
   });
 
   it("does not wrap non-alba URLs", () => {
@@ -76,7 +85,7 @@ describe("isScoreBugUrl", () => {
   it("accepts a production KoraZero proxy around an allowed operator target", () => {
     expect(
       isScoreBugUrl(
-        "https://korazero.com/wk/operator/?u=https%3A%2F%2Fmo.yallacuo.xyz%2Falbaplayer%2Fsport-2%2F",
+        "https://korazero.com/wk/operator/?u=https%3A%2F%2Fmo.yallacuo.xyz%2Falbaplayer%2Fsport-2%2F&kz=smooth1",
       ),
     ).toBe(true);
   });

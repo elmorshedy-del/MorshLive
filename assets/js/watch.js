@@ -677,9 +677,12 @@
     if (!raw) return raw;
     try {
       const parsed = new URL(raw, location.origin);
-      if (/\/wk\/operator\/?$/i.test(parsed.pathname)) return parsed.pathname + parsed.search;
+      if (/\/wk\/operator\/?$/i.test(parsed.pathname)) {
+        if (!parsed.searchParams.get("kz")) parsed.searchParams.set("kz", "smooth1");
+        return parsed.pathname + parsed.search;
+      }
       if (!operatorAlbaHref(parsed.href) || !/\/albaplayer\//i.test(parsed.pathname)) return raw;
-      return "/wk/operator/?u=" + encodeURIComponent(parsed.toString());
+      return "/wk/operator/?u=" + encodeURIComponent(parsed.toString()) + "&kz=smooth1";
     } catch {
       return raw;
     }
@@ -1909,6 +1912,8 @@
           const pollSlot = document.getElementById("match-poll-slot");
           if (pollSlot) delete pollSlot.dataset.pollReady;
         }
+      } else {
+        loadPlayer();
       }
     }
     renderSidebar();
@@ -1949,6 +1954,11 @@
       renderManualMirrors();
     }
     setInterval(() => refreshMatches({ force: true }).catch((e) => console.warn("Match refresh failed:", e.message)), 90 * 1000);
+    setInterval(() => {
+      fetchAndApplyPlan()
+        .then(() => loadPlayer())
+        .catch((e) => console.warn("Plan remount failed:", e.message));
+    }, 20 * 1000);
     setInterval(() => refreshMatchDetail().catch((e) => console.warn("Detail refresh failed:", e.message)), 60 * 1000);
     setInterval(() => {
       if (!allowLegacySourceChrome() || !window.StreamCheck) return;
