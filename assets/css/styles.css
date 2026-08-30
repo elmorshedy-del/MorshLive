@@ -1211,12 +1211,6 @@ img { max-width: 100%; display: block; }
 .lineup-subs li {
   display: flex; align-items: center; gap: 8px; font-size: .84rem; padding: 3px 0; color: var(--text);
 }
-.lineup-name {
-  min-width: 0;
-  direction: ltr;
-  unicode-bidi: isolate;
-  overflow-wrap: break-word;
-}
 .lineup-jersey {
   display: grid; place-items: center; width: 20px; height: 20px; border-radius: 50%;
   background: var(--surface-2); border: 1px solid var(--border); font-size: .68rem;
@@ -1267,9 +1261,7 @@ img { max-width: 100%; display: block; }
 .pitch-dot--away .pitch-jersey { background: radial-gradient(circle at 35% 30%, rgba(255,255,255,.32), transparent 60%), var(--stat-away); color: #04222b; }
 .pitch-name {
   font-size: .64rem; font-weight: 700; color: #fff; text-shadow: 0 1px 3px rgba(0,0,0,.9);
-  text-align: center; line-height: 1.15; max-width: 68px;
-  direction: ltr; unicode-bidi: isolate;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-align: center; line-height: 1.15; max-width: 68px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 /* Card + sub badges anchored to the jersey, absolutely positioned so they
    never shift the dot layout. Rendered as small tilted cards. */
@@ -1305,19 +1297,21 @@ img { max-width: 100%; display: block; }
 .goal-col--away { text-align: start; }
 .goal-col li { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: .82rem; color: var(--text); min-width: 0; }
 .goal-ball { width: 14px; height: 14px; flex-shrink: 0; }
+.match-card .goal-scorer,
+.live-detail-card .goal-scorer,
+.featured-card .goal-scorer,
+.page-watch .goal-scorer,
+.match-panel-body .goal-scorer,
 .goal-scorer {
   font-weight: 700;
   min-width: 0;
   flex: 1 1 4.5rem;
   direction: ltr;
   unicode-bidi: isolate;
-  overflow-wrap: break-word;
-}
-.page-watch .goal-scorer,
-.page-watch .match-panel-body .goal-scorer {
   overflow: visible;
   text-overflow: unset;
   white-space: normal;
+  overflow-wrap: break-word;
 }
 .goal-min { color: var(--gold); font-weight: 800; font-variant-numeric: tabular-nums; flex-shrink: 0;
   direction: ltr; unicode-bidi: isolate; }
