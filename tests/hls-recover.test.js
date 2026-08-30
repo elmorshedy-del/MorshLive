@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  liveSyncBehindSeconds,
   operatorHighBufferWatchdogPeriod,
-  operatorLiveSyncDurationCount,
+  operatorInitialLiveManifestSize,
+  operatorLiveMaxLatencyDuration,
+  operatorLiveSyncDuration,
+  operatorMaxBufferHole,
   operatorMaxLiveSyncPlaybackRate,
   shouldReloadAfterSourceCycles,
   shouldRemountMainPlayer,
@@ -23,11 +27,26 @@ describe("shouldStartLoadOnFatalNetworkError", () => {
   });
 });
 
-describe("operatorLiveSyncDurationCount", () => {
-  it("keeps yesterday morning's 3-segment sync so the control-bar seconds can tick", () => {
-    expect(operatorLiveSyncDurationCount()).toBe(3);
+describe("liveSyncBehindSeconds", () => {
+  it("count-based sync sits on the live edge when TARGETDURATION is 0", () => {
+    expect(liveSyncBehindSeconds({ targetDuration: 0, count: 3 })).toBe(0);
+    expect(liveSyncBehindSeconds({ targetDuration: 0.5, count: 3 })).toBe(1.5);
+  });
+
+  it("uses a fixed second gap so 0.5s and 2s windows keep the same runway", () => {
+    expect(liveSyncBehindSeconds({ targetDuration: 0, count: 3, durationSeconds: 6 })).toBe(6);
+    expect(liveSyncBehindSeconds({ targetDuration: 2, count: 3, durationSeconds: 6 })).toBe(6);
+  });
+});
+
+describe("operatorLiveSyncDuration", () => {
+  it("holds six seconds behind live without speeding up or rewriting the playlist", () => {
+    expect(operatorLiveSyncDuration()).toBe(6);
+    expect(operatorLiveMaxLatencyDuration()).toBeGreaterThan(operatorLiveSyncDuration());
     expect(operatorMaxLiveSyncPlaybackRate()).toBe(1);
     expect(operatorHighBufferWatchdogPeriod()).toBeGreaterThanOrEqual(8);
+    expect(operatorMaxBufferHole()).toBeGreaterThanOrEqual(1);
+    expect(operatorInitialLiveManifestSize()).toBeGreaterThanOrEqual(3);
   });
 });
 

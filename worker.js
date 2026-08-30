@@ -29,7 +29,10 @@ import {
 } from "./lib/hls-cache.js";
 import {
   operatorHighBufferWatchdogPeriod,
-  operatorLiveSyncDurationCount,
+  operatorInitialLiveManifestSize,
+  operatorLiveMaxLatencyDuration,
+  operatorLiveSyncDuration,
+  operatorMaxBufferHole,
   operatorMaxLiveSyncPlaybackRate,
 } from "./lib/hls-recover.js";
 import { extractAlbaHlsSources, isOperatorAlbaPlayerUrl, operatorHlsRefererForHost, sanitizeOperatorEmbedHtml } from "./lib/operator-embed.js";
@@ -1434,9 +1437,8 @@ async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
 // URL. If the playing mirror dies mid-match (worldkoora's CDN hosts rotate and
 // die constantly), the player advances to the next live mirror on its own, so a
 // single dead host no longer takes the stream off.
-// hls.js tuning for third-party live HLS (worldkoora/dlhd CDNs). Based on hls.js
-// docs + community guidance: smaller forward buffer, live-edge sync, playback-rate
-// catch-up, and no startLoad() on non-fatal stalls (causes freeze loops — #7433).
+// hls.js tuning for third-party live HLS. Seconds-based live sync (not count),
+// no playback-rate catch-up, and no startLoad() on non-fatal stalls.
 // Contract: lib/hls-recover.js — startLoad(-1) on waiting rewinds a 2-seg edge.
 const HLS_BOOT_FN = `function kzBustPlaylist(url){
   var target='';
@@ -1465,15 +1467,15 @@ function kzHlsOpts(){
     maxBufferLength: 14,
     maxMaxBufferLength: 28,
     backBufferLength: 30,
-    liveSyncDurationCount: ${operatorLiveSyncDurationCount()},
-    liveMaxLatencyDurationCount: 16,
+    liveSyncDuration: ${operatorLiveSyncDuration()},
+    liveMaxLatencyDuration: ${operatorLiveMaxLatencyDuration()},
     liveDurationInfinity: true,
     maxLiveSyncPlaybackRate: ${operatorMaxLiveSyncPlaybackRate()},
     highBufferWatchdogPeriod: ${operatorHighBufferWatchdogPeriod()},
-    maxBufferHole: 0.5,
+    maxBufferHole: ${operatorMaxBufferHole()},
     nudgeOffset: 0.12,
     nudgeMaxRetry: 4,
-    initialLiveManifestSize: 1,
+    initialLiveManifestSize: ${operatorInitialLiveManifestSize()},
     startFragPrefetch: true,
     manifestLoadingMaxRetry: 6,
     manifestLoadingTimeOut: 10000,
