@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-30T15:53:00.000Z",
+  "updatedAt": "2026-08-30T17:31:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -615,6 +615,34 @@
           "verifiedAt": "2026-08-30T15:17:00.000Z",
           "label": "مانشستر يونايتد × إيبسويتش · عربي",
           "note": "T-15 bind; 1bein1 pre-match Doha studio + Old Trafford pitchside, Manchester caption, beIN mic. Listed Arabic beIN HD 1. Did not steal bein22 (Madrid live). Chelsea FT."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882904",
+      "teams": [["deportivo", "depor", "la coruña", "coruna"], ["valencia"]],
+      "contentKey": "match:espn-esp.1-401882904",
+      "kickoffUtc": "2026-08-30T17:30:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-30T17:31:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v2",
+          "url": "https://pl.koralive1.cc/albaplayer/bein4/?serv=0",
+          "contentKey": "match:espn-esp.1-401882904",
+          "status": "verified",
+          "verifiedAt": "2026-08-30T17:31:00.000Z",
+          "label": "ديبورتيفو لا كورونيا × فالنسيا · عربي",
+          "note": "Kickoff bind; bein4 beIN SPORTS 4 LIVE walk-out with DEPOR TIENDA boards at Riazor. Listed Arabic beIN 5 was a dead bumper. Leeds FT so bein4 is free. Did not steal 1bein1 (United still at Old Trafford)."
         }
       ]
     }
