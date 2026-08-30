@@ -1,19 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  korazero.com sitemap index
-  WC team + match URLs regenerated with archive refresh.
+  korazero.com sitemap index.
+  The current schedule sitemap is injected during the production build.
+  World Cup archive URLs stay crawlable through /tournament, but are no longer
+  pushed as primary sitemap inventory after the tournament has ended.
 -->
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
     <loc>https://korazero.com/sitemap-core.xml</loc>
-    <lastmod>2026-08-07</lastmod>
-  </sitemap>
-  <sitemap>
-    <loc>https://korazero.com/sitemap-wc-teams.xml</loc>
-    <lastmod>2026-08-07</lastmod>
-  </sitemap>
-  <sitemap>
-    <loc>https://korazero.com/sitemap-wc-matches.xml</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-08-30</lastmod>
   </sitemap>
 </sitemapindex>
