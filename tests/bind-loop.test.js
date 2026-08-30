@@ -118,9 +118,9 @@ describe("hasEnoughBindSignals", () => {
 });
 
 describe("nextBindCheck", () => {
-  it("retries at T-5 when T-15 is not a clear scorebug, then binds on enough signals", () => {
+  it("retries at T-7 when T-15 is not a clear scorebug, then binds on enough signals", () => {
     expect(nextBindCheck({ foundScorebug: false, enoughSignals: false, minutesToKickoff: 15 })).toBe(
-      "arm-t5",
+      "arm-t7",
     );
     expect(nextBindCheck({ foundScorebug: false, enoughSignals: true, minutesToKickoff: 15 })).toBe("bind");
     expect(nextBindCheck({ foundScorebug: false, enoughSignals: false, minutesToKickoff: 5 })).toBe(

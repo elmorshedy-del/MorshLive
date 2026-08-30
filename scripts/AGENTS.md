@@ -29,8 +29,9 @@ When they say today and tomorrow, `planBindLoop` lists every remaining EPL/La
 Liga id in that window — still one timer and one bind pass per ESPN id.
 For yallacuo/koralive, treat `iframeSrc` / Fabor changes only as reuse signals.
 A full two-team scorebug is enough, but so are a few matching signals (listed
-channel + venue, city, or one team). If T-15 is not 100% clear, arm **T-5**
-rather than waiting until kickoff. Prefer the verified inner AlbaPlayer URL
+channel + venue, city, or one team). If the T-15 timer was missed, start that
+pass immediately. If T-15 is not 100% clear, arm **T-7** rather than waiting
+until kickoff. Prefer the verified inner AlbaPlayer URL
 when `/wk/operator/` returns `X-KZ-Mode: hls-embed`; see `docs/STREAM-PLANS.md`.
 
 `verify-channel-bindings.js` (end of `refresh:matches`) warns on shared koraplus slots but does not fail Workers Builds unless `KZ_BINDINGS_STRICT=1`. A hard fail here blocked Valencia and Madrid catalog deploys.

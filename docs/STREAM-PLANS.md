@@ -192,8 +192,9 @@ of that bind loop — do not reuse a running timer for a different fixture.
 When the user asks to run the bind loop for **today and tomorrow**, use
 `planBindLoop` in `lib/bind-schedule.js` on remaining EPL / La Liga fixtures
 in that UTC window. Execute immediately if a match is already inside T-15,
-T-5, or kickoff. Arm one `loop-bind-<espn-id>` timer at T-15 for each later
-Sunday/Monday fixture. Skip matches that finished more than 150 minutes ago.
+T-7, or kickoff — including when the T-15 timer was missed. Arm one
+`loop-bind-<espn-id>` timer at T-15 for each later Sunday/Monday fixture.
+Skip matches that finished more than 150 minutes ago.
 Do not steal a still-live catalog slot.
 
 ### Probe and bind
@@ -203,9 +204,10 @@ Do not steal a still-live catalog slot.
    that this is the correct game: listed channel matches the slot, plus venue /
    stadium, city, or one team name or crest. Tottenham T-15 (29 Aug 2026) on
    beIN 1 showed ملعب توتنهام هوتسبير / لندن — that is enough. A BeIN logo or
-   an ad alone is not. If the picture is still unclear, stop the tour and arm
-   **T-5** (not kickoff).
-2. **T-5** — probe the same ESPN id again. Bind on a few matching signals or a
+   an ad alone is not. If the T-15 timer was missed, run this pass as soon as
+   you can. If the picture is still unclear, stop the tour and arm **T-7**
+   (not kickoff).
+2. **T-7** — probe the same ESPN id again. Bind on a few matching signals or a
    scorebug. If it is still only ads / no match signals, arm **kickoff**.
 3. **Kickoff** — last look at the likely BeIN slot and its yallacuo twin. A
    changed inner Fabor id or `iframeSrc` is only a reuse signal, not proof.

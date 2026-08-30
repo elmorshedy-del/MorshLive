@@ -23,6 +23,26 @@ describe("bindActionForMatch", () => {
       fireAt: Date.parse("2026-08-30T12:45:00Z"),
     });
   });
+
+  it("starts the T-15 pass immediately when that timer was missed", () => {
+    expect(
+      bindActionForMatch({ kickoffUtc: "2026-08-30T15:00:00Z", now: Date.parse("2026-08-30T14:48:00Z") }),
+    ).toEqual({
+      check: "t15",
+      executeNow: true,
+      fireAt: Date.parse("2026-08-30T14:45:00Z"),
+    });
+  });
+
+  it("runs T-7 when inside the last seven minutes", () => {
+    expect(
+      bindActionForMatch({ kickoffUtc: "2026-08-30T15:00:00Z", now: Date.parse("2026-08-30T14:54:00Z") }),
+    ).toEqual({
+      check: "t7",
+      executeNow: true,
+      fireAt: Date.parse("2026-08-30T14:53:00Z"),
+    });
+  });
 });
 
 describe("planBindLoop", () => {

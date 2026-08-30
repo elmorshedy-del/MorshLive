@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-30T13:05:48.000Z",
+  "updatedAt": "2026-08-30T14:49:34.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -559,6 +559,34 @@
           "verifiedAt": "2026-08-30T13:05:48.000Z",
           "label": "ليدز × برينتفورد · عربي",
           "note": "Kickoff bind; bein4 scorebug LEE 0-0 BRE at 02:26 on beIN SPORTS 4. Did not take 1bein1 or bein3."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882899",
+      "teams": [["real madrid", "madrid"], ["málaga", "malaga"]],
+      "contentKey": "match:espn-esp.1-401882899",
+      "kickoffUtc": "2026-08-30T15:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-30T14:49:34.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v2",
+          "url": "https://pl.koralive1.cc/albaplayer/bein22/?serv=0",
+          "contentKey": "match:espn-esp.1-401882899",
+          "status": "verified",
+          "verifiedAt": "2026-08-30T14:49:34.000Z",
+          "label": "ريال مدريد × مالقة · عربي",
+          "note": "Missed T-15 catch-up; bein22 showed Bernabéu + Málaga vs Real Madrid crests. 1bein1 still CHE 4-2 BHA at 87:22 — not stolen. Did not change espn-esp.1-401882919."
         }
       ]
     }
