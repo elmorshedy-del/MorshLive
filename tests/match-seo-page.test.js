@@ -17,9 +17,22 @@ function match(status, extra = {}) {
     leagueAr: "الدوري الإنجليزي الممتاز",
     competition: "epl",
     score: status === "upcoming" ? "VS" : "2 - 1",
-    venueInfo: { name: "St. James' Park", city: "Newcastle-upon-Tyne", country: "England", streetAddress: "" },
-    homeTeamInfo: { id: "361", name: "Newcastle United", url: "https://www.espn.com/soccer/club/_/id/361/newcastle-united" },
-    awayTeamInfo: { id: "349", name: "AFC Bournemouth", url: "https://www.espn.com/soccer/club/_/id/349/afc-bournemouth" },
+    venueInfo: {
+      name: "St. James' Park",
+      city: "Newcastle-upon-Tyne",
+      country: "England",
+      streetAddress: "",
+    },
+    homeTeamInfo: {
+      id: "361",
+      name: "Newcastle United",
+      url: "https://www.espn.com/soccer/club/_/id/361/newcastle-united",
+    },
+    awayTeamInfo: {
+      id: "349",
+      name: "AFC Bournemouth",
+      url: "https://www.espn.com/soccer/club/_/id/349/afc-bournemouth",
+    },
     headToHead: { summary: "NEW leads series 2-1-2", totalCompetitions: 5 },
     recentForm: {
       home: [{ result: "W", opponent: "Arsenal", score: "2-0" }],
@@ -30,8 +43,17 @@ function match(status, extra = {}) {
 }
 
 function htmlFor(status, extra = {}, lang = "ar") {
-  const route = lang === "ar" ? "/match/2026-09-05/newcastle-united-vs-afc-bournemouth" : "/en/match/2026-09-05/newcastle-united-vs-afc-bournemouth";
-  return buildMatchSeoHtml({ match: match(status, extra), route, siteUrl: "https://korazero.com", teamNamesAr, lang });
+  const route =
+    lang === "ar"
+      ? "/match/2026-09-05/newcastle-united-vs-afc-bournemouth"
+      : "/en/match/2026-09-05/newcastle-united-vs-afc-bournemouth";
+  return buildMatchSeoHtml({
+    match: match(status, extra),
+    route,
+    siteUrl: "https://korazero.com",
+    teamNamesAr,
+    lang,
+  });
 }
 
 describe("server-rendered match page HTML", () => {
@@ -79,10 +101,16 @@ describe("server-rendered match page HTML", () => {
   it("publishes reciprocal language URLs and a distinct English page", () => {
     const ar = htmlFor("upcoming");
     const en = htmlFor("upcoming", {}, "en");
-    expect(ar).toContain('hreflang="en" href="https://korazero.com/en/match/2026-09-05/newcastle-united-vs-afc-bournemouth"');
-    expect(ar).toContain('hreflang="x-default" href="https://korazero.com/match/2026-09-05/newcastle-united-vs-afc-bournemouth"');
+    expect(ar).toContain(
+      'hreflang="en" href="https://korazero.com/en/match/2026-09-05/newcastle-united-vs-afc-bournemouth"',
+    );
+    expect(ar).toContain(
+      'hreflang="x-default" href="https://korazero.com/match/2026-09-05/newcastle-united-vs-afc-bournemouth"',
+    );
     expect(en).toContain('<html lang="en" dir="ltr">');
-    expect(en).toContain('rel="canonical" href="https://korazero.com/en/match/2026-09-05/newcastle-united-vs-afc-bournemouth"');
+    expect(en).toContain(
+      'rel="canonical" href="https://korazero.com/en/match/2026-09-05/newcastle-united-vs-afc-bournemouth"',
+    );
   });
 
   it("does not emit incomplete Event location schema", () => {
