@@ -88,12 +88,20 @@
     return parts.join(" · ");
   }
 
+  function isSaudiProLeagueMatch(m) {
+    return m?.competition === "spl" || m?.leagueSlug === "ksa.1" || /espn-ksa\.1-/.test(String(m?.id || ""));
+  }
+
   function watchAction(m) {
     if (m.status === "ended") {
       const label = isWorldCupMatch(m)
         ? t("home.highlightBannerCta")
         : t("card.summary");
       return `<a class="watch-link watch-link--commentary" href="${watchHref(m)}">${ICON.play} ${label}</a>`;
+    }
+    if (isSaudiProLeagueMatch(m)) {
+      const label = m.status === "live" ? t("card.liveCentre") : t("card.matchCentre");
+      return `<a class="watch-link watch-link--soon" href="${watchHref(m)}">${label}</a>`;
     }
     const label = m.status === "live" ? t("card.watchNow") : t("card.watch");
     return `<a class="watch-link" href="${watchHref(m)}">${ICON.play} ${label}</a>`;

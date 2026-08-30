@@ -62,6 +62,19 @@
     return m?.league || "";
   };
 
+  function isSaudiProLeagueMatch(m) {
+    if (m?.competition === "spl" || m?.leagueSlug === "ksa.1" || /espn-ksa\.1-/.test(String(m?.id || ""))) {
+      return true;
+    }
+    return /espn-ksa\.1-/.test(String(params.get("match") || ""));
+  }
+
+  function saudiStreamComingSoon(m, plan) {
+    if (!isSaudiProLeagueMatch(m)) return false;
+    const status = String(plan?.status || "");
+    return status !== "verified" && status !== "operator";
+  }
+
   let MATCHES = [];
   let channel = CHANNELS[0];
   let match = null;
@@ -781,6 +794,20 @@
     if (!shell) return;
     loadedUrl = `plan-wait:${reason || "pending"}`;
     destroyInlineHls();
+    if (saudiStreamComingSoon(match, activePlan) || reason === "saudi-soon") {
+      const kicker = t("watch.saudiSoonKicker");
+      const title = t("watch.saudiSoonTitle");
+      const hint = t("watch.saudiSoonHint");
+      const live = t("watch.saudiSoonLive");
+      shell.innerHTML =
+        `<div class="player-shell-waiting player-shell-waiting--soon" data-plan-wait="saudi-soon">` +
+        `<p class="player-shell-waiting__kicker">${escapeHtml(kicker === "watch.saudiSoonKicker" ? "قريباً" : kicker)}</p>` +
+        `<strong>${escapeHtml(title === "watch.saudiSoonTitle" ? "البث المباشر غير متاح بعد" : title)}</strong>` +
+        `<span>${escapeHtml(hint === "watch.saudiSoonHint" ? "البث المباشر لهذه المباراة من الدوري السعودي غير جاهز بعد، وسنوفّره قريباً. النتيجة والدقيقة والإحصائيات مباشرة الآن." : hint)}</span>` +
+        `<em class="player-shell-waiting__live">${escapeHtml(live === "watch.saudiSoonLive" ? "النتيجة والإحصائيات مباشرة" : live)}</em>` +
+        `</div>`;
+      return;
+    }
     const title = t("watch.planWaiting");
     const hint = t("watch.planWaitingHint");
     shell.innerHTML =
@@ -960,6 +987,12 @@
         mountInlineHls([bridgeUrl], { onFatal: showBridgeFailure });
         return;
       }
+    }
+
+    if (saudiStreamComingSoon(match, activePlan)) {
+      applyWatchChrome();
+      showPlanWaiting("saudi-soon");
+      return;
     }
 
     const planSource = activePlan && activePlan.selected;
@@ -1619,7 +1652,9 @@
     document.getElementById("info-group").textContent = channel.group;
     const infoRoute = document.getElementById("info-route");
     if (infoRoute) {
-      if (activePlan && activePlan.selected) {
+      if (saudiStreamComingSoon(match, activePlan)) {
+        infoRoute.textContent = t("watch.saudiSoonTitle");
+      } else if (activePlan && activePlan.selected) {
         const label = activePlan.selected.label || activePlan.selected.profile || activePlan.selected.kind;
         infoRoute.textContent = `${activePlan.status} · ${label}`;
       } else if (activePlan && (activePlan.status === "waiting" || activePlan.status === "conflict")) {

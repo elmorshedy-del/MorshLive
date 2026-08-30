@@ -2,7 +2,7 @@
  * editorial, visual, and content-architecture layers across every page. */
 (function () {
   "use strict";
-  const stamp = "20260830spl";
+  const stamp = "20260830soon";
 
   // Install the match-time formatter before data.js loads. Every visitor sees
   // their own browser/device-local kickoff time plus a constant Makkah reference.

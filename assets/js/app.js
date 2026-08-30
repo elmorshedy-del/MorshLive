@@ -98,12 +98,23 @@
     return window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(m);
   }
 
+  function isSaudiProLeagueMatch(m) {
+    return m?.competition === "spl" || m?.leagueSlug === "ksa.1" || /espn-ksa\.1-/.test(String(m?.id || ""));
+  }
+
+  function saudiCentreLabel(m) {
+    return m.status === "live" ? t("card.liveCentre") : t("card.matchCentre");
+  }
+
   function watchAction(m) {
     if (m.status === "ended") {
       if (isCommentaryAvailable(m)) {
         return `<a class="watch-link watch-link--commentary" href="${watchHref(m)}">${ICON.mic} ${t("card.watchCommentary")}</a>`;
       }
       return `<span class="watch-link watch-link--disabled">${t("card.ended")}</span>`;
+    }
+    if (isSaudiProLeagueMatch(m)) {
+      return `<a class="watch-link watch-link--soon" href="${watchHref(m)}">${saudiCentreLabel(m)}</a>`;
     }
     if (hasPremiumWatchTab(m)) {
       return `
@@ -179,7 +190,7 @@
       return;
     }
     const liveBlock = live.length
-      ? `<div class="featured-head"><span class="rec-dot"></span> ${t("live.now")}</div><div class="featured-grid">${live.map((m) => `<a class="featured-card" href="${watchHref(m)}"><div class="featured-league">${competitionMark(m)}${leagueLabel(m)}${m.minute ? ` · ${m.minute}` : ""}</div><div class="featured-teams"><span>${teamLabel(m.home)}</span><b class="featured-score">${m.score}${window.liveMinuteLabel && window.liveMinuteLabel(m) ? ` · ${window.liveMinuteLabel(m)}` : (m.minute ? ` · ${m.minute}` : "")}</b><span>${teamLabel(m.away)}</span></div>${commentatorText(m) ? `<div class="featured-commentator">${ICON.mic} ${commentatorText(m)}</div>` : ""}${timeZoneChips(m, { compact: true })}<div class="featured-foot">${ICON.play} ${t("card.watchNow")}</div></a>`).join("")}</div>`
+      ? `<div class="featured-head"><span class="rec-dot"></span> ${t("live.now")}</div><div class="featured-grid">${live.map((m) => `<a class="featured-card" href="${watchHref(m)}"><div class="featured-league">${competitionMark(m)}${leagueLabel(m)}${m.minute ? ` · ${m.minute}` : ""}</div><div class="featured-teams"><span>${teamLabel(m.home)}</span><b class="featured-score">${m.score}${window.liveMinuteLabel && window.liveMinuteLabel(m) ? ` · ${window.liveMinuteLabel(m)}` : (m.minute ? ` · ${m.minute}` : "")}</b><span>${teamLabel(m.away)}</span></div>${commentatorText(m) ? `<div class="featured-commentator">${ICON.mic} ${commentatorText(m)}</div>` : ""}${timeZoneChips(m, { compact: true })}<div class="featured-foot">${isSaudiProLeagueMatch(m) ? saudiCentreLabel(m) : `${ICON.play} ${t("card.watchNow")}`}</div></a>`).join("")}</div>`
       : "";
     const endedBlock = recentEnded.length
       ? `<div class="featured-head featured-head--commentary"><span class="rec-dot rec-dot--muted"></span> ${t("live.recentEnded")}</div><div class="featured-grid">${recentEnded.map((m) => `<a class="featured-card featured-card--commentary" href="${watchHref(m)}"><div class="featured-league">${competitionMark(m)}${leagueLabel(m)} · ${t("status.ended")}</div><div class="featured-teams"><span>${teamLabel(m.home)}</span><b class="featured-score">${m.score}</b><span>${teamLabel(m.away)}</span></div>${commentatorText(m) ? `<div class="featured-commentator">${ICON.mic} ${commentatorText(m)}</div>` : ""}<div class="featured-foot">${ICON.mic} ${t("card.watchCommentary")}</div></a>`).join("")}</div>`
@@ -210,7 +221,12 @@
       m.lineups ? `<div class="live-detail-section"><h3>${ICON.trophy} ${t("card.lineups")}</h3>${window.buildLineupsHtml(m)}</div>` : "",
       m.stats ? `<div class="live-detail-section"><div id="live-stats-notice-slot" class="match-notice-slot"></div><h3>${ICON.trophy} ${t("card.stats")}</h3>${window.buildStatsHtml(m)}</div>` : "",
     ].join("");
-    wrap.innerHTML = `<div class="live-detail-card ${live ? "is-live" : "is-ended"}"><div class="live-detail-top">${statusHtml}<span class="live-detail-league">${competitionMark(m)}${leagueLabel(m)}</span></div><div class="live-detail-teams"><div class="team">${crest(m.homeBadge, m.homeAbbr)}<div class="tname">${teamLabel(m.home)}</div></div><div class="live-detail-score">${m.score}</div><div class="team">${crest(m.awayBadge, m.awayAbbr)}<div class="tname">${teamLabel(m.away)}</div></div></div>${window.buildGoalsHtml ? window.buildGoalsHtml(m) : ""}<div class="live-detail-meta">${footMeta(m)}</div><a class="watch-link live-detail-watch" href="${watchHref(m)}">${ICON.play} ${live ? t("card.watchNow") : t("card.watchCommentary")}</a>${!live && window.KZHighlights && window.KZHighlights.hasSummaryContent(m) ? `<div class="live-detail-section live-detail-section--highlights"><h3>${ICON.trophy} ${t("card.summary")}</h3>${window.KZHighlights.summaryBodyHtml(m)}</div>` : ""}${sections}</div>`;
+    const detailCta = !live
+      ? `${ICON.play} ${t("card.watchCommentary")}`
+      : isSaudiProLeagueMatch(m)
+        ? saudiCentreLabel(m)
+        : `${ICON.play} ${t("card.watchNow")}`;
+    wrap.innerHTML = `<div class="live-detail-card ${live ? "is-live" : "is-ended"}"><div class="live-detail-top">${statusHtml}<span class="live-detail-league">${competitionMark(m)}${leagueLabel(m)}</span></div><div class="live-detail-teams"><div class="team">${crest(m.homeBadge, m.homeAbbr)}<div class="tname">${teamLabel(m.home)}</div></div><div class="live-detail-score">${m.score}</div><div class="team">${crest(m.awayBadge, m.awayAbbr)}<div class="tname">${teamLabel(m.away)}</div></div></div>${window.buildGoalsHtml ? window.buildGoalsHtml(m) : ""}<div class="live-detail-meta">${footMeta(m)}</div><a class="watch-link live-detail-watch${live && isSaudiProLeagueMatch(m) ? " watch-link--soon" : ""}" href="${watchHref(m)}">${detailCta}</a>${!live && window.KZHighlights && window.KZHighlights.hasSummaryContent(m) ? `<div class="live-detail-section live-detail-section--highlights"><h3>${ICON.trophy} ${t("card.summary")}</h3>${window.KZHighlights.summaryBodyHtml(m)}</div>` : ""}${sections}</div>`;
     if (window.activateStatBars) window.activateStatBars(wrap);
     if (window.KZHighlights) window.KZHighlights.bindReplayLaunch(wrap);
     if (m.stats && window.MatchNotice) {

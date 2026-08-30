@@ -230,6 +230,14 @@ body {
 .player-shell-waiting {
   background: radial-gradient(circle at 50% 24%, rgba(24, 226, 154, .09), transparent 46%), #050912;
 }
+.player-shell-waiting--soon {
+  background: radial-gradient(circle at 50% 22%, rgba(0, 108, 53, .3), transparent 50%), #050912;
+}
+.watch-link--soon {
+  background: #0d3b28;
+  color: #d7f7e8;
+  border-color: rgba(24, 226, 154, .28);
+}
 .watch-sources-card, .alt-streams-card {
   background: rgba(10, 16, 29, .9) !important;
   border-color: rgba(255, 255, 255, .085) !important;

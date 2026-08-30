@@ -1381,6 +1381,47 @@ img { max-width: 100%; display: block; }
 .player-shell-waiting span {
   max-width: 28rem; margin: 0 auto; color: #91a0b8; font-size: .9rem; line-height: 1.65;
 }
+.player-shell-waiting--soon {
+  gap: 12px;
+  padding: 32px 28px;
+  background: radial-gradient(circle at 50% 22%, rgba(0, 108, 53, .28), transparent 50%), #07110c;
+}
+.player-shell-waiting__kicker {
+  margin: 0;
+  color: #7ef0c9;
+  font-size: .72rem;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+.player-shell-waiting__live {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 4px auto 0;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(24, 226, 154, .28);
+  background: rgba(24, 226, 154, .08);
+  color: #b7f5d8;
+  font-size: .78rem;
+  font-style: normal;
+  font-weight: 700;
+}
+.player-shell-waiting__live::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #18e29a;
+  box-shadow: 0 0 0 4px rgba(24, 226, 154, .16);
+}
+.watch-link--soon {
+  background: #0d3b28;
+  color: #d7f7e8;
+  box-shadow: none;
+  border: 1px solid rgba(24, 226, 154, .28);
+}
 .player-dual {
   display: block;
 }
