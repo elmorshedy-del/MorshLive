@@ -28,12 +28,16 @@ import {
   workerOnlyCacheKeyUrl,
 } from "./lib/hls-cache.js";
 import {
+  operatorCapLevelToPlayerSize,
+  operatorEnableWorker,
   operatorHighBufferWatchdogPeriod,
   operatorInitialLiveManifestSize,
   operatorLiveMaxLatencyDuration,
   operatorLiveSyncDuration,
   operatorMaxBufferHole,
+  operatorMaxBufferLength,
   operatorMaxLiveSyncPlaybackRate,
+  operatorMaxMaxBufferLength,
 } from "./lib/hls-recover.js";
 import { extractAlbaHlsSources, isOperatorAlbaPlayerUrl, operatorHlsRefererForHost, sanitizeOperatorEmbedHtml } from "./lib/operator-embed.js";
 
@@ -1461,11 +1465,11 @@ function KzLoader(config){
 function kzHlsOpts(){
   return {
     loader: KzLoader,
-    enableWorker: false,
+    enableWorker: ${operatorEnableWorker()},
     lowLatencyMode: false,
     startPosition: -1,
-    maxBufferLength: 14,
-    maxMaxBufferLength: 28,
+    maxBufferLength: ${operatorMaxBufferLength()},
+    maxMaxBufferLength: ${operatorMaxMaxBufferLength()},
     backBufferLength: 30,
     liveSyncDuration: ${operatorLiveSyncDuration()},
     liveMaxLatencyDuration: ${operatorLiveMaxLatencyDuration()},
@@ -1484,7 +1488,7 @@ function kzHlsOpts(){
     fragLoadingTimeOut: 12000,
     abrEwmaFastLive: 3,
     abrEwmaSlowLive: 9,
-    capLevelToPlayerSize: true,
+    capLevelToPlayerSize: ${operatorCapLevelToPlayerSize()},
     fetchSetup: function(ctx, init){
       return new Request(kzBustPlaylist((ctx&&ctx.url)||''), init||{});
     },

@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
   liveSyncBehindSeconds,
+  operatorCapLevelToPlayerSize,
+  operatorEnableWorker,
   operatorHighBufferWatchdogPeriod,
   operatorInitialLiveManifestSize,
   operatorLiveMaxLatencyDuration,
   operatorLiveSyncDuration,
   operatorMaxBufferHole,
+  operatorMaxBufferLength,
   operatorMaxLiveSyncPlaybackRate,
+  operatorMaxMaxBufferLength,
   shouldReloadAfterSourceCycles,
   shouldRemountMainPlayer,
   shouldRotateLiveSources,
@@ -47,6 +51,15 @@ describe("operatorLiveSyncDuration", () => {
     expect(operatorHighBufferWatchdogPeriod()).toBeGreaterThanOrEqual(8);
     expect(operatorMaxBufferHole()).toBeGreaterThanOrEqual(1);
     expect(operatorInitialLiveManifestSize()).toBeGreaterThanOrEqual(3);
+  });
+});
+
+describe("operatorEnableWorker", () => {
+  it("demuxes on a worker so main-thread remux does not hitch every fragment", () => {
+    expect(operatorEnableWorker()).toBe(true);
+    expect(operatorMaxBufferLength()).toBe(30);
+    expect(operatorMaxMaxBufferLength()).toBeGreaterThanOrEqual(operatorMaxBufferLength());
+    expect(operatorCapLevelToPlayerSize()).toBe(false);
   });
 });
 
