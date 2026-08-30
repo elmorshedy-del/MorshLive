@@ -1,5 +1,3 @@
-import { loadSeasonHighlights, loadTeamNamesAr, loadTodayMatches } from "../adapters/assets.js";
-import { fetchEspnEventsForMatchDay, fetchEspnMatchSummary } from "../adapters/espn-seo.js";
 import {
   enrichSeoMatchFromSummary,
   mergeKnownMatchData,
@@ -7,6 +5,8 @@ import {
 } from "../../lib/match-seo-data.js";
 import { buildMatchSeoHtml } from "../../lib/match-seo-page.js";
 import { matchPagePath } from "../../lib/seo-pages-core.js";
+import { loadSeasonHighlights, loadTeamNamesAr, loadTodayMatches } from "../adapters/assets.js";
+import { fetchEspnEventsForMatchDay, fetchEspnMatchSummary } from "../adapters/espn-seo.js";
 
 const CANONICAL_SITE = "https://korazero.com";
 
