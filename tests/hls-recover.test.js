@@ -44,8 +44,8 @@ describe("liveSyncBehindSeconds", () => {
 });
 
 describe("operatorLiveSyncDuration", () => {
-  it("holds six seconds behind live without speeding up or rewriting the playlist", () => {
-    expect(operatorLiveSyncDuration()).toBe(6);
+  it("holds thirty seconds behind live so maxBufferLength can actually fill", () => {
+    expect(operatorLiveSyncDuration()).toBe(30);
     expect(operatorLiveMaxLatencyDuration()).toBeGreaterThan(operatorLiveSyncDuration());
     expect(operatorMaxLiveSyncPlaybackRate()).toBe(1);
     expect(operatorHighBufferWatchdogPeriod()).toBeGreaterThanOrEqual(8);

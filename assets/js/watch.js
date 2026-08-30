@@ -678,11 +678,11 @@
     try {
       const parsed = new URL(raw, location.origin);
       if (/\/wk\/operator\/?$/i.test(parsed.pathname)) {
-        if (!parsed.searchParams.get("kz")) parsed.searchParams.set("kz", "smooth2");
+        if (!parsed.searchParams.get("kz")) parsed.searchParams.set("kz", "buf30");
         return parsed.pathname + parsed.search;
       }
       if (!operatorAlbaHref(parsed.href) || !/\/albaplayer\//i.test(parsed.pathname)) return raw;
-      return "/wk/operator/?u=" + encodeURIComponent(parsed.toString()) + "&kz=smooth2";
+      return "/wk/operator/?u=" + encodeURIComponent(parsed.toString()) + "&kz=buf30";
     } catch {
       return raw;
     }
