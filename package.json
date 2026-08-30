@@ -9,7 +9,7 @@
   "scripts": {
     "deploy": "bash scripts/deploy-cloudflare.sh",
     "refresh:matches": "node scripts/refuse-stale-main-deploy.mjs && node scripts/refresh-for-deploy.mjs && node scripts/refuse-stale-main-deploy.mjs",
-    "refresh:matches:full": "node scripts/fetch-matches.js && node scripts/update-season-highlights.mjs && node scripts/fetch-tournament-archive.js && node scripts/build-seo-pages.mjs && node scripts/verify-channel-bindings.js",
+    "refresh:matches:full": "node scripts/preserve-seo-matches.mjs && node scripts/fetch-matches.js && node scripts/enrich-seo-matches.mjs && node scripts/update-season-highlights.mjs && node scripts/fetch-tournament-archive.js && node scripts/build-seo-pages.mjs && node scripts/verify-channel-bindings.js",
     "setup:workers-builds": "node scripts/setup-workers-builds.mjs",
     "browsers:install": "playwright install chromium",
     "browsers:stealth": "npx patchright install chrome",
