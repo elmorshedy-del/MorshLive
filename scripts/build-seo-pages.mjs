@@ -2,12 +2,14 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { applyHomepageSeoHtml } from "../lib/home-seo.js";
 import { buildSeoPages } from "../lib/seo-pages.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
 const TODAY_JSON = path.join(ROOT, "assets", "data", "today.json");
 const TEAM_AR_JSON = path.join(ROOT, "assets", "data", "team-names-ar.json");
+const HOME_HTML = path.join(ROOT, "index.html");
 const OUT_DIR = path.join(ROOT, "generated", "seo");
 const SITEMAP_SCHEDULE = path.join(ROOT, "sitemap-schedule.xml");
 const SITEMAP_INDEX = path.join(ROOT, "sitemap.xml");
@@ -51,6 +53,12 @@ function installScheduleSitemap() {
   fs.writeFileSync(SITEMAP_INDEX, text);
 }
 
+function installHomepageSeo() {
+  if (!fs.existsSync(HOME_HTML)) return;
+  const html = fs.readFileSync(HOME_HTML, "utf8");
+  fs.writeFileSync(HOME_HTML, applyHomepageSeoHtml(html));
+}
+
 function main() {
   const payload = readJson(TODAY_JSON, { matches: [] });
   const teamNamesAr = readJson(TEAM_AR_JSON, {});
@@ -68,6 +76,7 @@ function main() {
   fs.writeFileSync(SITEMAP_SCHEDULE, result.sitemapXml);
   installRedirects(result.redirectLines);
   installScheduleSitemap();
+  installHomepageSeo();
 
   console.log(
     `SEO pages: ${result.pages.length} pages for ${result.matchCount} matches -> ${path.relative(ROOT, OUT_DIR)}`,
