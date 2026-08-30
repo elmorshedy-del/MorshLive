@@ -4,8 +4,22 @@ import { injectTournamentArchiveLinks, renderTournamentArchiveLinks } from "../l
 const index = {
   matchCount: 2,
   matches: [
-    { path: "/world-cup-2026/mexico-vs-south-africa", home: "Mexico", away: "South Africa", homeAr: "المكسيك", awayAr: "جنوب أفريقيا", score: "2 - 0" },
-    { path: "/world-cup-2026/brazil-vs-morocco", home: "Brazil", away: "Morocco", homeAr: "البرازيل", awayAr: "المغرب", score: "1 - 1" },
+    {
+      path: "/world-cup-2026/mexico-vs-south-africa",
+      home: "Mexico",
+      away: "South Africa",
+      homeAr: "المكسيك",
+      awayAr: "جنوب أفريقيا",
+      score: "2 - 0",
+    },
+    {
+      path: "/world-cup-2026/brazil-vs-morocco",
+      home: "Brazil",
+      away: "Morocco",
+      homeAr: "البرازيل",
+      awayAr: "المغرب",
+      score: "1 - 1",
+    },
   ],
 };
 
