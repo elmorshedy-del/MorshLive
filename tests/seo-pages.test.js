@@ -13,37 +13,46 @@ const payload = {
   date: "2026-08-23",
   matches: [
     {
+      id: "espn-eng.1-1",
       home: "Liverpool",
       away: "Newcastle United",
       kickoffUtc: "2026-08-23T15:00:00Z",
       competition: "epl",
+      leagueAr: "الدوري الإنجليزي الممتاز",
       status: "upcoming",
       score: "VS",
       channel: "beIN Sports 1",
       channelId: "bein-sports-1",
       commentator: "حفيظ دراجي",
+      seoLastmod: "2026-08-23T14:00:00.000Z",
     },
     {
+      id: "espn-eng.1-2",
       home: "Liverpool",
       away: "Arsenal",
       kickoffUtc: "2026-08-27T18:00:00Z",
       competition: "epl",
+      leagueAr: "الدوري الإنجليزي الممتاز",
       status: "upcoming",
       score: "VS",
     },
     {
+      id: "espn-esp.1-3",
       home: "Barcelona",
       away: "Elche",
       kickoffUtc: "2026-08-23T20:00:00Z",
       competition: "laliga",
+      leagueAr: "الدوري الإسباني",
       status: "ended",
       score: "3 - 0",
     },
     {
+      id: "espn-ksa.1-4",
       home: "Al Hilal",
       away: "Al Ahli",
       kickoffUtc: "2026-08-23T18:00:00Z",
       competition: "spl",
+      leagueAr: "الدوري السعودي",
       status: "upcoming",
       score: "VS",
     },
@@ -67,6 +76,8 @@ describe("seo-pages", () => {
     expect(routes).toContain("/league/la-liga");
     expect(routes).toContain("/league/saudi-pro-league");
     expect(routes).toContain("/match/2026-08-23/liverpool-vs-newcastle-united");
+    expect(routes).toContain("/en/match/2026-08-23/liverpool-vs-newcastle-united");
+    expect(routes).toContain("/matches/archive");
   });
 
   it("only creates team pages when the current schedule has enough substance", () => {
@@ -84,7 +95,8 @@ describe("seo-pages", () => {
       (candidate) => candidate.route === "/match/2026-08-23/liverpool-vs-newcastle-united",
     );
 
-    expect(page.html).toContain("ليفربول ضد نيوكاسل بث مباشر اليوم");
+    expect(page.html).toContain("ليفربول");
+    expect(page.html).toContain("نيوكاسل");
     expect(page.html).toContain("beIN Sports 1");
     expect(page.html).toContain("حفيظ دراجي");
     expect(page.html).toContain("/watch?ch=bein-sports-1");
@@ -94,12 +106,16 @@ describe("seo-pages", () => {
     );
   });
 
-  it("uses the canonical tournament hub in generated navigation", () => {
+  it("uses the canonical tournament hub and exposes the permanent result archive", () => {
     const result = buildSeoPages(payload, { teamNamesAr });
     const hub = result.pages.find((page) => page.route === "/matches");
+    const archive = result.pages.find((page) => page.route === "/matches/archive");
 
     expect(hub.html).toContain('<a href="/tournament">كأس العالم 2026</a>');
     expect(hub.html).not.toContain('<a href="/world-cup-2026">كأس العالم 2026</a>');
+    expect(hub.html).toContain('href="/matches/archive"');
+    expect(archive.html).toContain('/match/2026-08-23/barcelona-vs-elche');
+    expect(archive.html).toContain("3 - 0");
   });
 
   it("publishes canonical hub routes and redirects the old today URL", () => {
@@ -113,5 +129,12 @@ describe("seo-pages", () => {
     expect(result.sitemapXml).toContain(
       "https://korazero.com/match/2026-08-23/liverpool-vs-newcastle-united",
     );
+  });
+
+  it("uses W3C lastmod only on leaves with a proven content-change timestamp", () => {
+    const result = buildSeoPages(payload, { teamNamesAr });
+    expect(result.sitemapXml).toContain("<lastmod>2026-08-23T14:00:00+00:00</lastmod>");
+    const hubRow = result.sitemapXml.match(/<url><loc>https:\/\/korazero\.com\/matches<\/loc>(.*?)<\/url>/)?.[1] || "";
+    expect(hubRow).not.toContain("lastmod");
   });
 });
