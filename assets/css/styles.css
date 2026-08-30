@@ -1295,9 +1295,16 @@ img { max-width: 100%; display: block; }
 .goal-col--home { text-align: end; }
 .goal-col--home li { flex-direction: row-reverse; }
 .goal-col--away { text-align: start; }
-.goal-col li { display: flex; align-items: center; gap: 6px; font-size: .82rem; color: var(--text); min-width: 0; }
+.goal-col li { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: .82rem; color: var(--text); min-width: 0; }
 .goal-ball { width: 14px; height: 14px; flex-shrink: 0; }
-.goal-scorer { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.goal-scorer {
+  font-weight: 700;
+  min-width: 0;
+  flex: 1 1 4.5rem;
+  direction: ltr;
+  unicode-bidi: isolate;
+  overflow-wrap: break-word;
+}
 .goal-min { color: var(--gold); font-weight: 800; font-variant-numeric: tabular-nums; flex-shrink: 0;
   direction: ltr; unicode-bidi: isolate; }
 .goal-tag { font-style: normal; font-size: .62rem; font-weight: 700; color: var(--muted);
