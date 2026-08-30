@@ -29,10 +29,11 @@ describe("football routes", () => {
     expect(body.leagues.map((row) => row.slug)).toEqual([
       "eng.1",
       "esp.1",
+      "ksa.1",
       "uefa.champions",
       "uefa.champions_qual",
     ]);
-    expect(upstream).toHaveBeenCalledTimes(4);
+    expect(upstream).toHaveBeenCalledTimes(5);
   });
 
   it("proxies an allowlisted ESPN match summary for live detail", async () => {

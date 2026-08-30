@@ -26,6 +26,7 @@
   --stat-away: #9a7b4f;
   --league-epl: #3d195b;
   --league-laliga: #c8102e;
+  --league-spl: #006c35;
   --league-ucl: #0e1c4f;
   --radius:    16px;
   --radius-sm: 10px;
@@ -370,6 +371,7 @@ img { max-width: 100%; display: block; }
 }
 .season-rail-leagues i.epl { background-image: url("../img/leagues/epl.png"); }
 .season-rail-leagues i.ll { background-image: url("../img/leagues/laliga.png"); }
+.season-rail-leagues i.spl { background-image: url("../img/leagues/spl.png"); }
 .season-rail-leagues i.ucl { background-image: url("../img/leagues/ucl.png"); }
 .season-rail a {
   margin-inline-start: auto;
@@ -601,6 +603,7 @@ img { max-width: 100%; display: block; }
 }
 .hero-league-mark--epl { background-image: url("../img/leagues/epl.png"); }
 .hero-league-mark--laliga { background-image: url("../img/leagues/laliga.png"); }
+.hero-league-mark--spl { background-image: url("../img/leagues/spl.png"); }
 .hero-league-mark--ucl { background-image: url("../img/leagues/ucl.png"); }
 .hero-league-copy { display: grid; gap: 2px; }
 .hero-league-copy b { font-size: .95rem; font-weight: 700; }
@@ -850,6 +853,7 @@ img { max-width: 100%; display: block; }
 }
 .competition-filter-icon--epl, .competition-mark--epl,
 .competition-filter-icon--laliga, .competition-mark--laliga,
+.competition-filter-icon--spl, .competition-mark--spl,
 .competition-filter-icon--ucl, .competition-mark--ucl {
   background-color: #10151f;
   background-size: 78%;
@@ -858,6 +862,7 @@ img { max-width: 100%; display: block; }
 }
 .competition-filter-icon--epl, .competition-mark--epl { background-image: url("../img/leagues/epl.png"); }
 .competition-filter-icon--laliga, .competition-mark--laliga { background-image: url("../img/leagues/laliga.png"); }
+.competition-filter-icon--spl, .competition-mark--spl { background-image: url("../img/leagues/spl.png"); }
 .competition-filter-icon--ucl, .competition-mark--ucl { background-image: url("../img/leagues/ucl.png"); }
 .status-filters { margin-bottom: 24px; }
 .schedule-days { display: grid; gap: 30px; }
@@ -893,6 +898,7 @@ img { max-width: 100%; display: block; }
 }
 .match-card.competition-epl::before { background: var(--league-epl); }
 .match-card.competition-laliga::before { background: var(--league-laliga); }
+.match-card.competition-spl::before { background: var(--league-spl); }
 .match-card.competition-ucl::before { background: var(--league-ucl); }
 .match-card:hover { border-color: #d2c8b6; transform: translateY(-1px); }
 .match-card.is-live {

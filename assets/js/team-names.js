@@ -8,8 +8,8 @@
  *                                       and a mapping exists, else the input.
  *   window.TeamNames.aliases(name)   -> [english, arabic, ...] for search.
  *
- * Coverage: FIFA national teams plus the active Premier League, La Liga, and
- * Champions League clubs shown by the 2026/27 schedule.
+ * Coverage: FIFA national teams plus the active Premier League, La Liga,
+ * Saudi Pro League, and Champions League clubs shown by the 2026/27 schedule.
  * ==========================================================================*/
 (function (global) {
   "use strict";
@@ -156,6 +156,29 @@
     "PSV Eindhoven": "آيندهوفن",
     "Galatasaray": "غلطة سراي",
     "Club Brugge": "كلوب بروج",
+    "Al Ahli": "الأهلي",
+    "Al Diriyah": "الدرعية",
+    "Al Ettifaq": "الاتفاق",
+    "Al Fateh": "الفتح",
+    "Al-Faisaly": "الفيصلي",
+    "Al Faisaly": "الفيصلي",
+    "Al Fayha": "الفيحاء",
+    "Al Hazem": "الحزم",
+    "Al Hilal": "الهلال",
+    "Al Ittihad": "الاتحاد",
+    "Al Khaleej": "الخليج",
+    "Al Kholood": "الخلود",
+    "Al Najma": "النجمة",
+    "Al Nassr": "النصر",
+    "Al Okhdood": "الأخدود",
+    "Al Qadsiah": "القادسية",
+    "Al Riyadh": "الرياض",
+    "Al Shabab": "الشباب",
+    "Al Taawoun": "التعاون",
+    "Al Wehda": "الوحدة",
+    "Damac": "ضمك",
+    "NEOM": "نيوم",
+    "Neom": "نيوم",
   };
 
   const norm = (s) => (s || "")

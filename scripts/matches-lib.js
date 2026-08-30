@@ -20,6 +20,18 @@ const COMPETITIONS = Object.freeze([
     leagueNames: ["Spanish La Liga", "Spanish LALIGA", "LaLiga"],
   },
   {
+    key: "spl",
+    name: "Saudi Pro League",
+    nameAr: "الدوري السعودي",
+    espnSlugs: ["ksa.1"],
+    leagueNames: [
+      "Saudi Pro League",
+      "Saudi-Arabian Pro League",
+      "Saudi Professional League",
+      "Roshn Saudi League",
+    ],
+  },
+  {
     key: "ucl",
     name: "UEFA Champions League",
     nameAr: "دوري أبطال أوروبا",

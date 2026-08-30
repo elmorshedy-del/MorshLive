@@ -22,6 +22,17 @@
       leagueNames: ["Spanish La Liga", "Spanish LALIGA", "LaLiga"],
     },
     {
+      key: "spl",
+      nameAr: "الدوري السعودي",
+      espnSlugs: ["ksa.1"],
+      leagueNames: [
+        "Saudi Pro League",
+        "Saudi-Arabian Pro League",
+        "Saudi Professional League",
+        "Roshn Saudi League",
+      ],
+    },
+    {
       key: "ucl",
       nameAr: "دوري أبطال أوروبا",
       espnSlugs: ["uefa.champions", "uefa.champions_qual"],

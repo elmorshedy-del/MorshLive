@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { bindActionForMatch, planBindLoop } from "../lib/bind-schedule.js";
+import { bindActionForMatch, isBindLeagueMatch, planBindLoop } from "../lib/bind-schedule.js";
 
 const NOW = Date.parse("2026-08-29T19:41:00Z");
 
@@ -80,5 +80,31 @@ describe("planBindLoop", () => {
     expect(plan.executeNow[0].check).toBe("kickoff");
     expect(plan.arm.map((row) => row.matchId)).toEqual(["espn-eng.1-401879317", "espn-esp.1-401882899"]);
     expect(plan.arm.every((row) => row.check === "t15")).toBe(true);
+  });
+
+  it("includes Saudi Pro League in the same bind loop as EPL and La Liga", () => {
+    expect(isBindLeagueMatch({ matchId: "espn-ksa.1-401900376", competition: "spl" })).toBe(true);
+    expect(isBindLeagueMatch({ matchId: "espn-uefa.champions-401909192", competition: "ucl" })).toBe(false);
+    const plan = planBindLoop(
+      [
+        {
+          matchId: "espn-ksa.1-401900376",
+          competition: "spl",
+          home: "Al Qadsiah",
+          away: "Al-Faisaly",
+          kickoffUtc: "2026-08-30T18:00:00Z",
+        },
+        {
+          matchId: "espn-uefa.champions-401909192",
+          competition: "ucl",
+          home: "Celtic",
+          away: "LASK",
+          kickoffUtc: "2026-08-30T18:00:00Z",
+        },
+      ],
+      Date.parse("2026-08-30T17:20:00Z"),
+    );
+    expect(plan.arm.map((row) => row.matchId)).toEqual(["espn-ksa.1-401900376"]);
+    expect(plan.executeNow).toEqual([]);
   });
 });

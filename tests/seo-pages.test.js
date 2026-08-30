@@ -39,6 +39,14 @@ const payload = {
       status: "ended",
       score: "3 - 0",
     },
+    {
+      home: "Al Hilal",
+      away: "Al Ahli",
+      kickoffUtc: "2026-08-23T18:00:00Z",
+      competition: "spl",
+      status: "upcoming",
+      score: "VS",
+    },
   ],
 };
 
@@ -57,6 +65,7 @@ describe("seo-pages", () => {
     expect(routes).toContain("/matches/2026-08-23");
     expect(routes).toContain("/league/premier-league");
     expect(routes).toContain("/league/la-liga");
+    expect(routes).toContain("/league/saudi-pro-league");
     expect(routes).toContain("/match/2026-08-23/liverpool-vs-newcastle-united");
   });
 
@@ -100,6 +109,7 @@ describe("seo-pages", () => {
     expect(result.redirectLines).toContain("/matches/today  /matches  301");
     expect(result.sitemapXml).toContain("https://korazero.com/matches");
     expect(result.sitemapXml).toContain("https://korazero.com/league/premier-league");
+    expect(result.sitemapXml).toContain("https://korazero.com/league/saudi-pro-league");
     expect(result.sitemapXml).toContain(
       "https://korazero.com/match/2026-08-23/liverpool-vs-newcastle-united",
     );

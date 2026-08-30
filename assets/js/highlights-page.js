@@ -23,8 +23,8 @@
   function competitionLabel(m) {
     const key = m.competition;
     const map = isEnglish()
-      ? { epl: "Premier League", laliga: "La Liga", ucl: "UEFA Champions League" }
-      : { epl: "الدوري الإنجليزي الممتاز", laliga: "الدوري الإسباني", ucl: "دوري أبطال أوروبا" };
+      ? { epl: "Premier League", laliga: "La Liga", spl: "Saudi Pro League", ucl: "UEFA Champions League" }
+      : { epl: "الدوري الإنجليزي الممتاز", laliga: "الدوري الإسباني", spl: "الدوري السعودي", ucl: "دوري أبطال أوروبا" };
     return map[key] || (isEnglish() ? m.league : (m.leagueAr || m.league)) || "";
   }
 
@@ -212,8 +212,8 @@
     const host = document.getElementById("current-highlights-filters");
     if (!host) return;
     const labels = isEnglish()
-      ? { all: "All", epl: "Premier League", laliga: "La Liga", ucl: "Champions League" }
-      : { all: "الكل", epl: "الدوري الإنجليزي", laliga: "الدوري الإسباني", ucl: "دوري الأبطال" };
+      ? { all: "All", epl: "Premier League", laliga: "La Liga", spl: "Saudi Pro League", ucl: "Champions League" }
+      : { all: "الكل", epl: "الدوري الإنجليزي", laliga: "الدوري الإسباني", spl: "الدوري السعودي", ucl: "دوري الأبطال" };
     host.innerHTML = Object.entries(labels)
       .map(([key, label]) => `
         <button type="button" class="current-highlights-filter${activeCompetition === key ? " active" : ""}" data-filter="${key}">${label}</button>`)

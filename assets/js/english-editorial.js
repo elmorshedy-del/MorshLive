@@ -54,7 +54,7 @@
     "faq.q1": "What information is available for each match?",
     "faq.a1": "Kick-off time, live score, lineups, statistics and goals, plus the broadcast channel, commentator and watch link when a stream is available.",
     "faq.q2": "Which competitions does KoraZero cover?",
-    "faq.a2": "KoraZero covers major Premier League, La Liga and UEFA Champions League matches, with other available competitions added to the schedule.",
+    "faq.a2": "KoraZero covers major Saudi Pro League, Premier League, La Liga and UEFA Champions League matches, with other available competitions added to the schedule.",
     "faq.q3": "Which timezone are match times shown in?",
     "faq.a3": "Each match time automatically follows your device timezone.",
 

@@ -25,8 +25,9 @@ signals for the active match. Reusable for any match; pass the active ESPN id as
 
 Lock each loop to its explicitly requested ESPN id. When the user says one
 match (for example Barcelona only), do not probe or edit any other fixture.
-When they say today and tomorrow, `planBindLoop` lists every remaining EPL/La
-Liga id in that window — still one timer and one bind pass per ESPN id.
+When they say today and tomorrow, `planBindLoop` lists every remaining EPL / La
+Liga / Saudi Pro League id in that window — still one timer and one bind pass
+per ESPN id.
 For yallacuo/koralive, treat `iframeSrc` / Fabor changes only as reuse signals.
 A full two-team scorebug is enough, but so are a few matching signals (listed
 channel + venue, city, or one team). If the T-15 timer was missed, start that
