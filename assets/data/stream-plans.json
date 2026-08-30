@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-30T15:17:00.000Z",
+  "updatedAt": "2026-08-30T15:53:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -568,7 +568,7 @@
       "contentKey": "match:espn-esp.1-401882899",
       "kickoffUtc": "2026-08-30T15:00:00Z",
       "status": "verified",
-      "verifiedAt": "2026-08-30T14:49:34.000Z",
+      "verifiedAt": "2026-08-30T15:53:00.000Z",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
@@ -584,9 +584,9 @@
           "url": "https://pl.koralive1.cc/albaplayer/bein22/?serv=0",
           "contentKey": "match:espn-esp.1-401882899",
           "status": "verified",
-          "verifiedAt": "2026-08-30T14:49:34.000Z",
+          "verifiedAt": "2026-08-30T15:53:00.000Z",
           "label": "ريال مدريد × مالقة · عربي",
-          "note": "Missed T-15 catch-up; bein22 showed Bernabéu + Málaga vs Real Madrid crests. 1bein1 still CHE 4-2 BHA at 87:22 — not stolen. Did not change espn-esp.1-401882919."
+          "note": "Same operator boot as United (kz=smooth2). Still bein22 — did not steal 1bein1. Did not change espn-esp.1-401882919."
         }
       ]
     },

@@ -85,7 +85,7 @@ describe("isScoreBugUrl", () => {
   it("accepts a production KoraZero proxy around an allowed operator target", () => {
     expect(
       isScoreBugUrl(
-        "https://korazero.com/wk/operator/?u=https%3A%2F%2Fmo.yallacuo.xyz%2Falbaplayer%2Fsport-2%2F&kz=smooth1",
+        `https://korazero.com/wk/operator/?u=https%3A%2F%2Fmo.yallacuo.xyz%2Falbaplayer%2Fsport-2%2F&kz=${OPERATOR_PLAYER_BOOT}`,
       ),
     ).toBe(true);
   });
