@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   operatorHighBufferWatchdogPeriod,
-  operatorLiveSyncDurationCount,
+  operatorLiveMaxLatencyDuration,
+  operatorLiveSyncDuration,
   operatorMaxLiveSyncPlaybackRate,
   shouldReloadAfterSourceCycles,
   shouldRemountMainPlayer,
@@ -23,9 +24,10 @@ describe("shouldStartLoadOnFatalNetworkError", () => {
   });
 });
 
-describe("operatorLiveSyncDurationCount", () => {
-  it("keeps yesterday morning's 3-segment sync so the control-bar seconds can tick", () => {
-    expect(operatorLiveSyncDurationCount()).toBe(3);
+describe("operatorLiveSyncDuration", () => {
+  it("holds about eight seconds of lag and never speeds up to catch live", () => {
+    expect(operatorLiveSyncDuration()).toBe(8);
+    expect(operatorLiveMaxLatencyDuration()).toBeGreaterThan(operatorLiveSyncDuration());
     expect(operatorMaxLiveSyncPlaybackRate()).toBe(1);
     expect(operatorHighBufferWatchdogPeriod()).toBeGreaterThanOrEqual(8);
   });
