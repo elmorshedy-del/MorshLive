@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-30T13:03:25.000Z",
+  "updatedAt": "2026-08-30T13:05:48.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -531,6 +531,34 @@
           "verifiedAt": "2026-08-30T13:03:25.000Z",
           "label": "سندرلاند × فولهام · عربي",
           "note": "Kickoff bind; bein3 scorebug SUN 0-0 FUL at 02:18, Sunderland red-white home kit. Listed Turkey beIN 4 was LEE-BRE. Did not take 1bein1."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879315",
+      "teams": [["leeds united", "leeds"], ["brentford"]],
+      "contentKey": "match:espn-eng.1-401879315",
+      "kickoffUtc": "2026-08-30T13:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-30T13:05:48.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v2",
+          "url": "https://pl.koralive1.cc/albaplayer/bein4/?serv=0",
+          "contentKey": "match:espn-eng.1-401879315",
+          "status": "verified",
+          "verifiedAt": "2026-08-30T13:05:48.000Z",
+          "label": "ليدز × برينتفورد · عربي",
+          "note": "Kickoff bind; bein4 scorebug LEE 0-0 BRE at 02:26 on beIN SPORTS 4. Did not take 1bein1 or bein3."
         }
       ]
     }
