@@ -114,7 +114,7 @@ describe("seo-pages", () => {
     expect(hub.html).toContain('<a href="/tournament">كأس العالم 2026</a>');
     expect(hub.html).not.toContain('<a href="/world-cup-2026">كأس العالم 2026</a>');
     expect(hub.html).toContain('href="/matches/archive"');
-    expect(archive.html).toContain('/match/2026-08-23/barcelona-vs-elche');
+    expect(archive.html).toContain("/match/2026-08-23/barcelona-vs-elche");
     expect(archive.html).toContain("3 - 0");
   });
 
@@ -134,7 +134,8 @@ describe("seo-pages", () => {
   it("uses W3C lastmod only on leaves with a proven content-change timestamp", () => {
     const result = buildSeoPages(payload, { teamNamesAr });
     expect(result.sitemapXml).toContain("<lastmod>2026-08-23T14:00:00+00:00</lastmod>");
-    const hubRow = result.sitemapXml.match(/<url><loc>https:\/\/korazero\.com\/matches<\/loc>(.*?)<\/url>/)?.[1] || "";
+    const hubRow =
+      result.sitemapXml.match(/<url><loc>https:\/\/korazero\.com\/matches<\/loc>(.*?)<\/url>/)?.[1] || "";
     expect(hubRow).not.toContain("lastmod");
   });
 });
