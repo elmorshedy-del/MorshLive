@@ -14,6 +14,12 @@ export async function fetchAssetJson(env, origin, path) {
   }
 }
 
+export async function fetchAssetText(env, origin, path) {
+  const url = `${origin}${path.startsWith("/") ? path : `/${path}`}`;
+  const res = await env.ASSETS.fetch(url);
+  return res.ok ? res.text() : "";
+}
+
 export function fetchStaticAsset(env, request) {
   return env.ASSETS.fetch(request);
 }
@@ -29,6 +35,10 @@ export async function loadTeamNamesAr(env, origin) {
 
 export async function loadSeasonHighlights(env, origin) {
   return (await fetchAssetJson(env, origin, "/assets/data/season-highlights.json")) || { days: [] };
+}
+
+export async function loadWorldCupMatchIndex(env, origin) {
+  return (await fetchAssetJson(env, origin, "/assets/data/wc-matches-index.json")) || { matches: [] };
 }
 
 export async function loadMemeSources(env, origin) {
