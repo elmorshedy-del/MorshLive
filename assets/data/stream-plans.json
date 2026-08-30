@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-29T19:41:30.000Z",
+  "updatedAt": "2026-08-30T12:56:58.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -475,6 +475,34 @@
           "verifiedAt": "2026-08-29T19:41:30.000Z",
           "label": "إشبيلية × أتلتيكو مدريد · عربي",
           "note": "Kickoff bind; 1bein1 scorebug Sevilla 0-1 Atleti at 10:15, #SevillaAtleti. Tottenham FT so slot is free. bein3 black."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879317",
+      "teams": [["chelsea"], ["brighton & hove albion", "brighton"]],
+      "contentKey": "match:espn-eng.1-401879317",
+      "kickoffUtc": "2026-08-30T13:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-30T12:56:58.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v2",
+          "url": "https://pl.koralive1.cc/albaplayer/1bein1/?serv=0",
+          "contentKey": "match:espn-eng.1-401879317",
+          "status": "verified",
+          "verifiedAt": "2026-08-30T12:56:58.000Z",
+          "label": "تشيلسي × برايتون · عربي",
+          "note": "T-5 bind; 1bein1 pre-match Stamford Bridge walkout — WORLD CHAMPIONS tunnel, BingX, blue seats. Listed beIN 1. Saturday Atleti/Barca FT so slot is free."
         }
       ]
     }
