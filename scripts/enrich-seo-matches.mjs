@@ -105,7 +105,7 @@ async function mapLimit(items, limit, worker) {
 }
 
 const payload = readJson(TODAY_JSON, { matches: [] });
-const observedAt = payload.updatedAt || new Date().toISOString();
+const observedAt = new Date().toISOString();
 const preserved = fs.existsSync(TEMP_ARCHIVE)
   ? readJson(TEMP_ARCHIVE, [])
   : seedSeoMatches(payload.seoMatches || [], observedAt);
