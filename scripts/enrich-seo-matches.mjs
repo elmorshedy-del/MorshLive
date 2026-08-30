@@ -2,7 +2,6 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import {
   enrichSeoMatch,
@@ -11,9 +10,6 @@ import {
   seoMatchKey,
   seedSeoMatches,
 } from "../lib/match-seo-data.js";
-
-const require = createRequire(import.meta.url);
-const { extractGoals, extractLineups } = require("./match-detail-lib.js");
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const TODAY_JSON = path.join(ROOT, "assets", "data", "today.json");
@@ -57,9 +53,7 @@ function scoreFromSummary(summary, status, fallback) {
 function applySummary(match, summary) {
   const status = statusFromSummary(summary, match.status);
   const competition = summary?.header?.competitions?.[0] || {};
-  const lineups = extractLineups(summary);
-  const goals = extractGoals(summary);
-  const enriched = enrichSeoMatch(
+  return enrichSeoMatch(
     {
       ...match,
       status,
@@ -69,9 +63,6 @@ function applySummary(match, summary) {
     },
     summary,
   );
-  if (lineups) enriched.lineups = lineups;
-  if (goals?.length) enriched.goals = goals;
-  return enriched;
 }
 
 async function fetchSummary(match) {
