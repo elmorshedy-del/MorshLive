@@ -28,10 +28,9 @@ directory = "."
 binding = "ASSETS"
 # Stop auto 307 from tournament.html → /tournament (conflicts with _redirects pretty URLs).
 html_handling = "none"
-# Static assets bypass the Worker except API/player paths and match leaf pages.
-# /match/* and /en/match/* are server-rendered at the edge so pre/live/final state
-# stays current while the player remains a separate /watch application.
-run_worker_first = ["/wk/*", "/dl/*", "/lab/*", "/sir/*", "/api/*", "/replay/*", "/watch", "/watch.html", "/watch/*", "/watch-embed.html", "/match/*", "/en/match/*"]
+# Static assets bypass the Worker except API/player paths, match leaf pages, and
+# the World Cup hub whose 104-match archive is injected into the initial HTML.
+run_worker_first = ["/wk/*", "/dl/*", "/lab/*", "/sir/*", "/api/*", "/replay/*", "/watch", "/watch.html", "/watch/*", "/watch-embed.html", "/match/*", "/en/match/*", "/tournament", "/tournament.html"]
 not_found_handling = "404-page"
 
 # If visitors see Error 1027 (100k/day free limit), either upgrade Workers Paid ($5/mo)
