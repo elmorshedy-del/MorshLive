@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   operatorHighBufferWatchdogPeriod,
+  operatorInitialLiveManifestSize,
   operatorLiveMaxLatencyDuration,
   operatorLiveSyncDuration,
   shouldReloadAfterSourceCycles,
@@ -28,6 +29,7 @@ describe("operatorLiveSyncDuration", () => {
     expect(operatorLiveSyncDuration()).toBeGreaterThanOrEqual(8);
     expect(operatorLiveMaxLatencyDuration()).toBeGreaterThan(operatorLiveSyncDuration());
     expect(operatorHighBufferWatchdogPeriod()).toBeGreaterThanOrEqual(8);
+    expect(operatorInitialLiveManifestSize()).toBeGreaterThanOrEqual(8);
   });
 });
 

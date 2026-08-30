@@ -3,9 +3,11 @@ import {
   applyClientEdgeCacheHeaders,
   effectiveEdgeCacheTtl,
   hlsProxyBasePath,
+  hlsWorkerCacheTtl,
   isLivePlaylistTarget,
   rewriteLiveTargetDuration,
   sanitizeLiveTargetDuration,
+  shouldBustHlsProxyUrl,
   shouldEdgeCacheHlsTarget,
   workerOnlyCacheKeyUrl,
 } from "../lib/hls-cache.js";
@@ -47,6 +49,21 @@ describe("hlsProxyBasePath", () => {
     expect(hlsProxyBasePath("https://cdn.example/video.m3u8")).toBe("/wk/live");
     expect(hlsProxyBasePath("https://cdn.example/seg-06127.sss")).toBe("/wk/seg");
     expect(hlsProxyBasePath("https://cdn.example/seg.ts")).toBe("/wk/seg");
+  });
+});
+
+describe("hlsWorkerCacheTtl", () => {
+  it("keeps live playlists in the Worker Cache API for one second", () => {
+    expect(hlsWorkerCacheTtl("https://kora1.dkorea.dpdns.org/live/kora1/index.css")).toBe(1);
+    expect(hlsWorkerCacheTtl("https://cdn.example/seg-06127.sss")).toBe(60);
+  });
+});
+
+describe("shouldBustHlsProxyUrl", () => {
+  it("does not cache-bust /wk/live or /wk/seg", () => {
+    expect(shouldBustHlsProxyUrl("https://korazero.com/wk/live?u=https://cdn.example/index.css")).toBe(false);
+    expect(shouldBustHlsProxyUrl("https://korazero.com/wk/seg?u=https://cdn.example/seg.sss")).toBe(false);
+    expect(shouldBustHlsProxyUrl("https://korazero.com/wk/hls?u=https://cdn.example/index.css")).toBe(true);
   });
 });
 
@@ -120,5 +137,14 @@ describe("workerOnlyCacheKeyUrl", () => {
     expect(keyed.pathname).toBe("/wk/hls");
     expect(keyed.searchParams.get("u")).toBe("https://cdn.example/index.css");
     expect(keyed.searchParams.get("sig")).toBe("abc");
+    expect(keyed.searchParams.get("_")).toBeNull();
+  });
+
+  it("strips playlist cache-bust query so Worker HITs can reuse one key", () => {
+    const keyed = new URL(
+      workerOnlyCacheKeyUrl("https://korazero.com/wk/live?u=https://cdn.example/index.css&sig=abc&_=9"),
+    );
+    expect(keyed.searchParams.get("_")).toBeNull();
+    expect(keyed.searchParams.get("u")).toBe("https://cdn.example/index.css");
   });
 });
