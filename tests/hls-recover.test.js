@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  operatorHighBufferWatchdogPeriod,
   operatorLiveSyncDurationCount,
+  operatorMaxLiveSyncPlaybackRate,
   shouldReloadAfterSourceCycles,
   shouldRemountMainPlayer,
   shouldRotateLiveSources,
@@ -22,8 +24,10 @@ describe("shouldStartLoadOnFatalNetworkError", () => {
 });
 
 describe("operatorLiveSyncDurationCount", () => {
-  it("stays more than three 2-second segments behind the live edge", () => {
-    expect(operatorLiveSyncDurationCount()).toBeGreaterThan(3);
+  it("keeps yesterday morning's 3-segment sync so the control-bar seconds can tick", () => {
+    expect(operatorLiveSyncDurationCount()).toBe(3);
+    expect(operatorMaxLiveSyncPlaybackRate()).toBe(1);
+    expect(operatorHighBufferWatchdogPeriod()).toBeGreaterThanOrEqual(8);
   });
 });
 

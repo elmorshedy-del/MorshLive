@@ -27,6 +27,11 @@ import {
   shouldEdgeCacheHlsTarget,
   workerOnlyCacheKeyUrl,
 } from "./lib/hls-cache.js";
+import {
+  operatorHighBufferWatchdogPeriod,
+  operatorLiveSyncDurationCount,
+  operatorMaxLiveSyncPlaybackRate,
+} from "./lib/hls-recover.js";
 import { extractAlbaHlsSources, isOperatorAlbaPlayerUrl, operatorHlsRefererForHost, sanitizeOperatorEmbedHtml } from "./lib/operator-embed.js";
 
 /**
@@ -1460,11 +1465,11 @@ function kzHlsOpts(){
     maxBufferLength: 14,
     maxMaxBufferLength: 28,
     backBufferLength: 30,
-    liveSyncDurationCount: 7,
+    liveSyncDurationCount: ${operatorLiveSyncDurationCount()},
     liveMaxLatencyDurationCount: 16,
     liveDurationInfinity: true,
-    maxLiveSyncPlaybackRate: 1.35,
-    highBufferWatchdogPeriod: 2,
+    maxLiveSyncPlaybackRate: ${operatorMaxLiveSyncPlaybackRate()},
+    highBufferWatchdogPeriod: ${operatorHighBufferWatchdogPeriod()},
     maxBufferHole: 0.5,
     nudgeOffset: 0.12,
     nudgeMaxRetry: 4,
