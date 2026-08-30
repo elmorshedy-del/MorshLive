@@ -2,12 +2,11 @@
 <!--
   korazero.com sitemap index.
   The current schedule sitemap is injected during the production build.
-  World Cup archive URLs stay crawlable through /tournament, but are no longer
-  pushed as primary sitemap inventory after the tournament has ended.
+  Child-sitemap lastmod is intentionally omitted unless a content-change
+  timestamp can be proven.
 -->
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <sitemap>
     <loc>https://korazero.com/sitemap-core.xml</loc>
-    <lastmod>2026-08-30</lastmod>
   </sitemap>
 </sitemapindex>

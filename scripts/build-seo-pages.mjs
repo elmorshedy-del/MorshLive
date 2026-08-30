@@ -2,16 +2,17 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { applyHomepageSeoHtml } from "../lib/home-seo.js";
 import { buildSeoPages } from "../lib/seo-pages.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, "..");
 const TODAY_JSON = path.join(ROOT, "assets", "data", "today.json");
 const TEAM_AR_JSON = path.join(ROOT, "assets", "data", "team-names-ar.json");
+const HOME_HTML = path.join(ROOT, "index.html");
 const OUT_DIR = path.join(ROOT, "generated", "seo");
 const SITEMAP_SCHEDULE = path.join(ROOT, "sitemap-schedule.xml");
 const SITEMAP_INDEX = path.join(ROOT, "sitemap.xml");
-const SITEMAP_CORE = path.join(ROOT, "sitemap-core.xml");
 const REDIRECTS = path.join(ROOT, "_redirects");
 const BEGIN = "# BEGIN generated SEO schedule routes";
 const END = "# END generated SEO schedule routes";
@@ -41,29 +42,21 @@ function installRedirects(lines) {
   fs.writeFileSync(REDIRECTS, text.endsWith("\n") ? text : `${text}\n`);
 }
 
-function installScheduleSitemap(today) {
+function installScheduleSitemap() {
   let text = fs.readFileSync(SITEMAP_INDEX, "utf8");
   text = text.replace(
     /\s*<sitemap>\s*<loc>https:\/\/korazero\.com\/sitemap-schedule\.xml<\/loc>[\s\S]*?<\/sitemap>\s*/g,
     "\n",
   );
-  text = text.replace(
-    /(<loc>https:\/\/korazero\.com\/sitemap-core\.xml<\/loc>\s*<lastmod>)[^<]+(<\/lastmod>)/,
-    `$1${today}$2`,
-  );
-  const entry = `  <sitemap>\n    <loc>https://korazero.com/sitemap-schedule.xml</loc>\n    <lastmod>${today}</lastmod>\n  </sitemap>\n`;
+  const entry = "  <sitemap>\n    <loc>https://korazero.com/sitemap-schedule.xml</loc>\n  </sitemap>\n";
   text = text.replace("</sitemapindex>", `${entry}</sitemapindex>`);
   fs.writeFileSync(SITEMAP_INDEX, text);
 }
 
-function refreshCoreHomepageLastmod(today) {
-  if (!fs.existsSync(SITEMAP_CORE)) return;
-  const text = fs.readFileSync(SITEMAP_CORE, "utf8");
-  const next = text.replace(
-    /(<loc>https:\/\/korazero\.com\/<\/loc>\s*<lastmod>)[^<]+(<\/lastmod>)/,
-    `$1${today}$2`,
-  );
-  fs.writeFileSync(SITEMAP_CORE, next);
+function installHomepageSeo() {
+  if (!fs.existsSync(HOME_HTML)) return;
+  const html = fs.readFileSync(HOME_HTML, "utf8");
+  fs.writeFileSync(HOME_HTML, applyHomepageSeoHtml(html));
 }
 
 function main() {
@@ -82,8 +75,8 @@ function main() {
 
   fs.writeFileSync(SITEMAP_SCHEDULE, result.sitemapXml);
   installRedirects(result.redirectLines);
-  installScheduleSitemap(result.today);
-  refreshCoreHomepageLastmod(result.today);
+  installScheduleSitemap();
+  installHomepageSeo();
 
   console.log(
     `SEO pages: ${result.pages.length} pages for ${result.matchCount} matches -> ${path.relative(ROOT, OUT_DIR)}`,

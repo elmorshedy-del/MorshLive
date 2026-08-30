@@ -15,27 +15,32 @@ describe("shouldRunFullMatchCrawl", () => {
     expect(shouldRunFullMatchCrawl({ workersCi: "" })).toBe(true);
   });
 
-  it("skips the crawl on Workers Builds so the commit can deploy", () => {
+  it("skips the expensive crawl on Workers Builds so the commit can deploy", () => {
     expect(shouldRunFullMatchCrawl({ workersCi: "1" })).toBe(false);
   });
 });
 
 describe("refreshStepsForDeploy", () => {
-  it("still rebuilds SEO pages on CI without fetching third-party fixtures", () => {
+  it("reconciles permanent SEO match state on CI before rebuilding pages", () => {
     expect(refreshStepsForDeploy({ workersCi: "1" })).toEqual(CI_DEPLOY_STEPS);
+    expect(CI_DEPLOY_STEPS).toContain("scripts/enrich-seo-matches.mjs");
     expect(CI_DEPLOY_STEPS).toContain("scripts/build-seo-pages.mjs");
     expect(CI_DEPLOY_STEPS).not.toContain("scripts/fetch-matches.js");
   });
 
-  it("runs the full crawl locally including season highlights", () => {
+  it("preserves match leaves around the full local crawl", () => {
     expect(refreshStepsForDeploy({})).toEqual(FULL_CRAWL_STEPS);
+    expect(FULL_CRAWL_STEPS[0]).toBe("scripts/preserve-seo-matches.mjs");
+    expect(FULL_CRAWL_STEPS).toContain("scripts/fetch-matches.js");
+    expect(FULL_CRAWL_STEPS).toContain("scripts/enrich-seo-matches.mjs");
     expect(FULL_CRAWL_STEPS).toContain("scripts/update-season-highlights.mjs");
   });
 });
 
 describe("refresh:matches script", () => {
-  it("routes Workers Builds through the fast deploy helper", () => {
+  it("routes Workers Builds through the helper and keeps persistence in full refresh", () => {
     expect(packageJson.scripts["refresh:matches"]).toContain("refresh-for-deploy.mjs");
-    expect(packageJson.scripts["refresh:matches:full"]).toContain("update-season-highlights.mjs");
+    expect(packageJson.scripts["refresh:matches:full"]).toContain("preserve-seo-matches.mjs");
+    expect(packageJson.scripts["refresh:matches:full"]).toContain("enrich-seo-matches.mjs");
   });
 });
