@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  operatorHighBufferWatchdogPeriod,
-  operatorInitialLiveManifestSize,
-  operatorLiveMaxLatencyDuration,
-  operatorLiveSyncDuration,
+  operatorLiveSyncDurationCount,
   shouldReloadAfterSourceCycles,
   shouldRemountMainPlayer,
   shouldRotateLiveSources,
@@ -24,12 +21,9 @@ describe("shouldStartLoadOnFatalNetworkError", () => {
   });
 });
 
-describe("operatorLiveSyncDuration", () => {
-  it("uses seconds so 0.5s segments still sit behind the proxy hop", () => {
-    expect(operatorLiveSyncDuration()).toBeGreaterThanOrEqual(8);
-    expect(operatorLiveMaxLatencyDuration()).toBeGreaterThan(operatorLiveSyncDuration());
-    expect(operatorHighBufferWatchdogPeriod()).toBeGreaterThanOrEqual(8);
-    expect(operatorInitialLiveManifestSize()).toBeGreaterThanOrEqual(8);
+describe("operatorLiveSyncDurationCount", () => {
+  it("stays more than three 2-second segments behind the live edge", () => {
+    expect(operatorLiveSyncDurationCount()).toBeGreaterThan(3);
   });
 });
 

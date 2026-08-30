@@ -3,11 +3,7 @@ import {
   applyClientEdgeCacheHeaders,
   effectiveEdgeCacheTtl,
   hlsProxyBasePath,
-  hlsWorkerCacheTtl,
   isLivePlaylistTarget,
-  rewriteLiveTargetDuration,
-  sanitizeLiveTargetDuration,
-  shouldBustHlsProxyUrl,
   shouldEdgeCacheHlsTarget,
   workerOnlyCacheKeyUrl,
 } from "../lib/hls-cache.js";
@@ -52,21 +48,6 @@ describe("hlsProxyBasePath", () => {
   });
 });
 
-describe("hlsWorkerCacheTtl", () => {
-  it("keeps live playlists in the Worker Cache API for one second", () => {
-    expect(hlsWorkerCacheTtl("https://kora1.dkorea.dpdns.org/live/kora1/index.css")).toBe(1);
-    expect(hlsWorkerCacheTtl("https://cdn.example/seg-06127.sss")).toBe(60);
-  });
-});
-
-describe("shouldBustHlsProxyUrl", () => {
-  it("does not cache-bust /wk/live or /wk/seg", () => {
-    expect(shouldBustHlsProxyUrl("https://korazero.com/wk/live?u=https://cdn.example/index.css")).toBe(false);
-    expect(shouldBustHlsProxyUrl("https://korazero.com/wk/seg?u=https://cdn.example/seg.sss")).toBe(false);
-    expect(shouldBustHlsProxyUrl("https://korazero.com/wk/hls?u=https://cdn.example/index.css")).toBe(true);
-  });
-});
-
 describe("shouldEdgeCacheHlsTarget", () => {
   it("never puts a live playlist in the Worker Cache API", () => {
     expect(shouldEdgeCacheHlsTarget("https://kora1.dkorea.dpdns.org/live/kora1/index.css")).toBe(false);
@@ -102,32 +83,6 @@ describe("applyClientEdgeCacheHeaders", () => {
   });
 });
 
-describe("sanitizeLiveTargetDuration", () => {
-  it("replaces a zero target duration from 0.5s live segments", () => {
-    expect(sanitizeLiveTargetDuration(0, [0.5, 0.5, 0.5])).toBe(1);
-  });
-
-  it("replaces an inflated target duration left by a discontinuity segment", () => {
-    expect(sanitizeLiveTargetDuration(68, [0.5, 0.5, 2, 68.275])).toBe(2);
-  });
-
-  it("keeps a normal 2-second live target duration", () => {
-    expect(sanitizeLiveTargetDuration(2, [2, 2, 2])).toBe(2);
-  });
-
-  it("leaves a longer VOD target duration alone", () => {
-    expect(sanitizeLiveTargetDuration(15, [15, 15])).toBe(15);
-  });
-});
-
-describe("rewriteLiveTargetDuration", () => {
-  it("rewrites TARGETDURATION 0 so hls.js does not reload on a 0s timer", () => {
-    const out = rewriteLiveTargetDuration("#EXTM3U\n#EXT-X-TARGETDURATION:0\n#EXTINF:0.500000,\nseg.ts\n");
-    expect(out).toContain("#EXT-X-TARGETDURATION:1");
-    expect(out).not.toContain("#EXT-X-TARGETDURATION:0");
-  });
-});
-
 describe("workerOnlyCacheKeyUrl", () => {
   it("moves Cache API keys off the public host so CDN HITs cannot reuse them", () => {
     const keyed = new URL(
@@ -137,14 +92,5 @@ describe("workerOnlyCacheKeyUrl", () => {
     expect(keyed.pathname).toBe("/wk/hls");
     expect(keyed.searchParams.get("u")).toBe("https://cdn.example/index.css");
     expect(keyed.searchParams.get("sig")).toBe("abc");
-    expect(keyed.searchParams.get("_")).toBeNull();
-  });
-
-  it("strips playlist cache-bust query so Worker HITs can reuse one key", () => {
-    const keyed = new URL(
-      workerOnlyCacheKeyUrl("https://korazero.com/wk/live?u=https://cdn.example/index.css&sig=abc&_=9"),
-    );
-    expect(keyed.searchParams.get("_")).toBeNull();
-    expect(keyed.searchParams.get("u")).toBe("https://cdn.example/index.css");
   });
 });

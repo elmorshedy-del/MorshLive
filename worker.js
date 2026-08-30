@@ -23,17 +23,10 @@ import {
   applyClientEdgeCacheHeaders,
   effectiveEdgeCacheTtl,
   hlsProxyBasePath,
-  hlsWorkerCacheTtl,
   isLivePlaylistTarget,
-  rewriteLiveTargetDuration,
+  shouldEdgeCacheHlsTarget,
   workerOnlyCacheKeyUrl,
 } from "./lib/hls-cache.js";
-import {
-  operatorHighBufferWatchdogPeriod,
-  operatorInitialLiveManifestSize,
-  operatorLiveMaxLatencyDuration,
-  operatorLiveSyncDuration,
-} from "./lib/hls-recover.js";
 import { extractAlbaHlsSources, isOperatorAlbaPlayerUrl, operatorHlsRefererForHost, sanitizeOperatorEmbedHtml } from "./lib/operator-embed.js";
 
 /**
@@ -471,7 +464,7 @@ function clientEdgeCachedResponse(res) {
 }
 
 // Edge-cache GET responses to cut Worker invocations (Error 1027 = 100k/day free limit).
-async function withEdgeCache(request, ttlSeconds, producer, options) {
+async function withEdgeCache(request, ttlSeconds, producer) {
   if (request.method !== "GET") return producer();
   const cache = caches.default;
   const key = new Request(workerOnlyCacheKeyUrl(request.url), { method: "GET" });
@@ -480,10 +473,7 @@ async function withEdgeCache(request, ttlSeconds, producer, options) {
   const res = await producer();
   if (!res || res.status !== 200) return res;
   const headers = new Headers(res.headers);
-  const forceTtl = Boolean(options && options.forceTtl);
-  const effectiveTtl = forceTtl
-    ? Math.max(1, Math.floor(Number(ttlSeconds) || 1))
-    : effectiveEdgeCacheTtl(headers.get("Cache-Control"), ttlSeconds);
+  const effectiveTtl = effectiveEdgeCacheTtl(headers.get("Cache-Control"), ttlSeconds);
   headers.set("Cache-Control", `public, max-age=${effectiveTtl}`);
   const cached = new Response(res.body, { status: 200, headers });
   await cache.put(key, cached.clone());
@@ -548,7 +538,7 @@ async function rewriteM3u8(body, manifestUrl, origin, secret, basePath) {
       return hlsProxyUrl(abs, origin, sig, basePath);
     })
   );
-  return rewriteLiveTargetDuration(rewritten.join("\n"));
+  return rewritten.join("\n");
 }
 
 function isHlsUrl(url) {
@@ -1444,10 +1434,9 @@ async function cleanWorldkooraHtml(html, slot, origin, secret, request) {
 // catch-up, and no startLoad() on non-fatal stalls (causes freeze loops — #7433).
 // Contract: lib/hls-recover.js — startLoad(-1) on waiting rewinds a 2-seg edge.
 const HLS_BOOT_FN = `function kzBustPlaylist(url){
-  if(!url || url.indexOf('/wk/live')>=0 || url.indexOf('/wk/seg')>=0) return url;
   var target='';
   try{ target=decodeURIComponent((url.split('u=')[1]||'').split('&')[0]); }catch(e){}
-  if(target.indexOf('.sss')>=0 || target.indexOf('.ts')>=0 || target.indexOf('.m4s')>=0) return url;
+  if(!url || target.indexOf('.sss')>=0 || target.indexOf('.ts')>=0 || target.indexOf('.m4s')>=0) return url;
   var base=url.split('&_=')[0];
   return base+(base.indexOf('?')>=0?'&':'?')+'_='+Date.now();
 }
@@ -1471,15 +1460,15 @@ function kzHlsOpts(){
     maxBufferLength: 14,
     maxMaxBufferLength: 28,
     backBufferLength: 30,
-    liveSyncDuration: ${operatorLiveSyncDuration()},
-    liveMaxLatencyDuration: ${operatorLiveMaxLatencyDuration()},
+    liveSyncDurationCount: 7,
+    liveMaxLatencyDurationCount: 16,
     liveDurationInfinity: true,
-    maxLiveSyncPlaybackRate: 1,
-    highBufferWatchdogPeriod: ${operatorHighBufferWatchdogPeriod()},
+    maxLiveSyncPlaybackRate: 1.35,
+    highBufferWatchdogPeriod: 2,
     maxBufferHole: 0.5,
     nudgeOffset: 0.12,
     nudgeMaxRetry: 4,
-    initialLiveManifestSize: ${operatorInitialLiveManifestSize()},
+    initialLiveManifestSize: 1,
     startFragPrefetch: true,
     manifestLoadingMaxRetry: 6,
     manifestLoadingTimeOut: 10000,
@@ -6211,10 +6200,8 @@ export default {
         });
       }
       const target = url.searchParams.get("u") || "";
-      const ttl = hlsWorkerCacheTtl(target);
-      return withEdgeCache(request, ttl, () => proxyHls(request, env), {
-        forceTtl: isLivePlaylistTarget(target),
-      });
+      if (!shouldEdgeCacheHlsTarget(target)) return proxyHls(request, env);
+      return withEdgeCache(request, 60, () => proxyHls(request, env));
     }
     const dl = url.pathname.match(DL_EMBED_RE);
     if (dl && (method === "GET" || method === "HEAD")) {
