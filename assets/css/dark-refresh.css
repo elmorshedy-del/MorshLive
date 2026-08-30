@@ -67,6 +67,10 @@ body {
   background: linear-gradient(90deg, rgba(24, 226, 154, .055), rgba(139, 92, 246, .045)), #0a101d;
   border-bottom-color: rgba(255, 255, 255, .075);
 }
+.season-notice--fix {
+  background: linear-gradient(90deg, rgba(24, 226, 154, .16), rgba(255, 196, 0, .08)), #0a101d;
+  border-bottom: 2px solid #18e29a;
+}
 .season-notice-pulse {
   box-shadow: 0 0 0 5px rgba(24, 226, 154, .08), 0 0 24px rgba(24, 226, 154, .38);
 }

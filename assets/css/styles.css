@@ -3422,6 +3422,18 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
   border-bottom: 1px solid var(--border);
   background: var(--surface);
 }
+.season-notice--fix {
+  background: linear-gradient(90deg, rgba(24, 226, 154, .12), rgba(255, 196, 0, .08)), var(--surface);
+  border-bottom: 2px solid var(--accent);
+}
+.season-notice--fix .season-notice-kicker {
+  color: var(--accent);
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+.season-notice--fix h2 {
+  font-size: clamp(1.35rem, 3.2vw, 1.85rem);
+}
 .season-notice-inner {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
