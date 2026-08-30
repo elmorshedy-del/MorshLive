@@ -47,6 +47,10 @@ function installScheduleSitemap(today) {
     /\s*<sitemap>\s*<loc>https:\/\/korazero\.com\/sitemap-schedule\.xml<\/loc>[\s\S]*?<\/sitemap>\s*/g,
     "\n",
   );
+  text = text.replace(
+    /(<loc>https:\/\/korazero\.com\/sitemap-core\.xml<\/loc>\s*<lastmod>)[^<]+(<\/lastmod>)/,
+    `$1${today}$2`,
+  );
   const entry = `  <sitemap>\n    <loc>https://korazero.com/sitemap-schedule.xml</loc>\n    <lastmod>${today}</lastmod>\n  </sitemap>\n`;
   text = text.replace("</sitemapindex>", `${entry}</sitemapindex>`);
   fs.writeFileSync(SITEMAP_INDEX, text);

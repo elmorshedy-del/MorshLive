@@ -85,6 +85,14 @@ describe("seo-pages", () => {
     );
   });
 
+  it("uses the canonical tournament hub in generated navigation", () => {
+    const result = buildSeoPages(payload, { teamNamesAr });
+    const hub = result.pages.find((page) => page.route === "/matches");
+
+    expect(hub.html).toContain('<a href="/tournament">كأس العالم 2026</a>');
+    expect(hub.html).not.toContain('<a href="/world-cup-2026">كأس العالم 2026</a>');
+  });
+
   it("publishes canonical hub routes and redirects the old today URL", () => {
     const result = buildSeoPages(payload, { teamNamesAr });
 
