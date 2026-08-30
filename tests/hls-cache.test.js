@@ -4,6 +4,8 @@ import {
   effectiveEdgeCacheTtl,
   hlsProxyBasePath,
   isLivePlaylistTarget,
+  rewriteLiveTargetDuration,
+  sanitizeLiveTargetDuration,
   shouldEdgeCacheHlsTarget,
   workerOnlyCacheKeyUrl,
 } from "../lib/hls-cache.js";
@@ -80,6 +82,32 @@ describe("applyClientEdgeCacheHeaders", () => {
     expect(headers.get("Cache-Control")).toBe("public, max-age=60");
     expect(headers.get("CDN-Cache-Control")).toBeNull();
     expect(headers.get("Cloudflare-CDN-Cache-Control")).toBeNull();
+  });
+});
+
+describe("sanitizeLiveTargetDuration", () => {
+  it("replaces a zero target duration from 0.5s live segments", () => {
+    expect(sanitizeLiveTargetDuration(0, [0.5, 0.5, 0.5])).toBe(1);
+  });
+
+  it("replaces an inflated target duration left by a discontinuity segment", () => {
+    expect(sanitizeLiveTargetDuration(68, [0.5, 0.5, 2, 68.275])).toBe(2);
+  });
+
+  it("keeps a normal 2-second live target duration", () => {
+    expect(sanitizeLiveTargetDuration(2, [2, 2, 2])).toBe(2);
+  });
+
+  it("leaves a longer VOD target duration alone", () => {
+    expect(sanitizeLiveTargetDuration(15, [15, 15])).toBe(15);
+  });
+});
+
+describe("rewriteLiveTargetDuration", () => {
+  it("rewrites TARGETDURATION 0 so hls.js does not reload on a 0s timer", () => {
+    const out = rewriteLiveTargetDuration("#EXTM3U\n#EXT-X-TARGETDURATION:0\n#EXTINF:0.500000,\nseg.ts\n");
+    expect(out).toContain("#EXT-X-TARGETDURATION:1");
+    expect(out).not.toContain("#EXT-X-TARGETDURATION:0");
   });
 });
 

@@ -24,9 +24,15 @@ import {
   effectiveEdgeCacheTtl,
   hlsProxyBasePath,
   isLivePlaylistTarget,
+  rewriteLiveTargetDuration,
   shouldEdgeCacheHlsTarget,
   workerOnlyCacheKeyUrl,
 } from "./lib/hls-cache.js";
+import {
+  operatorHighBufferWatchdogPeriod,
+  operatorLiveMaxLatencyDuration,
+  operatorLiveSyncDuration,
+} from "./lib/hls-recover.js";
 import { extractAlbaHlsSources, isOperatorAlbaPlayerUrl, operatorHlsRefererForHost, sanitizeOperatorEmbedHtml } from "./lib/operator-embed.js";
 
 /**
@@ -538,7 +544,7 @@ async function rewriteM3u8(body, manifestUrl, origin, secret, basePath) {
       return hlsProxyUrl(abs, origin, sig, basePath);
     })
   );
-  return rewritten.join("\n");
+  return rewriteLiveTargetDuration(rewritten.join("\n"));
 }
 
 function isHlsUrl(url) {
@@ -1460,11 +1466,11 @@ function kzHlsOpts(){
     maxBufferLength: 14,
     maxMaxBufferLength: 28,
     backBufferLength: 30,
-    liveSyncDurationCount: 7,
-    liveMaxLatencyDurationCount: 16,
+    liveSyncDuration: ${operatorLiveSyncDuration()},
+    liveMaxLatencyDuration: ${operatorLiveMaxLatencyDuration()},
     liveDurationInfinity: true,
-    maxLiveSyncPlaybackRate: 1.35,
-    highBufferWatchdogPeriod: 2,
+    maxLiveSyncPlaybackRate: 1,
+    highBufferWatchdogPeriod: ${operatorHighBufferWatchdogPeriod()},
     maxBufferHole: 0.5,
     nudgeOffset: 0.12,
     nudgeMaxRetry: 4,
