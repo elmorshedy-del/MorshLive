@@ -8,6 +8,8 @@ import {
 import { buildMatchSeoHtml } from "../../lib/match-seo-page.js";
 import { matchPagePath } from "../../lib/seo-pages-core.js";
 
+const CANONICAL_SITE = "https://korazero.com";
+
 export function parseMatchSeoPath(pathname) {
   const match = /^\/(en\/)?match\/(\d{4}-\d{2}-\d{2})\/([a-z0-9-]+)\/?$/.exec(String(pathname || ""));
   if (!match) return null;
@@ -32,12 +34,12 @@ function seasonHighlightFor(match, seasonHighlights) {
   return null;
 }
 
-function cacheSecondsFor(match) {
+export function matchSeoCacheSeconds(match, now = Date.now()) {
   if (match.status === "live") return 30;
   if (match.status === "ended") return 3600;
   const kickoff = Date.parse(match.kickoffUtc || "");
   if (Number.isNaN(kickoff)) return 300;
-  const until = kickoff - Date.now();
+  const until = kickoff - now;
   if (until <= 2 * 60 * 60 * 1000) return 60;
   if (until <= 24 * 60 * 60 * 1000) return 300;
   return 900;
@@ -71,8 +73,8 @@ export async function renderMatchSeoDocument(env, url) {
 
   const route = parsed.lang === "en" ? `/en${parsed.arRoute}` : parsed.arRoute;
   return {
-    html: buildMatchSeoHtml({ match, route, siteUrl: url.origin, teamNamesAr, lang: parsed.lang }),
+    html: buildMatchSeoHtml({ match, route, siteUrl: CANONICAL_SITE, teamNamesAr, lang: parsed.lang }),
     match,
-    cacheSeconds: cacheSecondsFor(match),
+    cacheSeconds: matchSeoCacheSeconds(match),
   };
 }
