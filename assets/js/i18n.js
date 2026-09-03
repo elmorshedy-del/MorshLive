@@ -2,7 +2,7 @@
  * editorial, visual, content-architecture, and IPTV auto-routing layers. */
 (function () {
   "use strict";
-  const stamp = "20260903iptvid";
+  const stamp = "20260903iptvcard2";
 
   // Install the match-time formatter before data.js loads. Every visitor sees
   // their own browser/device-local kickoff time plus a constant Makkah reference.
