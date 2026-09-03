@@ -70,7 +70,9 @@
       return state;
     })()
       .catch(() => null)
-      .finally(() => { refreshPromise = null; });
+      .finally(() => {
+        refreshPromise = null;
+      });
     return refreshPromise;
   }
 
@@ -87,8 +89,7 @@
         const url = new URL(anchor.getAttribute("href"), location.href);
         if (!isWatchUrl(url)) return false;
         const source = url.searchParams.get("source");
-        return source !== "iptv-premium"
-          && !(source === "xtream" && url.searchParams.get("portal") === "lab");
+        return source !== "iptv-premium" && !(source === "xtream" && url.searchParams.get("portal") === "lab");
       } catch {
         return false;
       }
@@ -133,6 +134,30 @@
     if (parent) {
       parent.insertBefore(original, toggle);
       toggle.remove();
+    }
+  }
+
+  function stripLegacyPremiumToggles(root) {
+    const scope = root?.querySelectorAll ? root : document;
+    const premiums = [
+      ...scope.querySelectorAll('.watch-source-toggle__opt--premium[href*="source=iptv-premium"]'),
+    ].filter((anchor) => anchor.dataset.iptvPremiumTest !== "1");
+
+    for (const premium of premiums) {
+      const toggle = premium.closest(".watch-source-toggle");
+      if (!toggle || toggle.classList.contains("iptv-premium-test-toggle")) continue;
+
+      // The watch page does not need a source toggle at all unless this new
+      // premium test installed it. Removing the legacy group leaves playback
+      // and the original stream untouched.
+      if (toggle.closest("#player-toolbar")) {
+        toggle.remove();
+        continue;
+      }
+
+      const original = toggle.querySelector(".watch-source-toggle__opt--original");
+      if (original) unwrapLegacyPremium(original);
+      else toggle.remove();
     }
   }
 
@@ -235,6 +260,7 @@
   }
 
   function rewriteAll(root) {
+    stripLegacyPremiumToggles(root || document);
     if (state) originalWatchAnchors(root || document).forEach(rewriteCardAnchor);
     installWatchPageToggle();
   }
@@ -258,6 +284,7 @@
 
   async function init() {
     startObserver();
+    stripLegacyPremiumToggles(document);
     if (await refreshState()) rewriteAll(document);
   }
 
