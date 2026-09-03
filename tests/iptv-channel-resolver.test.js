@@ -46,7 +46,10 @@ describe("canonical IPTV channel map", () => {
       "bein-sports-2",
     ]);
 
-    const selected = resolver.resolveChannel({ channelId: "bein-sports-2", channel: "beIN Sports 2" }, channels);
+    const selected = resolver.resolveChannel(
+      { channelId: "bein-sports-2", channel: "beIN Sports 2" },
+      channels,
+    );
 
     // The canonical key stays stable while the preferred provider variant and
     // its current numeric stream id remain catalog data.
