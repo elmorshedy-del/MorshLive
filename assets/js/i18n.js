@@ -2,7 +2,7 @@
  * editorial, visual, content-architecture, and premium IPTV routing layers. */
 (function () {
   "use strict";
-  const stamp = "20260903premiumtest3";
+  const stamp = "20260903premiumtest4";
 
   // Install the match-time formatter before data.js loads. Every visitor sees
   // their own browser/device-local kickoff time plus a constant Makkah reference.
@@ -61,6 +61,7 @@
     document.write(`<script src="/assets/js/match-stats-editorial.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/iptv-channel-resolver.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/iptv-auto.js?v=${stamp}"><\/script>`);
+    document.write(`<script src="/assets/js/iptv-premium-card-click.js?v=${stamp}"><\/script>`);
   }
 
   if (document.readyState === "loading") {
@@ -97,6 +98,8 @@
     });
   });
   addScript(`/assets/js/iptv-channel-resolver.js?v=${stamp}`, () => {
-    addScript(`/assets/js/iptv-auto.js?v=${stamp}`);
+    addScript(`/assets/js/iptv-auto.js?v=${stamp}`, () => {
+      addScript(`/assets/js/iptv-premium-card-click.js?v=${stamp}`);
+    });
   });
 })();
