@@ -46,10 +46,7 @@ describe("canonical IPTV channel map", () => {
       "bein-sports-2",
     ]);
 
-    const selected = resolver.resolveChannel(
-      { channelId: "bein-sports-2", channel: "beIN Sports 2" },
-      channels,
-    );
+    const selected = resolver.resolveChannel({ channelId: "bein-sports-2", channel: "beIN Sports 2" }, channels);
 
     // Preserve Cursor's original SD premium behavior while removing the stale
     // numeric stream id: the current provider SD stream is selected dynamically.
@@ -58,23 +55,20 @@ describe("canonical IPTV channel map", () => {
   });
 
   it("prefers stable provider metadata when the provider supplies it", () => {
-    const selected = resolver.resolveChannel(
-      { channelId: "bein-sports-2" },
-      [
-        {
-          streamId: 2464,
-          name: "beIN_2SD",
-          categoryName: "beIN SPORTS VEGA",
-          epgChannelId: null,
-        },
-        {
-          streamId: 44022,
-          name: "Provider renamed this row",
-          categoryName: "Sports",
-          epgChannelId: "beinsports2.qa",
-        },
-      ],
-    );
+    const selected = resolver.resolveChannel({ channelId: "bein-sports-2" }, [
+      {
+        streamId: 2464,
+        name: "beIN_2SD",
+        categoryName: "beIN SPORTS VEGA",
+        epgChannelId: null,
+      },
+      {
+        streamId: 44022,
+        name: "Provider renamed this row",
+        categoryName: "Sports",
+        epgChannelId: "beinsports2.qa",
+      },
+    ]);
 
     expect(selected.streamId).toBe(44022);
     expect(selected.resolver.stableProviderField).toBe("epgChannelId");
@@ -82,22 +76,20 @@ describe("canonical IPTV channel map", () => {
   });
 
   it("keeps the canonical key when the provider changes the stream id", () => {
-    const before = resolver.resolveChannel(
-      { channelId: "bein-sports-2" },
-      [{
+    const before = resolver.resolveChannel({ channelId: "bein-sports-2" }, [
+      {
         streamId: 2464,
         name: "beIN_2SD",
         categoryName: "beIN SPORTS VEGA",
-      }],
-    );
-    const after = resolver.resolveChannel(
-      { channelId: "bein-sports-2" },
-      [{
+      },
+    ]);
+    const after = resolver.resolveChannel({ channelId: "bein-sports-2" }, [
+      {
         streamId: 55123,
         name: "beIN_2SD",
         categoryName: "beIN SPORTS VEGA",
-      }],
-    );
+      },
+    ]);
 
     expect(before.resolver.channelId).toBe("bein-sports-2");
     expect(after.resolver.channelId).toBe("bein-sports-2");
@@ -105,14 +97,13 @@ describe("canonical IPTV channel map", () => {
   });
 
   it("does not route a different numbered broadcaster", () => {
-    const selected = resolver.resolveChannel(
-      { channelId: "bein-sports-2" },
-      [{
+    const selected = resolver.resolveChannel({ channelId: "bein-sports-2" }, [
+      {
         streamId: 2463,
         name: "beIN_1SD",
         categoryName: "beIN SPORTS VEGA",
-      }],
-    );
+      },
+    ]);
     expect(selected).toBeNull();
   });
 
