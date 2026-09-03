@@ -27,6 +27,10 @@
       .normalize("NFKD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
+      // Common compact EPG/tvg ids: beinsports1.qa, beinmax2, sscsport1, etc.
+      .replace(/\bbeinsports?(\d{1,2})\b/g, " bein sports $1 ")
+      .replace(/\bbeinmax(\d{1,2})\b/g, " bein max $1 ")
+      .replace(/\bsscsports?(\d{1,2})\b/g, " ssc sports $1 ")
       .replace(/بي\s*(?:إن|ان)|بين(?=\s*(?:سبورت|sport))/g, " bein ")
       .replace(/سبورت(?:س)?/g, " sports ")
       .replace(/اكسترا|إكسترا/g, " xtra ")
@@ -129,7 +133,7 @@
     return {
       network: networkFor(text),
       family: familyFor(text),
-      number: channelNumber(channel?.name || channel?.epgChannelId || text),
+      number: channelNumber(`${channel?.name || ""} ${channel?.epgChannelId || ""} ${channel?.categoryName || ""}`),
       normalized: normalizeText(text),
       tokenSet: new Set(tokens(text)),
     };
