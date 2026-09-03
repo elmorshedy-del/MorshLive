@@ -1,6 +1,6 @@
+import { iptvLabWorkerEnv } from "../../lib/iptv-lab.js";
 import { proxyXtreamMedia, redirectXtreamMedia } from "../adapters/xtream.js";
 import { corsPreflightResponse, errorResponse, jsonResponse } from "../http/response.js";
-import { iptvLabWorkerEnv } from "../../lib/iptv-lab.js";
 import {
   getDirectStreams,
   getXtreamCategories,
