@@ -4,146 +4,85 @@ import { describe, expect, it } from "vitest";
 const require = createRequire(import.meta.url);
 const resolver = require("../assets/js/iptv-channel-resolver.js");
 
-describe("stable IPTV channel identity", () => {
-  it("keeps the same logical identity when the provider renames a channel and changes stream id", () => {
-    const before = {
-      portalId: "p1",
-      streamId: 991,
-      name: "BEIN SPORTS 1 SD",
-      categoryName: "AR BEIN SPORTS SD",
-      epgChannelId: "beinsports1.qa",
-    };
-    const after = {
-      portalId: "p1",
-      streamId: 44021,
-      name: "AR | BN SPORT ONE FHD VIP",
-      categoryName: "SPORT PACKAGE NEW",
-      epgChannelId: "beinsports1.qa",
-    };
-
-    const a = resolver.stableIdentity(before);
-    const b = resolver.stableIdentity(after);
-    expect(a.logicalKey).toBe("epg:beinsports1.qa");
-    expect(b.logicalKey).toBe(a.logicalKey);
-    expect(b.fingerprint).toBe(a.fingerprint);
-    expect(b.persistent).toBe(true);
+describe("canonical IPTV channel map", () => {
+  it("derives stable canonical keys from card ids and provider EPG ids", () => {
+    expect(resolver.canonicalKey("bein-sports-2")).toBe("bein-sports-2");
+    expect(resolver.canonicalKey("beinsports2.qa")).toBe("bein-sports-2");
+    expect(resolver.canonicalKey("BEIN MAX 1")).toBe("bein-max-1");
   });
 
-  it("groups many quality/codec versions under one logical channel and picks a deterministic preferred variant", () => {
+  it("maps beIN Sports 2 to the current stream while preserving stable provider metadata", () => {
     const channels = [
       {
-        portalId: "p1",
-        streamId: 11,
-        name: "beIN Sports 2 SD",
-        categoryName: "Arabic Sports",
+        streamId: 992,
+        name: "BEIN SPORTS 2 SD",
+        categoryName: "AR BEIN SPORTS SD",
         epgChannelId: "beinsports2.qa",
       },
       {
-        portalId: "p1",
-        streamId: 12,
-        name: "beIN Sports 2 HEVC 4K",
-        categoryName: "Arabic Sports",
+        streamId: 1004,
+        name: "BEIN SPORTS 2 ENGLISH SD",
+        categoryName: "AR BEIN SPORTS SD",
         epgChannelId: "beinsports2.qa",
       },
       {
-        portalId: "p1",
-        streamId: 13,
-        name: "beIN Sports 2 FHD H264",
-        categoryName: "Arabic Sports",
-        epgChannelId: "beinsports2.qa",
-      },
-      {
-        portalId: "p1",
-        streamId: 14,
-        name: "beIN Sports 2 FHD H264 BACKUP",
-        categoryName: "Arabic Sports",
+        streamId: 397649,
+        name: "BEIN SPORTS 2 SD BACKUP",
+        categoryName: "AR BEIN SPORTS SD",
         epgChannelId: "beinsports2.qa",
       },
     ];
 
     const selected = resolver.resolveChannel(
-      {
-        channelId: "bein-sports-2",
-        channel: "beIN Sports 2",
-        iptvLogicalKey: "epg:beinsports2.qa",
-      },
+      { channelId: "bein-sports-2", channel: "beIN Sports 2" },
       channels,
     );
 
-    expect(selected.streamId).toBe(13);
-    expect(selected.resolver.logicalKey).toBe("epg:beinsports2.qa");
-    expect(selected.resolver.bootstrap).toBe(false);
+    expect(selected.streamId).toBe(992);
+    expect(selected.resolver.channelId).toBe("bein-sports-2");
+    expect(selected.resolver.stableProviderField).toBe("epgChannelId");
+    expect(selected.resolver.stableProviderId).toBe("beinsports2.qa");
   });
 
-  it("uses an exact persisted identity even if the new display name is unrecognizable", () => {
-    const channels = [
-      {
-        portalId: "p1",
-        streamId: 700,
-        name: "SPORT-X PRIMARY 1080",
-        categoryName: "PACK 91",
+  it("keeps the canonical key when the provider changes the stream id", () => {
+    const before = resolver.resolveChannel(
+      { channelId: "bein-sports-2" },
+      [{
+        streamId: 992,
+        name: "BEIN SPORTS 2 SD",
+        categoryName: "AR BEIN SPORTS SD",
+        epgChannelId: "beinsports2.qa",
+      }],
+    );
+    const after = resolver.resolveChannel(
+      { channelId: "bein-sports-2" },
+      [{
+        streamId: 44022,
+        name: "BN SPORTS 2 SD",
+        categoryName: "AR SPORTS",
+        epgChannelId: "beinsports2.qa",
+      }],
+    );
+
+    expect(before.resolver.channelId).toBe("bein-sports-2");
+    expect(after.resolver.channelId).toBe("bein-sports-2");
+    expect(after.streamId).toBe(44022);
+  });
+
+  it("does not route a different numbered broadcaster", () => {
+    const selected = resolver.resolveChannel(
+      { channelId: "bein-sports-2" },
+      [{
+        streamId: 991,
+        name: "BEIN SPORTS 1 SD",
+        categoryName: "AR BEIN SPORTS SD",
         epgChannelId: "beinsports1.qa",
-      },
-      {
-        portalId: "p1",
-        streamId: 701,
-        name: "SPORT-Y PRIMARY 1080",
-        categoryName: "PACK 91",
-        epgChannelId: "beinsports2.qa",
-      },
-    ];
-
-    const selected = resolver.resolveChannel(
-      {
-        channelId: "bein-sports-1",
-        channel: "beIN Sports 1",
-        iptvLogicalKey: "epg:beinsports1.qa",
-      },
-      channels,
+      }],
     );
-
-    expect(selected.streamId).toBe(700);
-    expect(selected.resolver.fingerprint).toMatch(/^fp1:/);
+    expect(selected).toBeNull();
   });
 
-  it("bootstraps from compact EPG identity when the visible name is unrecognizable", () => {
-    const channels = [
-      {
-        portalId: "p1",
-        streamId: 700,
-        name: "SPORT-X PRIMARY 1080",
-        categoryName: "PACK 91",
-        epgChannelId: "beinsports1.qa",
-      },
-      {
-        portalId: "p1",
-        streamId: 701,
-        name: "SPORT-Y PRIMARY 1080",
-        categoryName: "PACK 91",
-        epgChannelId: "beinsports2.qa",
-      },
-    ];
-
-    const selected = resolver.resolveChannel(
-      { channelId: "bein-sports-1", channel: "beIN Sports 1" },
-      channels,
-    );
-
-    expect(selected.streamId).toBe(700);
-    expect(selected.resolver.logicalKey).toBe("epg:beinsports1.qa");
-    expect(selected.resolver.bootstrap).toBe(true);
-  });
-
-  it("does not call a portal stream id persistent when stable provider metadata is absent", () => {
-    const identity = resolver.stableIdentity({ portalId: "p1", streamId: 12345, name: "Whatever HD" });
-    expect(identity.logicalKey).toBe("portal:p1:stream:12345");
-    expect(identity.tier).toBe("portal-stream");
-    expect(identity.persistent).toBe(false);
-  });
-
-  it("uses canonical broadcaster ids as the persistent binding key", () => {
-    expect(resolver.bindingKey({ channelId: "bein-max-3", channel: "Provider can rename this" })).toBe(
-      "channel:bein-max-3",
-    );
+  it("uses the canonical card channel id as the binding key", () => {
+    expect(resolver.bindingKey({ channelId: "bein-max-3" })).toBe("channel:bein-max-3");
   });
 });
