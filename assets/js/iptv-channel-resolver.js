@@ -1,6 +1,8 @@
 /* Deterministic broadcaster -> IPTV catalog resolver.
- * Provider display names, categories and stream ids are treated as runtime data.
- * No stream id or old bouquet name is hardcoded here.
+ *
+ * Visible provider names are presentation only. Logical channel identity is anchored
+ * to stable provider metadata (EPG id / provider channel id / service id) whenever
+ * available. Stream ids are only a portal-scoped last resort.
  */
 (function (root, factory) {
   const api = factory();
@@ -36,6 +38,16 @@
       .replace(/[^a-z0-9\u0600-\u06ff]+/g, " ")
       .replace(/\s+/g, " ")
       .trim();
+  }
+
+  function normalizeIdentifier(value) {
+    return normalizeDigits(value)
+      .normalize("NFKC")
+      .trim()
+      .toLowerCase()
+      .replace(/^tvg:/, "")
+      .replace(/\s+/g, "")
+      .replace(/[^a-z0-9._:@/-]+/g, "");
   }
 
   function tokens(value) {
@@ -80,9 +92,9 @@
   function broadcastSpec(channelId, label) {
     const id = normalizeText(channelId).replace(/\s+/g, "-");
     let match = id.match(/^bein-max-(\d{1,2})$/);
-    if (match) return { network: "bein", family: "max", number: Number(match[1]), label: label || channelId || "" };
+    if (match) return { network: "bein", family: "max", number: Number(match[1]), label: label || channelId || "", channelId: channelId || "" };
     match = id.match(/^bein-sports-(\d{1,2})$/);
-    if (match) return { network: "bein", family: "sports", number: Number(match[1]), label: label || channelId || "" };
+    if (match) return { network: "bein", family: "sports", number: Number(match[1]), label: label || channelId || "", channelId: channelId || "" };
 
     const text = `${label || ""} ${channelId || ""}`.trim();
     return {
@@ -90,7 +102,22 @@
       family: familyFor(text),
       number: channelNumber(text),
       label: label || channelId || "",
+      channelId: channelId || "",
     };
+  }
+
+  function bindingKey(targetInput) {
+    const target = typeof targetInput === "string"
+      ? broadcastSpec("", targetInput)
+      : broadcastSpec(targetInput?.channelId || "", targetInput?.channel || targetInput?.label || "");
+    const canonicalId = normalizeIdentifier(target.channelId);
+    if (canonicalId) return `channel:${canonicalId}`;
+    if (target.network && target.family && target.number != null) {
+      return `broadcast:${target.network}:${target.family}:${target.number}`;
+    }
+    if (target.network && target.number != null) return `broadcast:${target.network}:${target.number}`;
+    const labelKey = normalizeText(target.label).replace(/\s+/g, "-");
+    return labelKey ? `label:${labelKey}` : "";
   }
 
   function candidateText(channel) {
@@ -108,23 +135,112 @@
     };
   }
 
+  function fingerprint(value) {
+    const text = String(value || "");
+    let hash = 0x811c9dc5;
+    for (let i = 0; i < text.length; i += 1) {
+      hash ^= text.charCodeAt(i);
+      hash = Math.imul(hash, 0x01000193);
+    }
+    return `fp1:${(hash >>> 0).toString(16).padStart(8, "0")}`;
+  }
+
+  function stableIdentity(channel) {
+    const epg = normalizeIdentifier(channel?.epgChannelId);
+    const providerChannelId = normalizeIdentifier(
+      channel?.providerChannelId || channel?.channelUuid || channel?.channelUid || channel?.uuid,
+    );
+    const serviceId = normalizeIdentifier(channel?.customSid || channel?.serviceId);
+    const portalId = normalizeIdentifier(channel?.portalId || "lab") || "lab";
+    const streamId = normalizeIdentifier(channel?.streamId);
+
+    let logicalKey = "";
+    let tier = "none";
+    let persistent = false;
+    const evidence = [];
+
+    if (epg) {
+      logicalKey = `epg:${epg}`;
+      tier = "epg";
+      persistent = true;
+      evidence.push("epgChannelId");
+    } else if (providerChannelId) {
+      logicalKey = `provider-channel:${providerChannelId}`;
+      tier = "provider-channel";
+      persistent = true;
+      evidence.push("providerChannelId");
+    } else if (serviceId) {
+      logicalKey = `service:${serviceId}`;
+      tier = "service-id";
+      persistent = true;
+      evidence.push("customSid");
+    } else if (streamId) {
+      logicalKey = `portal:${portalId}:stream:${streamId}`;
+      tier = "portal-stream";
+      persistent = false;
+      evidence.push("streamId");
+    }
+
+    const traits = variantTraits(channel);
+    const variantKey = logicalKey
+      ? `${logicalKey}|${traits.language}|${traits.quality}|${traits.codec}|${traits.role}|stream:${streamId || "_"}`
+      : "";
+
+    return {
+      logicalKey,
+      variantKey,
+      fingerprint: logicalKey ? fingerprint(logicalKey) : "",
+      tier,
+      persistent,
+      evidence,
+    };
+  }
+
+  function variantTraits(channel) {
+    const text = normalizeText(`${channel?.name || ""} ${channel?.categoryName || ""}`);
+    let quality = "unknown";
+    if (/\b4k\b|\buhd\b/.test(text)) quality = "4k";
+    else if (/\bfhd\b|\bfullhd\b|\b1080p?\b/.test(text)) quality = "fhd";
+    else if (/\bhd\b|\b720p?\b/.test(text)) quality = "hd";
+    else if (/\bsd\b/.test(text)) quality = "sd";
+
+    let codec = "unknown";
+    if (/\bhevc\b|\bh265\b/.test(text)) codec = "hevc";
+    else if (/\bh264\b|\bavc\b/.test(text)) codec = "h264";
+
+    let language = "unknown";
+    if (/\barabic\b|\bar\b|عربي|عربى/.test(text)) language = "ar";
+    else if (/\benglish\b|\ben\b/.test(text)) language = "en";
+
+    const role = /\bbackup\b|\bbk\b|\btest\b|\balt\b/.test(text) ? "backup" : "primary";
+    return { quality, codec, language, role };
+  }
+
   function qualityScore(channel) {
-    const text = normalizeText(candidateText(channel));
+    const traits = variantTraits(channel);
     let score = 0;
-    if (/\bfhd\b|\bfullhd\b/.test(text)) score += 5;
-    else if (/\bhd\b/.test(text)) score += 4;
-    else if (/\bsd\b/.test(text)) score += 1;
-    if (/\b4k\b|\buhd\b/.test(text)) score += 2;
-    if (/\bhevc\b/.test(text)) score -= 1;
-    if (/\bbackup\b|\bbk\b|\btest\b/.test(text)) score -= 5;
+    if (traits.role === "backup") score -= 30;
+    if (traits.language === "ar") score += 12;
+    else if (traits.language === "en") score -= 5;
+
+    // Prefer broadly compatible high quality over a more fragile HEVC/4K feed.
+    if (traits.quality === "fhd") score += 16;
+    else if (traits.quality === "hd") score += 13;
+    else if (traits.quality === "4k") score += 11;
+    else if (traits.quality === "sd") score += 4;
+
+    if (traits.codec === "h264") score += 4;
+    else if (traits.codec === "hevc") score -= 1;
     return score;
   }
 
-  function languageScore(channel) {
-    const text = normalizeText(`${channel?.name || ""} ${channel?.categoryName || ""}`);
-    if (/\barabic\b|\bar\b|عربي|عربى/.test(text)) return 5;
-    if (/\benglish\b|\ben\b/.test(text)) return -3;
-    return 0;
+  function identityScore(channel) {
+    const identity = stableIdentity(channel);
+    if (identity.tier === "epg") return 18;
+    if (identity.tier === "provider-channel") return 15;
+    if (identity.tier === "service-id") return 12;
+    if (identity.tier === "portal-stream") return 1;
+    return -10;
   }
 
   function semanticScore(target, channel) {
@@ -151,26 +267,56 @@
       if (candidate.tokenSet.has(token)) score += 7;
     }
 
-    score += languageScore(channel);
-    score += qualityScore(channel);
+    score += identityScore(channel);
     if (/sport/.test(normalizeText(channel?.categoryName || ""))) score += 2;
     return score;
   }
 
-  function stableCompare(a, b) {
-    if (b.score !== a.score) return b.score - a.score;
-    const aq = qualityScore(a.channel);
-    const bq = qualityScore(b.channel);
-    if (bq !== aq) return bq - aq;
-    const an = normalizeText(a.channel?.name || "");
-    const bn = normalizeText(b.channel?.name || "");
-    const byName = an.localeCompare(bn, "en");
-    if (byName) return byName;
-    const ac = normalizeText(a.channel?.categoryName || "");
-    const bc = normalizeText(b.channel?.categoryName || "");
-    const byCategory = ac.localeCompare(bc, "en");
-    if (byCategory) return byCategory;
-    return String(a.channel?.streamId || "").localeCompare(String(b.channel?.streamId || ""), "en", { numeric: true });
+  function compareVariants(a, b) {
+    const quality = qualityScore(b) - qualityScore(a);
+    if (quality) return quality;
+    const ai = stableIdentity(a);
+    const bi = stableIdentity(b);
+    const keyCompare = ai.variantKey.localeCompare(bi.variantKey, "en", { numeric: true });
+    if (keyCompare) return keyCompare;
+    return String(a?.streamId || "").localeCompare(String(b?.streamId || ""), "en", { numeric: true });
+  }
+
+  function selectVariant(channels) {
+    return [...channels].sort(compareVariants)[0] || null;
+  }
+
+  function exactIdentityMatch(logicalKey, channels) {
+    if (!logicalKey) return null;
+    const matches = (Array.isArray(channels) ? channels : []).filter(
+      (channel) => stableIdentity(channel).logicalKey === logicalKey,
+    );
+    return selectVariant(matches);
+  }
+
+  function bootstrapMatch(target, channels) {
+    const groups = new Map();
+    for (const channel of Array.isArray(channels) ? channels : []) {
+      const score = semanticScore(target, channel);
+      if (!Number.isFinite(score) || score < 45) continue;
+      const identity = stableIdentity(channel);
+      const groupKey = identity.logicalKey || `unidentified:${normalizeText(channel?.name || "")}`;
+      const existing = groups.get(groupKey) || { key: groupKey, score: Number.NEGATIVE_INFINITY, channels: [] };
+      existing.score = Math.max(existing.score, score);
+      existing.channels.push(channel);
+      groups.set(groupKey, existing);
+    }
+
+    const ranked = [...groups.values()].sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      const ap = stableIdentity(a.channels[0]).persistent ? 1 : 0;
+      const bp = stableIdentity(b.channels[0]).persistent ? 1 : 0;
+      if (bp !== ap) return bp - ap;
+      return a.key.localeCompare(b.key, "en", { numeric: true });
+    });
+    if (!ranked.length) return null;
+    const best = ranked[0];
+    return { channel: selectVariant(best.channels), score: best.score };
   }
 
   function resolveChannel(targetInput, channels) {
@@ -179,27 +325,51 @@
       : broadcastSpec(targetInput?.channelId || "", targetInput?.channel || targetInput?.label || "");
     if (!target.network && target.number == null && !target.label) return null;
 
-    const ranked = (Array.isArray(channels) ? channels : [])
-      .map((channel) => ({ channel, score: semanticScore(target, channel) }))
-      .filter((row) => Number.isFinite(row.score) && row.score >= 45)
-      .sort(stableCompare);
+    const requestedLogicalKey = String(
+      typeof targetInput === "object"
+        ? targetInput?.iptvLogicalKey || targetInput?.logicalKey || ""
+        : "",
+    );
 
-    if (!ranked.length) return null;
-    const best = ranked[0];
+    let selected = exactIdentityMatch(requestedLogicalKey, channels);
+    let score = selected ? Number.POSITIVE_INFINITY : null;
+    let bootstrap = false;
+
+    if (!selected) {
+      const boot = bootstrapMatch(target, channels);
+      if (!boot?.channel) return null;
+      selected = boot.channel;
+      score = boot.score;
+      bootstrap = true;
+    }
+
+    const identity = stableIdentity(selected);
     return {
-      ...best.channel,
+      ...selected,
       resolver: {
         target,
-        score: best.score,
-        deterministicKey: `${normalizeText(best.channel?.name || "")}|${normalizeText(best.channel?.categoryName || "")}|${best.channel?.streamId || ""}`,
+        bindingKey: bindingKey(targetInput),
+        score,
+        bootstrap,
+        logicalKey: identity.logicalKey,
+        variantKey: identity.variantKey,
+        fingerprint: identity.fingerprint,
+        identityTier: identity.tier,
+        persistentIdentity: identity.persistent,
+        identityEvidence: identity.evidence,
+        deterministicKey: identity.variantKey || identity.logicalKey,
       },
     };
   }
 
   return {
     normalizeText,
+    normalizeIdentifier,
     broadcastSpec,
+    bindingKey,
     candidateSpec,
+    stableIdentity,
+    variantTraits,
     semanticScore,
     resolveChannel,
   };
