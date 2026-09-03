@@ -32,8 +32,22 @@ function catalogRow(row, portal, categoryMap) {
     categoryId,
     categoryName: categoryMap.get(categoryId) || row._playlistGroup || null,
     icon: row.stream_icon || row._playlistIcon || null,
+
+    // Stable logical-channel metadata. The browser resolver uses these before
+    // any display-name matching. EPG/tvg id is normally shared by HD/SD/HEVC
+    // variants of the same real channel.
     epgChannelId: row.epg_channel_id || row._playlistEpgId || null,
+    providerChannelId: row.channel_id || row.channelId || row.uuid || row.channel_uuid || null,
+    customSid: row.custom_sid || row.customSid || null,
+    serviceId: row.service_id || row.serviceId || null,
+
+    // Provider-scoped metadata used only to distinguish variants / diagnose a
+    // catalog when no persistent identity field exists.
     num: row.num || null,
+    streamType: row.stream_type || row.streamType || null,
+    added: row.added || null,
+    tvArchive: row.tv_archive || 0,
+    tvArchiveDuration: row.tv_archive_duration || null,
   };
 }
 
