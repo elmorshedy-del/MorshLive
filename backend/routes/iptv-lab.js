@@ -2,12 +2,13 @@ import { corsPreflightResponse, jsonResponse } from "../http/response.js";
 import {
   getIptvLabCatalog,
   getIptvLabCategories,
+  getIptvLabEpg,
   getIptvLabLive,
   getIptvLabStatus,
   probeIptvLabChannel,
 } from "../services/iptv-lab.js";
 
-const API_RE = /^\/api\/iptv-lab\/(status|categories|catalog|live|probe)\/?$/i;
+const API_RE = /^\/api\/iptv-lab\/(status|categories|catalog|epg|live|probe)\/?$/i;
 
 export const iptvLabRoute = {
   name: "iptv-lab",
@@ -35,13 +36,15 @@ export const iptvLabRoute = {
           ? await getIptvLabCategories(env, url.searchParams)
           : action === "catalog"
             ? await getIptvLabCatalog(env)
-            : action === "probe"
-              ? await probeIptvLabChannel(env, url.searchParams)
-              : await getIptvLabLive(env, url.searchParams);
+            : action === "epg"
+              ? await getIptvLabEpg(env)
+              : action === "probe"
+                ? await probeIptvLabChannel(env, url.searchParams)
+                : await getIptvLabLive(env, url.searchParams);
 
     return jsonResponse(result.body, {
       status: result.status,
-      cacheSeconds: 0,
+      cacheSeconds: action === "epg" ? 20 : 0,
       proxyTag: "iptv-lab",
     });
   },
