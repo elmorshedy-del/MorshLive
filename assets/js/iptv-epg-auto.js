@@ -1,9 +1,9 @@
 /* Deterministic fixture -> IPTV mapping from the provider's own EPG.
  *
- * This is the fallback path for live/upcoming fixtures that do not already carry
- * broadcaster metadata. A channel is attached only when BOTH teams match an EPG
- * program and the program timing is coherent with the fixture. Ambiguous matches
- * fail closed.
+ * This is the fallback path for live/upcoming/recently-ended fixtures that do not
+ * already carry broadcaster metadata. A channel is attached only when BOTH teams
+ * match an EPG program and the program timing is coherent with the fixture.
+ * Ambiguous matches fail closed.
  */
 (function (root, factory) {
   const api = factory();
@@ -165,10 +165,16 @@
       };
     }
 
+    function isRoutableMatch(match) {
+      if (!match?.id) return false;
+      if (match.status !== "ended") return true;
+      return typeof win.isRecentlyEndedMatch === "function" && win.isRecentlyEndedMatch(match);
+    }
+
     function makeMatchMap(matches) {
       return new Map(
         (Array.isArray(matches) ? matches : [])
-          .filter((match) => match?.id && match.status !== "ended")
+          .filter(isRoutableMatch)
           .map((match) => [String(match.id), match]),
       );
     }
