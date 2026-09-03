@@ -1,8 +1,8 @@
 /* Shared bootstrap: preserve the original translation engine, then apply the
- * editorial, visual, content-architecture, and IPTV auto-routing layers. */
+ * editorial, visual, content-architecture, and premium IPTV routing layers. */
 (function () {
   "use strict";
-  const stamp = "20260903iptvepg1";
+  const stamp = "20260903premiumtest2";
 
   // Install the match-time formatter before data.js loads. Every visitor sees
   // their own browser/device-local kickoff time plus a constant Makkah reference.
@@ -61,7 +61,6 @@
     document.write(`<script src="/assets/js/match-stats-editorial.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/iptv-channel-resolver.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/iptv-auto.js?v=${stamp}"><\/script>`);
-    document.write(`<script src="/assets/js/iptv-epg-auto.js?v=${stamp}"><\/script>`);
   }
 
   if (document.readyState === "loading") {
@@ -98,8 +97,6 @@
     });
   });
   addScript(`/assets/js/iptv-channel-resolver.js?v=${stamp}`, () => {
-    addScript(`/assets/js/iptv-auto.js?v=${stamp}`, () => {
-      addScript(`/assets/js/iptv-epg-auto.js?v=${stamp}`);
-    });
+    addScript(`/assets/js/iptv-auto.js?v=${stamp}`);
   });
 })();
