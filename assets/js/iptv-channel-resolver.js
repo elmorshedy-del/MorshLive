@@ -145,6 +145,26 @@
     return `fp1:${(hash >>> 0).toString(16).padStart(8, "0")}`;
   }
 
+  function variantTraits(channel) {
+    const text = normalizeText(`${channel?.name || ""} ${channel?.categoryName || ""}`);
+    let quality = "unknown";
+    if (/\b4k\b|\buhd\b/.test(text)) quality = "4k";
+    else if (/\bfhd\b|\bfullhd\b|\b1080p?\b/.test(text)) quality = "fhd";
+    else if (/\bhd\b|\b720p?\b/.test(text)) quality = "hd";
+    else if (/\bsd\b/.test(text)) quality = "sd";
+
+    let codec = "unknown";
+    if (/\bhevc\b|\bh265\b/.test(text)) codec = "hevc";
+    else if (/\bh264\b|\bavc\b/.test(text)) codec = "h264";
+
+    let language = "unknown";
+    if (/\barabic\b|\bar\b|عربي|عربى/.test(text)) language = "ar";
+    else if (/\benglish\b|\ben\b/.test(text)) language = "en";
+
+    const role = /\bbackup\b|\bbk\b|\btest\b|\balt\b/.test(text) ? "backup" : "primary";
+    return { quality, codec, language, role };
+  }
+
   function stableIdentity(channel) {
     const epg = normalizeIdentifier(channel?.epgChannelId);
     const providerChannelId = normalizeIdentifier(
@@ -194,26 +214,6 @@
       persistent,
       evidence,
     };
-  }
-
-  function variantTraits(channel) {
-    const text = normalizeText(`${channel?.name || ""} ${channel?.categoryName || ""}`);
-    let quality = "unknown";
-    if (/\b4k\b|\buhd\b/.test(text)) quality = "4k";
-    else if (/\bfhd\b|\bfullhd\b|\b1080p?\b/.test(text)) quality = "fhd";
-    else if (/\bhd\b|\b720p?\b/.test(text)) quality = "hd";
-    else if (/\bsd\b/.test(text)) quality = "sd";
-
-    let codec = "unknown";
-    if (/\bhevc\b|\bh265\b/.test(text)) codec = "hevc";
-    else if (/\bh264\b|\bavc\b/.test(text)) codec = "h264";
-
-    let language = "unknown";
-    if (/\barabic\b|\bar\b|عربي|عربى/.test(text)) language = "ar";
-    else if (/\benglish\b|\ben\b/.test(text)) language = "en";
-
-    const role = /\bbackup\b|\bbk\b|\btest\b|\balt\b/.test(text) ? "backup" : "primary";
-    return { quality, codec, language, role };
   }
 
   function qualityScore(channel) {
@@ -268,6 +268,7 @@
     }
 
     score += identityScore(channel);
+    score += qualityScore(channel);
     if (/sport/.test(normalizeText(channel?.categoryName || ""))) score += 2;
     return score;
   }
