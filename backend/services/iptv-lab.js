@@ -1,5 +1,5 @@
-import { fetchXtreamJson, fetchXtreamSourceMaps, loadXtreamPortals } from "../adapters/xtream.js";
 import { iptvLabWorkerEnv } from "../../lib/iptv-lab.js";
+import { fetchXtreamJson, fetchXtreamSourceMaps, loadXtreamPortals } from "../adapters/xtream.js";
 import { getXtreamCategories, getXtreamLive, getXtreamStatus, probeXtreamChannel } from "./xtream.js";
 
 function labOrError(env) {
