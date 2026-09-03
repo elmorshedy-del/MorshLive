@@ -2,6 +2,7 @@
   "espn-esp.1-401882867": {
     "channel": "beIN Sports 2",
     "channelId": "bein-sports-2",
+    "premiumTest": true,
     "reason": "manual verified broadcaster override"
   }
 }
