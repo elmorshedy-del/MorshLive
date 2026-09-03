@@ -125,7 +125,8 @@ function logicalKey(channel) {
 }
 
 function sportsCandidate(channel) {
-  const text = `${channel?.name || ""} ${channel?.categoryName || ""} ${channel?.epgChannelId || ""}`.toLowerCase();
+  const text =
+    `${channel?.name || ""} ${channel?.categoryName || ""} ${channel?.epgChannelId || ""}`.toLowerCase();
   return /(sport|bein|ssc|dazn|espn|tnt|sky|alkass|الكاس|الكأس|mbc|football|soccer|كرة|رياض)/i.test(text);
 }
 
@@ -147,7 +148,8 @@ function decodeMaybeBase64(value) {
   try {
     const bytes = Uint8Array.from(atob(input), (character) => character.charCodeAt(0));
     const decoded = new TextDecoder().decode(bytes).trim();
-    if (decoded && /[A-Za-z0-9\u0600-\u06ff]/.test(decoded) && !/[\u0000-\u0008]/.test(decoded)) {
+    const hasControl = [...decoded].some((character) => character.charCodeAt(0) < 9);
+    if (decoded && /[A-Za-z0-9\u0600-\u06ff]/.test(decoded) && !hasControl) {
       return decoded;
     }
   } catch {
@@ -178,17 +180,19 @@ function usefulListings(payload, nowSeconds = Math.floor(Date.now() / 1000)) {
     : Array.isArray(payload?.epgListings)
       ? payload.epgListings
       : [];
-  return rows
-    .map(normalizeListing)
-    .filter((listing) => {
-      if (listing.nowPlaying) return true;
-      if (!listing.startTimestamp || !listing.stopTimestamp) return true;
-      return listing.stopTimestamp >= nowSeconds - 60 * 60 && listing.startTimestamp <= nowSeconds + 8 * 60 * 60;
-    });
+  return rows.map(normalizeListing).filter((listing) => {
+    if (listing.nowPlaying) return true;
+    if (!listing.startTimestamp || !listing.stopTimestamp) return true;
+    return (
+      listing.stopTimestamp >= nowSeconds - 60 * 60 && listing.startTimestamp <= nowSeconds + 8 * 60 * 60
+    );
+  });
 }
 
 async function fetchGroupEpg(portal, group) {
-  const representative = [...group.channels].sort((a, b) => representativeScore(b) - representativeScore(a))[0];
+  const representative = [...group.channels].sort(
+    (a, b) => representativeScore(b) - representativeScore(a),
+  )[0];
   if (!representative?.streamId) return [];
   try {
     const payload = await fetchXtreamJson(portal, "get_short_epg", 9000, {
