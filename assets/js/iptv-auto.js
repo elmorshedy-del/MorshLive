@@ -1,31 +1,266 @@
-/* Auto-route match watch links through the current IPTV Lab catalog.
- * Match broadcaster metadata is authoritative; manual JSON overrides can pin it.
+/* Premium-only IPTV path.
+ *
+ * Original watch links stay untouched. For explicitly test-enabled cards only,
+ * channelId -> current IPTV Lab catalog -> streamId -> existing Xtream player.
+ * No EPG fixture matching, team-name routing, localStorage binding, or scoring.
  */
 (function () {
   "use strict";
-  const REFRESH_MS = 60 * 1000;
+
   const resolver = () => window.KZIptvChannelResolver;
-  let state = null, refreshPromise = null, observer = null, rewriteQueued = false;
-  function text(k,f){try{const v=window.I18N?.t?.(k);return v&&v!==k?v:f}catch{return f}}
-  function isWatchUrl(u){const p=String(u.pathname||"").replace(/\/$/,"");return p==="/watch.html"||p.startsWith("/watch/")}
-  function findWatchAnchors(root){const s=root&&root.querySelectorAll?root:document;return [...s.querySelectorAll('a[href*="match="]')].filter(a=>{if(a.dataset.iptvAutoLink==="1")return false;try{return isWatchUrl(new URL(a.getAttribute("href"),location.href))}catch{return false}})}
-  async function waitForMatchesApi(){for(let i=0;i<80;i+=1){if(typeof window.getMatches==="function")return true;await new Promise(r=>setTimeout(r,50))}return false}
-  async function getJson(url,optional=false){const r=await fetch(url,{cache:"no-store"});if(optional&&r.status===404)return {};const b=await r.json().catch(()=>({}));if(!r.ok||b.ok===false)throw new Error(b.error||`HTTP ${r.status}`);return b}
-  function flattenCatalog(b){if(Array.isArray(b.streams))return b.streams;return(b.portals||[]).flatMap(x=>x.streams||[])}
-  function makeMatchMap(matches,overrides){return new Map((Array.isArray(matches)?matches:[]).filter(m=>m?.id).map(m=>{const o=overrides?.[String(m.id)];return[String(m.id),o?{...m,...o}:m]}))}
-  async function refreshState(){if(refreshPromise)return refreshPromise;refreshPromise=(async()=>{if(!resolver()||!(await waitForMatchesApi()))return null;const[meta,catalog,overrides]=await Promise.all([window.getMatches({force:false}),getJson("/api/iptv-lab/catalog"),getJson("/assets/data/manual-channel-overrides.json",true)]);state={matchMap:makeMatchMap(meta?.matches||[],overrides),channels:flattenCatalog(catalog),resolved:new Map()};return state})().catch(()=>null).finally(()=>{refreshPromise=null});return refreshPromise}
-  function resolutionKey(m){return resolver()?.bindingKey({channelId:m?.channelId||"",channel:m?.channel||""})||`${m?.channelId||""}|${m?.channel||""}`}
-  function resolveForMatch(m){if(!state||!m||(!m.channel&&!m.channelId))return null;const k=resolutionKey(m);if(state.resolved.has(k))return state.resolved.get(k);const s=resolver().resolveChannel({channelId:m.channelId||"",channel:m.channel||""},state.channels);state.resolved.set(k,s||null);return s||null}
-  function routedHref(a,m,s){const u=new URL(a.getAttribute("href"),location.href);u.searchParams.set("match",String(m.id));u.searchParams.set("ch",m.channelId||"live");u.searchParams.set("source","xtream");u.searchParams.set("portal","lab");u.searchParams.set("stream",String(s.streamId));u.searchParams.delete("direct");return`${u.pathname.replace(/^\//,"")}${u.search}${u.hash}`}
-  function annotate(a,s){a.dataset.iptvAuto="resolved";a.dataset.iptvStreamId=String(s.streamId);a.dataset.iptvChannelName=String(s.name||"")}
-  function clearResolvedUi(a){a.dataset.iptvAuto="unresolved";delete a.dataset.iptvStreamId;delete a.dataset.iptvChannelName;const t=a.closest(".watch-source-toggle");if(!t)return;const p=t.querySelector('.watch-source-toggle__opt--premium, a[href*="source=iptv-premium"], a[data-iptv-auto-link="1"]');if(t.classList.contains("iptv-auto-toggle")){const sp=a.querySelector(":scope > span");if(sp)a.innerHTML=sp.innerHTML;a.classList.remove("watch-source-toggle__opt","watch-source-toggle__opt--original");delete a.dataset.iptvAutoWrapped;const par=t.parentNode;if(par){par.insertBefore(a,t);t.remove()}}else if(p){p.hidden=true;p.removeAttribute("href");delete p.dataset.iptvAutoLink}}
-  function ensureExistingToggle(a,m,s){const t=a.closest(".watch-source-toggle");if(!t)return false;const p=t.querySelector('.watch-source-toggle__opt--premium, a[href*="source=iptv-premium"], a[data-iptv-auto-link="1"]');if(p){p.href=routedHref(a,m,s);p.hidden=false;p.dataset.iptvAutoLink="1";annotate(p,s)}annotate(a,s);return true}
-  function addResolvedToggle(a,m,s){if(a.closest(".watch-source-toggle")||a.dataset.iptvAutoWrapped==="1")return;const w=document.createElement("div");w.className="watch-source-toggle iptv-auto-toggle";w.setAttribute("role","group");w.setAttribute("aria-label",text("watch.sourceTabsAria","Watch source"));const k=document.createElement("span");k.className="watch-source-toggle__kicker";k.textContent=text("watch.sourceToggle","Source");const tr=document.createElement("div");tr.className="watch-source-toggle__track";const ip=document.createElement("a");ip.className="watch-source-toggle__opt watch-source-toggle__opt--premium";ip.href=routedHref(a,m,s);ip.dataset.iptvAutoLink="1";ip.innerHTML=`<span>${text("card.watchPremium","IPTV")}</span><small>${s.name||m.channel||"Auto"}</small>`;annotate(ip,s);const h=a.innerHTML;a.dataset.iptvAutoWrapped="1";a.classList.remove("watch-link","watch-link--soon","watch-link--commentary","watch-link--disabled");a.classList.add("watch-source-toggle__opt","watch-source-toggle__opt--original");a.innerHTML=`<span>${h}</span>`;annotate(a,s);a.parentNode?.insertBefore(w,a);w.append(k,tr);tr.append(ip,a)}
-  function rewriteAnchor(a){if(!state||!a?.isConnected)return;let u;try{u=new URL(a.getAttribute("href"),location.href)}catch{return}const m=state.matchMap.get(String(u.searchParams.get("match")||""));if(!m)return;const s=resolveForMatch(m);if(!s?.streamId){clearResolvedUi(a);return}if(u.searchParams.get("source")==="iptv-premium"){a.href=routedHref(a,m,s);a.hidden=false;a.dataset.iptvAutoLink="1";annotate(a,s);return}if(u.searchParams.get("source")==="xtream"&&u.searchParams.get("portal")==="lab"){a.dataset.iptvAutoLink="1";annotate(a,s);return}if(!ensureExistingToggle(a,m,s))addResolvedToggle(a,m,s)}
-  function rewriteAll(root){if(state)findWatchAnchors(root||document).forEach(rewriteAnchor)}
-  function queueRewrite(root){if(rewriteQueued)return;rewriteQueued=true;queueMicrotask(()=>{rewriteQueued=false;rewriteAll(root||document)})}
-  async function refreshAndRewrite(){if(await refreshState())rewriteAll(document)}
-  function startObserver(){if(observer||!document.documentElement)return;observer=new MutationObserver(ms=>{if(ms.some(m=>(m.type==="childList"&&m.addedNodes.length)||(m.type==="attributes"&&m.target?.tagName==="A")))queueRewrite(document)});observer.observe(document.documentElement,{childList:true,subtree:true,attributes:true,attributeFilter:["href"]})}
-  function init(){startObserver();refreshAndRewrite();setInterval(()=>{state=null;refreshAndRewrite()},REFRESH_MS)}
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init,{once:true});else init();
+  let state = null;
+  let refreshPromise = null;
+  let observer = null;
+  let rewriteQueued = false;
+
+  function text(key, fallback) {
+    try {
+      const value = window.I18N?.t?.(key);
+      return value && value !== key ? value : fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  async function getJson(url, optional = false) {
+    const response = await fetch(url, { cache: "no-store" });
+    if (optional && response.status === 404) return {};
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || body.ok === false) throw new Error(body.error || `HTTP ${response.status}`);
+    return body;
+  }
+
+  async function waitForMatchesApi() {
+    for (let index = 0; index < 80; index += 1) {
+      if (typeof window.getMatches === "function") return true;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    return false;
+  }
+
+  function flattenCatalog(body) {
+    if (Array.isArray(body?.streams)) return body.streams;
+    return (body?.portals || []).flatMap((block) => block.streams || []);
+  }
+
+  function makeMatchMap(matches, overrides) {
+    return new Map(
+      (Array.isArray(matches) ? matches : [])
+        .filter((match) => match?.id)
+        .map((match) => {
+          const override = overrides?.[String(match.id)];
+          return [String(match.id), override ? { ...match, ...override } : match];
+        }),
+    );
+  }
+
+  async function refreshState() {
+    if (refreshPromise) return refreshPromise;
+    refreshPromise = (async () => {
+      if (!resolver() || !(await waitForMatchesApi())) return null;
+      const [meta, catalog, overrides] = await Promise.all([
+        window.getMatches({ force: false }),
+        getJson("/api/iptv-lab/catalog"),
+        getJson("/assets/data/manual-channel-overrides.json", true),
+      ]);
+      state = {
+        matches: makeMatchMap(meta?.matches || [], overrides),
+        channelMap: resolver().buildChannelMap(flattenCatalog(catalog)),
+      };
+      return state;
+    })()
+      .catch(() => null)
+      .finally(() => { refreshPromise = null; });
+    return refreshPromise;
+  }
+
+  function isWatchUrl(url) {
+    const path = String(url.pathname || "").replace(/\/$/, "");
+    return path === "/watch.html" || path.startsWith("/watch/");
+  }
+
+  function originalWatchAnchors(root) {
+    const scope = root?.querySelectorAll ? root : document;
+    return [...scope.querySelectorAll('a[href*="match="]')].filter((anchor) => {
+      if (anchor.dataset.iptvPremiumTest === "1") return false;
+      try {
+        const url = new URL(anchor.getAttribute("href"), location.href);
+        if (!isWatchUrl(url)) return false;
+        const source = url.searchParams.get("source");
+        return source !== "iptv-premium"
+          && !(source === "xtream" && url.searchParams.get("portal") === "lab");
+      } catch {
+        return false;
+      }
+    });
+  }
+
+  function premiumEnabled(match) {
+    return match?.premiumTest === true && !!match?.channelId;
+  }
+
+  function selectedChannel(match) {
+    if (!premiumEnabled(match) || !state) return null;
+    const key = resolver().canonicalKey(match.channelId);
+    return key ? state.channelMap.get(key) || null : null;
+  }
+
+  function premiumHref(originalAnchor, match, selected) {
+    const url = new URL(originalAnchor.getAttribute("href"), location.href);
+    url.searchParams.set("match", String(match.id));
+    url.searchParams.set("ch", match.channelId);
+    url.searchParams.set("source", "xtream");
+    url.searchParams.set("portal", "lab");
+    url.searchParams.set("stream", String(selected.streamId));
+    url.searchParams.set("premium", "1");
+    url.searchParams.set("premiumChannelId", match.channelId);
+    url.searchParams.delete("direct");
+    return `${url.pathname.replace(/^\//, "")}${url.search}${url.hash}`;
+  }
+
+  function unwrapLegacyPremium(original) {
+    const toggle = original.closest(".watch-source-toggle");
+    if (!toggle || toggle.classList.contains("iptv-premium-test-toggle")) return;
+    const premium = toggle.querySelector(".watch-source-toggle__opt--premium");
+    if (!premium) return;
+
+    original.classList.remove("watch-source-toggle__opt", "watch-source-toggle__opt--original");
+    original.classList.add("watch-link");
+    const onlySpan = original.querySelector(":scope > span");
+    if (onlySpan && original.children.length === 1) original.innerHTML = onlySpan.innerHTML;
+
+    const parent = toggle.parentNode;
+    if (parent) {
+      parent.insertBefore(original, toggle);
+      toggle.remove();
+    }
+  }
+
+  function ensurePremiumToggle(original, match, selected) {
+    const existing = original.closest(".watch-source-toggle");
+    if (existing) {
+      const premium = existing.querySelector(".watch-source-toggle__opt--premium");
+      if (premium) {
+        premium.href = premiumHref(original, match, selected);
+        premium.dataset.iptvPremiumTest = "1";
+        premium.hidden = false;
+        const small = premium.querySelector("small");
+        if (small) small.textContent = match.channel || match.channelId;
+        return;
+      }
+    }
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "watch-source-toggle iptv-premium-test-toggle";
+    wrapper.setAttribute("role", "group");
+    wrapper.setAttribute("aria-label", text("watch.sourceTabsAria", "Watch source"));
+
+    const kicker = document.createElement("span");
+    kicker.className = "watch-source-toggle__kicker";
+    kicker.textContent = text("watch.sourceToggle", "Source");
+
+    const track = document.createElement("div");
+    track.className = "watch-source-toggle__track";
+
+    const premium = document.createElement("a");
+    premium.className = "watch-source-toggle__opt watch-source-toggle__opt--premium";
+    premium.href = premiumHref(original, match, selected);
+    premium.dataset.iptvPremiumTest = "1";
+    premium.innerHTML =
+      `<span>${text("card.watchPremium", "IPTV")}</span><small>${match.channel || match.channelId}</small>`;
+
+    const originalHtml = original.innerHTML;
+    original.classList.remove("watch-link", "watch-link--soon", "watch-link--commentary", "watch-link--disabled");
+    original.classList.add("watch-source-toggle__opt", "watch-source-toggle__opt--original");
+    original.innerHTML = `<span>${originalHtml}</span>`;
+
+    original.parentNode?.insertBefore(wrapper, original);
+    wrapper.append(kicker, track);
+    track.append(premium, original);
+  }
+
+  function rewriteCardAnchor(original) {
+    if (!state || !original?.isConnected) return;
+    let url;
+    try {
+      url = new URL(original.getAttribute("href"), location.href);
+    } catch {
+      return;
+    }
+    const match = state.matches.get(String(url.searchParams.get("match") || ""));
+    if (!match) return;
+
+    if (!premiumEnabled(match)) {
+      unwrapLegacyPremium(original);
+      return;
+    }
+
+    const selected = selectedChannel(match);
+    if (!selected?.streamId) {
+      unwrapLegacyPremium(original);
+      return;
+    }
+    ensurePremiumToggle(original, match, selected);
+  }
+
+  function installWatchPageToggle() {
+    const params = new URLSearchParams(location.search);
+    if (params.get("premium") !== "1") return;
+    const host = document.getElementById("player-toolbar");
+    if (!host || host.querySelector(".iptv-premium-test-toggle")) return;
+
+    const originalUrl = new URL(location.href);
+    ["source", "portal", "stream", "direct", "premium", "premiumChannelId"].forEach((key) => {
+      originalUrl.searchParams.delete(key);
+    });
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "watch-source-toggle iptv-premium-test-toggle";
+    wrapper.setAttribute("role", "group");
+    wrapper.setAttribute("aria-label", text("watch.sourceTabsAria", "Watch source"));
+    wrapper.innerHTML = `
+      <span class="watch-source-toggle__kicker">${text("watch.sourceToggle", "Source")}</span>
+      <div class="watch-source-toggle__track">
+        <a class="watch-source-toggle__opt watch-source-toggle__opt--premium is-active"
+           aria-selected="true" href="${location.pathname}${location.search}">
+          <span>${text("card.watchPremium", "IPTV")}</span>
+          <small>${params.get("premiumChannelId") || "IPTV Lab"}</small>
+        </a>
+        <a class="watch-source-toggle__opt watch-source-toggle__opt--original"
+           aria-selected="false" href="${originalUrl.pathname}${originalUrl.search}">
+          <span>${text("card.watchOriginal", "Original stream")}</span>
+        </a>
+      </div>`;
+    host.appendChild(wrapper);
+  }
+
+  function rewriteAll(root) {
+    if (state) originalWatchAnchors(root || document).forEach(rewriteCardAnchor);
+    installWatchPageToggle();
+  }
+
+  function queueRewrite() {
+    if (rewriteQueued) return;
+    rewriteQueued = true;
+    queueMicrotask(() => {
+      rewriteQueued = false;
+      rewriteAll(document);
+    });
+  }
+
+  function startObserver() {
+    if (observer || !document.documentElement) return;
+    observer = new MutationObserver((mutations) => {
+      if (mutations.some((mutation) => mutation.type === "childList" && mutation.addedNodes.length)) queueRewrite();
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
+  async function init() {
+    startObserver();
+    if (await refreshState()) rewriteAll(document);
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+  else init();
 })();
