@@ -174,6 +174,11 @@ function normalizeListing(row) {
   };
 }
 
+// Testing switch. Set true to restore the normal one-hour post-match EPG expiry.
+const EPG_POST_MATCH_EXPIRY_ENABLED = false;
+const EPG_POST_MATCH_EXPIRY_SECONDS = 60 * 60;
+const EPG_FUTURE_WINDOW_SECONDS = 8 * 60 * 60;
+
 function usefulListings(payload, nowSeconds = Math.floor(Date.now() / 1000)) {
   const rows = Array.isArray(payload?.epg_listings)
     ? payload.epg_listings
@@ -183,9 +188,9 @@ function usefulListings(payload, nowSeconds = Math.floor(Date.now() / 1000)) {
   return rows.map(normalizeListing).filter((listing) => {
     if (listing.nowPlaying) return true;
     if (!listing.startTimestamp || !listing.stopTimestamp) return true;
-    return (
-      listing.stopTimestamp >= nowSeconds - 60 * 60 && listing.startTimestamp <= nowSeconds + 8 * 60 * 60
-    );
+    if (listing.startTimestamp > nowSeconds + EPG_FUTURE_WINDOW_SECONDS) return false;
+    if (!EPG_POST_MATCH_EXPIRY_ENABLED) return true;
+    return listing.stopTimestamp >= nowSeconds - EPG_POST_MATCH_EXPIRY_SECONDS;
   });
 }
 
