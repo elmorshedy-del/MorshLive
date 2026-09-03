@@ -119,6 +119,7 @@
   function rememberBinding(match, selected) {
     const info = selected?.resolver;
     if (!info?.persistentIdentity || !info.logicalKey) return;
+    if (info.bootstrap && Number(info.score || 0) < 120) return;
     const key = resolutionKey(match);
     const next = {
       logicalKey: info.logicalKey,
@@ -140,10 +141,10 @@
     if (!state || !match || match.status === "ended") return null;
     if (!match.channel && !match.channelId) return null;
 
-    // Upstream sometimes emits a generic beIN label. Never guess a numbered
-    // channel from an ambiguous broadcaster record.
+    // Upstream sometimes emits a generic beIN label while channelId is merely a
+    // fallback. If the broadcaster record itself has no number, do not guess.
     const labelSpec = resolver().broadcastSpec("", match.channel || "");
-    if (labelSpec.network === "bein" && labelSpec.number == null && !match.channelId) return null;
+    if (labelSpec.network === "bein" && labelSpec.number == null) return null;
 
     const cacheKey = resolutionKey(match);
     if (state.resolved.has(cacheKey)) return state.resolved.get(cacheKey);
@@ -168,9 +169,9 @@
       }
     }
 
-    // Bootstrap only when there is no usable stable binding. This is where names
-    // may help discover the current provider's metadata once; the resulting EPG /
-    // service identity is then persisted and becomes authoritative.
+    // Bootstrap only when there is no usable stable binding. Names may help
+    // discover the provider metadata once; the resulting EPG/service identity
+    // becomes authoritative after a high-confidence match.
     if (!selected) {
       selected = resolver().resolveChannel(
         { channelId: match.channelId || "", channel: match.channel || "" },
