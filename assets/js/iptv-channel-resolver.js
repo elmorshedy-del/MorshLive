@@ -130,19 +130,25 @@
     return fallbackNameCategoryKey(channel);
   }
 
+  function qualityOrder(channel) {
+    const text = normalizeText(`${channel?.name || ""} ${channel?.categoryName || ""}`);
+    if (/\b1080\s*p?\b|\bfhd\b|\bfull\s*hd\b/.test(text)) return 0;
+    if (/\b720\s*p?\b|\bhd\b/.test(text)) return 1;
+    if (/\bsd\b/.test(text)) return 2;
+    if (/\blow\b|\b512\s*k\b/.test(text)) return 3;
+    return 4;
+  }
+
   function variantTuple(channel) {
     const text = normalizeText(`${channel?.name || ""} ${channel?.categoryName || ""}`);
     const stable = stableProviderId(channel);
-    const arabic = /\barab(?:ic)?\b|\bar\b|عربي|عربى/.test(text);
     const english = /\benglish\b|\ben\b/.test(text);
     const backup = /\bbackup\b|\bbk\b|\btest\b|\balt\b/.test(text);
-    const sd = /\bsd\b/.test(text);
     return [
       stable ? 0 : 1,
-      arabic ? 0 : 1,
       english ? 1 : 0,
       backup ? 1 : 0,
-      sd ? 0 : 1,
+      qualityOrder(channel),
       stable?.value || "~",
       String(channel?.streamId || "~"),
     ];
