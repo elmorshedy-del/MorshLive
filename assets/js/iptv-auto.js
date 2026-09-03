@@ -3,6 +3,9 @@
  * The match broadcaster is authoritative. Once a broadcaster is resolved, its
  * stable IPTV logical identity (EPG/provider/service id) is persisted locally so
  * later provider renames and variant changes do not require name matching again.
+ *
+ * The original watch source is never overwritten. A resolved game gets a visible
+ * IPTV option whose URL already contains the exact current Lab stream id.
  */
 (function () {
   "use strict";
@@ -28,7 +31,18 @@
   function saveBindings() {
     try {
       localStorage.setItem(BINDINGS_KEY, JSON.stringify(bindings));
-    } catch { /* storage is optional */ }
+    } catch {
+      /* storage is optional */
+    }
+  }
+
+  function text(key, fallback) {
+    try {
+      const value = window.I18N?.t?.(key);
+      return value && value !== key ? value : fallback;
+    } catch {
+      return fallback;
+    }
   }
 
   function isWatchUrl(url) {
@@ -39,6 +53,7 @@
   function findWatchAnchors(root) {
     const scope = root && root.querySelectorAll ? root : document;
     return [...scope.querySelectorAll('a[href*="match="]')].filter((anchor) => {
+      if (anchor.dataset.iptvAutoLink === "1") return false;
       try {
         return isWatchUrl(new URL(anchor.getAttribute("href"), location.href));
       } catch {
@@ -94,15 +109,19 @@
       return state;
     })()
       .catch(() => null)
-      .finally(() => { refreshPromise = null; });
+      .finally(() => {
+        refreshPromise = null;
+      });
     return refreshPromise;
   }
 
   function resolutionKey(match) {
-    return resolver()?.bindingKey({
-      channelId: match?.channelId || "",
-      channel: match?.channel || "",
-    }) || `${match?.channelId || ""}|${match?.channel || ""}`;
+    return (
+      resolver()?.bindingKey({
+        channelId: match?.channelId || "",
+        channel: match?.channel || "",
+      }) || `${match?.channelId || ""}|${match?.channel || ""}`
+    );
   }
 
   function storedBinding(match) {
@@ -129,10 +148,12 @@
     };
     const prev = bindings[key];
     if (
-      prev?.logicalKey === next.logicalKey
-      && prev?.fingerprint === next.fingerprint
-      && prev?.identityTier === next.identityTier
-    ) return;
+      prev?.logicalKey === next.logicalKey &&
+      prev?.fingerprint === next.fingerprint &&
+      prev?.identityTier === next.identityTier
+    ) {
+      return;
+    }
     bindings[key] = next;
     saveBindings();
   }
@@ -195,6 +216,91 @@
     return `${url.pathname.replace(/^\//, "")}${url.search}${url.hash}`;
   }
 
+  function annotate(anchor, selected) {
+    anchor.dataset.iptvAuto = "resolved";
+    anchor.dataset.iptvStreamId = String(selected.streamId);
+    anchor.dataset.iptvChannelName = String(selected.name || "");
+    anchor.dataset.iptvLogicalKey = String(selected.resolver?.logicalKey || "");
+    anchor.dataset.iptvVariantKey = String(selected.resolver?.variantKey || "");
+    anchor.dataset.iptvFingerprint = String(selected.resolver?.fingerprint || "");
+    anchor.dataset.iptvIdentityTier = String(selected.resolver?.identityTier || "");
+  }
+
+  function clearAnnotation(anchor) {
+    anchor.dataset.iptvAuto = "unresolved";
+    delete anchor.dataset.iptvStreamId;
+    delete anchor.dataset.iptvLogicalKey;
+    delete anchor.dataset.iptvVariantKey;
+    delete anchor.dataset.iptvFingerprint;
+    delete anchor.dataset.iptvIdentityTier;
+  }
+
+  function premiumLabel() {
+    return text("card.watchPremium", "IPTV");
+  }
+
+  function premiumSubLabel(selected) {
+    const identity = selected?.resolver?.identityTier || "auto";
+    return identity === "epg" ? "EPG · Auto" : "Auto";
+  }
+
+  function ensureExistingToggle(anchor, match, selected) {
+    const toggle = anchor.closest(".watch-source-toggle");
+    if (!toggle) return false;
+
+    const premium = toggle.querySelector(
+      '.watch-source-toggle__opt--premium, a[href*="source=iptv-premium"], a[data-iptv-auto-link="1"]',
+    );
+    if (premium) {
+      premium.setAttribute("href", routedHref(anchor, match, selected));
+      premium.dataset.iptvAutoLink = "1";
+      annotate(premium, selected);
+    }
+    annotate(anchor, selected);
+    return true;
+  }
+
+  function addResolvedToggle(anchor, match, selected) {
+    if (anchor.closest(".watch-source-toggle")) return;
+    if (anchor.dataset.iptvAutoWrapped === "1") return;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "watch-source-toggle iptv-auto-toggle";
+    wrapper.setAttribute("role", "group");
+    wrapper.setAttribute("aria-label", text("watch.sourceTabsAria", "Watch source"));
+
+    const kicker = document.createElement("span");
+    kicker.className = "watch-source-toggle__kicker";
+    kicker.textContent = text("watch.sourceToggle", "Source");
+
+    const track = document.createElement("div");
+    track.className = "watch-source-toggle__track";
+
+    const premium = document.createElement("a");
+    premium.className = "watch-source-toggle__opt watch-source-toggle__opt--premium";
+    premium.href = routedHref(anchor, match, selected);
+    premium.dataset.iptvAutoLink = "1";
+    const premiumText = document.createElement("span");
+    premiumText.textContent = premiumLabel();
+    const premiumSmall = document.createElement("small");
+    premiumSmall.textContent = premiumSubLabel(selected);
+    premium.append(premiumText, premiumSmall);
+    annotate(premium, selected);
+
+    const originalHtml = anchor.innerHTML;
+    anchor.dataset.iptvAutoWrapped = "1";
+    anchor.classList.add("watch-source-toggle__opt", "watch-source-toggle__opt--original");
+    anchor.innerHTML = "";
+    const originalText = document.createElement("span");
+    originalText.innerHTML = originalHtml;
+    anchor.appendChild(originalText);
+    annotate(anchor, selected);
+
+    anchor.parentNode?.insertBefore(wrapper, anchor);
+    wrapper.append(kicker, track);
+    track.append(premium, anchor);
+  }
+
   function rewriteAnchor(anchor) {
     if (!state || !anchor || !anchor.isConnected) return;
     let url;
@@ -203,28 +309,34 @@
     } catch {
       return;
     }
+
     const matchId = url.searchParams.get("match");
     if (!matchId) return;
     const match = state.matchMap.get(String(matchId));
     if (!match) return;
     const selected = resolveForMatch(match);
     if (!selected?.streamId) {
-      anchor.dataset.iptvAuto = "unresolved";
-      delete anchor.dataset.iptvStreamId;
-      delete anchor.dataset.iptvLogicalKey;
-      delete anchor.dataset.iptvFingerprint;
+      clearAnnotation(anchor);
       return;
     }
 
-    const href = routedHref(anchor, match, selected);
-    if (anchor.getAttribute("href") !== href) anchor.setAttribute("href", href);
-    anchor.dataset.iptvAuto = "resolved";
-    anchor.dataset.iptvStreamId = String(selected.streamId);
-    anchor.dataset.iptvChannelName = String(selected.name || "");
-    anchor.dataset.iptvLogicalKey = String(selected.resolver?.logicalKey || "");
-    anchor.dataset.iptvVariantKey = String(selected.resolver?.variantKey || "");
-    anchor.dataset.iptvFingerprint = String(selected.resolver?.fingerprint || "");
-    anchor.dataset.iptvIdentityTier = String(selected.resolver?.identityTier || "");
+    // Legacy premium cards still exist in app.js. Convert that premium href to
+    // the exact Lab stream, but never touch the original source href.
+    if (url.searchParams.get("source") === "iptv-premium") {
+      anchor.setAttribute("href", routedHref(anchor, match, selected));
+      anchor.dataset.iptvAutoLink = "1";
+      annotate(anchor, selected);
+      return;
+    }
+
+    if (url.searchParams.get("source") === "xtream" && url.searchParams.get("portal") === "lab") {
+      anchor.dataset.iptvAutoLink = "1";
+      annotate(anchor, selected);
+      return;
+    }
+
+    if (ensureExistingToggle(anchor, match, selected)) return;
+    addResolvedToggle(anchor, match, selected);
   }
 
   function rewriteAll(root) {
