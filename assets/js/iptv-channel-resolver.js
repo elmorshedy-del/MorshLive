@@ -1,9 +1,9 @@
 /* Exact canonical broadcaster -> current IPTV Lab stream resolver.
  *
- * The match card's channelId is authoritative. Provider metadata is used to
- * identify catalog rows; streamId is only the current playback value attached
- * to the canonical channel key. No fixture inference, persistence, scoring, or
- * confidence system lives here.
+ * The match card's channelId is authoritative. Provider metadata is used first
+ * when it can identify the logical channel; provider name + category is the
+ * deterministic fallback when those metadata fields are absent. streamId is
+ * only the current playback value attached to the canonical channel key.
  */
 (function (root, factory) {
   const api = factory();
@@ -35,6 +35,8 @@
       .replace(/\bbe\s*in\b/g, " bein ")
       .replace(/\bsport\b/g, " sports ")
       .replace(/[^a-z0-9\u0600-\u06ff]+/g, " ")
+      .replace(/([a-z])(\d)/g, "$1 $2")
+      .replace(/(\d)([a-z])/g, "$1 $2")
       .replace(/\s+/g, " ")
       .trim();
   }
@@ -87,6 +89,27 @@
     return null;
   }
 
+  function fallbackNameCategoryKey(channel) {
+    const name = normalizeText(channel?.name || "");
+    const category = normalizeText(channel?.categoryName || "");
+    const combined = `${name} ${category}`.trim();
+
+    let numberMatch = name.match(/\bbein\s+(?:sports\s+)?(\d{1,2})\b/);
+    if (!numberMatch) numberMatch = combined.match(/\bbein\s+(?:sports\s+)?(\d{1,2})\b/);
+    if (numberMatch) {
+      const number = Number(numberMatch[1]);
+      if (/\bbein\s+max\b/.test(category) || /\bbein\s+max\b/.test(name)) return `bein-max-${number}`;
+      if (/\bbein\s+sports\b/.test(category) || /\bbein\s+sports\b/.test(name)) return `bein-sports-${number}`;
+    }
+
+    numberMatch = name.match(/\bssc\s+(?:sports\s+)?(\d{1,2})\b/);
+    if (!numberMatch) numberMatch = combined.match(/\bssc\s+(?:sports\s+)?(\d{1,2})\b/);
+    if (numberMatch && (/\bssc\s+sports\b/.test(category) || /\bssc\s+sports\b/.test(name))) {
+      return `ssc-sports-${Number(numberMatch[1])}`;
+    }
+    return "";
+  }
+
   function channelCanonicalKey(channel) {
     const metadata = [
       channel?.epgChannelId,
@@ -101,7 +124,10 @@
       const key = canonicalKey(value);
       if (key) return key;
     }
-    return canonicalKey(channel?.name || "");
+
+    const nameKey = canonicalKey(channel?.name || "");
+    if (nameKey) return nameKey;
+    return fallbackNameCategoryKey(channel);
   }
 
   function variantTuple(channel) {
