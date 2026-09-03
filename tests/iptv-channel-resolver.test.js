@@ -106,6 +106,34 @@ describe("stable IPTV channel identity", () => {
     expect(selected.resolver.fingerprint).toMatch(/^fp1:/);
   });
 
+  it("bootstraps from compact EPG identity when the visible name is unrecognizable", () => {
+    const channels = [
+      {
+        portalId: "p1",
+        streamId: 700,
+        name: "SPORT-X PRIMARY 1080",
+        categoryName: "PACK 91",
+        epgChannelId: "beinsports1.qa",
+      },
+      {
+        portalId: "p1",
+        streamId: 701,
+        name: "SPORT-Y PRIMARY 1080",
+        categoryName: "PACK 91",
+        epgChannelId: "beinsports2.qa",
+      },
+    ];
+
+    const selected = resolver.resolveChannel(
+      { channelId: "bein-sports-1", channel: "beIN Sports 1" },
+      channels,
+    );
+
+    expect(selected.streamId).toBe(700);
+    expect(selected.resolver.logicalKey).toBe("epg:beinsports1.qa");
+    expect(selected.resolver.bootstrap).toBe(true);
+  });
+
   it("does not call a portal stream id persistent when stable provider metadata is absent", () => {
     const identity = resolver.stableIdentity({ portalId: "p1", streamId: 12345, name: "Whatever HD" });
     expect(identity.logicalKey).toBe("portal:p1:stream:12345");
