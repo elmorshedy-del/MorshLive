@@ -48,9 +48,9 @@ describe("canonical IPTV channel map", () => {
 
     const selected = resolver.resolveChannel({ channelId: "bein-sports-2", channel: "beIN Sports 2" }, channels);
 
-    // Preserve Cursor's original SD premium behavior while removing the stale
-    // numeric stream id: the current provider SD stream is selected dynamically.
-    expect(selected.streamId).toBe(2464);
+    // The canonical key stays stable while the preferred provider variant and
+    // its current numeric stream id remain catalog data.
+    expect(selected.streamId).toBe(2454);
     expect(selected.resolver.channelId).toBe("bein-sports-2");
   });
 
