@@ -235,6 +235,36 @@
     delete anchor.dataset.iptvIdentityTier;
   }
 
+  function clearResolvedUi(anchor) {
+    clearAnnotation(anchor);
+    const toggle = anchor.closest(".watch-source-toggle");
+    if (!toggle) return;
+
+    const premium = toggle.querySelector(
+      '.watch-source-toggle__opt--premium, a[href*="source=iptv-premium"], a[data-iptv-auto-link="1"]',
+    );
+
+    if (toggle.classList.contains("iptv-auto-toggle")) {
+      const originalSpan = anchor.querySelector(":scope > span");
+      if (originalSpan) anchor.innerHTML = originalSpan.innerHTML;
+      anchor.classList.remove("watch-source-toggle__opt", "watch-source-toggle__opt--original");
+      delete anchor.dataset.iptvAutoWrapped;
+      const parent = toggle.parentNode;
+      if (parent) {
+        parent.insertBefore(anchor, toggle);
+        toggle.remove();
+      }
+      return;
+    }
+
+    if (premium) {
+      premium.hidden = true;
+      premium.removeAttribute("href");
+      delete premium.dataset.iptvAutoLink;
+      clearAnnotation(premium);
+    }
+  }
+
   function premiumLabel() {
     return text("card.watchPremium", "IPTV");
   }
@@ -252,7 +282,9 @@
       '.watch-source-toggle__opt--premium, a[href*="source=iptv-premium"], a[data-iptv-auto-link="1"]',
     );
     if (premium) {
-      premium.setAttribute("href", routedHref(anchor, match, selected));
+      const nextHref = routedHref(anchor, match, selected);
+      if (premium.getAttribute("href") !== nextHref) premium.setAttribute("href", nextHref);
+      premium.hidden = false;
       premium.dataset.iptvAutoLink = "1";
       annotate(premium, selected);
     }
@@ -289,6 +321,12 @@
 
     const originalHtml = anchor.innerHTML;
     anchor.dataset.iptvAutoWrapped = "1";
+    anchor.classList.remove(
+      "watch-link",
+      "watch-link--soon",
+      "watch-link--commentary",
+      "watch-link--disabled",
+    );
     anchor.classList.add("watch-source-toggle__opt", "watch-source-toggle__opt--original");
     anchor.innerHTML = "";
     const originalText = document.createElement("span");
@@ -316,14 +354,16 @@
     if (!match) return;
     const selected = resolveForMatch(match);
     if (!selected?.streamId) {
-      clearAnnotation(anchor);
+      clearResolvedUi(anchor);
       return;
     }
 
     // Legacy premium cards still exist in app.js. Convert that premium href to
     // the exact Lab stream, but never touch the original source href.
     if (url.searchParams.get("source") === "iptv-premium") {
-      anchor.setAttribute("href", routedHref(anchor, match, selected));
+      const nextHref = routedHref(anchor, match, selected);
+      if (anchor.getAttribute("href") !== nextHref) anchor.setAttribute("href", nextHref);
+      anchor.hidden = false;
       anchor.dataset.iptvAutoLink = "1";
       annotate(anchor, selected);
       return;
