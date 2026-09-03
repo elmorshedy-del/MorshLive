@@ -114,8 +114,8 @@ describe("stable IPTV channel identity", () => {
   });
 
   it("uses canonical broadcaster ids as the persistent binding key", () => {
-    expect(
-      resolver.bindingKey({ channelId: "bein-max-3", channel: "Provider can rename this" }),
-    ).toBe("channel:bein-max-3");
+    expect(resolver.bindingKey({ channelId: "bein-max-3", channel: "Provider can rename this" })).toBe(
+      "channel:bein-max-3",
+    );
   });
 });
