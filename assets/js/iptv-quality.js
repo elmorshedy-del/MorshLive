@@ -26,6 +26,15 @@
 
   let activeStreamId = "";
   let frameTimer = null;
+  // What the player is actually using. The /probe call reports which protocol
+  // the *source* answers on, which is a different question and lands seconds
+  // later — it must never overwrite the live answer.
+  let playbackProtocol = "";
+
+  function setPlaybackProtocol(value, tone = "good") {
+    playbackProtocol = value;
+    setValue(protocolEl, value, tone);
+  }
 
   function setValue(el, value, tone = "") {
     if (!el) return;
@@ -35,7 +44,10 @@
   }
 
   function browserSummary() {
-    return `${hevc ? "HEVC معلن ✓" : "HEVC غير معلن ?"} · ${nativeHls ? "HLS أصلي ✓" : hlsJs ? "HLS.js ✓" : "HLS ✕"} · ${mpegTs ? "TS ✓" : "TS ✕"}`;
+    // Name the path the lab will actually take first, so a stutter or a black
+    // frame can be attributed without opening the console.
+    const primary = nativeHls ? "المسار: HLS أصلي" : mpegTs ? "المسار: MPEG-TS" : "المسار: HLS.js";
+    return `${primary} · ${hevc ? "HEVC معلن ✓" : "HEVC غير معلن ?"} · ${nativeHls ? "HLS أصلي ✓" : hlsJs ? "HLS.js ✓" : "HLS ✕"} · ${mpegTs ? "TS ✓" : "TS ✕"}`;
   }
 
   function codecName(value) {
@@ -111,7 +123,9 @@
       const codecs = data.codecs || {};
       const audio = audioName(codecs.audio);
       setValue(codecEl, `${codecName(codecs.video)}${audio ? ` · ${audio}` : ""}`, data.playable ? "good" : "warn");
-      if (data.protocol) setValue(protocolEl, String(data.protocol).toUpperCase());
+      if (data.protocol && !playbackProtocol) {
+        setValue(protocolEl, `${String(data.protocol).toUpperCase()} (المصدر)`);
+      }
       if (!data.playable) {
         setValue(compatibilityEl, "فحص المصدر غير حاسم · التشغيل الفعلي هو الحكم", "warn");
         return;
@@ -134,6 +148,7 @@
     const streamId = String(active?.dataset?.streamId || "");
     if (!streamId || streamId === activeStreamId) return;
     activeStreamId = streamId;
+    playbackProtocol = "";
     setValue(codecEl, "جارٍ الفحص…");
     setValue(compatibilityEl, "جارٍ التحقق…", "warn");
     setValue(resolutionEl, "—");
@@ -151,11 +166,20 @@
     attributeFilter: ["class"],
   });
 
+  // The player announces its protocol the moment a frame renders. Text
+  // scraping stays only as a fallback for state strings the player sets
+  // before playback starts (and never once the player has spoken).
+  window.addEventListener("kz:iptv-protocol", (event) => {
+    const protocol = String(event.detail?.protocol || "");
+    if (protocol) setPlaybackProtocol(protocol);
+  });
+
   if (playerState) {
     new MutationObserver(() => {
+      if (playbackProtocol) return;
       const text = String(playerState.textContent || "");
-      if (/HLS/i.test(text)) setValue(protocolEl, "HLS", "good");
-      else if (/\bTS\b/i.test(text)) setValue(protocolEl, "MPEG-TS", "good");
+      if (/\bMPEG-TS\b/i.test(text)) setValue(protocolEl, "MPEG-TS", "warn");
+      else if (/HLS/i.test(text)) setValue(protocolEl, "HLS", "warn");
     }).observe(playerState, { childList: true, characterData: true, subtree: true });
   }
 
@@ -179,7 +203,7 @@
   window.addEventListener("kz:iptv-compat-recovered", (event) => {
     if (String(event.detail?.streamId || "") !== activeStreamId) return;
     setValue(compatibilityEl, "✓ متوافق عبر مسار HLS البديل", "good");
-    setValue(protocolEl, "HLS fallback", "good");
+    setPlaybackProtocol("HLS fallback");
     if (noteEl) noteEl.textContent = "فشل المسار الأساسي، لكن المختبر أعاد تشغيل القناة تلقائياً عبر مسار HLS المتوافق.";
   });
 
@@ -192,7 +216,7 @@
   setValue(browserEl, browserSummary(), hevc ? "good" : "warn");
 
   const fallbackScript = document.createElement("script");
-  fallbackScript.src = "assets/js/iptv-lab-compat-fallback.js?v=20260904fallback1";
+  fallbackScript.src = "assets/js/iptv-lab-compat-fallback.js?v=20260904safari1";
   fallbackScript.defer = true;
   document.head.appendChild(fallbackScript);
 })();

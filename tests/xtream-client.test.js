@@ -43,10 +43,12 @@ describe("xtreamMediaHeaders", () => {
 });
 
 describe("shouldRetryXtreamMediaWithoutRange", () => {
-  it("retries only 401/403 after a ranged request", () => {
+  it("retries only 401/403/416 after a ranged request", () => {
     expect(shouldRetryXtreamMediaWithoutRange(403, true)).toBe(true);
     expect(shouldRetryXtreamMediaWithoutRange(401, true)).toBe(true);
+    expect(shouldRetryXtreamMediaWithoutRange(416, true)).toBe(true);
     expect(shouldRetryXtreamMediaWithoutRange(403, false)).toBe(false);
+    expect(shouldRetryXtreamMediaWithoutRange(416, false)).toBe(false);
     expect(shouldRetryXtreamMediaWithoutRange(502, true)).toBe(false);
   });
 });

@@ -11,6 +11,14 @@
   const probeCache = new Map();
   let generation = 0;
   let fallbackHls = null;
+  // The main player announces the protocol it is actually running the moment
+  // a frame renders. Once it has, this helper has nothing to rescue — Safari
+  // now starts on native HLS itself, so re-mounting the same source here would
+  // only restart a stream that already works.
+  let playerHasProtocol = false;
+  window.addEventListener("kz:iptv-protocol", () => {
+    playerHasProtocol = true;
+  });
 
   async function getJson(url) {
     const response = await fetch(url, { cache: "no-store" });
@@ -113,11 +121,14 @@
     if (token !== generation || !probe?.playable || probe.mobileCompatible) return;
 
     // Give the existing player first chance. This helper is fallback-only.
-    await new Promise((resolve) => setTimeout(resolve, 2600));
-    if (token !== generation || hasDecodedVideo()) return;
+    // Native HLS on a live portal routinely needs more than 2.6s to render its
+    // first frame, and cutting in early is what turns a slow start into a
+    // restart loop.
+    await new Promise((resolve) => setTimeout(resolve, 6000));
+    if (token !== generation || playerHasProtocol || hasDecodedVideo()) return;
 
     const channel = await getChannel(streamId).catch(() => null);
-    if (token !== generation || !channel || hasDecodedVideo()) return;
+    if (token !== generation || !channel || playerHasProtocol || hasDecodedVideo()) return;
 
     const codec = String(probe?.codecs?.video || "").toLowerCase();
     const audio = String(probe?.codecs?.audio || "").toLowerCase();
@@ -148,6 +159,7 @@
     const streamId = String(card.dataset.streamId || "");
     if (!streamId) return;
     cleanupFallback();
+    playerHasProtocol = false;
     const token = ++generation;
     maybeRecover(streamId, token).catch((error) => {
       console.warn("IPTV Lab compatibility fallback failed", error);

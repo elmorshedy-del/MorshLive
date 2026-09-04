@@ -279,13 +279,13 @@ export function inspectMpegTsCodecs(bytes) {
   };
 }
 
-async function fetchProbeBytes(url, accept, timeoutMs = 8000) {
+async function fetchProbeBytes(url, accept, timeoutMs = 8000, { includeRange = true } = {}) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const headers = xtreamClientHeaders({
       Accept: accept,
-      Range: "bytes=0-13159",
+      Range: includeRange ? "bytes=0-13159" : null,
     });
     const response = await followXtreamRedirectChain(url, () => {
       return {
@@ -310,13 +310,25 @@ async function fetchProbeBytes(url, accept, timeoutMs = 8000) {
   }
 }
 
+/**
+ * A manifest is a few KB of text, so asking for a byte range buys nothing and
+ * makes panels that gate on Range answer 401/403/416. Media probes keep the
+ * range (it bounds the read) but retry without it on those codes — otherwise a
+ * healthy channel is recorded as dead and every client is pushed onto the
+ * other protocol.
+ */
+async function probeFetch(url, accept, timeoutMs, includeRange) {
+  const first = await fetchProbeBytes(url, accept, timeoutMs, { includeRange });
+  if (includeRange && shouldRetryXtreamMediaWithoutRange(first.response.status, true)) {
+    return fetchProbeBytes(url, accept, timeoutMs, { includeRange: false });
+  }
+  return first;
+}
+
 async function probeMediaUrl(url, kind, timeoutMs = 8000) {
   try {
-    const first = await fetchProbeBytes(
-      url,
-      kind === "hls" ? "application/vnd.apple.mpegurl,*/*" : "video/mp2t,*/*",
-      timeoutMs,
-    );
+    const accept = kind === "hls" ? "application/vnd.apple.mpegurl,*/*" : "video/mp2t,*/*";
+    const first = await probeFetch(url, accept, timeoutMs, kind !== "hls");
     if (!first.response.ok || !first.bytes.length) {
       return { ok: false, status: first.response.status, protocol: kind };
     }
@@ -329,7 +341,7 @@ async function probeMediaUrl(url, kind, timeoutMs = 8000) {
       if (!mediaLine)
         return { ok: true, status: first.response.status, protocol: kind, mobileCompatible: null };
       const segmentUrl = new URL(mediaLine.trim(), url).toString();
-      const segment = await fetchProbeBytes(segmentUrl, "video/mp2t,*/*", timeoutMs);
+      const segment = await probeFetch(segmentUrl, "video/mp2t,*/*", timeoutMs, true);
       const codecs = inspectMpegTsCodecs(segment.bytes);
       return {
         ok: segment.response.ok && segment.bytes.length > 0,

@@ -351,8 +351,14 @@ export async function getXtreamLive(env, searchParams) {
           fetchXtreamJson(portal, "get_live_streams", 20000, streamParams).catch(() => []),
         ]);
         const apiRows = Array.isArray(streamRows) ? streamRows : [];
+        // A synthesized /live/user/pass/<id>.ts URL only matches panels that
+        // serve every channel from the portal host. Country/reseller groups
+        // (USA FOX, …) are handed off to another origin in the playlist, so a
+        // channel found by search used to play from a made-up URL while the
+        // same channel found by category played from the real one. Any filtered
+        // request now resolves the exact playlist URL.
         const needExactSources =
-          Boolean(category || streamId) ||
+          Boolean(category || streamId || query) ||
           !apiRows.length ||
           (directRequested && allowedDirectPortals.has(portal.id) && Boolean(streamId));
         const sources = needExactSources
