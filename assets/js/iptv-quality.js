@@ -3,7 +3,15 @@
 
   const video = document.getElementById("previewVideo");
   const channelGrid = document.getElementById("channelGrid");
+  const playerBox = document.getElementById("playerBox");
+  const playerEmpty = document.getElementById("playerEmpty");
+  const playerTools = document.getElementById("playerTools");
   const playerState = document.getElementById("playerState");
+  const selectedName = document.getElementById("selectedName");
+  const selectedMeta = document.getElementById("selectedMeta");
+  const selectedMetaChip = document.getElementById("selectedMetaChip");
+  const recBtn = document.getElementById("recBtn");
+
   const codecEl = document.getElementById("qualityCodec");
   const compatibilityEl = document.getElementById("qualityCompatibility");
   const resolutionEl = document.getElementById("qualityResolution");
@@ -14,25 +22,7 @@
   const browserEl = document.getElementById("qualityBrowser");
   const noteEl = document.getElementById("qualityNote");
 
-  if (
-    !video
-    || !channelGrid
-    || !codecEl
-    || !compatibilityEl
-    || !resolutionEl
-    || !labelEl
-    || !fpsEl
-    || !protocolEl
-    || !framesEl
-    || !browserEl
-    || !noteEl
-  ) return;
-
-  let activeStreamId = "";
-  let probeController = null;
-  let frameLoopToken = 0;
-  let fallbackFrameTimer = null;
-  let playbackCheckTimer = null;
+  if (!video || !channelGrid || !playerState) return;
 
   const nativeHls = Boolean(video.canPlayType("application/vnd.apple.mpegurl"));
   const hlsJs = Boolean(window.Hls && window.Hls.isSupported?.());
@@ -42,16 +32,43 @@
     || video.canPlayType('video/mp4; codecs="hev1"'),
   );
 
+  let generation = 0;
+  let hls = null;
+  let tsPlayer = null;
+  let frameTimer = null;
+  let activeProbe = null;
+  let activeChannel = null;
+  let attemptInProgress = false;
+
   function setValue(element, text, tone = "") {
+    if (!element) return;
     element.textContent = text;
     element.classList.remove("good", "warn", "bad");
     if (tone) element.classList.add(tone);
   }
 
+  function browserSummary() {
+    const hls = nativeHls ? "HLS أصلي ✓" : hlsJs ? "HLS.js ✓" : "HLS ✕";
+    const ts = mpegTs ? "TS ✓" : "TS ✕";
+    const hevc = hevcAdvertised ? "HEVC معلن ✓" : "HEVC غير معلن ?";
+    return `${hevc} · ${hls} · ${ts}`;
+  }
+
+  function qualityLabel(width, height) {
+    const h = Number(height) || 0;
+    const w = Number(width) || 0;
+    if (h >= 2160 || w >= 3840) return "4K / UHD";
+    if (h >= 1440 || w >= 2560) return "1440p / QHD";
+    if (h >= 1080 || w >= 1920) return "1080p / Full HD";
+    if (h >= 720 || w >= 1280) return "720p / HD";
+    if (h >= 480) return `${h}p / SD`;
+    return h > 0 ? `${h}p` : "بانتظار الفيديو";
+  }
+
   function codecName(value) {
     const codec = String(value || "").toLowerCase();
-    if (codec === "hevc" || codec === "h265" || codec === "h.265") return "HEVC / H.265";
-    if (codec === "h264" || codec === "h.264" || codec === "avc") return "H.264 / AVC";
+    if (["hevc", "h265", "h.265"].includes(codec)) return "HEVC / H.265";
+    if (["h264", "h.264", "avc"].includes(codec)) return "H.264 / AVC";
     return codec ? codec.toUpperCase() : "غير معروف";
   }
 
@@ -63,29 +80,7 @@
     return codec ? codec.toUpperCase() : "";
   }
 
-  function qualityLabel(width, height) {
-    const h = Number(height) || 0;
-    const w = Number(width) || 0;
-    if (h >= 2160 || w >= 3840) return "4K / UHD";
-    if (h >= 1440 || w >= 2560) return "1440p / QHD";
-    if (h >= 1080 || w >= 1920) return "1080p / Full HD";
-    if (h >= 720 || w >= 1280) return "720p / HD";
-    if (h >= 480) return `${h}p / SD`;
-    if (h > 0) return `${h}p`;
-    return "بانتظار الفيديو";
-  }
-
-  function browserSummary() {
-    const hls = nativeHls ? "HLS أصلي ✓" : hlsJs ? "HLS.js ✓" : "HLS ✕";
-    const ts = mpegTs ? "TS ✓" : "TS ✕";
-    const hevc = hevcAdvertised ? "HEVC معلن ✓" : "HEVC غير معلن ?";
-    return `${hevc} · ${hls} · ${ts}`;
-  }
-
   function resetDiagnostics() {
-    clearTimeout(playbackCheckTimer);
-    playbackCheckTimer = null;
-    stopFrameMonitor();
     setValue(codecEl, "جارٍ الفحص…");
     setValue(compatibilityEl, "جارٍ التحقق…", "warn");
     setValue(resolutionEl, "—");
@@ -94,7 +89,7 @@
     setValue(protocolEl, "—");
     setValue(framesEl, "—");
     setValue(browserEl, browserSummary(), hevcAdvertised ? "good" : "warn");
-    noteEl.textContent = "الجودة تُقاس من الفيديو الذي يفكّه هذا الجهاز فعلياً؛ اسم الفئة أو كلمة HEVC وحدها لا تحدد الدقة.";
+    if (noteEl) noteEl.textContent = "يُفحص نوع البث والـ codec أولاً، ثم يختار المختبر مسار التشغيل الأنسب تلقائياً.";
   }
 
   function updateVideoMetrics() {
@@ -106,184 +101,304 @@
     return true;
   }
 
-  function updateFrameHealth() {
-    if (typeof video.getVideoPlaybackQuality !== "function") {
-      setValue(framesEl, "غير متاح");
-      return;
-    }
-    const stats = video.getVideoPlaybackQuality();
-    const total = Number(stats.totalVideoFrames) || 0;
-    const dropped = Number(stats.droppedVideoFrames) || 0;
-    if (!total) {
-      setValue(framesEl, "بانتظار الإطارات");
-      return;
-    }
-    const percent = (dropped / total) * 100;
-    const tone = percent <= 1 ? "good" : percent <= 5 ? "warn" : "bad";
-    setValue(framesEl, `${dropped}/${total} (${percent.toFixed(1)}%)`, tone);
-  }
-
   function stopFrameMonitor() {
-    frameLoopToken += 1;
-    if (fallbackFrameTimer) {
-      clearInterval(fallbackFrameTimer);
-      fallbackFrameTimer = null;
-    }
+    if (frameTimer) clearInterval(frameTimer);
+    frameTimer = null;
   }
 
   function startFrameMonitor() {
     stopFrameMonitor();
-    const token = frameLoopToken;
-
-    if (typeof video.requestVideoFrameCallback === "function") {
-      let startedAt = 0;
-      let frames = 0;
-      const frame = (now) => {
-        if (token !== frameLoopToken) return;
-        if (!startedAt) startedAt = now;
-        frames += 1;
-        const elapsed = now - startedAt;
-        if (elapsed >= 2000) {
-          const fps = (frames * 1000) / elapsed;
-          setValue(fpsEl, `${fps.toFixed(fps >= 10 ? 1 : 2)} FPS`, fps >= 24 ? "good" : "warn");
-          updateFrameHealth();
-          startedAt = now;
-          frames = 0;
-        }
-        video.requestVideoFrameCallback(frame);
-      };
-      video.requestVideoFrameCallback(frame);
-      return;
-    }
-
-    if (typeof video.getVideoPlaybackQuality === "function") {
-      let lastFrames = Number(video.getVideoPlaybackQuality().totalVideoFrames) || 0;
-      let lastTime = performance.now();
-      fallbackFrameTimer = setInterval(() => {
-        const now = performance.now();
-        const stats = video.getVideoPlaybackQuality();
-        const total = Number(stats.totalVideoFrames) || 0;
-        const elapsed = now - lastTime;
-        if (elapsed > 0 && total >= lastFrames) {
-          const fps = ((total - lastFrames) * 1000) / elapsed;
-          setValue(fpsEl, `${fps.toFixed(fps >= 10 ? 1 : 2)} FPS`, fps >= 24 ? "good" : "warn");
-        }
-        lastFrames = total;
-        lastTime = now;
-        updateFrameHealth();
-      }, 2000);
-      return;
-    }
-
-    setValue(fpsEl, "غير متاح");
-    setValue(framesEl, "غير متاح");
+    if (typeof video.getVideoPlaybackQuality !== "function") return;
+    let lastFrames = Number(video.getVideoPlaybackQuality().totalVideoFrames) || 0;
+    let lastAt = performance.now();
+    frameTimer = setInterval(() => {
+      const stats = video.getVideoPlaybackQuality();
+      const now = performance.now();
+      const total = Number(stats.totalVideoFrames) || 0;
+      const dropped = Number(stats.droppedVideoFrames) || 0;
+      const elapsed = now - lastAt;
+      if (elapsed > 0 && total >= lastFrames) {
+        const fps = ((total - lastFrames) * 1000) / elapsed;
+        setValue(fpsEl, `${fps.toFixed(fps >= 10 ? 1 : 2)} FPS`, fps >= 20 ? "good" : "warn");
+      }
+      if (total) {
+        const pct = (dropped / total) * 100;
+        setValue(framesEl, `${dropped}/${total} (${pct.toFixed(1)}%)`, pct <= 1 ? "good" : pct <= 5 ? "warn" : "bad");
+      }
+      lastFrames = total;
+      lastAt = now;
+    }, 2000);
   }
 
-  function markPlaybackCompatibility() {
-    const hasVideo = updateVideoMetrics();
-    if (hasVideo) {
-      setValue(compatibilityEl, "✓ متوافق — تم فك الفيديو", "good");
-      noteEl.textContent = "تم التحقق عملياً على هذا الجهاز والمتصفح: الفيديو يُفك وتظهر إطارات حقيقية. راقب FPS والإطارات الساقطة للحكم على سلاسة البث.";
-      return;
+  function destroyPlayers() {
+    stopFrameMonitor();
+    attemptInProgress = false;
+    try { hls?.destroy(); } catch {}
+    hls = null;
+    if (tsPlayer) {
+      try { tsPlayer.pause(); } catch {}
+      try { tsPlayer.unload(); } catch {}
+      try { tsPlayer.detachMediaElement(); } catch {}
+      try { tsPlayer.destroy(); } catch {}
+      tsPlayer = null;
     }
-    setValue(compatibilityEl, "الصوت/البث يعمل؛ الفيديو غير مؤكد", "warn");
-    noteEl.textContent = "إذا بقيت الدقة 0×0 أو لم تظهر صورة بعد ثوانٍ، فغالباً هذا المتصفح لا يفك ترميز الفيديو الحالي أو أن البث لا يرسل صورة سليمة.";
+    try { video.pause(); } catch {}
+    video.removeAttribute("src");
+    video.load();
   }
 
-  function updateActualProtocol() {
-    const text = String(playerState?.textContent || "");
-    if (/HLS/i.test(text)) setValue(protocolEl, "HLS", "good");
-    else if (/\bTS\b/i.test(text)) setValue(protocolEl, "MPEG-TS", "good");
+  function showPlayer() {
+    playerBox?.classList.add("is-playing");
+    if (playerEmpty) playerEmpty.hidden = true;
+    if (playerTools) playerTools.hidden = false;
   }
 
-  async function probeStream(streamId) {
-    if (probeController) probeController.abort();
-    probeController = new AbortController();
+  async function json(url) {
+    const response = await fetch(url, { cache: "no-store" });
+    const body = await response.json().catch(() => ({}));
+    if (!response.ok || body.ok === false) throw new Error(body.error || `HTTP ${response.status}`);
+    return body;
+  }
+
+  async function resolveChannel(streamId) {
+    const body = await json(`/api/iptv-lab/live?stream=${encodeURIComponent(streamId)}&limit=2`);
+    const rows = (body.portals || []).flatMap((block) => block.streams || []);
+    const channel = rows.find((row) => String(row.streamId) === String(streamId));
+    if (!channel) throw new Error("لم تُعثر على القناة في الكتالوج الحالي");
+    return channel;
+  }
+
+  async function probeChannel(channel) {
+    const params = new URLSearchParams({ stream: String(channel.streamId) });
+    if (channel.portalId) params.set("portal", String(channel.portalId));
     try {
-      const response = await fetch(`/api/iptv-lab/probe?stream=${encodeURIComponent(streamId)}`, {
-        cache: "no-store",
-        signal: probeController.signal,
-      });
-      const data = await response.json().catch(() => ({}));
-      if (streamId !== activeStreamId) return;
-      if (!response.ok || data.ok === false) throw new Error(data.error || `HTTP ${response.status}`);
-
-      if (data.protocol) setValue(protocolEl, String(data.protocol).toUpperCase());
-      if (!data.playable) {
-        setValue(codecEl, "لم يُكتشف", "warn");
-        setValue(compatibilityEl, "فشل فحص المصدر", "warn");
-        noteEl.textContent = "فحص المصدر لم يتمكن من تأكيد البث. جرّب التشغيل الفعلي؛ نجاح ظهور الصورة هو الاختبار الحاسم للتوافق.";
-        return;
-      }
-
-      const codecs = data.codecs || {};
-      const videoCodec = String(codecs.video || "").toLowerCase();
-      const audioCodec = audioName(codecs.audio);
-      setValue(codecEl, `${codecName(videoCodec)}${audioCodec ? ` · ${audioCodec}` : ""}`);
-
-      if (videoCodec === "h264" && data.mobileCompatible) {
-        setValue(compatibilityEl, "توافق واسع متوقع · بانتظار التشغيل", "good");
-        noteEl.textContent = "المصدر H.264 مع صوت متوافق على نطاق واسع. سيصبح الحكم مؤكداً عندما تظهر دقة فعلية ويبدأ عدّ الإطارات.";
-      } else if (videoCodec === "hevc") {
-        if (hevcAdvertised) {
-          setValue(compatibilityEl, "HEVC مدعوم مبدئياً · بانتظار التشغيل", "warn");
-          noteEl.textContent = "المتصفح يعلن دعماً لـ HEVC، لكن التشغيل الفعلي هو الاختبار النهائي لأن الدعم يختلف حسب الجهاز ونظام التشغيل وطريقة التغليف.";
-        } else {
-          setValue(compatibilityEl, "HEVC غير معلن في المتصفح · بانتظار التشغيل", "warn");
-          noteEl.textContent = "المتصفح لا يعلن HEVC عبر canPlayType. قد ينجح رغم ذلك حسب النظام؛ ظهور صورة ودقة فعلية سيؤكد التوافق.";
-        }
-      } else {
-        setValue(compatibilityEl, "بانتظار اختبار التشغيل", "warn");
-      }
+      return await json(`/api/iptv-lab/probe?${params}`);
     } catch (error) {
-      if (error.name === "AbortError") return;
-      if (streamId !== activeStreamId) return;
-      setValue(codecEl, "تعذر الفحص", "warn");
-      setValue(compatibilityEl, "اختبار التشغيل سيحسم التوافق", "warn");
-      noteEl.textContent = `تعذر فحص codec من المصدر: ${error.message || error}`;
+      return { ok: false, playable: false, error: error.message || String(error), codecs: null, protocol: null };
     }
   }
 
-  function syncActiveChannel() {
-    const active = channelGrid.querySelector(".channel.active[data-stream-id]");
-    const streamId = active?.dataset?.streamId || "";
-    if (!streamId || streamId === activeStreamId) return;
-    activeStreamId = streamId;
+  function updateProbeUi(probe) {
+    const codecs = probe?.codecs || {};
+    const audio = audioName(codecs.audio);
+    setValue(codecEl, `${codecName(codecs.video)}${audio ? ` · ${audio}` : ""}`, probe?.playable ? "good" : "warn");
+    if (probe?.protocol) setValue(protocolEl, String(probe.protocol).toUpperCase(), "good");
+    if (!probe?.playable) {
+      setValue(compatibilityEl, "المصدر لم يُحسم بالفحص · نجرب التشغيل فعلياً", "warn");
+      if (noteEl) noteEl.textContent = "فحص البداية لم يحسم نوع المصدر. لن نعتبر القناة فاشلة قبل تجربة مسارات التشغيل المتاحة.";
+      return;
+    }
+    if (String(codecs.video || "").toLowerCase() === "hevc") {
+      setValue(compatibilityEl, "HEVC مكتشف · اختيار مسار مناسب للجهاز", "warn");
+    } else {
+      setValue(compatibilityEl, "المصدر صالح · بانتظار فك الفيديو", "good");
+    }
+  }
+
+  function waitForPlayback(token, timeoutMs = 8500) {
+    return new Promise((resolve, reject) => {
+      let done = false;
+      const finish = (ok, reason) => {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        video.removeEventListener("playing", onPlaying);
+        video.removeEventListener("error", onError);
+        if (token !== generation) return reject(new Error("superseded"));
+        ok ? resolve(true) : reject(new Error(reason || "playback failed"));
+      };
+      const onPlaying = () => finish(true);
+      const onError = () => finish(false, "video error");
+      const timer = setTimeout(() => finish(false, "startup timeout"), timeoutMs);
+      video.addEventListener("playing", onPlaying, { once: true });
+      video.addEventListener("error", onError, { once: true });
+    });
+  }
+
+  async function attemptNativeHls(url, token) {
+    if (!nativeHls || !url) throw new Error("native HLS unavailable");
+    destroyPlayers();
+    attemptInProgress = true;
+    playerState.textContent = "جارٍ تجربة HLS الأصلي…";
+    setValue(protocolEl, "HLS أصلي", "warn");
+    video.src = new URL(url, location.origin).toString();
+    const promise = waitForPlayback(token);
+    const play = video.play();
+    if (play?.catch) play.catch(() => {});
+    await promise;
+    attemptInProgress = false;
+  }
+
+  async function attemptHlsJs(url, token) {
+    if (!hlsJs || !url) throw new Error("HLS.js unavailable");
+    destroyPlayers();
+    attemptInProgress = true;
+    playerState.textContent = "جارٍ تجربة HLS.js…";
+    setValue(protocolEl, "HLS.js", "warn");
+    hls = new window.Hls({ enableWorker: true, liveSyncDurationCount: 3, manifestLoadingMaxRetry: 2, fragLoadingMaxRetry: 3 });
+    const fatal = new Promise((_, reject) => {
+      hls.on(window.Hls.Events.ERROR, (_event, data) => {
+        if (data?.fatal) reject(new Error(data.details || data.type || "HLS fatal error"));
+      });
+    });
+    hls.loadSource(new URL(url, location.origin).toString());
+    hls.attachMedia(video);
+    const play = video.play();
+    if (play?.catch) play.catch(() => {});
+    await Promise.race([waitForPlayback(token), fatal]);
+    attemptInProgress = false;
+  }
+
+  async function attemptTs(url, token) {
+    if (!mpegTs || !url) throw new Error("MPEG-TS unavailable");
+    destroyPlayers();
+    attemptInProgress = true;
+    playerState.textContent = "جارٍ تجربة TS مباشر…";
+    setValue(protocolEl, "MPEG-TS", "warn");
+    tsPlayer = window.mpegts.createPlayer(
+      { type: "mpegts", isLive: true, url: new URL(url, location.origin).toString() },
+      { enableWorker: false, enableStashBuffer: true, stashInitialSize: 384 * 1024, liveSync: true },
+    );
+    const fatal = new Promise((_, reject) => {
+      tsPlayer.on(window.mpegts.Events.ERROR, (type, detail) => reject(new Error(`${type || "TS"}: ${detail || "error"}`)));
+    });
+    tsPlayer.attachMediaElement(video);
+    tsPlayer.load();
+    const play = tsPlayer.play();
+    if (play?.catch) play.catch(() => {});
+    await Promise.race([waitForPlayback(token), fatal]);
+    attemptInProgress = false;
+  }
+
+  function buildAttempts(channel, probe) {
+    const codec = String(probe?.codecs?.video || "").toLowerCase();
+    const protocol = String(probe?.protocol || "").toLowerCase();
+    const attempts = [];
+    const add = (name, fn) => {
+      if (!attempts.some((row) => row.name === name)) attempts.push({ name, fn });
+    };
+
+    if (codec === "hevc") {
+      if (nativeHls) add("native-hls", (token) => attemptNativeHls(channel.playbackUrl, token));
+      if (hlsJs) add("hls-js", (token) => attemptHlsJs(channel.playbackUrl, token));
+      return attempts;
+    }
+
+    if (protocol === "hls" && nativeHls) add("native-hls", (token) => attemptNativeHls(channel.playbackUrl, token));
+    if (mpegTs) add("mpeg-ts", (token) => attemptTs(channel.tsPlaybackUrl, token));
+    if (nativeHls) add("native-hls", (token) => attemptNativeHls(channel.playbackUrl, token));
+    if (hlsJs) add("hls-js", (token) => attemptHlsJs(channel.playbackUrl, token));
+    return attempts;
+  }
+
+  async function playUniversal(channel, card) {
+    const token = ++generation;
+    activeChannel = channel;
+    destroyPlayers();
+    showPlayer();
     resetDiagnostics();
-    probeStream(streamId);
-    updateActualProtocol();
+
+    channelGrid.querySelectorAll(".channel.active").forEach((node) => node.classList.remove("active"));
+    card?.classList.add("active");
+    if (selectedName) selectedName.textContent = channel.name || "قناة";
+    if (selectedMeta) selectedMeta.textContent = `${channel.categoryName || "بدون فئة"} · Stream ${channel.streamId}`;
+    if (selectedMetaChip) selectedMetaChip.textContent = "اختيار تلقائي لمسار التشغيل";
+    playerState.textContent = "جارٍ فحص المصدر…";
+
+    const probe = await probeChannel(channel);
+    if (token !== generation) return;
+    activeProbe = probe;
+    updateProbeUi(probe);
+
+    const attempts = buildAttempts(channel, probe);
+    const errors = [];
+    for (const attempt of attempts) {
+      if (token !== generation) return;
+      try {
+        await attempt.fn(token);
+        if (token !== generation) return;
+        playerState.textContent = `يعمل · ${attempt.name === "mpeg-ts" ? "TS مباشر" : "HLS"}`;
+        setValue(compatibilityEl, "✓ متوافق — تم تشغيل الفيديو فعلياً", "good");
+        if (updateVideoMetrics()) startFrameMonitor();
+        if (noteEl) noteEl.textContent = "تم اختيار مسار التشغيل من codec/protocol الفعليين، وليس من اسم القناة. التشغيل الفعلي هو معيار النجاح.";
+        return;
+      } catch (error) {
+        errors.push(`${attempt.name}: ${error.message || error}`);
+      }
+    }
+
+    attemptInProgress = false;
+    playerState.textContent = "تعذر التشغيل بعد تجربة المسارات المتاحة";
+    setValue(compatibilityEl, "✕ فشلت كل مسارات التشغيل على هذا الجهاز", "bad");
+    if (noteEl) {
+      const codec = codecName(probe?.codecs?.video);
+      noteEl.textContent = `${codec}. جُرّبت المسارات المتاحة فعلياً${errors.length ? `: ${errors.join(" · ")}` : ""}. إذا كان المصدر HEVC والجهاز لا يفك HEVC، يلزم transcoding إلى H.264 على الخادم لتحقيق توافق شامل.`;
+    }
   }
 
-  const channelObserver = new MutationObserver(syncActiveChannel);
-  channelObserver.observe(channelGrid, { subtree: true, attributes: true, attributeFilter: ["class"] });
-
-  if (playerState) {
-    const stateObserver = new MutationObserver(updateActualProtocol);
-    stateObserver.observe(playerState, { childList: true, characterData: true, subtree: true });
+  async function chooseByStreamId(streamId, card) {
+    try {
+      const channel = await resolveChannel(streamId);
+      await playUniversal(channel, card);
+    } catch (error) {
+      playerState.textContent = "تعذر تحميل القناة";
+      setValue(compatibilityEl, "تعذر بدء الاختبار", "bad");
+      if (noteEl) noteEl.textContent = error.message || String(error);
+    }
   }
 
-  video.addEventListener("loadedmetadata", () => {
-    const hasVideo = updateVideoMetrics();
-    updateFrameHealth();
-    if (hasVideo && !video.paused) markPlaybackCompatibility();
-  });
-  video.addEventListener("resize", () => {
-    if (updateVideoMetrics() && !video.paused) markPlaybackCompatibility();
-  });
+  channelGrid.addEventListener("click", (event) => {
+    const card = event.target.closest?.(".channel[data-stream-id]");
+    if (!card) return;
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    chooseByStreamId(card.dataset.streamId, card);
+  }, true);
+
+  recBtn?.addEventListener("click", async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    recBtn.disabled = true;
+    const old = recBtn.textContent;
+    recBtn.textContent = "جارٍ البحث…";
+    try {
+      const body = await json("/api/iptv-lab/live?q=bein%20sports%201%20sd&limit=80");
+      const rows = (body.portals || []).flatMap((block) => block.streams || []);
+      const channel = rows.find((row) => /bein\s+sports?\s+(?:1\s+sd|sd\s*1)/i.test(String(row.name || ""))) || rows[0];
+      if (!channel) throw new Error("لم تُعثر على قناة BEIN SPORTS 1 SD");
+      const card = channelGrid.querySelector(`[data-stream-id="${CSS.escape(String(channel.streamId))}"]`);
+      await playUniversal(channel, card);
+    } catch (error) {
+      setValue(compatibilityEl, "تعذر تشغيل القناة المقترحة", "bad");
+      if (noteEl) noteEl.textContent = error.message || String(error);
+    } finally {
+      recBtn.textContent = old || "▶ AR BEIN SPORTS 1 SD";
+      recBtn.disabled = false;
+    }
+  }, true);
+
+  video.addEventListener("loadedmetadata", updateVideoMetrics);
+  video.addEventListener("resize", updateVideoMetrics);
   video.addEventListener("playing", () => {
-    startFrameMonitor();
-    updateActualProtocol();
-    clearTimeout(playbackCheckTimer);
-    playbackCheckTimer = setTimeout(markPlaybackCompatibility, 500);
+    if (!attemptInProgress && activeChannel) {
+      updateVideoMetrics();
+      startFrameMonitor();
+    }
   });
   video.addEventListener("pause", stopFrameMonitor);
   video.addEventListener("ended", stopFrameMonitor);
   video.addEventListener("error", () => {
-    stopFrameMonitor();
-    if (!activeStreamId) return;
-    setValue(compatibilityEl, "✕ فشل التشغيل على هذا الجهاز", "bad");
-    noteEl.textContent = "فشل عنصر الفيديو في التشغيل. قد يكون السبب codec غير مدعوم، صيغة البث، أو خطأ في المصدر؛ راجع codec والبروتوكول أعلاه.";
+    if (attemptInProgress) return;
+    if (!activeChannel) return;
+    setValue(compatibilityEl, "حدث خطأ بعد بدء التشغيل", "warn");
   });
 
   setValue(browserEl, browserSummary(), hevcAdvertised ? "good" : "warn");
+  window.KZIptvLabUniversal = {
+    version: "20260904probe1",
+    playByStreamId: chooseByStreamId,
+    get activeProbe() { return activeProbe; },
+  };
 })();
