@@ -410,7 +410,7 @@
   }
 
   async function fetchXtreamChannel() {
-    if (!xtreamPortalId || !xtreamStreamId) throw new Error("بيانات قناة IPTV غير مكتملة");
+    if (!xtreamPortalId || !xtreamStreamId) throw new Error("بيانات القناة غير مكتملة");
     const isConfiguredDirect = xtreamPortalId === "direct";
     const query = new URLSearchParams(
       isConfiguredDirect
@@ -425,13 +425,13 @@
     const selected = isConfiguredDirect
       ? (data.streams || [])[0]
       : (data.portals || []).flatMap((block) => block.streams || [])[0];
-    if (!selected) throw new Error("قناة IPTV غير متاحة حالياً");
+    if (!selected) throw new Error("القناة غير متاحة حالياً");
     activeXtreamChannel = selected;
     channel = {
       id: `xtream-${selected.portalId}-${selected.streamId}`,
-      name: selected.name || params.get("name") || "IPTV",
+      name: selected.name || params.get("name") || "القناة",
       quality: "Live",
-      group: selected.categoryName || "IPTV",
+      group: selected.categoryName || "بث مباشر",
     };
     match = null;
     return selected;
@@ -440,7 +440,7 @@
   function showXtreamError(message) {
     destroyInlineHls();
     if (!shell) return;
-    shell.innerHTML = `<div class="manual-mirror-error">${escapeHtml(message || "تعذر تشغيل قناة IPTV")}</div>`;
+    shell.innerHTML = `<div class="manual-mirror-error">${escapeHtml(message || "تعذر تشغيل القناة")}</div>`;
   }
 
   function showBridgeFailure() {
@@ -476,7 +476,7 @@
 
     const refreshToken = () => {
       if (xtreamRecoveryCount >= 1) {
-        showXtreamError("تعذر تشغيل القناة. ارجع إلى إدارة IPTV واختر قناة أخرى.");
+        showXtreamError("تعذر تشغيل القناة. ارجع إلى إدارة القنوات واختر قناة أخرى.");
         return;
       }
       xtreamRecoveryCount += 1;
@@ -1601,11 +1601,11 @@
 
   function fillInfo() {
     if (xtreamMode) {
-      const name = activeXtreamChannel?.name || params.get("name") || "IPTV";
-      const category = activeXtreamChannel?.categoryName || params.get("category") || "IPTV";
-      const portalLabel = activeXtreamChannel?.portalLabel || xtreamPortalId || "IPTV";
+      const name = activeXtreamChannel?.name || params.get("name") || "القناة";
+      const category = activeXtreamChannel?.categoryName || params.get("category") || "بث مباشر";
+      const portalLabel = activeXtreamChannel?.portalLabel || xtreamPortalId || "KoraZero";
       document.getElementById("ch-name").textContent = name;
-      document.getElementById("ch-status").innerHTML = '<span class="status-pill status-live">IPTV مباشر</span>';
+      document.getElementById("ch-status").innerHTML = '<span class="status-pill status-live">مباشر</span>';
       document.title = `${name} — KoraZero`;
       document.getElementById("now-sub").textContent = `${portalLabel} · ${category}`;
       document.getElementById("info-quality").textContent = "Live";
@@ -1716,8 +1716,8 @@
       return;
     }
     if (xtreamMode) {
-      const name = activeXtreamChannel?.name || params.get("name") || "IPTV";
-      row.innerHTML = `<a class="channel-btn active" href="iptv-admin.html"><span class="channel-btn-name">${escapeHtml(name)}</span><span class="channel-btn-tag">إدارة IPTV</span></a>`;
+      const name = activeXtreamChannel?.name || params.get("name") || "القناة";
+      row.innerHTML = `<a class="channel-btn active" href="iptv-admin.html"><span class="channel-btn-name">${escapeHtml(name)}</span><span class="channel-btn-tag">إدارة القنوات</span></a>`;
       return;
     }
     const matchCh = match && match.channelId;
@@ -1763,8 +1763,8 @@
       return;
     }
     if (xtreamMode) {
-      const portal = activeXtreamChannel?.portalLabel || xtreamPortalId || "IPTV";
-      row.innerHTML = `<div class="server-groups server-groups--clean"><div class="server-group"><div class="server-group-label">Xtream</div><div class="server-group-row"><span class="server-status-pill srv-ok">${escapeHtml(portal)} ← ${escapeHtml(activeXtreamChannel?.name || "IPTV")}</span></div></div></div>`;
+      const portal = activeXtreamChannel?.portalLabel || xtreamPortalId || "KoraZero";
+      row.innerHTML = `<div class="server-groups server-groups--clean"><div class="server-group"><div class="server-group-label">Xtream</div><div class="server-group-row"><span class="server-status-pill srv-ok">${escapeHtml(portal)} ← ${escapeHtml(activeXtreamChannel?.name || "القناة")}</span></div></div></div>`;
       return;
     }
     var defaultKey = (match && match.embedKey) || window.SITE_DATA.embedKeyFor(channel.id) || "koraplus";
@@ -1814,7 +1814,7 @@
     const panel = document.getElementById("side-channels");
     if (!panel) return;
     if (xtreamMode) {
-      panel.innerHTML = `<a class="side-match active" href="iptv-admin.html"><span class="side-status status-live">IPTV</span><span class="side-teams">إدارة واختيار القنوات</span><span class="side-league">العودة إلى لوحة IPTV</span></a>`;
+      panel.innerHTML = `<a class="side-match active" href="iptv-admin.html"><span class="side-status status-live">مباشر</span><span class="side-teams">إدارة واختيار القنوات</span><span class="side-league">العودة إلى لوحة التحكم</span></a>`;
       return;
     }
     const order = { live: 0, upcoming: 1, ended: 2 };

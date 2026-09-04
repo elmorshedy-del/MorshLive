@@ -18,6 +18,18 @@ describe("canonical IPTV channel map", () => {
     expect(resolver.canonicalKey("ثمانية.٣")).toBe("thmanyah-3");
   });
 
+  it("recognizes the live catalog's own 'Thmanayah' spelling (extra vowel before -yah)", () => {
+    // The real Xtream/IPTV-lab catalog spells this provider "Thmanayah", not
+    // "Thmanyah" - unrecognized, channelCanonicalKey returned "" and every
+    // one of these rows (including the only 1080p/4K variants) was silently
+    // dropped from buildChannelMap, so a card could only ever resolve to the
+    // provider's lower-quality "Thamanya N Sport" duplicate listing.
+    expect(resolver.canonicalKey("Thmanayah 1 HD")).toBe("thmanyah-1");
+    expect(
+      resolver.channelCanonicalKey({ name: "Thmanayah 3 1080", categoryName: "Thmanayah السعودية الرياضية" }),
+    ).toBe("thmanyah-3");
+  });
+
   it("maps the provider's current beIN Sports 2 naming to one canonical key", () => {
     const channels = [
       {
