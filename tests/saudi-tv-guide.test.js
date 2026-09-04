@@ -31,9 +31,7 @@ describe("Saudi TV guide team identity", () => {
   });
 
   it("produces the same pair key regardless of home/away order and guide suffixes", () => {
-    expect(guidePairKey("Al-Ittihad Jeddah Club", "Al Nassr")).toBe(
-      guidePairKey("Al Nassr", "Al Ittihad"),
-    );
+    expect(guidePairKey("Al-Ittihad Jeddah Club", "Al Nassr")).toBe(guidePairKey("Al Nassr", "Al Ittihad"));
   });
 });
 
