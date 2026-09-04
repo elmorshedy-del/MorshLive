@@ -3,22 +3,24 @@
  * refresh-saudi-broadcasts.js — Lightweight pre-match Saudi channel hydration.
  *
  * This intentionally does NOT run the expensive match/highlight/tournament
- * crawl. It fetches only ESPN's Saudi Pro League schedule plus the existing
- * Arabic channel/commentator source, then updates a dedicated `broadcastIndex`
- * inside today.json. A compatibility projection is merged into
- * `commentaryIndex`, which the current browser already hydrates onto live ESPN
- * fixtures.
+ * crawl. Fixture identity comes from ESPN ksa.1. Exact numbered Thmanyah
+ * assignments come from the Saudi TV guide adapter, with the verified Thmanyah
+ * rights-holder network as the lower-confidence fallback.
  *
- * Exact source channel (ثمانية 1/2/3) wins. When an exact number has not yet
- * been announced, the verified domestic rights-holder fallback is `ثمانية`.
+ * The result is stored in a dedicated `broadcastIndex` inside today.json. A
+ * compatibility projection is also merged into `commentaryIndex`, which the
+ * current browser already hydrates onto live ESPN fixtures. European/beIN rows
+ * are not changed by this refresher.
  * ==========================================================================*/
 const fs = require("fs");
 const path = require("path");
 const { normalizeEspnEvent } = require("./matches-lib");
 const { attachCommentators, pairKey } = require("./commentators-lib");
+const { applySaudiTvGuide, parseSaudiTvGuide } = require("./saudi-tv-guide-lib");
 
 const ESPN_SLUG = "ksa.1";
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
+const TV_GUIDE_URL = "https://www.livefootballtv.info/competition/liga-profesional-saudi";
 const OUT = path.join(__dirname, "..", "assets", "data", "today.json");
 const LOOKAHEAD_DAYS = 7;
 const SERVER_UA = "curl/8.5.0";
@@ -163,19 +165,29 @@ function rowsChanged(previous, next) {
   return JSON.stringify(semanticBroadcastRows(previous)) !== JSON.stringify(semanticBroadcastRows(next));
 }
 
+async function optionalText(url, label) {
+  try {
+    return await fetchWithTimeout(url, { text: true, userAgent: BROWSER_UA });
+  } catch (error) {
+    console.log(`${label} unavailable (${error.message}); continuing with remaining sources`);
+    return "";
+  }
+}
+
 async function main() {
   const centerDate = process.argv[2] || arabiaTodayIso();
   const previousPayload = JSON.parse(fs.readFileSync(OUT, "utf8"));
-  const matches = await fetchSaudiFixtures(centerDate);
+  const [matches, guideHtml, commentatorsHtml] = await Promise.all([
+    fetchSaudiFixtures(centerDate),
+    optionalText(TV_GUIDE_URL, "Saudi TV guide"),
+    optionalText(COMMENTATORS_URL, "Arabic commentator feed"),
+  ]);
 
-  let html = "";
-  try {
-    html = await fetchWithTimeout(COMMENTATORS_URL, { text: true, userAgent: BROWSER_UA });
-  } catch (error) {
-    console.warn(`Saudi channel metadata fetch failed; using rights-holder fallback: ${error.message}`);
-  }
+  const { commentaryIndex } = attachCommentators(matches, commentatorsHtml);
+  const guideRows = parseSaudiTvGuide(guideHtml);
+  const exactMatches = applySaudiTvGuide(matches, commentaryIndex, guideRows);
+  console.log(`Saudi TV guide: ${guideRows.length} exact rows, ${exactMatches} matched ESPN fixtures`);
 
-  const { commentaryIndex } = attachCommentators(matches, html);
   const broadcastIndex = buildBroadcastIndex(
     matches,
     commentaryIndex,
@@ -189,7 +201,7 @@ async function main() {
 
   const nextPayload = {
     ...previousPayload,
-    broadcastSource: "espn-ksa.1 + almaghrebsport + thmanyah-rights",
+    broadcastSource: "espn-ksa.1 + livefootballtv + thmanyah-rights",
     broadcastUpdatedAt: new Date().toISOString(),
     broadcastIndex,
     commentaryIndex: mergeCommentaryIndex(previousPayload.commentaryIndex, broadcastIndex),
