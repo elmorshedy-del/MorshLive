@@ -2,7 +2,7 @@ name: Update broadcast channels
 
 on:
   schedule:
-    - cron: "5-59/15 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
