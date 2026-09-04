@@ -14,7 +14,7 @@
   const premium = params.get("premium") === "1";
   const shell = document.getElementById("player-shell");
   const toolbar = document.getElementById("player-toolbar");
-  const state = { mpegts: null, hls: null, watchdog: 0, loading: false };
+  const state = { mpegts: null, hls: null, watchdog: 0, reconnect: 0, loading: false, generation: 0 };
 
   window.__KZ_WATCH_IMPL = "xtream";
 
@@ -50,19 +50,23 @@
 
   function stopPlayer() {
     clearTimeout(state.watchdog);
+    clearTimeout(state.reconnect);
     state.watchdog = 0;
+    state.reconnect = 0;
     if (state.hls) {
-      try { state.hls.destroy(); } catch {}
+      const player = state.hls;
       state.hls = null;
+      try { player.destroy(); } catch {}
     }
     if (state.mpegts) {
-      try {
-        state.mpegts.pause();
-        state.mpegts.unload();
-        state.mpegts.detachMediaElement();
-        state.mpegts.destroy();
-      } catch {}
+      const player = state.mpegts;
       state.mpegts = null;
+      try {
+        player.pause();
+        player.unload();
+        player.detachMediaElement();
+        player.destroy();
+      } catch {}
     }
   }
 
@@ -165,7 +169,26 @@
     }, 20000);
   }
 
-  function mountTs(channel) {
+  function scheduleTsReconnect(channel, generation, reason) {
+    if (generation !== state.generation || state.reconnect) return;
+    console.warn("Xtream TS reconnect", reason || "stream ended");
+    stopPlayer();
+    if (generation !== state.generation) return;
+    if (shell) {
+      shell.innerHTML = '<div class="manual-mirror-error" data-xtream-state="reconnecting">انقطع البث لحظياً · جارٍ إعادة الاتصال…</div>';
+    }
+    state.reconnect = setTimeout(() => {
+      state.reconnect = 0;
+      if (generation !== state.generation) return;
+      try {
+        mountTs(channel, generation);
+      } catch (error) {
+        showLoadError(error);
+      }
+    }, 700);
+  }
+
+  function mountTs(channel, generation = state.generation) {
     const tsUrl = channel?.tsPlaybackUrl || channel?.directTsPlaybackUrl;
     if (!tsUrl) throw new Error("TS playback URL is unavailable");
     if (!window.mpegts?.isSupported?.()) {
@@ -185,7 +208,11 @@
     state.mpegts.attachMediaElement(video);
     state.mpegts.on(window.mpegts.Events.ERROR, (type, detail, info) => {
       console.warn("Xtream TS playback error", type, detail, info || "");
+      scheduleTsReconnect(channel, generation, `${type || "error"}:${detail || ""}`);
     });
+    video.addEventListener("ended", () => {
+      scheduleTsReconnect(channel, generation, "media element ended");
+    }, { once: true });
     state.mpegts.load();
     const attempt = state.mpegts.play();
     if (attempt?.catch) attempt.catch(() => {});
@@ -242,12 +269,14 @@
   async function load() {
     if (state.loading) return;
     state.loading = true;
+    const generation = ++state.generation;
     showMessage("جارٍ فحص القناة وتجهيز البث…", "loading");
     try {
       const { channel, probe } = await fetchChannelAndProbe();
+      if (generation !== state.generation) return;
       installToolbar(channel, probe);
       fillInfo(channel, probe);
-      if (probe.protocol === "ts") mountTs(channel);
+      if (probe.protocol === "ts") mountTs(channel, generation);
       else if (probe.protocol === "hls") mountHls(channel);
       else throw new Error(`بروتوكول غير مدعوم: ${probe.protocol || "unknown"}`);
     } finally {
@@ -268,5 +297,8 @@
     load().catch(showLoadError);
   }, { once: true });
 
-  window.addEventListener("pagehide", stopPlayer, { once: true });
+  window.addEventListener("pagehide", () => {
+    state.generation += 1;
+    stopPlayer();
+  }, { once: true });
 })();
