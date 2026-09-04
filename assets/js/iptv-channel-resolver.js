@@ -1,9 +1,10 @@
 /* Exact canonical broadcaster -> current IPTV Lab stream resolver.
  *
- * The match card's channelId is authoritative. Provider metadata is used first
- * when it can identify the logical channel; provider name + category is the
- * deterministic fallback when those metadata fields are absent. streamId is
- * only the current playback value attached to the canonical channel key.
+ * The match card's channelId / broadcast.channelId is authoritative. Provider
+ * metadata is used first when it can identify the logical channel; provider
+ * name + category is the deterministic fallback when those metadata fields are
+ * absent. streamId is only the current playback value attached to the canonical
+ * channel key.
  */
 (function (root, factory) {
   const api = factory();
@@ -29,11 +30,14 @@
       .replace(/\bbeinsports?(\d{1,2})\b/g, " bein sports $1 ")
       .replace(/\bbeinmax(\d{1,2})\b/g, " bein max $1 ")
       .replace(/\bsscsports?(\d{1,2})\b/g, " ssc sports $1 ")
+      .replace(/\b(?:thmanyah|thmanya|thamanyah|thamanya)([123])\b/g, " thmanyah $1 ")
+      .replace(/ثمانية/g, " thmanyah ")
       .replace(/بي\s*(?:إن|ان)|بين(?=\s*(?:سبورت|sport))/g, " bein ")
       .replace(/سبورت(?:س)?/g, " sports ")
       .replace(/ماكس/g, " max ")
       .replace(/\bbe\s*in\b/g, " bein ")
       .replace(/\bsport\b/g, " sports ")
+      .replace(/\b(?:thmanya|thamanyah|thamanya)\b/g, " thmanyah ")
       .replace(/[^a-z0-9\u0600-\u06ff]+/g, " ")
       .replace(/([a-z])(\d)/g, "$1 $2")
       .replace(/(\d)([a-z])/g, "$1 $2")
@@ -55,12 +59,13 @@
     const raw = String(value || "").trim();
     if (!raw) return "";
 
-    const slug = raw
+    const slug = normalizeDigits(raw)
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
     if (/^bein-(?:sports|max)-\d{1,2}$/.test(slug)) return slug;
     if (/^ssc-sports-\d{1,2}$/.test(slug)) return slug;
+    if (/^thmanyah-[123]$/.test(slug)) return slug;
 
     const text = normalizeText(raw);
     let match = text.match(/\bbein\s+max\s+(\d{1,2})\b/);
@@ -69,6 +74,8 @@
     if (match) return `bein-sports-${Number(match[1])}`;
     match = text.match(/\bssc\s+sports\s+(\d{1,2})\b/);
     if (match) return `ssc-sports-${Number(match[1])}`;
+    match = text.match(/\bthmanyah\s+([123])\b/);
+    if (match) return `thmanyah-${Number(match[1])}`;
     return "";
   }
 
@@ -107,6 +114,10 @@
     if (numberMatch && (/\bssc\s+sports\b/.test(category) || /\bssc\s+sports\b/.test(name))) {
       return `ssc-sports-${Number(numberMatch[1])}`;
     }
+
+    numberMatch = name.match(/\bthmanyah\s+([123])\b/);
+    if (!numberMatch) numberMatch = combined.match(/\bthmanyah\s+([123])\b/);
+    if (numberMatch) return `thmanyah-${Number(numberMatch[1])}`;
     return "";
   }
 
@@ -182,7 +193,8 @@
 
   function targetCanonicalKey(targetInput) {
     if (typeof targetInput === "string") return canonicalKey(targetInput);
-    return canonicalKey(targetInput?.channelId || "")
+    return canonicalKey(targetInput?.broadcast?.channelId || "")
+      || canonicalKey(targetInput?.channelId || "")
       || canonicalKey(targetInput?.channel || targetInput?.label || "");
   }
 
@@ -204,6 +216,7 @@
         bindingKey: `channel:${key}`,
         stableProviderField: provider?.field || "",
         stableProviderId: provider?.value || "",
+        method: "broadcaster",
       },
     };
   }
