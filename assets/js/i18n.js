@@ -2,7 +2,7 @@
  * editorial, visual, content-architecture, and deterministic IPTV layers. */
 (function () {
   "use strict";
-  const stamp = "20260904unifiedfix1";
+  const stamp = "20260904unifiedfix2";
   const params = new URLSearchParams(location.search);
   const cleanPath = location.pathname.replace(/\/$/, "");
   const isolatedXtreamWatch =
@@ -69,6 +69,7 @@
       document.write(`<script src="/assets/js/iptv-window.js?v=${stamp}"><\/script>`);
       document.write(`<script src="/assets/js/iptv-epg-match-core.js?v=${stamp}"><\/script>`);
       document.write(`<script src="/assets/js/iptv-mutation-guard.js?v=${stamp}"><\/script>`);
+      document.write(`<script src="/assets/js/match-fetch-dedupe.js?v=${stamp}"><\/script>`);
       document.write(`<script src="/assets/js/iptv-legacy-toggle-normalizer.js?v=${stamp}"><\/script>`);
       document.write(`<script src="/assets/js/iptv-auto.js?v=${stamp}"><\/script>`);
       document.write(`<script src="/assets/js/iptv-stage-copy.js?v=${stamp}"><\/script>`);
@@ -116,11 +117,13 @@
       addScript(`/assets/js/iptv-window.js?v=${stamp}`, () => {
         addScript(`/assets/js/iptv-epg-match-core.js?v=${stamp}`, () => {
           addScript(`/assets/js/iptv-mutation-guard.js?v=${stamp}`, () => {
-            addScript(`/assets/js/iptv-legacy-toggle-normalizer.js?v=${stamp}`, () => {
-              addScript(`/assets/js/iptv-auto.js?v=${stamp}`, () => {
-                addScript(`/assets/js/iptv-stage-copy.js?v=${stamp}`, () => {
-                  addScript(`/assets/js/iptv-premium-card-click.js?v=${stamp}`, () => {
-                    window.__KZ_RELEASE_IPTV_MUTATION_GUARD?.();
+            addScript(`/assets/js/match-fetch-dedupe.js?v=${stamp}`, () => {
+              addScript(`/assets/js/iptv-legacy-toggle-normalizer.js?v=${stamp}`, () => {
+                addScript(`/assets/js/iptv-auto.js?v=${stamp}`, () => {
+                  addScript(`/assets/js/iptv-stage-copy.js?v=${stamp}`, () => {
+                    addScript(`/assets/js/iptv-premium-card-click.js?v=${stamp}`, () => {
+                      window.__KZ_RELEASE_IPTV_MUTATION_GUARD?.();
+                    });
                   });
                 });
               });
