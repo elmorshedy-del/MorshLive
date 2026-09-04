@@ -6,6 +6,46 @@
   "commentarySource": "almaghrebsport",
   "commentaryIndex": [
     {
+      "key": "ipswichtown~liverpool",
+      "home": "Ipswich Town",
+      "away": "Liverpool",
+      "commentators": [
+        {
+          "name": "أحمد البلوشي",
+          "channel": "beIN Sports 2"
+        }
+      ],
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-2",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
+      "locked": false
+    },
+    {
+      "key": "realbetis~realmadrid",
+      "home": "Real Betis",
+      "away": "Real Madrid",
+      "commentators": [
+        {
+          "name": "عصام الشوالي",
+          "channel": "beIN Sports 1"
+        }
+      ],
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-1",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
+      "locked": false
+    },
+    {
       "key": "colombia~switzerland",
       "home": "Switzerland",
       "away": "Colombia",
@@ -4223,5 +4263,6 @@
       },
       "commentators": []
     }
-  ]
+  ],
+  "commentaryUpdatedAt": "2026-09-04T19:36:27.099Z"
 }
