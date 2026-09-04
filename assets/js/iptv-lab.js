@@ -128,7 +128,7 @@
       .sort((a, b) => {
         const aSport = SPORT_RE.test(a.name) ? 0 : 1;
         const bSport = SPORT_RE.test(b.name) ? 0 : 1;
-        return aSport - bSport || a.name.localeCompare(b.name, "ar");
+        return aSport - bSport || a.category.name.localeCompare(b.category.name, "ar");
       })
       .forEach((category) => {
         if (seen.has(category.categoryId)) return;
@@ -359,7 +359,7 @@
     const onPlaying = () => {
       if (generation !== playbackGeneration) return;
       if (!usingHls) tsEverPlayed = true;
-      playerState.textContent = usingHls ? "يعمل · HLS" : "يعمل · TS مباشر";
+      playerState.textContent = usingHls ? "يعمل · HLS" : "يعمل · MPEG-TS";
     };
     video.addEventListener("playing", onPlaying);
     const onError = () => {
@@ -367,7 +367,7 @@
       if (usingHls && hlsFallbackFromTs && !hlsReturnedToTs) {
         hlsReturnedToTs = true;
         hlsFallbackFromTs = false;
-        playerState.textContent = "HLS غير متاح · العودة إلى TS";
+        playerState.textContent = "HLS غير متاح · العودة إلى MPEG-TS";
         clearReconnect();
         reconnectTimer = setTimeout(() => {
           reconnectTimer = null;
@@ -432,14 +432,14 @@
       video.pause();
       video.removeAttribute("src");
       video.load();
-      playerState.textContent = tsEverPlayed ? "إعادة وصل TS المباشر…" : "جارٍ تجربة TS";
+      playerState.textContent = tsEverPlayed ? "إعادة وصل MPEG-TS…" : "جارٍ تشغيل MPEG-TS";
 
       const scheduleReconnect = (type, detail) => {
         if (generation !== playbackGeneration || reconnectTimer) return;
         releaseTsPlayer();
         if (!tsEverPlayed) tsStartupFailures += 1;
         if (!tsEverPlayed && tsStartupFailures > 3) {
-          playerState.textContent = "TS لم يبدأ · تجربة HLS";
+          playerState.textContent = "MPEG-TS لم يبدأ · تجربة HLS";
           reconnectTimer = setTimeout(() => {
             reconnectTimer = null;
             playHls();
@@ -449,8 +449,8 @@
         if (tsEverPlayed && channel.playbackUrl && !tsRuntimeHlsAttempted) {
           tsRuntimeHlsAttempted = true;
           hlsFallbackFromTs = true;
-          playerState.textContent = "انتهت دفعة TS · الانتقال إلى HLS المستمر…";
-          console.warn("IPTV Lab finite TS burst; trying HLS", type || "ended", detail || "");
+          playerState.textContent = "انتهت دفعة MPEG-TS · الانتقال إلى HLS المستمر…";
+          console.warn("IPTV Lab finite MPEG-TS burst; trying HLS", type || "ended", detail || "");
           reconnectTimer = setTimeout(() => {
             reconnectTimer = null;
             playHls();
@@ -459,9 +459,9 @@
         }
         const delay = tsEverPlayed ? 700 : Math.min(800 * tsStartupFailures, 2400);
         playerState.textContent = tsEverPlayed
-          ? "انقطع اتصال TS مؤقتاً · إعادة الوصل…"
-          : "تعذر بدء TS · إعادة المحاولة…";
-        console.warn("IPTV Lab TS reconnect", type || "ended", detail || "");
+          ? "انقطع اتصال MPEG-TS مؤقتاً · إعادة الوصل…"
+          : "تعذر بدء MPEG-TS · إعادة المحاولة…";
+        console.warn("IPTV Lab MPEG-TS reconnect", type || "ended", detail || "");
         reconnectTimer = setTimeout(() => {
           reconnectTimer = null;
           playTs();
@@ -472,15 +472,13 @@
         { type: "mpegts", isLive: true, url: tsUrl },
         {
           enableWorker: false,
-          enableWorkerForMSE: false,
-          enableStashBuffer: true,
-          stashInitialSize: 384 * 1024,
-          liveSync: true,
+          enableStashBuffer: false,
+          stashInitialSize: 128,
         },
       );
       mpegTsPlayer.attachMediaElement(video);
       mpegTsPlayer.on(window.mpegts.Events.ERROR, (type, detail, info) => {
-        console.warn("IPTV Lab TS playback error", type, detail, info || "");
+        console.warn("IPTV Lab MPEG-TS playback error", type, detail, info || "");
         scheduleReconnect(type, detail);
       });
       video.onended = () => scheduleReconnect("ended", "media element ended");
