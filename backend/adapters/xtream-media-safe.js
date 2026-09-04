@@ -1,6 +1,5 @@
 import {
-  isHttpRedirectStatus,
-  rewriteXtreamRedirect,
+  followXtreamRedirectChain,
   shouldRetryXtreamMediaWithoutRange,
   xtreamMediaHeaders,
 } from "../../lib/xtream-client.js";
@@ -29,17 +28,9 @@ function safeHttpStatus(status, fallback = 502) {
   return Number.isInteger(code) && code >= 200 && code <= 599 ? code : fallback;
 }
 
-async function followXtreamRedirect(url, buildInit) {
-  const first = await fetch(url, buildInit());
-  const location = first.headers.get("Location");
-  if (!isHttpRedirectStatus(first.status) || !location) return first;
-  const followUrl = rewriteXtreamRedirect(url, location);
-  return followUrl ? fetch(followUrl, buildInit()) : first;
-}
-
 async function fetchXtreamTarget(target, request, { includeRange = true } = {}) {
   const method = request.method === "HEAD" ? "HEAD" : "GET";
-  return followXtreamRedirect(target, () => ({
+  return followXtreamRedirectChain(target, () => ({
     method,
     headers: xtreamMediaHeaders(request, { includeRange }),
     redirect: "manual",
