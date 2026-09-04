@@ -11,6 +11,12 @@
  * ==========================================================================*/
 const path = require("path");
 const { createArabicTeamResolver, normalizeArabic } = require("./arabic-team-resolver");
+const {
+  broadcastMetadata,
+  defaultSaudiBroadcast,
+  isSaudiProLeagueMatch,
+  resolveBroadcastChannel,
+} = require("./broadcast-registry");
 
 const TEAM_AR_PATH = path.join(__dirname, "..", "assets", "data", "team-names-ar.json");
 let _arabicResolver = null;
@@ -33,14 +39,7 @@ function pairKey(enHome, enAway) {
 }
 
 function prettyChannel(ar) {
-  const text = (ar || "").trim();
-  const max = text.match(/ماكس\s*(\d+)/);
-  if (max) return `beIN MAX ${max[1]}`;
-  if (/(بي\s*إن|بين)/.test(text)) {
-    const n = text.match(/(\d+)/);
-    return `beIN${n ? " " + n[1] : ""}`;
-  }
-  return text;
+  return resolveBroadcastChannel(ar).channel;
 }
 
 function pick(re, segment) {
@@ -66,10 +65,12 @@ function parseCommentators(html) {
     const time = pick(/mt-time">([^<]+)</, segment);
     const commentators = pickAll(/mt-commentator">([^<]+)</, segment);
     const channels = pickAll(/mt-channel">([^<]+)</, segment);
-    const infos = commentators.map((name, i) => ({
-      name: name.trim(),
-      channel: prettyChannel(channels[i] || ""),
-    })).filter((x) => x.name);
+    const infos = commentators
+      .map((name, i) => ({
+        name: name.trim(),
+        channel: prettyChannel(channels[i] || ""),
+      }))
+      .filter((x) => x.name);
     if (!infos.length) continue;
     rows.push({ homeAr: teams[0], awayAr: teams[1], time, infos });
   }
@@ -85,7 +86,7 @@ function buildIndex(rows) {
     const key = pairKey(enHome, enAway);
     const entry = index.get(key) || { commentators: [], seen: new Set() };
     for (const info of row.infos) {
-      const dedupe = info.name + "|" + info.channel;
+      const dedupe = `${info.name}|${info.channel}`;
       if (entry.seen.has(dedupe)) continue;
       entry.seen.add(dedupe);
       entry.commentators.push(info);
@@ -95,33 +96,86 @@ function buildIndex(rows) {
   return index;
 }
 
-function channelNumber(label) {
-  const m = (label || "").match(/(\d+)/);
-  return m ? parseInt(m[1], 10) : null;
+function broadcastFor(commentators) {
+  for (const item of commentators || []) {
+    if (!item?.channel) continue;
+    const resolved = resolveBroadcastChannel(item.channel);
+    if (resolved.channel) return resolved;
+  }
+  return resolveBroadcastChannel("");
 }
 
-/* Map the broadcast channel label to a registry channel id, KEEPING the true
-   channel. World Cup matches air on beIN MAX 1–4; we preserve that exact channel
-   (e.g. "beIN MAX 2" → "bein-max-2") instead of collapsing odd/even into two
-   generic feeds. A non-MAX "beIN 2" still resolves to beIN Sports 2; anything
-   without a recognizable number falls back to beIN Sports 1. The id is then
-   routed to a playable embed by EMBED_BINDING in assets/js/data.js. */
-function channelIdFor(commentators) {
-  const c = commentators.find((x) => channelNumber(x.channel) != null);
-  if (!c) return "bein-sports-1";
-  const n = channelNumber(c.channel);
-  if (/max/i.test(c.channel) && n >= 1 && n <= 4) return "bein-max-" + n;
-  if (n === 2) return "bein-sports-2";
+/* Playback routing remains intentionally narrower than broadcast metadata.
+   beIN labels map to the existing playable registry. Saudi Thmanyah labels are
+   recorded as real broadcast channels but do not silently route into a beIN
+   stream; that is a separate concern handled by the stream registry. */
+function channelIdFor(commentators, match) {
+  const resolved = broadcastFor(commentators);
+  if (resolved.playbackChannelId) return resolved.playbackChannelId;
+  if (isSaudiProLeagueMatch(match)) return null;
   return "bein-sports-1";
 }
 
-/* The human-readable broadcast channel for display (the source's own label,
-   e.g. "beIN MAX 2"), falling back to a name derived from the resolved id. */
 function channelNameFor(commentators, channelId) {
-  const c = commentators.find((x) => x.channel);
-  if (c && c.channel) return c.channel;
-  if (/^bein-max-(\d)$/.test(channelId)) return "beIN MAX " + channelId.slice(-1);
+  const resolved = broadcastFor(commentators);
+  if (resolved.channel) return resolved.channel;
+  if (/^bein-max-(\d)$/.test(channelId || "")) return `beIN MAX ${channelId.slice(-1)}`;
   return channelId === "bein-sports-2" ? "beIN Sports 2" : "beIN Sports 1";
+}
+
+function sourceBroadcastFor(commentators) {
+  const resolved = broadcastFor(commentators);
+  return broadcastMetadata(resolved, "almaghrebsport");
+}
+
+function ensureSaudiBroadcastFallback(matches, commentaryIndex) {
+  const rowsByKey = new Map((commentaryIndex || []).map((row) => [row.key, row]));
+  let hydrated = 0;
+
+  for (const match of matches || []) {
+    if (!isSaudiProLeagueMatch(match)) continue;
+    const key = pairKey(match.home, match.away);
+    const row = rowsByKey.get(key);
+    const sourceResolved = resolveBroadcastChannel(row?.channel || match.channel || "");
+
+    if (sourceResolved.provider === "thmanyah") {
+      const broadcast =
+        row?.broadcast ||
+        match.broadcast ||
+        broadcastMetadata(sourceResolved, row ? "almaghrebsport" : "fixture-cache");
+      match.channel = sourceResolved.channel;
+      if (broadcast) match.broadcast = broadcast;
+      if (row) {
+        row.channel = sourceResolved.channel;
+        if (broadcast) row.broadcast = broadcast;
+      }
+      continue;
+    }
+
+    const broadcast = defaultSaudiBroadcast();
+    match.channel = "ثمانية";
+    match.broadcast = broadcast;
+
+    if (row) {
+      row.channel = "ثمانية";
+      row.broadcast = broadcast;
+      delete row.channelId;
+    } else {
+      const fallbackRow = {
+        key,
+        home: match.home,
+        away: match.away,
+        commentators: [],
+        channel: "ثمانية",
+        broadcast,
+      };
+      commentaryIndex.push(fallbackRow);
+      rowsByKey.set(key, fallbackRow);
+    }
+    hydrated++;
+  }
+
+  return hydrated;
 }
 
 /* Attach commentator + channel data to fixtures; returns a compact index for
@@ -134,21 +188,26 @@ function attachCommentators(matches, html) {
     const entry = index.get(pairKey(m.home, m.away));
     if (!entry || !entry.commentators.length) continue;
     matched++;
-    const channelId = channelIdFor(entry.commentators);
+    const channelId = channelIdFor(entry.commentators, m);
     const channelName = channelNameFor(entry.commentators, channelId);
+    const broadcast = sourceBroadcastFor(entry.commentators);
     m.commentators = entry.commentators;
     m.commentator = entry.commentators[0].name;
     m.channel = channelName;
-    m.channelId = channelId;
+    if (channelId) m.channelId = channelId;
+    if (broadcast) m.broadcast = broadcast;
     commentaryIndex.push({
       key: pairKey(m.home, m.away),
       home: m.home,
       away: m.away,
       commentators: entry.commentators,
       channel: channelName,
-      channelId,
+      ...(channelId ? { channelId } : {}),
+      ...(broadcast ? { broadcast } : {}),
     });
   }
+
+  ensureSaudiBroadcastFallback(matches, commentaryIndex);
   return { matched, commentaryIndex };
 }
 
@@ -157,11 +216,13 @@ function channelFieldsFrom(row) {
   const out = {};
   if (row.channel) out.channel = row.channel;
   if (row.channelId) out.channelId = row.channelId;
+  if (row.broadcast) out.broadcast = row.broadcast;
   if (row.commentators && row.commentators.length) out.commentators = row.commentators;
   return out;
 }
 
 function hasRealChannel(row) {
+  if (row?.broadcast?.channelId) return true;
   return !!(row && row.channelId && row.channelId !== "bein-sports-1");
 }
 
@@ -189,7 +250,7 @@ function pinEndedChannels(matches, previousPayload) {
 /** Merge fresh commentators with cache; never replace channel mapping for ended fixtures. */
 function mergeCommentaryIndex(fresh, previous, matches) {
   const endedKeys = new Set(
-    matches.filter((m) => m.status === "ended").map((m) => pairKey(m.home, m.away))
+    matches.filter((m) => m.status === "ended").map((m) => pairKey(m.home, m.away)),
   );
   const prevByKey = new Map((previous || []).map((c) => [c.key, c]));
   const out = [];
@@ -230,7 +291,8 @@ function mergeCommentaryIndex(fresh, previous, matches) {
       away: m.away,
       commentators: m.commentators || [],
       channel: m.channel,
-      channelId: m.channelId,
+      ...(m.channelId ? { channelId: m.channelId } : {}),
+      ...(m.broadcast ? { broadcast: m.broadcast } : {}),
       locked: true,
     });
     seen.add(key);
@@ -248,6 +310,7 @@ module.exports = {
   parseCommentators,
   buildIndex,
   attachCommentators,
+  ensureSaudiBroadcastFallback,
   pinEndedChannels,
   mergeCommentaryIndex,
 };
