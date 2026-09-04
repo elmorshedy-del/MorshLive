@@ -12,6 +12,15 @@ function sameDestination(actual, expected) {
     && actual.search === expected.search;
 }
 
+function isExpectedNavigation(request, expected) {
+  if (!request.isNavigationRequest()) return false;
+  try {
+    return sameDestination(new URL(request.url()), expected);
+  } catch {
+    return false;
+  }
+}
+
 async function openHomepage(page, marker) {
   const response = await page.goto(`${HOME}?${marker}=${Date.now()}`, {
     waitUntil: "domcontentloaded",
@@ -54,6 +63,16 @@ async function injectCard(page, { id, originalHref, premiumHref = null }) {
   }, id, { timeout: 10000 });
 }
 
+async function clickCardAndCaptureNavigation(page, card, expected) {
+  const requestPromise = page.waitForRequest(
+    (request) => isExpectedNavigation(request, expected),
+    { timeout: 20000 },
+  );
+  await card.locator('[data-pw-card-body="1"]').click();
+  const request = await requestPromise;
+  return request.url();
+}
+
 async function verifyHomepageCard(name, browserType, contextOptions = {}) {
   const browser = await browserType.launch({ headless: true });
   const context = await browser.newContext(contextOptions);
@@ -75,11 +94,9 @@ async function verifyHomepageCard(name, browserType, contextOptions = {}) {
       premium: node.dataset.iptvPremiumCard || null,
       classes: node.className,
     }));
+    if (normalState.clickable !== "1") throw new Error(`normal card was not marked clickable: ${JSON.stringify(normalState)}`);
     const normalExpected = new URL(normalOriginal, HOME);
-    await Promise.all([
-      page.waitForURL((url) => sameDestination(url, normalExpected), { timeout: 20000 }),
-      normalCard.locator('[data-pw-card-body="1"]').click(),
-    ]);
+    const normalNavigation = await clickCardAndCaptureNavigation(page, normalCard, normalExpected);
 
     await openHomepage(page, "pw-premium-card");
     const premiumOriginal = "/watch.html?ch=bein-sports-2&match=pw-premium-card";
@@ -99,11 +116,11 @@ async function verifyHomepageCard(name, browserType, contextOptions = {}) {
       premiumHref: node.querySelector('[data-iptv-premium-test="1"]')?.href || null,
       originalHref: node.querySelector(".watch-source-toggle__opt--original")?.href || null,
     }));
+    if (premiumState.clickable !== "1" || premiumState.premium !== "1") {
+      throw new Error(`premium card markers are wrong: ${JSON.stringify(premiumState)}`);
+    }
     const premiumExpected = new URL(premiumTarget, HOME);
-    await Promise.all([
-      page.waitForURL((url) => sameDestination(url, premiumExpected), { timeout: 20000 }),
-      premiumCard.locator('[data-pw-card-body="1"]').click(),
-    ]);
+    const premiumNavigation = await clickCardAndCaptureNavigation(page, premiumCard, premiumExpected);
 
     console.log(JSON.stringify({
       browser: name,
@@ -111,8 +128,8 @@ async function verifyHomepageCard(name, browserType, contextOptions = {}) {
       realProductionCardCountBeforeFixture: realCardCount,
       normalCard: normalState,
       premiumCard: premiumState,
-      normalDestination: normalExpected.toString(),
-      premiumDestination: premiumExpected.toString(),
+      normalNavigation,
+      premiumNavigation,
     }, null, 2));
   } finally {
     await browser.close();
