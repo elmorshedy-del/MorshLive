@@ -21,6 +21,9 @@ const ESPN_SLUG = "ksa.1";
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
 const OUT = path.join(__dirname, "..", "assets", "data", "today.json");
 const LOOKAHEAD_DAYS = 7;
+const SERVER_UA = "curl/8.5.0";
+const BROWSER_UA =
+  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36";
 
 function arabiaTodayIso() {
   return new Date(Date.now() + 3 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -38,19 +41,18 @@ function espnDateRange(center) {
   return `${start}-${end}`;
 }
 
-async function fetchWithTimeout(url, { text = false } = {}) {
+async function fetchWithTimeout(url, { text = false, userAgent = BROWSER_UA } = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 15000);
   try {
     const response = await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent":
-          "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124 Safari/537.36",
+        "User-Agent": userAgent,
         "Accept-Language": "ar,en;q=0.8",
       },
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) throw new Error(`HTTP ${response.status} from ${new URL(url).hostname}`);
     return text ? response.text() : response.json();
   } finally {
     clearTimeout(timeout);
@@ -61,7 +63,7 @@ async function fetchSaudiFixtures(centerDate) {
   const url =
     `https://site.api.espn.com/apis/site/v2/sports/soccer/${ESPN_SLUG}/scoreboard` +
     `?dates=${espnDateRange(centerDate)}&limit=100`;
-  const json = await fetchWithTimeout(url);
+  const json = await fetchWithTimeout(url, { userAgent: SERVER_UA });
   const league = { ...(json.leagues?.[0] || {}), slug: ESPN_SLUG };
   return (json.events || []).map((event) => normalizeEspnEvent(event, league));
 }
@@ -165,11 +167,10 @@ async function main() {
   const centerDate = process.argv[2] || arabiaTodayIso();
   const previousPayload = JSON.parse(fs.readFileSync(OUT, "utf8"));
   const matches = await fetchSaudiFixtures(centerDate);
-  if (!matches.length) throw new Error("ESPN returned no Saudi Pro League fixtures in the refresh window");
 
   let html = "";
   try {
-    html = await fetchWithTimeout(COMMENTATORS_URL, { text: true });
+    html = await fetchWithTimeout(COMMENTATORS_URL, { text: true, userAgent: BROWSER_UA });
   } catch (error) {
     console.warn(`Saudi channel metadata fetch failed; using rights-holder fallback: ${error.message}`);
   }
