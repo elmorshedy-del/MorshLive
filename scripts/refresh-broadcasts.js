@@ -54,9 +54,12 @@ async function fetchWithTimeout(url, { text = false, userAgent = BROWSER_UA } = 
   try {
     const response = await fetch(url, {
       signal: controller.signal,
+      cache: "no-store",
       headers: {
         "User-Agent": userAgent,
         "Accept-Language": "ar,en;q=0.8",
+        "Cache-Control": "no-cache, no-store, max-age=0",
+        Pragma: "no-cache",
       },
     });
     if (!response.ok) throw new Error(`HTTP ${response.status} from ${new URL(url).hostname}`);
@@ -87,9 +90,15 @@ async function fetchAllFixtures(centerDate) {
   return perLeague.flat();
 }
 
+function cacheBust(url) {
+  const parsed = new URL(url);
+  parsed.searchParams.set("_kz", String(Date.now()));
+  return parsed.toString();
+}
+
 async function optionalText(url, label) {
   try {
-    return await fetchWithTimeout(url, { text: true, userAgent: BROWSER_UA });
+    return await fetchWithTimeout(cacheBust(url), { text: true, userAgent: BROWSER_UA });
   } catch (error) {
     console.log(`${label} unavailable (${error.message}); continuing without it`);
     return "";
