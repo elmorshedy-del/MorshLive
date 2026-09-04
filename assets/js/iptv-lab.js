@@ -54,6 +54,17 @@
   let reconnectTimer = null;
   let playbackGeneration = 0;
 
+  // Detect iPhone/iPad/iPod Safari (including modern iPadOS desktop-mode UA,
+  // which reports as "Mac OS X" but exposes touch points). Kept conservative
+  // so Chrome/desktop platforms are never misdetected as iOS.
+  function isIosSafari() {
+    const ua = String(window.navigator?.userAgent || "");
+    const isAppleTouchDevice = /iPhone|iPad|iPod/.test(ua)
+      || (/Mac OS X/.test(ua) && navigator.maxTouchPoints > 1);
+    if (!isAppleTouchDevice) return false;
+    return /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  }
+
   function setError(message) {
     errorBox.hidden = !message;
     errorBox.textContent = message || "";
@@ -468,13 +479,25 @@
         }, delay);
       };
 
+      const mpegTsConfig = isIosSafari()
+        ? {
+            enableWorker: false,
+            enableWorkerForMSE: true,
+            enableStashBuffer: true,
+            stashInitialSize: 384 * 1024,
+            lazyLoad: false,
+            liveSync: false,
+            liveBufferLatencyChasing: false,
+          }
+        : {
+            enableWorker: false,
+            enableStashBuffer: false,
+            stashInitialSize: 128,
+          };
+
       mpegTsPlayer = window.mpegts.createPlayer(
         { type: "mpegts", isLive: true, url: tsUrl },
-        {
-          enableWorker: false,
-          enableStashBuffer: false,
-          stashInitialSize: 128,
-        },
+        mpegTsConfig,
       );
       mpegTsPlayer.attachMediaElement(video);
       mpegTsPlayer.on(window.mpegts.Events.ERROR, (type, detail, info) => {

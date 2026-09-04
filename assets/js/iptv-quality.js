@@ -1,24 +1,6 @@
 (() => {
   "use strict";
 
-  // Lab-only: restore the exact live MPEG-TS configuration proven by
-  // Cursor Agent in commit 4f749717. The production watch player is not
-  // affected because iptv-quality.js is loaded only by iptv-lab.html.
-  const originalCreatePlayer = window.mpegts?.createPlayer?.bind(window.mpegts);
-  if (originalCreatePlayer && !window.__KZ_CURSOR_TS_CONFIG) {
-    window.__KZ_CURSOR_TS_CONFIG = true;
-    window.mpegts.createPlayer = (mediaDataSource, config) => {
-      if (mediaDataSource?.type === "mpegts" && mediaDataSource?.isLive) {
-        return originalCreatePlayer(mediaDataSource, {
-          enableWorker: false,
-          enableStashBuffer: false,
-          stashInitialSize: 128,
-        });
-      }
-      return originalCreatePlayer(mediaDataSource, config);
-    };
-  }
-
   const video = document.getElementById("previewVideo");
   const channelGrid = document.getElementById("channelGrid");
   const playerState = document.getElementById("playerState");
