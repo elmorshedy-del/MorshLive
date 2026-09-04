@@ -4,6 +4,7 @@ const {
   resolveBroadcastChannel,
 } = require("../scripts/broadcast-registry");
 const {
+  attachCommentators,
   ensureSaudiBroadcastFallback,
   parseCommentators,
 } = require("../scripts/commentators-lib");
@@ -66,6 +67,47 @@ describe("Saudi broadcast registry", () => {
 });
 
 describe("Saudi pre-match hydration", () => {
+  it("joins an exact numbered channel even when the commentator is not announced yet", () => {
+    const matches = [
+      {
+        id: "espn-ksa.1-789",
+        competition: "spl",
+        leagueSlug: "ksa.1",
+        home: "Al Hilal",
+        away: "Al Nassr",
+        channelId: "bein-sports-1",
+      },
+    ];
+    const html = `
+      <div class="mt-match">
+        <div class="mt-team">الهلال</div>
+        <div class="mt-time">21:00</div>
+        <div class="mt-team">النصر</div>
+        <div class="mt-info"><div class="mt-channel">ثمانية.٣</div></div>
+        <div class="mt-footer"></div>
+      </div>`;
+
+    const { matched, commentaryIndex } = attachCommentators(matches, html);
+
+    expect(matched).toBe(1);
+    expect(matches[0]).toMatchObject({
+      channel: "ثمانية 3",
+      channelId: "bein-sports-1",
+      broadcast: {
+        provider: "thmanyah",
+        channelId: "thmanyah-3",
+        source: "almaghrebsport",
+        confidence: "exact",
+      },
+    });
+    expect(commentaryIndex[0]).toMatchObject({
+      channel: "ثمانية 3",
+      commentators: [],
+      broadcast: { channelId: "thmanyah-3" },
+    });
+    expect(commentaryIndex[0].channelId).toBeUndefined();
+  });
+
   it("adds the verified Thmanyah network before an exact numbered channel is published", () => {
     const matches = [
       {
