@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  followXtreamRedirectChain,
   isHttpRedirectStatus,
   publicIpv4WildcardHost,
   rewriteXtreamRedirect,
   shouldRetryXtreamMediaWithoutRange,
   XTREAM_CLIENT_USER_AGENT,
+  XTREAM_MAX_REDIRECTS,
   xtreamClientHeaders,
   xtreamMediaHeaders,
 } from "../lib/xtream-client.js";
@@ -88,5 +90,61 @@ describe("rewriteXtreamRedirect", () => {
     ]) {
       expect(publicIpv4WildcardHost(host)).toBeNull();
     }
+  });
+});
+
+describe("followXtreamRedirectChain", () => {
+  it("follows multiple panel/CDN redirects to the final media response", async () => {
+    const calls = [];
+    const responses = new Map([
+      [
+        "https://panel.example.test/live/123.ts",
+        new Response(null, { status: 302, headers: { Location: "https://edge.example.test/handoff" } }),
+      ],
+      [
+        "https://edge.example.test/handoff",
+        new Response(null, { status: 307, headers: { Location: "/media/123.ts" } }),
+      ],
+      ["https://edge.example.test/media/123.ts", new Response("ok", { status: 200 })],
+    ]);
+    const fetchImpl = async (url) => {
+      calls.push(String(url));
+      return responses.get(String(url));
+    };
+
+    const response = await followXtreamRedirectChain(
+      "https://panel.example.test/live/123.ts",
+      () => ({ redirect: "manual" }),
+      { fetchImpl },
+    );
+
+    expect(response.status).toBe(200);
+    expect(await response.text()).toBe("ok");
+    expect(calls).toEqual([
+      "https://panel.example.test/live/123.ts",
+      "https://edge.example.test/handoff",
+      "https://edge.example.test/media/123.ts",
+    ]);
+  });
+
+  it("caps redirect chains instead of looping forever", async () => {
+    const calls = [];
+    const fetchImpl = async (url) => {
+      calls.push(String(url));
+      return new Response(null, {
+        status: 302,
+        headers: { Location: `/hop-${calls.length}` },
+      });
+    };
+
+    const response = await followXtreamRedirectChain(
+      "https://panel.example.test/start",
+      () => ({ redirect: "manual" }),
+      { fetchImpl, maxRedirects: 2 },
+    );
+
+    expect(response.status).toBe(302);
+    expect(calls).toHaveLength(3);
+    expect(XTREAM_MAX_REDIRECTS).toBeGreaterThanOrEqual(3);
   });
 });
