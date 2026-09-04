@@ -1,18 +1,22 @@
-/* Make match-card bodies open their existing watch link.
+/* Make match-card bodies open their existing preferred watch link.
  *
- * Normal cards follow the existing original watch action. If the premium IPTV
- * test toggle is present, the card body prefers that premium link. Ended cards
- * that intentionally render only the disabled "ended" label fall back to the
- * exact match id already present on the card's favorite control. Nested links,
- * buttons, favorites, source toggles and detail panels keep their own behavior.
+ * During the deterministic TV window, the card body prefers the resolved IPTV
+ * source. Legacy premium-test cards remain supported. Outside that window,
+ * normal cards follow their existing match/watch action. Ended cards that only
+ * render the disabled "ended" label fall back to the exact match id already
+ * present on the favorite control. Nested links/buttons/details keep their own
+ * behavior.
  */
 (function () {
   "use strict";
 
-  const CARD_CLICK_BUILD = "20260904cardclick3";
+  const CARD_CLICK_BUILD = "20260904cardclick4";
   const CARD_SELECTOR = ".match-card";
-  const PREMIUM_LINK_SELECTOR =
-    '.iptv-premium-test-toggle .watch-source-toggle__opt--premium[data-iptv-premium-test="1"]';
+  const PREMIUM_LINK_SELECTOR = [
+    '.iptv-auto-toggle .watch-source-toggle__opt--premium[data-iptv-auto-link="1"][data-iptv-auto="resolved"]',
+    '.watch-source-toggle__opt--premium[data-iptv-auto-primary="1"][data-iptv-auto="resolved"]',
+    '.iptv-premium-test-toggle .watch-source-toggle__opt--premium[data-iptv-premium-test="1"]',
+  ].join(",");
   const ORIGINAL_LINK_SELECTOR = [
     'a.watch-link[href*="match="]',
     '.watch-source-toggle__opt--original[href*="match="]',
