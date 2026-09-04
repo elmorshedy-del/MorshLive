@@ -1,0 +1,70 @@
+import http from 'node:http';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const port = Number(process.env.PORT || 3000);
+const prodOrigin = 'https://korazero.com';
+const mime = new Map([
+  ['.html','text/html; charset=utf-8'],['.js','text/javascript; charset=utf-8'],['.css','text/css; charset=utf-8'],['.json','application/json; charset=utf-8'],['.svg','image/svg+xml'],['.png','image/png'],['.jpg','image/jpeg'],['.jpeg','image/jpeg'],['.webp','image/webp'],['.ico','image/x-icon'],['.m3u8','application/vnd.apple.mpegurl'],['.ts','video/mp2t']
+]);
+
+function log(event, data={}) {
+  console.log(JSON.stringify({ts:new Date().toISOString(), event, ...data}));
+}
+
+function send(res, status, body, headers={}) {
+  res.writeHead(status, {'cache-control':'no-store', ...headers});
+  res.end(body);
+}
+
+async function proxy(req, res) {
+  const url = new URL(req.url, prodOrigin);
+  const upstream = await fetch(url, {method:req.method, headers:{'user-agent':'KoraZero-Railway-Diagnostic/1.0','accept':req.headers.accept || '*/*'}});
+  const body = Buffer.from(await upstream.arrayBuffer());
+  log('proxy', {path:url.pathname+url.search, status:upstream.status, bytes:body.length});
+  const headers = {};
+  for (const key of ['content-type','content-range','accept-ranges']) {
+    const value = upstream.headers.get(key); if (value) headers[key] = value;
+  }
+  send(res, upstream.status, body, headers);
+}
+
+function safeFile(urlPath) {
+  let pathname = decodeURIComponent(urlPath.split('?')[0]);
+  if (pathname === '/') pathname = '/index.html';
+  if (pathname === '/watch') pathname = '/watch.html';
+  if (!path.extname(pathname) && !pathname.endsWith('/')) {
+    const html = path.join(root, pathname + '.html');
+    if (fs.existsSync(html)) return html;
+  }
+  const candidate = path.resolve(root, '.' + pathname);
+  if (!candidate.startsWith(root)) return null;
+  if (fs.existsSync(candidate) && fs.statSync(candidate).isFile()) return candidate;
+  return null;
+}
+
+const server = http.createServer(async (req, res) => {
+  try {
+    const u = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+    if (u.pathname === '/__diag' && req.method === 'POST') {
+      let body=''; req.on('data', c => { if (body.length < 200000) body += c; });
+      req.on('end', () => { let data={raw:body}; try { data=JSON.parse(body||'{}'); } catch {} log('client', data); send(res,204,''); });
+      return;
+    }
+    if (u.pathname === '/__health') return send(res,200,'ok',{'content-type':'text/plain'});
+    if (u.pathname.startsWith('/api/') || u.pathname.startsWith('/wk/') || u.pathname.startsWith('/dl/') || u.pathname.startsWith('/sir/') || u.pathname.startsWith('/replay/')) return await proxy(req,res);
+    const file = safeFile(u.pathname);
+    if (!file) { log('404',{path:u.pathname}); return send(res,404,'Not found',{'content-type':'text/plain'}); }
+    const ext = path.extname(file).toLowerCase();
+    const body = fs.readFileSync(file);
+    log('static',{path:u.pathname,file:path.relative(root,file),bytes:body.length});
+    return send(res,200,body,{'content-type':mime.get(ext)||'application/octet-stream'});
+  } catch (error) {
+    log('server_error',{message:String(error?.stack||error)});
+    return send(res,500,'Diagnostic server error',{'content-type':'text/plain'});
+  }
+});
+
+server.listen(port,'0.0.0.0',()=>log('listen',{port,commit:process.env.RAILWAY_GIT_COMMIT_SHA||''}));
