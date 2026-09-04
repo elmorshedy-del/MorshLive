@@ -8,6 +8,9 @@ on:
       - "assets/js/i18n.js"
       - "assets/js/watch-loader.js"
       - "assets/js/watch-xtream.js"
+      - "backend/adapters/xtream-media-safe.js"
+      - "backend/routes/xtream.js"
+      - "tests/xtream-media-safe.test.js"
       - "scripts/verify-premium-iptv.mjs"
       - ".github/workflows/premium-iptv-smoke.yml"
   workflow_dispatch:
