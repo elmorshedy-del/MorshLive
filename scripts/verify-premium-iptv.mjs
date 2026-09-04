@@ -12,6 +12,48 @@ function sameDestination(actual, expected) {
     && actual.search === expected.search;
 }
 
+async function openHomepage(page, marker) {
+  const response = await page.goto(`${HOME}?${marker}=${Date.now()}`, {
+    waitUntil: "domcontentloaded",
+    timeout: 45000,
+  });
+  if (!response?.ok()) throw new Error(`homepage navigation HTTP ${response?.status()}`);
+  await page.waitForFunction(() => Boolean(document.getElementById("match-card-click-style")), null, {
+    timeout: 30000,
+  });
+}
+
+async function injectCard(page, { id, originalHref, premiumHref = null }) {
+  await page.evaluate(({ id: cardId, originalHref: original, premiumHref: premium }) => {
+    document.getElementById(cardId)?.remove();
+    const card = document.createElement("article");
+    card.id = cardId;
+    card.className = "match-card";
+    const source = premium
+      ? `<div class="watch-source-toggle iptv-premium-test-toggle">
+          <div class="watch-source-toggle__track">
+            <a class="watch-source-toggle__opt watch-source-toggle__opt--premium"
+               data-iptv-premium-test="1" href="${premium}">Premium</a>
+            <a class="watch-source-toggle__opt watch-source-toggle__opt--original"
+               href="${original}">Original</a>
+          </div>
+        </div>`
+      : `<a class="watch-link" href="${original}">Watch</a>`;
+    card.innerHTML = `
+      <div class="teams" data-pw-card-body="1">
+        <div class="team"><span class="tname">PW Home</span></div>
+        <div class="team"><span class="tname">PW Away</span></div>
+      </div>
+      <div class="match-foot">${source}</div>`;
+    (document.getElementById("matches-grid") || document.body).appendChild(card);
+  }, { id, originalHref, premiumHref });
+
+  await page.waitForFunction((cardId) => {
+    const card = document.getElementById(cardId);
+    return card?.dataset?.matchCardClickable === "1";
+  }, id, { timeout: 10000 });
+}
+
 async function verifyHomepageCard(name, browserType, contextOptions = {}) {
   const browser = await browserType.launch({ headless: true });
   const context = await browser.newContext(contextOptions);
@@ -19,88 +61,59 @@ async function verifyHomepageCard(name, browserType, contextOptions = {}) {
   page.setDefaultTimeout(30000);
 
   try {
-    const response = await page.goto(`${HOME}?pw-card=${Date.now()}`, {
-      waitUntil: "domcontentloaded",
-      timeout: 45000,
+    await openHomepage(page, "pw-normal-card");
+    const realCardCount = await page.locator("#matches-grid .match-card").count();
+
+    const normalOriginal = "/watch.html?ch=bein-sports-1&match=pw-normal-card";
+    await injectCard(page, {
+      id: "pw-normal-card",
+      originalHref: normalOriginal,
     });
-    if (!response?.ok()) throw new Error(`homepage navigation HTTP ${response?.status()}`);
-
-    await page.waitForSelector("#matches-grid .match-card");
-    const clickable = page.locator('#matches-grid .match-card[data-match-card-clickable="1"]');
-    await clickable.first().waitFor({ state: "visible" });
-
-    const card = clickable.first();
-    const expectedHref = await card.evaluate((node) => {
-      const premium = node.querySelector(
-        '.iptv-premium-test-toggle .watch-source-toggle__opt--premium[data-iptv-premium-test="1"]',
-      );
-      const original = node.querySelector(
-        'a.watch-link[href*="match="], .watch-source-toggle__opt--original[href*="match="]',
-      );
-      return (premium && !premium.hidden ? premium : original)?.href || null;
-    });
-    if (!expectedHref) throw new Error("visible clickable match card has no preferred watch link");
-    const expectedUrl = new URL(expectedHref);
-
-    const cardSnapshot = await card.evaluate((node) => ({
-      classes: node.className,
+    const normalCard = page.locator("#pw-normal-card");
+    const normalState = await normalCard.evaluate((node) => ({
       clickable: node.dataset.matchCardClickable,
       premium: node.dataset.iptvPremiumCard || null,
-      teams: [...node.querySelectorAll(".tname")].map((el) => el.textContent?.trim()).filter(Boolean),
+      classes: node.className,
     }));
-
-    const teams = card.locator(".teams").first();
-    await teams.scrollIntoViewIfNeeded();
+    const normalExpected = new URL(normalOriginal, HOME);
     await Promise.all([
-      page.waitForURL((url) => sameDestination(url, expectedUrl), { timeout: 20000 }),
-      teams.click(),
+      page.waitForURL((url) => sameDestination(url, normalExpected), { timeout: 20000 }),
+      normalCard.locator('[data-pw-card-body="1"]').click(),
+    ]);
+
+    await openHomepage(page, "pw-premium-card");
+    const premiumOriginal = "/watch.html?ch=bein-sports-2&match=pw-premium-card";
+    const premiumTarget =
+      "/watch.html?ch=bein-sports-2&match=pw-premium-card&source=xtream&portal=lab&stream=2454&premium=1&premiumChannelId=bein-sports-2";
+    await injectCard(page, {
+      id: "pw-premium-card",
+      originalHref: premiumOriginal,
+      premiumHref: premiumTarget,
+    });
+    await page.waitForFunction(() => document.getElementById("pw-premium-card")?.dataset?.iptvPremiumCard === "1");
+    const premiumCard = page.locator("#pw-premium-card");
+    const premiumState = await premiumCard.evaluate((node) => ({
+      clickable: node.dataset.matchCardClickable,
+      premium: node.dataset.iptvPremiumCard || null,
+      classes: node.className,
+      premiumHref: node.querySelector('[data-iptv-premium-test="1"]')?.href || null,
+      originalHref: node.querySelector(".watch-source-toggle__opt--original")?.href || null,
+    }));
+    const premiumExpected = new URL(premiumTarget, HOME);
+    await Promise.all([
+      page.waitForURL((url) => sameDestination(url, premiumExpected), { timeout: 20000 }),
+      premiumCard.locator('[data-pw-card-body="1"]').click(),
     ]);
 
     console.log(JSON.stringify({
       browser: name,
-      visibleHomepageCard: "pass",
-      cardSnapshot,
-      expectedHref,
-      navigatedTo: page.url(),
+      deployedCardHandler: "pass",
+      realProductionCardCountBeforeFixture: realCardCount,
+      normalCard: normalState,
+      premiumCard: premiumState,
+      normalDestination: normalExpected.toString(),
+      premiumDestination: premiumExpected.toString(),
     }, null, 2));
-
-    await page.goto(`${HOME}?pw-premium=${Date.now()}`, { waitUntil: "domcontentloaded", timeout: 45000 });
-    await page.waitForSelector("#matches-grid .match-card");
-    const premiumCard = page.locator(".match-card").filter({
-      has: page.locator(`a[href*="match=${MATCH_ID}"]`),
-    }).first();
-
-    if (await premiumCard.count()) {
-      const premium = premiumCard.locator(
-        '.iptv-premium-test-toggle .watch-source-toggle__opt--premium[data-iptv-premium-test="1"]',
-      );
-      await premium.waitFor({ state: "visible" });
-      await page.waitForFunction((id) => {
-        const anchor = document.querySelector(`.match-card a[href*="match=${id}"]`);
-        return anchor?.closest(".match-card")?.dataset?.iptvPremiumCard === "1";
-      }, MATCH_ID);
-
-      const premiumHref = await premium.getAttribute("href");
-      if (!premiumHref) throw new Error("premium card link has no href");
-      const premiumUrl = new URL(premiumHref, HOME);
-      if (premiumUrl.searchParams.get("source") !== "xtream") throw new Error(`premium href source is ${premiumUrl.searchParams.get("source")}`);
-      if (premiumUrl.searchParams.get("portal") !== "lab") throw new Error(`premium href portal is ${premiumUrl.searchParams.get("portal")}`);
-      if (premiumUrl.searchParams.get("premium") !== "1") throw new Error("premium href is missing premium=1");
-      if (premiumUrl.searchParams.get("ch") !== "bein-sports-2") throw new Error(`premium href channel is ${premiumUrl.searchParams.get("ch")}`);
-
-      await Promise.all([
-        page.waitForURL((url) =>
-          url.searchParams.get("match") === MATCH_ID
-          && url.searchParams.get("source") === "xtream"
-          && url.searchParams.get("portal") === "lab"
-          && url.searchParams.get("premium") === "1",
-        { timeout: 20000 }),
-        premiumCard.locator(".teams").first().click(),
-      ]);
-      console.log(`${name}: premium homepage card precedence PASS`);
-    } else {
-      console.log(`${name}: premium homepage card not in current schedule; precedence check skipped`);
-    }
   } finally {
     await browser.close();
   }
@@ -223,4 +236,4 @@ await verifyHomepageCard("chromium", chromium, { viewport: { width: 390, height:
 await verifyHomepageCard("webkit-iphone", webkit, iphone);
 await verifyWatch("chromium", chromium, { viewport: { width: 390, height: 844 } });
 await verifyWatch("webkit-iphone", webkit, iphone);
-console.log("✓ visible homepage card click + premium TS-first watch path pass in Chromium + WebKit");
+console.log("✓ deployed card-body navigation + premium TS-first watch path pass in Chromium + WebKit");
