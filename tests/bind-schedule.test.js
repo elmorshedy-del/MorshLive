@@ -12,41 +12,31 @@ describe("bindActionForMatch", () => {
     });
   });
 
-  it("skips a finished Saturday match", () => {
+  it("skips a match outside the live TV window", () => {
     expect(bindActionForMatch({ kickoffUtc: "2026-08-29T16:30:00Z", now: NOW })).toBeNull();
   });
 
-  it("arms T-15 for a tomorrow fixture inside the two-day window", () => {
+  it("arms the deterministic preflight at T-30", () => {
     expect(bindActionForMatch({ kickoffUtc: "2026-08-30T13:00:00Z", now: NOW })).toEqual({
-      check: "t15",
+      check: "prematch",
       executeNow: false,
-      fireAt: Date.parse("2026-08-30T12:45:00Z"),
+      fireAt: Date.parse("2026-08-30T12:30:00Z"),
     });
   });
 
-  it("starts the T-15 pass immediately when that timer was missed", () => {
+  it("runs the preflight immediately when T-30 was missed", () => {
     expect(
       bindActionForMatch({ kickoffUtc: "2026-08-30T15:00:00Z", now: Date.parse("2026-08-30T14:48:00Z") }),
     ).toEqual({
-      check: "t15",
+      check: "prematch",
       executeNow: true,
-      fireAt: Date.parse("2026-08-30T14:45:00Z"),
-    });
-  });
-
-  it("runs T-7 when inside the last seven minutes", () => {
-    expect(
-      bindActionForMatch({ kickoffUtc: "2026-08-30T15:00:00Z", now: Date.parse("2026-08-30T14:54:00Z") }),
-    ).toEqual({
-      check: "t7",
-      executeNow: true,
-      fireAt: Date.parse("2026-08-30T14:53:00Z"),
+      fireAt: Date.parse("2026-08-30T14:30:00Z"),
     });
   });
 });
 
 describe("planBindLoop", () => {
-  it("runs tonight's live game now and arms Sunday T-15s", () => {
+  it("runs tonight's live game now and arms Sunday T-30 preflights", () => {
     const plan = planBindLoop(
       [
         {
@@ -79,12 +69,12 @@ describe("planBindLoop", () => {
     expect(plan.executeNow.map((row) => row.matchId)).toEqual(["espn-esp.1-401882897"]);
     expect(plan.executeNow[0].check).toBe("kickoff");
     expect(plan.arm.map((row) => row.matchId)).toEqual(["espn-eng.1-401879317", "espn-esp.1-401882899"]);
-    expect(plan.arm.every((row) => row.check === "t15")).toBe(true);
+    expect(plan.arm.every((row) => row.check === "prematch")).toBe(true);
   });
 
-  it("includes Saudi Pro League in the same bind loop as EPL and La Liga", () => {
+  it("covers Saudi and Champions League with the same deterministic schedule", () => {
     expect(isBindLeagueMatch({ matchId: "espn-ksa.1-401900376", competition: "spl" })).toBe(true);
-    expect(isBindLeagueMatch({ matchId: "espn-uefa.champions-401909192", competition: "ucl" })).toBe(false);
+    expect(isBindLeagueMatch({ matchId: "espn-uefa.champions-401909192", competition: "ucl" })).toBe(true);
     const plan = planBindLoop(
       [
         {
@@ -104,7 +94,10 @@ describe("planBindLoop", () => {
       ],
       Date.parse("2026-08-30T17:20:00Z"),
     );
-    expect(plan.arm.map((row) => row.matchId)).toEqual(["espn-ksa.1-401900376"]);
+    expect(plan.arm.map((row) => row.matchId)).toEqual([
+      "espn-ksa.1-401900376",
+      "espn-uefa.champions-401909192",
+    ]);
     expect(plan.executeNow).toEqual([]);
   });
 });
