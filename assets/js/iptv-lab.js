@@ -78,6 +78,21 @@
     window.dispatchEvent(new CustomEvent("kz:iptv-protocol", { detail: { protocol } }));
   }
 
+  // Codec/resolution/fps straight off the running player. The quality panel
+  // used to get these from /api/iptv-lab/probe, which opens its own
+  // `/live/...` request against a line provisioned with max_connections: 1 —
+  // measured: the panel closes the player's stream ~3s after a probe starts
+  // and holds the slot as a ghost session. Nothing here costs a connection.
+  function announceMediaInfo(info) {
+    window.dispatchEvent(new CustomEvent("kz:iptv-media-info", { detail: info }));
+  }
+
+  // The player has stopped trying. Only now is it safe (and useful) for the
+  // diagnostics to open a probe: there is no playback left to starve.
+  function announcePlaybackFailed(reason) {
+    window.dispatchEvent(new CustomEvent("kz:iptv-playback-failed", { detail: { reason } }));
+  }
+
   function setError(message) {
     errorBox.hidden = !message;
     errorBox.textContent = message || "";
@@ -448,6 +463,7 @@
       playerState.textContent = hevc
         ? "HEVC غير مدعوم هنا · استخدم BEIN SD"
         : "تعذر التشغيل";
+      announcePlaybackFailed(hevc ? "hevc-unsupported" : "all-paths-failed");
     };
     const hlsUrl = playbackUrl(channel.playbackUrl);
     const tsUrl = playbackUrl(channel.tsPlaybackUrl);
@@ -524,6 +540,7 @@
           // just ping-pong the two dead paths forever, so stop and say so.
           if (hlsAttempted) {
             playerState.textContent = "تعذر التشغيل بأي مسار متاح";
+            announcePlaybackFailed("all-paths-failed");
             return;
           }
           playerState.textContent = "MPEG-TS لم يبدأ · تجربة HLS";
@@ -568,6 +585,16 @@
         },
       );
       mpegTsPlayer.attachMediaElement(video);
+      mpegTsPlayer.on(window.mpegts.Events.MEDIA_INFO, (info) => {
+        if (generation !== playbackGeneration) return;
+        announceMediaInfo({
+          videoCodec: info?.videoCodec || null,
+          audioCodec: info?.audioCodec || null,
+          width: info?.width || null,
+          height: info?.height || null,
+          fps: info?.fps || null,
+        });
+      });
       mpegTsPlayer.on(window.mpegts.Events.ERROR, (type, detail, info) => {
         console.warn("IPTV Lab MPEG-TS playback error", type, detail, info || "");
         scheduleReconnect(type, detail);

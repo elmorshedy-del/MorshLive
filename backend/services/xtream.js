@@ -1,3 +1,4 @@
+import { createTtlSingleFlight } from "../../lib/probe-cache.js";
 import {
   createMediaToken,
   fetchXtreamJson,
@@ -7,6 +8,11 @@ import {
   probeXtreamPlayback,
   streamUrl,
 } from "../adapters/xtream.js";
+
+// A probe is a real stream request. On a max_connections: 1 line it competes
+// with the player for the only slot, so never run two at once for the same
+// channel and reuse the answer instead of re-opening the stream.
+const probeCache = createTtlSingleFlight({ ttlMs: 5 * 60 * 1000 });
 
 function directPortalIds(env) {
   return new Set(
@@ -170,8 +176,13 @@ export async function probeXtreamChannel(env, searchParams) {
     return { body: { ok: false, playable: false, error: "stream is required" }, status: 400 };
   }
   const portal = selected.portals[0];
-  const sources = await fetchXtreamSourceMaps(portal).catch(() => ({ hls: new Map(), ts: new Map() }));
-  const result = await probeXtreamPlayback(portal, streamId, sources);
+  const result = await probeCache.run(`${portal.id}:${streamId}`, async () => {
+    const sources = await fetchXtreamSourceMaps(portal).catch(() => ({
+      hls: new Map(),
+      ts: new Map(),
+    }));
+    return probeXtreamPlayback(portal, streamId, sources);
+  });
   return {
     body: {
       ok: true,

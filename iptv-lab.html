@@ -80,6 +80,7 @@
     .quality-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 11px; }
     .quality-head strong { font-size: .9rem; }
     .quality-head span { color: var(--muted); font-size: .7rem; }
+    .probe-btn { min-height: 32px; padding: 0 11px; font-size: .74rem; font-weight: 700; }
     .quality-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 8px; }
     .quality-item { min-width: 0; padding: 10px; border: 1px solid rgba(255,255,255,.07); border-radius: 9px; background: rgba(255,255,255,.025); }
     .quality-key { display: block; margin-bottom: 4px; color: var(--muted); font-size: .68rem; }
@@ -126,7 +127,10 @@
           <h2 id="selectedName">لا توجد قناة محددة</h2>
           <p id="selectedMeta">التشغيل يستخدم رابطاً مشفّراً قصير العمر من KoraZero.</p>
           <div class="quality-panel" id="qualityPanel" aria-live="polite">
-            <div class="quality-head"><strong>فحص الجودة والتوافق</strong><span>قياس مباشر من المشغّل</span></div>
+            <div class="quality-head">
+              <strong>فحص الجودة والتوافق</strong>
+              <button class="action-btn probe-btn" id="probeBtn" type="button">افحص المصدر</button>
+            </div>
             <div class="quality-grid">
               <div class="quality-item"><span class="quality-key">Codec</span><span class="quality-value" id="qualityCodec">اختر قناة</span></div>
               <div class="quality-item"><span class="quality-key">التوافق الحالي</span><span class="quality-value" id="qualityCompatibility">—</span></div>
@@ -169,7 +173,7 @@
     </section>
   </main>
 
-  <script src="assets/js/iptv-lab.js?v=20260904safari1"></script>
-  <script src="assets/js/iptv-quality.js?v=20260904safari1"></script>
+  <script src="assets/js/iptv-lab.js?v=20260905probe1"></script>
+  <script src="assets/js/iptv-quality.js?v=20260905probe1"></script>
 </body>
 </html>

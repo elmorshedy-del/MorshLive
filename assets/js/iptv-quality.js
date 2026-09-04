@@ -114,31 +114,70 @@
     }, 2000);
   }
 
-  async function probe(streamId) {
+  // /api/iptv-lab/probe opens a real `/live/...` request. The lab line is
+  // provisioned with max_connections: 1, and a probe fired while a channel is
+  // playing makes the panel close the player's stream within a few seconds and
+  // then hold the slot as a ghost session — the buffer drains to zero and the
+  // picture stalls. So the probe is never automatic any more: it runs only once
+  // playback has given up, or when the operator asks for it. One shared,
+  // deduplicated promise per stream serves every caller on the page.
+  const probeCache = new Map();
+
+  function requestProbe(streamId) {
+    const key = String(streamId);
+    if (!probeCache.has(key)) {
+      probeCache.set(
+        key,
+        fetch(`/api/iptv-lab/probe?stream=${encodeURIComponent(key)}`, { cache: "no-store" })
+          .then(async (response) => {
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || data.ok === false) {
+              throw new Error(data.error || `HTTP ${response.status}`);
+            }
+            return data;
+          })
+          .catch((error) => {
+            probeCache.delete(key);
+            throw error;
+          }),
+      );
+    }
+    return probeCache.get(key);
+  }
+
+  function renderProbe(streamId, data) {
+    if (String(streamId) !== activeStreamId) return;
+    const codecs = data.codecs || {};
+    const audio = audioName(codecs.audio);
+    setValue(
+      codecEl,
+      `${codecName(codecs.video)}${audio ? ` · ${audio}` : ""} (المصدر)`,
+      data.playable ? "good" : "warn",
+    );
+    if (data.protocol && !playbackProtocol) {
+      setValue(protocolEl, `${String(data.protocol).toUpperCase()} (المصدر)`);
+    }
+    if (!data.playable) {
+      setValue(compatibilityEl, "المصدر لا يرسل فيديو صالحاً الآن", "bad");
+      return;
+    }
+    setValue(
+      compatibilityEl,
+      data.mobileCompatible
+        ? "المصدر سليم — الفشل في المتصفح وليس في القناة"
+        : "المصدر يحتاج codec غير مدعوم هنا",
+      data.mobileCompatible ? "warn" : "bad",
+    );
+  }
+
+  async function probeNow(streamId) {
+    const key = String(streamId);
+    setValue(codecEl, "جارٍ فحص المصدر…");
     try {
-      const response = await fetch(`/api/iptv-lab/probe?stream=${encodeURIComponent(streamId)}`, { cache: "no-store" });
-      const data = await response.json().catch(() => ({}));
-      if (String(streamId) !== activeStreamId) return;
-      if (!response.ok || data.ok === false) throw new Error(data.error || `HTTP ${response.status}`);
-      const codecs = data.codecs || {};
-      const audio = audioName(codecs.audio);
-      setValue(codecEl, `${codecName(codecs.video)}${audio ? ` · ${audio}` : ""}`, data.playable ? "good" : "warn");
-      if (data.protocol && !playbackProtocol) {
-        setValue(protocolEl, `${String(data.protocol).toUpperCase()} (المصدر)`);
-      }
-      if (!data.playable) {
-        setValue(compatibilityEl, "فحص المصدر غير حاسم · التشغيل الفعلي هو الحكم", "warn");
-        return;
-      }
-      if (data.mobileCompatible) {
-        setValue(compatibilityEl, "توافق واسع متوقع · بانتظار التشغيل", "good");
-      } else {
-        setValue(compatibilityEl, "مسار توافق إضافي متاح إذا فشل التشغيل الأساسي", "warn");
-      }
+      renderProbe(key, await requestProbe(key));
     } catch (error) {
-      if (String(streamId) !== activeStreamId) return;
+      if (key !== activeStreamId) return;
       setValue(codecEl, "تعذر الفحص", "warn");
-      setValue(compatibilityEl, "التشغيل الفعلي سيحسم التوافق", "warn");
       if (noteEl) noteEl.textContent = `تعذر فحص المصدر: ${error.message || error}`;
     }
   }
@@ -149,16 +188,34 @@
     if (!streamId || streamId === activeStreamId) return;
     activeStreamId = streamId;
     playbackProtocol = "";
-    setValue(codecEl, "جارٍ الفحص…");
+    setValue(codecEl, "بانتظار التشغيل…");
     setValue(compatibilityEl, "جارٍ التحقق…", "warn");
     setValue(resolutionEl, "—");
     setValue(labelEl, "—");
     setValue(fpsEl, "—");
     setValue(protocolEl, "—");
     setValue(framesEl, "—");
-    if (noteEl) noteEl.textContent = "المشغّل الأساسي يعمل كما هو؛ مسار التوافق لا يتدخل إلا إذا فشل فك الفيديو.";
-    probe(streamId);
+    if (noteEl) {
+      noteEl.textContent =
+        "القياس يأتي من المشغّل نفسه — لا يفتح اتصالاً إضافياً بالبوابة (الاشتراك اتصال واحد).";
+    }
   }
+
+  // Playback has stopped trying, so the only connection is free: now a probe
+  // tells us whether the source or the browser is at fault.
+  window.addEventListener("kz:iptv-playback-failed", () => {
+    if (activeStreamId) probeNow(activeStreamId);
+  });
+
+  window.addEventListener("kz:iptv-media-info", (event) => {
+    const info = event.detail || {};
+    const audio = audioName(info.audioCodec);
+    if (info.videoCodec) {
+      setValue(codecEl, `${codecName(info.videoCodec)}${audio ? ` · ${audio}` : ""}`, "good");
+    }
+    if (info.fps) setValue(fpsEl, `${Number(info.fps).toFixed(1)} FPS`, info.fps >= 20 ? "good" : "warn");
+    updateVideoMetrics();
+  });
 
   new MutationObserver(syncActive).observe(channelGrid, {
     subtree: true,
@@ -190,6 +247,11 @@
       setValue(compatibilityEl, "✓ متوافق — تم فك الفيديو", "good");
       if (noteEl) noteEl.textContent = "نجح التشغيل الفعلي على هذا الجهاز.";
     }
+    // Native HLS decodes inside the browser and reports no codec name. Say so
+    // rather than leaving the field waiting forever on a channel that plays.
+    if (codecEl && /^بانتظار/.test(String(codecEl.textContent || ""))) {
+      setValue(codecEl, "يُفك داخل المتصفح · اضغط «افحص المصدر»", "good");
+    }
     startFrames();
   });
   video.addEventListener("pause", stopFrames);
@@ -213,10 +275,27 @@
     if (noteEl) noteEl.textContent = "المصدر موجود، لكن كل مسارات المتصفح المتاحة فشلت. هذه الفئة تحتاج تحويل تغليف/codec على الخادم بدلاً من إخفائها من الكتالوج.";
   });
 
+  // Explicit operator-driven probe. It costs the line's only connection, so it
+  // pauses playback first rather than racing it.
+  const probeBtn = document.getElementById("probeBtn");
+  probeBtn?.addEventListener("click", async () => {
+    if (!activeStreamId) return;
+    probeBtn.disabled = true;
+    try {
+      video.pause();
+      await probeNow(activeStreamId);
+    } finally {
+      probeBtn.disabled = false;
+    }
+  });
+
+  // Shared with the compatibility fallback so the page never opens two probes.
+  window.KZIptvLabProbe = { request: requestProbe };
+
   setValue(browserEl, browserSummary(), hevc ? "good" : "warn");
 
   const fallbackScript = document.createElement("script");
-  fallbackScript.src = "assets/js/iptv-lab-compat-fallback.js?v=20260904safari1";
+  fallbackScript.src = "assets/js/iptv-lab-compat-fallback.js?v=20260905probe1";
   fallbackScript.defer = true;
   document.head.appendChild(fallbackScript);
 })();
