@@ -4,8 +4,12 @@ on:
   push:
     branches: [main]
     paths:
+      - "index.html"
       - "watch.html"
+      - "assets/data/manual-channel-overrides.json"
       - "assets/js/i18n.js"
+      - "assets/js/iptv-auto.js"
+      - "assets/js/iptv-premium-card-click.js"
       - "assets/js/watch-loader.js"
       - "assets/js/watch-xtream.js"
       - "backend/adapters/xtream-media-safe.js"
@@ -33,14 +37,17 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in $(seq 1 36); do
-            body="$(curl -fsS "https://korazero.com/assets/js/watch-loader.js?v=${GITHUB_SHA}" 2>/dev/null || true)"
-            if grep -q 'watch-xtream.js?v=20260903premiumfix1' <<<"$body"; then
-              echo "Production has the premium IPTV fix."
+            loader="$(curl -fsS "https://korazero.com/assets/js/watch-loader.js?v=${GITHUB_SHA}" 2>/dev/null || true)"
+            auto="$(curl -fsS "https://korazero.com/assets/js/iptv-auto.js?v=${GITHUB_SHA}" 2>/dev/null || true)"
+            if grep -q 'watch-xtream.js?v=20260903premiumfix1' <<<"$loader" \
+              && grep -q '20260903premiumtest5' <<<"$auto" \
+              && grep -q 'PREMIUM_TEST_MATCH_IDS' <<<"$auto"; then
+              echo "Production has the premium IPTV watch + homepage fixes."
               exit 0
             fi
             sleep 10
           done
-          echo "Cloudflare production did not expose the expected watch-loader build." >&2
+          echo "Cloudflare production did not expose the expected premium IPTV build." >&2
           exit 1
       - name: Playwright premium IPTV verification
         run: node scripts/verify-premium-iptv.mjs
