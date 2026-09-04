@@ -8,6 +8,7 @@
 (function () {
   "use strict";
 
+  const CARD_CLICK_BUILD = "20260903cardclick2";
   const CARD_SELECTOR = ".match-card";
   const PREMIUM_LINK_SELECTOR =
     '.iptv-premium-test-toggle .watch-source-toggle__opt--premium[data-iptv-premium-test="1"]';
@@ -28,6 +29,8 @@
     '[contenteditable="true"]',
     ".match-panel",
   ].join(",");
+
+  window.__KZ_MATCH_CARD_CLICK_BUILD = CARD_CLICK_BUILD;
 
   function visibleLink(link) {
     return link && !link.hidden ? link : null;
@@ -55,6 +58,24 @@
     return Boolean(interactive && card.contains(interactive));
   }
 
+  function handleCardClick(event) {
+    if (isModifiedPrimaryClick(event)) return;
+    const card = event.currentTarget;
+    const target = event.target;
+    if (!(card instanceof Element) || card.dataset.matchCardClickable !== "1") return;
+    if (shouldIgnoreTarget(target, card)) return;
+
+    const link = preferredLink(card);
+    if (!link?.href) return;
+    window.location.assign(link.href);
+  }
+
+  function bindCard(card) {
+    if (card.dataset.matchCardClickBound === CARD_CLICK_BUILD) return;
+    card.addEventListener("click", handleCardClick, true);
+    card.dataset.matchCardClickBound = CARD_CLICK_BUILD;
+  }
+
   function markCards(root) {
     const scope = root?.querySelectorAll ? root : document;
     for (const card of scope.querySelectorAll(CARD_SELECTOR)) {
@@ -65,6 +86,7 @@
         delete card.dataset.iptvPremiumCard;
         continue;
       }
+      bindCard(card);
       card.classList.add("match-card-clickable");
       card.dataset.matchCardClickable = "1";
       if (premiumLink(card)) {
@@ -75,17 +97,6 @@
         delete card.dataset.iptvPremiumCard;
       }
     }
-  }
-
-  function handleCardClick(event) {
-    if (isModifiedPrimaryClick(event)) return;
-    const target = event.target;
-    const card = target?.closest?.(`${CARD_SELECTOR}[data-match-card-clickable="1"]`);
-    if (!card || shouldIgnoreTarget(target, card)) return;
-
-    const link = preferredLink(card);
-    if (!link?.href) return;
-    window.location.assign(link.href);
   }
 
   function installCursorStyle() {
@@ -99,7 +110,6 @@
   function init() {
     installCursorStyle();
     markCards(document);
-    document.addEventListener("click", handleCardClick);
 
     const observer = new MutationObserver((mutations) => {
       if (mutations.some((mutation) => mutation.type === "childList" && mutation.addedNodes.length)) {
