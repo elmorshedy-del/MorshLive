@@ -2,7 +2,12 @@
  * editorial, visual, content-architecture, and premium IPTV routing layers. */
 (function () {
   "use strict";
-  const stamp = "20260903premiumtest4";
+  const stamp = "20260903premiumfix1";
+  const params = new URLSearchParams(location.search);
+  const cleanPath = location.pathname.replace(/\/$/, "");
+  const isolatedXtreamWatch =
+    (cleanPath === "/watch.html" || cleanPath === "/watch")
+    && params.get("source") === "xtream";
 
   // Install the match-time formatter before data.js loads. Every visitor sees
   // their own browser/device-local kickoff time plus a constant Makkah reference.
@@ -59,9 +64,11 @@
     document.write(`<script src="/assets/js/watch-arabic-editorial.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/english-editorial.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/match-stats-editorial.js?v=${stamp}"><\/script>`);
-    document.write(`<script src="/assets/js/iptv-channel-resolver.js?v=${stamp}"><\/script>`);
-    document.write(`<script src="/assets/js/iptv-auto.js?v=${stamp}"><\/script>`);
-    document.write(`<script src="/assets/js/iptv-premium-card-click.js?v=${stamp}"><\/script>`);
+    if (!isolatedXtreamWatch) {
+      document.write(`<script src="/assets/js/iptv-channel-resolver.js?v=${stamp}"><\/script>`);
+      document.write(`<script src="/assets/js/iptv-auto.js?v=${stamp}"><\/script>`);
+      document.write(`<script src="/assets/js/iptv-premium-card-click.js?v=${stamp}"><\/script>`);
+    }
   }
 
   if (document.readyState === "loading") {
@@ -97,9 +104,11 @@
       });
     });
   });
-  addScript(`/assets/js/iptv-channel-resolver.js?v=${stamp}`, () => {
-    addScript(`/assets/js/iptv-auto.js?v=${stamp}`, () => {
-      addScript(`/assets/js/iptv-premium-card-click.js?v=${stamp}`);
+  if (!isolatedXtreamWatch) {
+    addScript(`/assets/js/iptv-channel-resolver.js?v=${stamp}`, () => {
+      addScript(`/assets/js/iptv-auto.js?v=${stamp}`, () => {
+        addScript(`/assets/js/iptv-premium-card-click.js?v=${stamp}`);
+      });
     });
-  });
+  }
 })();
