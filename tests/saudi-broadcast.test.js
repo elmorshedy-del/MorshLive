@@ -3,7 +3,10 @@ const {
   isSaudiProLeagueMatch,
   resolveBroadcastChannel,
 } = require("../scripts/broadcast-registry");
-const { ensureSaudiBroadcastFallback } = require("../scripts/commentators-lib");
+const {
+  ensureSaudiBroadcastFallback,
+  parseCommentators,
+} = require("../scripts/commentators-lib");
 
 describe("Saudi broadcast registry", () => {
   it("normalizes official Thmanyah channel names including Arabic digits", () => {
@@ -41,6 +44,24 @@ describe("Saudi broadcast registry", () => {
     expect(isSaudiProLeagueMatch({ leagueSlug: "ksa.1" })).toBe(true);
     expect(isSaudiProLeagueMatch({ id: "espn-ksa.1-123" })).toBe(true);
     expect(isSaudiProLeagueMatch({ competition: "ucl", id: "espn-uefa.champions-123" })).toBe(false);
+  });
+
+  it("retains a channel announced before the commentator", () => {
+    const html = `
+      <div class="mt-match">
+        <div class="mt-team">الهلال</div>
+        <div class="mt-time">21:00</div>
+        <div class="mt-team">النصر</div>
+        <div class="mt-info">
+          <div class="mt-channel">ثمانية.٢</div>
+        </div>
+        <div class="mt-footer"></div>
+      </div>`;
+
+    expect(parseCommentators(html)[0]).toMatchObject({
+      channels: ["ثمانية 2"],
+      infos: [],
+    });
   });
 });
 
