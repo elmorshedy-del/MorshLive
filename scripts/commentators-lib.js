@@ -151,6 +151,11 @@ function sourceBroadcastFor(entry) {
   return broadcastMetadata(resolved, "almaghrebsport");
 }
 
+function clearSaudiPlaybackRoute(match, row) {
+  delete match.channelId;
+  if (row) delete row.channelId;
+}
+
 function ensureSaudiBroadcastFallback(matches, commentaryIndex) {
   const rowsByKey = new Map((commentaryIndex || []).map((row) => [row.key, row]));
   let hydrated = 0;
@@ -172,17 +177,18 @@ function ensureSaudiBroadcastFallback(matches, commentaryIndex) {
         row.channel = sourceResolved.channel;
         if (broadcast) row.broadcast = broadcast;
       }
+      clearSaudiPlaybackRoute(match, row);
       continue;
     }
 
     const broadcast = defaultSaudiBroadcast();
     match.channel = "ثمانية";
     match.broadcast = broadcast;
+    clearSaudiPlaybackRoute(match, row);
 
     if (row) {
       row.channel = "ثمانية";
       row.broadcast = broadcast;
-      delete row.channelId;
     } else {
       const fallbackRow = {
         key,
@@ -222,6 +228,7 @@ function attachCommentators(matches, html) {
     }
     m.channel = channelName;
     if (channelId) m.channelId = channelId;
+    else if (isSaudiProLeagueMatch(m)) delete m.channelId;
     if (broadcast) m.broadcast = broadcast;
     commentaryIndex.push({
       key: pairKey(m.home, m.away),
