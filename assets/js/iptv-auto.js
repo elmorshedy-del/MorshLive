@@ -282,6 +282,15 @@
     return `${url.pathname.replace(/^\//, "")}${url.search}${url.hash}`;
   }
 
+  // Identifies what the rendered toggle currently shows. Used to skip the
+  // innerHTML rewrite (and the childList mutation it produces) when nothing
+  // the user would see has actually changed - the router previously
+  // rewrote unconditionally on every trigger, including the 45s refresh
+  // timer and every unrelated DOM mutation on the page.
+  function toggleSignature(href, match, selected) {
+    return `${href}|${phaseLabel(match)}|${match.channel || selected.name || "TV"}`;
+  }
+
   function annotate(link, selected, resolution) {
     link.dataset.iptvAutoLink = "1";
     link.dataset.iptvAuto = "resolved";
@@ -306,6 +315,7 @@
       "iptvResolution",
       "iptvLogicalKey",
       "iptvAutoPrimary",
+      "iptvAutoSig",
     ].forEach((key) => delete link.dataset[key]);
   }
 
@@ -353,9 +363,13 @@
           primary.dataset.iptvAutoOriginalHref = primary.getAttribute("href") || "";
           primary.dataset.iptvAutoOriginalHtml = primary.innerHTML;
         }
-        primary.href = href;
+        const signature = toggleSignature(href, match, selected);
+        if (primary.dataset.iptvAutoSig !== signature) {
+          primary.href = href;
+          primary.innerHTML = `<span>${phaseLabel(match)}</span><small>${match.channel || selected.name || "TV"}</small>`;
+          primary.dataset.iptvAutoSig = signature;
+        }
         primary.dataset.iptvAutoPrimary = "1";
-        primary.innerHTML = `<span>${phaseLabel(match)}</span><small>${match.channel || selected.name || "TV"}</small>`;
         annotate(primary, selected, resolution);
         annotate(original, selected, resolution);
         return;
@@ -365,8 +379,12 @@
     if (existing?.classList.contains("iptv-auto-toggle")) {
       const primary = existing.querySelector('[data-iptv-auto-primary="1"]');
       if (primary) {
-        primary.href = href;
-        primary.innerHTML = `<span>${phaseLabel(match)}</span><small>${match.channel || selected.name || "TV"}</small>`;
+        const signature = toggleSignature(href, match, selected);
+        if (primary.dataset.iptvAutoSig !== signature) {
+          primary.href = href;
+          primary.innerHTML = `<span>${phaseLabel(match)}</span><small>${match.channel || selected.name || "TV"}</small>`;
+          primary.dataset.iptvAutoSig = signature;
+        }
         annotate(primary, selected, resolution);
         annotate(original, selected, resolution);
       }
@@ -390,6 +408,7 @@
     primary.href = href;
     primary.dataset.iptvAutoPrimary = "1";
     primary.innerHTML = `<span>${phaseLabel(match)}</span><small>${match.channel || selected.name || "TV"}</small>`;
+    primary.dataset.iptvAutoSig = toggleSignature(href, match, selected);
     annotate(primary, selected, resolution);
 
     original.dataset.iptvAutoOriginalHtml = original.innerHTML;
@@ -438,12 +457,28 @@
     });
   }
 
+  // Only these containers ever hold a watch anchor this router cares about
+  // (home page match cards, the watch page sidebar and its own source
+  // toggle). Watching document.documentElement instead reacted to every
+  // unrelated mutation on the page - live score ticks, tweet cards, banner
+  // rotation, animations.js - each one forcing a full-document anchor
+  // rescan and, for a handful of stale-observer runs still touching the
+  // toggle, an innerHTML rewrite. That's the freeze: this router turning
+  // every unrelated DOM change anywhere on the page into extra work.
+  function observedRoots() {
+    return ["matches-grid", "live-detail", "side-channels", "player-toolbar"]
+      .map((id) => document.getElementById(id))
+      .filter(Boolean);
+  }
+
   function startObserver() {
-    if (observer || !document.documentElement) return;
+    if (observer) return;
+    const roots = observedRoots();
+    if (!roots.length) return;
     observer = new MutationObserver((mutations) => {
       if (mutations.some((mutation) => mutation.type === "childList" && mutation.addedNodes.length)) queueRewrite();
     });
-    observer.observe(document.documentElement, { childList: true, subtree: true });
+    roots.forEach((root) => observer.observe(root, { childList: true, subtree: true }));
   }
 
   async function refreshAndRewrite() {
