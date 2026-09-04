@@ -15,6 +15,7 @@ on:
       - "backend/adapters/xtream-media-safe.js"
       - "backend/routes/xtream.js"
       - "tests/xtream-media-safe.test.js"
+      - "scripts/diagnose-homepage.mjs"
       - "scripts/verify-premium-iptv.mjs"
       - ".github/workflows/premium-iptv-smoke.yml"
   workflow_dispatch:
@@ -39,15 +40,19 @@ jobs:
           for attempt in $(seq 1 36); do
             loader="$(curl -fsS "https://korazero.com/assets/js/watch-loader.js?v=${GITHUB_SHA}" 2>/dev/null || true)"
             auto="$(curl -fsS "https://korazero.com/assets/js/iptv-auto.js?v=${GITHUB_SHA}" 2>/dev/null || true)"
+            clicker="$(curl -fsS "https://korazero.com/assets/js/iptv-premium-card-click.js?v=${GITHUB_SHA}" 2>/dev/null || true)"
             if grep -q 'watch-xtream.js?v=20260903premiumfix1' <<<"$loader" \
               && grep -q '20260903premiumtest5' <<<"$auto" \
-              && grep -q 'PREMIUM_TEST_MATCH_IDS' <<<"$auto"; then
-              echo "Production has the premium IPTV watch + homepage fixes."
+              && grep -q 'PREMIUM_TEST_MATCH_IDS' <<<"$auto" \
+              && grep -q 'data-match-card-clickable' <<<"$clicker"; then
+              echo "Production has the premium IPTV watch + match-card click fixes."
               exit 0
             fi
             sleep 10
           done
-          echo "Cloudflare production did not expose the expected premium IPTV build." >&2
+          echo "Cloudflare production did not expose the expected premium IPTV/card-click build." >&2
           exit 1
+      - name: Diagnose homepage rendering
+        run: node scripts/diagnose-homepage.mjs
       - name: Playwright premium IPTV verification
         run: node scripts/verify-premium-iptv.mjs
