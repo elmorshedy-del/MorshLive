@@ -46,6 +46,7 @@ function pick(re, segment) {
   const m = segment.match(re);
   return m ? m[1].trim() : "";
 }
+
 function pickAll(re, segment) {
   const out = [];
   let m;
@@ -63,16 +64,24 @@ function parseCommentators(html) {
     const teams = pickAll(/mt-team">([^<]+)</, segment);
     if (teams.length < 2) continue;
     const time = pick(/mt-time">([^<]+)</, segment);
-    const commentators = pickAll(/mt-commentator">([^<]+)</, segment);
-    const channels = pickAll(/mt-channel">([^<]+)</, segment);
-    const infos = commentators
+    const commentatorNames = pickAll(/mt-commentator">([^<]+)</, segment);
+    const channelNames = pickAll(/mt-channel">([^<]+)</, segment)
+      .map(prettyChannel)
+      .filter(Boolean);
+    const infos = commentatorNames
       .map((name, i) => ({
         name: name.trim(),
-        channel: prettyChannel(channels[i] || ""),
+        channel: channelNames[i] || "",
       }))
       .filter((x) => x.name);
-    if (!infos.length) continue;
-    rows.push({ homeAr: teams[0], awayAr: teams[1], time, infos });
+    if (!infos.length && !channelNames.length) continue;
+    rows.push({
+      homeAr: teams[0],
+      awayAr: teams[1],
+      time,
+      infos,
+      channels: channelNames,
+    });
   }
   return rows;
 }
@@ -84,11 +93,21 @@ function buildIndex(rows) {
     const enAway = arabicTeamToEnglish(row.awayAr);
     if (!enHome || !enAway) continue;
     const key = pairKey(enHome, enAway);
-    const entry = index.get(key) || { commentators: [], seen: new Set() };
+    const entry = index.get(key) || {
+      commentators: [],
+      channels: [],
+      seenCommentators: new Set(),
+      seenChannels: new Set(),
+    };
+    for (const channel of row.channels || []) {
+      if (!channel || entry.seenChannels.has(channel)) continue;
+      entry.seenChannels.add(channel);
+      entry.channels.push(channel);
+    }
     for (const info of row.infos) {
       const dedupe = `${info.name}|${info.channel}`;
-      if (entry.seen.has(dedupe)) continue;
-      entry.seen.add(dedupe);
+      if (entry.seenCommentators.has(dedupe)) continue;
+      entry.seenCommentators.add(dedupe);
       entry.commentators.push(info);
     }
     index.set(key, entry);
@@ -96,8 +115,12 @@ function buildIndex(rows) {
   return index;
 }
 
-function broadcastFor(commentators) {
-  for (const item of commentators || []) {
+function broadcastFor(entry) {
+  for (const channel of entry?.channels || []) {
+    const resolved = resolveBroadcastChannel(channel);
+    if (resolved.channel) return resolved;
+  }
+  for (const item of entry?.commentators || []) {
     if (!item?.channel) continue;
     const resolved = resolveBroadcastChannel(item.channel);
     if (resolved.channel) return resolved;
@@ -109,22 +132,22 @@ function broadcastFor(commentators) {
    beIN labels map to the existing playable registry. Saudi Thmanyah labels are
    recorded as real broadcast channels but do not silently route into a beIN
    stream; that is a separate concern handled by the stream registry. */
-function channelIdFor(commentators, match) {
-  const resolved = broadcastFor(commentators);
+function channelIdFor(entry, match) {
+  const resolved = broadcastFor(entry);
   if (resolved.playbackChannelId) return resolved.playbackChannelId;
   if (isSaudiProLeagueMatch(match)) return null;
   return "bein-sports-1";
 }
 
-function channelNameFor(commentators, channelId) {
-  const resolved = broadcastFor(commentators);
+function channelNameFor(entry, channelId) {
+  const resolved = broadcastFor(entry);
   if (resolved.channel) return resolved.channel;
   if (/^bein-max-(\d)$/.test(channelId || "")) return `beIN MAX ${channelId.slice(-1)}`;
   return channelId === "bein-sports-2" ? "beIN Sports 2" : "beIN Sports 1";
 }
 
-function sourceBroadcastFor(commentators) {
-  const resolved = broadcastFor(commentators);
+function sourceBroadcastFor(entry) {
+  const resolved = broadcastFor(entry);
   return broadcastMetadata(resolved, "almaghrebsport");
 }
 
@@ -179,20 +202,24 @@ function ensureSaudiBroadcastFallback(matches, commentaryIndex) {
 }
 
 /* Attach commentator + channel data to fixtures; returns a compact index for
-   the JSON cache so the browser can re-attach onto live API results. */
+   the JSON cache so the browser can re-attach onto live API results. Channel
+   hydration does not wait for a commentator name; a published channel alone
+   is enough to update the card before kickoff. */
 function attachCommentators(matches, html) {
   const index = buildIndex(parseCommentators(html));
   const commentaryIndex = [];
   let matched = 0;
   for (const m of matches) {
     const entry = index.get(pairKey(m.home, m.away));
-    if (!entry || !entry.commentators.length) continue;
+    if (!entry || (!entry.commentators.length && !entry.channels.length)) continue;
     matched++;
-    const channelId = channelIdFor(entry.commentators, m);
-    const channelName = channelNameFor(entry.commentators, channelId);
-    const broadcast = sourceBroadcastFor(entry.commentators);
-    m.commentators = entry.commentators;
-    m.commentator = entry.commentators[0].name;
+    const channelId = channelIdFor(entry, m);
+    const channelName = channelNameFor(entry, channelId);
+    const broadcast = sourceBroadcastFor(entry);
+    if (entry.commentators.length) {
+      m.commentators = entry.commentators;
+      m.commentator = entry.commentators[0].name;
+    }
     m.channel = channelName;
     if (channelId) m.channelId = channelId;
     if (broadcast) m.broadcast = broadcast;
