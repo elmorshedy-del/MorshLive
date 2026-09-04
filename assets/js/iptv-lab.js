@@ -352,6 +352,9 @@
     let hlsRecoveries = 0;
     let tsStartupFailures = 0;
     let tsEverPlayed = false;
+    let tsRuntimeHlsAttempted = false;
+    let hlsFallbackFromTs = false;
+    let hlsReturnedToTs = false;
     const hevc = isHevcChannel(channel);
     const onPlaying = () => {
       if (generation !== playbackGeneration) return;
@@ -361,6 +364,17 @@
     video.addEventListener("playing", onPlaying);
     const onError = () => {
       if (generation !== playbackGeneration) return;
+      if (usingHls && hlsFallbackFromTs && !hlsReturnedToTs) {
+        hlsReturnedToTs = true;
+        hlsFallbackFromTs = false;
+        playerState.textContent = "HLS غير متاح · العودة إلى TS";
+        clearReconnect();
+        reconnectTimer = setTimeout(() => {
+          reconnectTimer = null;
+          playTs();
+        }, 500);
+        return;
+      }
       playerState.textContent = hevc
         ? "HEVC غير مدعوم هنا · استخدم BEIN SD"
         : "تعذر التشغيل";
@@ -377,7 +391,7 @@
       video.pause();
       video.removeAttribute("src");
       video.load();
-      playerState.textContent = hevc ? "HEVC · HLS" : "جارٍ تجربة HLS";
+      playerState.textContent = hevc ? "HEVC · HLS" : hlsFallbackFromTs ? "الانتقال إلى HLS المستمر…" : "جارٍ تجربة HLS";
       if (video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = hlsUrl;
         video.addEventListener("error", onError, { once: true });
@@ -430,6 +444,17 @@
             reconnectTimer = null;
             playHls();
           }, 900);
+          return;
+        }
+        if (tsEverPlayed && channel.playbackUrl && !tsRuntimeHlsAttempted) {
+          tsRuntimeHlsAttempted = true;
+          hlsFallbackFromTs = true;
+          playerState.textContent = "انتهت دفعة TS · الانتقال إلى HLS المستمر…";
+          console.warn("IPTV Lab finite TS burst; trying HLS", type || "ended", detail || "");
+          reconnectTimer = setTimeout(() => {
+            reconnectTimer = null;
+            playHls();
+          }, 180);
           return;
         }
         const delay = tsEverPlayed ? 700 : Math.min(800 * tsStartupFailures, 2400);
