@@ -53,7 +53,11 @@
     }, 10);
   }
 
-  // This file is loaded from the head. The polling path installs as soon as
-  // matches-api.js appears, before DOMContentLoaded consumers begin fetching.
+  // Loaded from the head before iptv-auto.js. Registration order guarantees
+  // this DOMContentLoaded callback runs before IPTV's own startup callback,
+  // after matches-api.js has been parsed and exposed on window.
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", install, { once: true });
+  }
   installWhenReady();
 })();
