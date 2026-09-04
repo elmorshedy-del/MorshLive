@@ -297,6 +297,7 @@
   let activeMpegTs = null;
   let activeXtreamChannel = null;
   let xtreamRecoveryCount = 0;
+  let lastXtreamPlaybackKey = null;
 
   async function fetchDlSources(chId) {
     const pageUrl = window.SITE_DATA.dlEmbedUrlFor ? window.SITE_DATA.dlEmbedUrlFor(chId) : "";
@@ -463,9 +464,27 @@
     });
   }
 
+  // The 20s plan/xtream resync (see the setInterval below) re-checks every
+  // catalog channel from every portal/country on every tick regardless of
+  // whether anything changed. Without this guard that meant a full
+  // destroy-and-remount - a hard restart from the live edge, discarding
+  // whatever was buffered - every 20 seconds. True only when the exact same
+  // channel is already up and healthy; a real channel change (different
+  // portalId/streamId) or a dead player must still fall through to a fresh
+  // mount/fetch.
+  function xtreamChannelAlreadyHealthy(portalId, streamId) {
+    if (!shell) return false;
+    const targetKey = `${portalId}:${streamId}`;
+    if (lastXtreamPlaybackKey !== targetKey) return false;
+    const video = shell.querySelector(".kz-main-video");
+    return !!(video && video.readyState >= 2 && !video.error);
+  }
+
   function mountXtreamPlayer(selected) {
-    destroyInlineHls();
     if (!shell || !selected || !selected.playbackUrl) return;
+    const targetKey = `${selected.portalId}:${selected.streamId}`;
+    if (xtreamChannelAlreadyHealthy(selected.portalId, selected.streamId)) return;
+    destroyInlineHls();
     const hlsUrl = xtreamDirect && selected.directPlaybackUrl ? selected.directPlaybackUrl : selected.playbackUrl;
     const tsUrl = xtreamDirect && selected.directTsPlaybackUrl ? selected.directTsPlaybackUrl : selected.tsPlaybackUrl;
     shell.innerHTML = `<video class="kz-main-video" controls autoplay muted playsinline webkit-playsinline></video>`;
@@ -549,6 +568,7 @@
     }
     bindUnmuteOverlay(video);
     loadedUrl = `xtream:${selected.portalId}:${selected.streamId}`;
+    lastXtreamPlaybackKey = targetKey;
   }
 
   async function loadXtreamChannel() {
@@ -839,6 +859,11 @@
 
   async function mountPlanXtream(source) {
     if (!source || !source.portalId || !source.streamId) return false;
+    // Skip the network round trip too, not just the remount: refetching a
+    // fresh signed playback token from the provider every 20s for a channel
+    // that's already playing fine wastes a request against every portal on
+    // every tick, for nothing the player needed.
+    if (xtreamChannelAlreadyHealthy(source.portalId, source.streamId)) return true;
     try {
       const query = new URLSearchParams({
         portal: source.portalId,
