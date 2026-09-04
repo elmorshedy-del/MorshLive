@@ -128,7 +128,7 @@
       .sort((a, b) => {
         const aSport = SPORT_RE.test(a.name) ? 0 : 1;
         const bSport = SPORT_RE.test(b.name) ? 0 : 1;
-        return aSport - bSport || a.category.name.localeCompare(b.category.name, "ar");
+        return aSport - bSport || a.name.localeCompare(b.name, "ar");
       })
       .forEach((category) => {
         if (seen.has(category.categoryId)) return;
