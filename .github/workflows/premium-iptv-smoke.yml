@@ -29,11 +29,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - name: Install Playwright package only
-        run: npm install --no-save --ignore-scripts playwright@1.61.1
+      - name: Install isolated Playwright package
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/kz-playwright
+          npm install --prefix /tmp/kz-playwright --no-save --ignore-scripts playwright@1.61.1
+          rm -rf node_modules
+          ln -s /tmp/kz-playwright/node_modules node_modules
       - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium webkit
+        run: /tmp/kz-playwright/node_modules/.bin/playwright install --with-deps chromium webkit
       - name: Wait for Cloudflare Workers Build
         shell: bash
         run: |
