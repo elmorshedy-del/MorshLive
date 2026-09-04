@@ -170,10 +170,7 @@ export async function probeXtreamChannel(env, searchParams) {
     return { body: { ok: false, playable: false, error: "stream is required" }, status: 400 };
   }
   const portal = selected.portals[0];
-  const sources =
-    searchParams.get("playlist") === "1"
-      ? await fetchXtreamSourceMaps(portal)
-      : { hls: new Map(), ts: new Map() };
+  const sources = await fetchXtreamSourceMaps(portal).catch(() => ({ hls: new Map(), ts: new Map() }));
   const result = await probeXtreamPlayback(portal, streamId, sources);
   return {
     body: {
@@ -355,7 +352,9 @@ export async function getXtreamLive(env, searchParams) {
         ]);
         const apiRows = Array.isArray(streamRows) ? streamRows : [];
         const needExactSources =
-          !apiRows.length || (directRequested && allowedDirectPortals.has(portal.id) && Boolean(streamId));
+          Boolean(category || streamId)
+          || !apiRows.length
+          || (directRequested && allowedDirectPortals.has(portal.id) && Boolean(streamId));
         const sources = needExactSources
           ? await fetchXtreamSourceMaps(portal)
           : { hlsEntries: [], tsEntries: [], hls: new Map(), ts: new Map() };
