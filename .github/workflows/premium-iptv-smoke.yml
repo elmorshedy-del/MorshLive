@@ -30,7 +30,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci
+      - name: Install Playwright package only
+        run: npm install --no-save --ignore-scripts playwright@1.61.1
       - name: Install Playwright browsers
         run: npx playwright install --with-deps chromium webkit
       - name: Wait for Cloudflare Workers Build
