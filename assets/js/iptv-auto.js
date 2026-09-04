@@ -8,6 +8,8 @@
   "use strict";
 
   const resolver = () => window.KZIptvChannelResolver;
+  const PREMIUM_TEST_MATCH_IDS = new Set(["espn-esp.1-401882867"]);
+  const OVERRIDE_URL = "/assets/data/manual-channel-overrides.json?v=20260903premiumtest5";
   let state = null;
   let refreshPromise = null;
   let observer = null;
@@ -61,7 +63,7 @@
       const [meta, catalog, overrides] = await Promise.all([
         window.getMatches({ force: false }),
         getJson("/api/iptv-lab/catalog"),
-        getJson("/assets/data/manual-channel-overrides.json", true),
+        getJson(OVERRIDE_URL, true),
       ]);
       state = {
         matches: makeMatchMap(meta?.matches || [], overrides),
@@ -97,7 +99,8 @@
   }
 
   function premiumEnabled(match) {
-    return match?.premiumTest === true && !!match?.channelId;
+    if (!match?.channelId) return false;
+    return match.premiumTest === true || PREMIUM_TEST_MATCH_IDS.has(String(match.id || ""));
   }
 
   function selectedChannel(match) {
@@ -147,9 +150,6 @@
       const toggle = premium.closest(".watch-source-toggle");
       if (!toggle || toggle.classList.contains("iptv-premium-test-toggle")) continue;
 
-      // The watch page does not need a source toggle at all unless this new
-      // premium test installed it. Removing the legacy group leaves playback
-      // and the original stream untouched.
       if (toggle.closest("#player-toolbar")) {
         toggle.remove();
         continue;
