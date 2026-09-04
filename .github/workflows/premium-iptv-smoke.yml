@@ -22,8 +22,8 @@ on:
       - "tests/xtream-media-safe.test.js"
       - "tests/iptv-rollout-contract.test.js"
       - "scripts/diagnose-homepage.mjs"
-      - "scripts/verify-premium-iptv.mjs"
       - "scripts/verify-iptv-stage-contract.mjs"
+      - "scripts/verify-xtream-continuous.mjs"
       - ".github/workflows/premium-iptv-smoke.yml"
   workflow_dispatch:
 
@@ -74,5 +74,5 @@ jobs:
         run: node scripts/diagnose-homepage.mjs
       - name: Playwright unified card-stage verification
         run: node scripts/verify-iptv-stage-contract.mjs
-      - name: Playwright Xtream playback verification
-        run: node scripts/verify-premium-iptv.mjs
+      - name: Live Thmanyah catalog and continuous Xtream playback
+        run: node scripts/verify-xtream-continuous.mjs
