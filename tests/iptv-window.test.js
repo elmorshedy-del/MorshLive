@@ -16,10 +16,11 @@ describe("deterministic IPTV TV window", () => {
     expect(windowing.isEligible(match, at(-30))).toBe(true);
   });
 
-  it("covers pregame, match and a 30-minute postgame studio window", () => {
+  it("covers pregame, match and a postgame studio window", () => {
     expect(windowing.phase(match, at(-1))).toBe("pregame");
     expect(windowing.phase({ ...match, status: "live" }, at(0))).toBe("live");
     expect(windowing.phase(match, at(135))).toBe("live");
+    expect(windowing.phase({ ...match, status: "ended" }, at(105))).toBe("postgame");
     expect(windowing.phase({ ...match, status: "ended" }, at(136))).toBe("postgame");
     expect(windowing.phase({ ...match, status: "ended" }, at(165))).toBe("postgame");
     expect(windowing.phase({ ...match, status: "ended" }, at(166))).toBe("after");
@@ -29,6 +30,7 @@ describe("deterministic IPTV TV window", () => {
     expect(windowing.cardActionKey(match, at(-31))).toBe("card.matchCentre");
     expect(windowing.cardActionKey(match, at(-30))).toBe("card.watch");
     expect(windowing.cardActionKey({ ...match, status: "live" }, at(20))).toBe("card.watchNow");
+    expect(windowing.cardActionKey({ ...match, status: "ended" }, at(105))).toBe("card.watchCommentary");
     expect(windowing.cardActionKey({ ...match, status: "ended" }, at(150))).toBe("card.watchCommentary");
     expect(windowing.cardActionKey({ ...match, status: "ended" }, at(166))).toBe("card.summary");
   });
