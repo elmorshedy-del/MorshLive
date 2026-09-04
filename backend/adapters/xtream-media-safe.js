@@ -1,10 +1,10 @@
-import { createMediaToken, decodeMediaToken } from "./xtream.js";
 import {
   isHttpRedirectStatus,
   rewriteXtreamRedirect,
   shouldRetryXtreamMediaWithoutRange,
   xtreamMediaHeaders,
 } from "../../lib/xtream-client.js";
+import { createMediaToken, decodeMediaToken } from "./xtream.js";
 
 const MANIFEST_SNIFF_BYTES = 64;
 const MAX_MANIFEST_BYTES = 2 * 1024 * 1024;
@@ -49,9 +49,9 @@ async function fetchXtreamTarget(target, request, { includeRange = true } = {}) 
 async function fetchXtreamMedia(target, request) {
   const ranged = await fetchXtreamTarget(target, request, { includeRange: true });
   if (
-    request.method !== "HEAD"
-    && !ranged.ok
-    && shouldRetryXtreamMediaWithoutRange(ranged.status, Boolean(request.headers.get("Range")))
+    request.method !== "HEAD" &&
+    !ranged.ok &&
+    shouldRetryXtreamMediaWithoutRange(ranged.status, Boolean(request.headers.get("Range")))
   ) {
     const retry = await fetchXtreamTarget(target, request, { includeRange: false });
     if (retry.ok) return retry;
@@ -123,7 +123,11 @@ async function sniffBody(response) {
   }
 
   const prefix = concatChunks(chunks, total);
-  const looksLikeManifest = textDecoder.decode(prefix).replace(/^\uFEFF/, "").trimStart().startsWith("#EXTM3U");
+  const looksLikeManifest = textDecoder
+    .decode(prefix)
+    .replace(/^\uFEFF/, "")
+    .trimStart()
+    .startsWith("#EXTM3U");
 
   if (!looksLikeManifest) {
     const body = new ReadableStream({
@@ -162,7 +166,9 @@ async function sniffBody(response) {
     if (!next.value?.byteLength) continue;
     total += next.value.byteLength;
     if (total > MAX_MANIFEST_BYTES) {
-      try { await reader.cancel("manifest too large"); } catch {}
+      try {
+        await reader.cancel("manifest too large");
+      } catch {}
       throw new Error("HLS manifest exceeded safe size");
     }
     chunks.push(next.value);
