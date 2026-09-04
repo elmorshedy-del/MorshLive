@@ -86,14 +86,14 @@
 
   function installToolbar(channel, probe) {
     if (!toolbar) return;
-    const channelId = params.get("premiumChannelId") || params.get("ch") || channel?.name || "IPTV";
+    const channelId = params.get("premiumChannelId") || params.get("ch") || channel?.name || "القناة";
     const protocol = String(probe?.protocol || "").toUpperCase();
     toolbar.innerHTML = `
       <div class="watch-source-toggle iptv-premium-test-toggle" role="group" aria-label="${escapeHtml(t("watch.sourceTabsAria", "Watch source"))}">
         <span class="watch-source-toggle__kicker">${escapeHtml(t("watch.sourceToggle", "Source"))}</span>
         <div class="watch-source-toggle__track">
           <a class="watch-source-toggle__opt watch-source-toggle__opt--premium is-active" aria-selected="true" href="${escapeHtml(location.pathname + location.search)}">
-            <span>${escapeHtml(t("card.watchPremium", "IPTV"))}</span>
+            <span>${escapeHtml(t("card.watchPremium", "مشاهدة مميزة"))}</span>
             <small>${escapeHtml(channelId)}${protocol ? ` · ${escapeHtml(protocol)}` : ""}</small>
           </a>
           <a class="watch-source-toggle__opt watch-source-toggle__opt--original" aria-selected="false" href="${escapeHtml(originalHref())}">
@@ -109,17 +109,17 @@
   }
 
   function fillInfo(channel, probe) {
-    const name = channel?.name || params.get("name") || "IPTV";
-    const category = channel?.categoryName || params.get("category") || "IPTV";
-    const portalLabel = channel?.portalLabel || portal || "IPTV";
-    const protocol = String(probe?.protocol || "").toUpperCase() || "IPTV";
+    const name = channel?.name || params.get("name") || "القناة";
+    const category = channel?.categoryName || params.get("category") || "بث مباشر";
+    const portalLabel = channel?.portalLabel || portal || "KoraZero";
+    const protocol = String(probe?.protocol || "").toUpperCase() || "مباشر";
     const setText = (id, value) => {
       const node = document.getElementById(id);
       if (node) node.textContent = value;
     };
     setText("ch-name", name);
     const status = document.getElementById("ch-status");
-    if (status) status.innerHTML = '<span class="status-pill status-live">IPTV مباشر</span>';
+    if (status) status.innerHTML = '<span class="status-pill status-live">مباشر</span>';
     setText("now-sub", `${portalLabel} · ${category}`);
     setText("info-quality", probe?.codecs?.video ? String(probe.codecs.video).toUpperCase() : "Live");
     setText("info-group", category);
@@ -248,7 +248,7 @@
   }
 
   async function fetchChannelAndProbe() {
-    if (!portal || !stream) throw new Error("بيانات قناة IPTV غير مكتملة");
+    if (!portal || !stream) throw new Error("بيانات القناة غير مكتملة");
     const liveQuery = new URLSearchParams({ portal, stream, limit: "1" });
     const probeQuery = new URLSearchParams({ portal, stream });
     const [live, probe] = await Promise.all([
@@ -256,14 +256,14 @@
       getJson(`/api/xtream/probe?${probeQuery}`),
     ]);
     const channel = (live.portals || []).flatMap((block) => block.streams || [])[0];
-    if (!channel) throw new Error("قناة IPTV غير متاحة حالياً");
+    if (!channel) throw new Error("القناة غير متاحة حالياً");
     if (!probe?.playable) throw new Error("القناة لا ترسل فيديو صالحاً حالياً");
     return { channel, probe };
   }
 
   function showLoadError(error) {
     console.error("Xtream premium player failed", error);
-    showMessage(error?.message || String(error || "تعذر تشغيل قناة IPTV"), "error");
+    showMessage(error?.message || String(error || "تعذر تشغيل القناة"), "error");
   }
 
   async function load() {

@@ -273,7 +273,16 @@
     const targetKey = resolver().canonicalKey(match.broadcast?.channelId || match.channelId || match.channel || "");
     url.searchParams.set("match", String(match.id));
     url.searchParams.set("source", "xtream");
-    url.searchParams.set("portal", String(selected.portalId || "lab"));
+    // `catalog` (above) only ever comes from /api/iptv-lab/catalog, the isolated
+    // IPTV_LAB_JSON portal - so every selected.portalId here is that portal's own
+    // internal index ("p1"), not a real id in the production XTREAM_PORTALS_JSON
+    // namespace. /api/xtream/live only resolves the lab portal when `portal` is
+    // the literal sentinel "lab" (backend/routes/xtream.js routedPortalEnv);
+    // sending selected.portalId as-is silently queried an unrelated production
+    // portal with zero matching streams, so the watch page always reported the
+    // channel unavailable. Route through "lab" unconditionally - never through
+    // selected.portalId, which was always truthy and so never fell back to it.
+    url.searchParams.set("portal", "lab");
     url.searchParams.set("stream", String(selected.streamId));
     if (targetKey) url.searchParams.set("ch", targetKey);
     url.searchParams.delete("direct");
