@@ -10,8 +10,10 @@ on:
       - "scripts/broadcast-registry.js"
       - "scripts/commentators-lib.js"
       - "scripts/refresh-saudi-broadcasts.js"
+      - "scripts/saudi-tv-guide-lib.js"
       - "tests/saudi-broadcast.test.js"
       - "tests/saudi-broadcast-refresh.test.js"
+      - "tests/saudi-tv-guide.test.js"
       - ".github/workflows/update-saudi-broadcasts.yml"
 
 permissions:
@@ -33,14 +35,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-
-      - name: Inspect exact Saudi TV guide markup
-        shell: bash
-        run: |
-          set -euo pipefail
-          curl -fsSL -A 'Mozilla/5.0' 'https://www.livefootballtv.info/competition/liga-profesional-saudi' -o /tmp/saudi-tv.html
-          echo "guide_bytes=$(wc -c < /tmp/saudi-tv.html)"
-          grep -n -E -m 8 -B 3 -A 8 'Thmanyah [123] HD|thmanyah-[123]-hd' /tmp/saudi-tv.html || true
 
       - name: Refresh Saudi channel assignments
         run: node scripts/refresh-saudi-broadcasts.js
