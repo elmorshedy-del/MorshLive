@@ -99,7 +99,7 @@ describe("Saudi pre-match hydration", () => {
     ];
     const commentaryIndex = [
       {
-        key: "alittihad~alfateh",
+        key: "alfateh~alittihad",
         home: "Al Ittihad",
         away: "Al Fateh",
         commentators: [{ name: "جعفر الصليح", channel: "ثمانية 1" }],
