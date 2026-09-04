@@ -23,7 +23,7 @@
         "source": "almaghrebsport",
         "confidence": "exact"
       },
-      "locked": false
+      "locked": true
     },
     {
       "key": "realbetis~realmadrid",
@@ -43,7 +43,7 @@
         "source": "almaghrebsport",
         "confidence": "exact"
       },
-      "locked": false
+      "locked": true
     },
     {
       "key": "colombia~switzerland",
@@ -4264,5 +4264,5 @@
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-09-04T19:36:27.099Z"
+  "commentaryUpdatedAt": "2026-09-04T22:29:47.301Z"
 }
