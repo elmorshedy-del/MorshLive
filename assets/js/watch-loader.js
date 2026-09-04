@@ -7,5 +7,8 @@
     ? "assets/js/watch-xtream.js?v=20260904bindingfix1"
     : "assets/js/watch.js?v=20260904noreload1";
   window.__KZ_WATCH_LOADER = xtream ? "xtream" : "standard";
+  if (xtream) {
+    document.write('<script src="assets/js/mpegts-recovery-guard.js?v=20260904stablets1"><\/script>');
+  }
   document.write(`<script src="${src}"><\/script>`);
 })();
