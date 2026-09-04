@@ -1,14 +1,15 @@
 /* Make match-card bodies open their existing watch link.
  *
  * Normal cards follow the existing original watch action. If the premium IPTV
- * test toggle is present, the card body prefers that premium link. Nested
- * anchors, buttons, favorites, source toggles and detail panels keep their own
- * behavior and are never hijacked by the card-level click handler.
+ * test toggle is present, the card body prefers that premium link. Ended cards
+ * that intentionally render only the disabled "ended" label fall back to the
+ * exact match id already present on the card's favorite control. Nested links,
+ * buttons, favorites, source toggles and detail panels keep their own behavior.
  */
 (function () {
   "use strict";
 
-  const CARD_CLICK_BUILD = "20260903cardclick2";
+  const CARD_CLICK_BUILD = "20260904cardclick3";
   const CARD_SELECTOR = ".match-card";
   const PREMIUM_LINK_SELECTOR =
     '.iptv-premium-test-toggle .watch-source-toggle__opt--premium[data-iptv-premium-test="1"]';
@@ -44,8 +45,17 @@
     return visibleLink(card?.querySelector?.(ORIGINAL_LINK_SELECTOR));
   }
 
-  function preferredLink(card) {
-    return premiumLink(card) || originalLink(card);
+  function fallbackHref(card) {
+    const id = card?.querySelector?.("[data-fav-id]")?.dataset?.favId;
+    if (!id) return "";
+    const url = new URL("watch.html", location.href);
+    url.searchParams.set("ch", "live");
+    url.searchParams.set("match", id);
+    return url.href;
+  }
+
+  function preferredHref(card) {
+    return premiumLink(card)?.href || originalLink(card)?.href || fallbackHref(card);
   }
 
   function isModifiedPrimaryClick(event) {
@@ -65,9 +75,9 @@
     if (!(card instanceof Element) || card.dataset.matchCardClickable !== "1") return;
     if (shouldIgnoreTarget(target, card)) return;
 
-    const link = preferredLink(card);
-    if (!link?.href) return;
-    window.location.assign(link.href);
+    const href = preferredHref(card);
+    if (!href) return;
+    window.location.assign(href);
   }
 
   function bindCard(card) {
@@ -79,8 +89,8 @@
   function markCards(root) {
     const scope = root?.querySelectorAll ? root : document;
     for (const card of scope.querySelectorAll(CARD_SELECTOR)) {
-      const link = preferredLink(card);
-      if (!link?.href) {
+      const href = preferredHref(card);
+      if (!href) {
         card.classList.remove("match-card-clickable", "iptv-premium-card-clickable");
         delete card.dataset.matchCardClickable;
         delete card.dataset.iptvPremiumCard;
