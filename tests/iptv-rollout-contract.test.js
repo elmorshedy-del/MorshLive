@@ -123,19 +123,25 @@ describe("deterministic IPTV rollout contract", () => {
     expect(epgMatcher.resolveProgramMatch(match, [hit])).toMatchObject({
       program: { logicalKey: "bein-sports-1" },
     });
-    expect(epgMatcher.resolveProgramMatch(match, [
-      hit,
-      { ...hit, logicalKey: "bein-sports-2", representativeStreamId: "9002", streamIds: ["9002"] },
-    ])).toBeNull();
+    expect(
+      epgMatcher.resolveProgramMatch(match, [
+        hit,
+        { ...hit, logicalKey: "bein-sports-2", representativeStreamId: "9002", streamIds: ["9002"] },
+      ]),
+    ).toBeNull();
   });
 
   it("normalizes the retired Euro premium route before deterministic auto-binding", () => {
-    expect(legacyNormalizer.isLegacyPremiumHref(
-      "watch.html?ch=bein-sports-1&match=espn-eng.1-1&source=iptv-premium",
-    )).toBe(true);
-    expect(legacyNormalizer.isLegacyPremiumHref(
-      "watch.html?ch=bein-sports-1&match=espn-eng.1-1&source=xtream&stream=9001",
-    )).toBe(false);
+    expect(
+      legacyNormalizer.isLegacyPremiumHref(
+        "watch.html?ch=bein-sports-1&match=espn-eng.1-1&source=iptv-premium",
+      ),
+    ).toBe(true);
+    expect(
+      legacyNormalizer.isLegacyPremiumHref(
+        "watch.html?ch=bein-sports-1&match=espn-eng.1-1&source=xtream&stream=9001",
+      ),
+    ).toBe(false);
 
     const fakeWindow = {
       KZIptvWindow: { phase: () => "details" },
