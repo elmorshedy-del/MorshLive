@@ -1,5 +1,6 @@
 import { iptvLabWorkerEnv } from "../../lib/iptv-lab.js";
-import { proxyXtreamMedia, redirectXtreamMedia } from "../adapters/xtream.js";
+import { redirectXtreamMedia } from "../adapters/xtream.js";
+import { proxyXtreamMediaSafe } from "../adapters/xtream-media-safe.js";
 import { corsPreflightResponse, errorResponse, jsonResponse } from "../http/response.js";
 import {
   getDirectStreams,
@@ -43,7 +44,7 @@ export const xtreamRoute = {
     const media = url.pathname.match(MEDIA_RE);
     if (media) {
       try {
-        return await proxyXtreamMedia(request, env, media[1]);
+        return await proxyXtreamMediaSafe(request, env, media[1]);
       } catch (error) {
         const message = String(error.message || error);
         const status = /expired|invalid/i.test(message) ? 403 : 502;
