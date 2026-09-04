@@ -2,7 +2,7 @@
  * editorial, visual, content-architecture, and premium IPTV routing layers. */
 (function () {
   "use strict";
-  const stamp = "20260903premiumfix2";
+  const stamp = "20260903premiumfix3";
   const params = new URLSearchParams(location.search);
   const cleanPath = location.pathname.replace(/\/$/, "");
   const isolatedXtreamWatch =
