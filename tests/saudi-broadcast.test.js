@@ -92,7 +92,6 @@ describe("Saudi pre-match hydration", () => {
     expect(matched).toBe(1);
     expect(matches[0]).toMatchObject({
       channel: "ثمانية 3",
-      channelId: "bein-sports-1",
       broadcast: {
         provider: "thmanyah",
         channelId: "thmanyah-3",
@@ -100,6 +99,7 @@ describe("Saudi pre-match hydration", () => {
         confidence: "exact",
       },
     });
+    expect(matches[0].channelId).toBeUndefined();
     expect(commentaryIndex[0]).toMatchObject({
       channel: "ثمانية 3",
       commentators: [],
@@ -126,7 +126,6 @@ describe("Saudi pre-match hydration", () => {
     expect(hydrated).toBe(1);
     expect(matches[0]).toMatchObject({
       channel: "ثمانية",
-      channelId: "bein-sports-1",
       broadcast: {
         provider: "thmanyah",
         channelId: "thmanyah",
@@ -134,6 +133,7 @@ describe("Saudi pre-match hydration", () => {
         confidence: "network",
       },
     });
+    expect(matches[0].channelId).toBeUndefined();
     expect(commentaryIndex[0]).toMatchObject({
       channel: "ثمانية",
       broadcast: {
@@ -152,6 +152,7 @@ describe("Saudi pre-match hydration", () => {
         home: "Al Ittihad",
         away: "Al Fateh",
         channel: "ثمانية 1",
+        channelId: "bein-sports-1",
         broadcast: {
           provider: "thmanyah",
           channelId: "thmanyah-1",
@@ -167,6 +168,7 @@ describe("Saudi pre-match hydration", () => {
         away: "Al Fateh",
         commentators: [{ name: "جعفر الصليح", channel: "ثمانية 1" }],
         channel: "ثمانية 1",
+        channelId: "bein-sports-1",
         broadcast: matches[0].broadcast,
       },
     ];
@@ -176,5 +178,7 @@ describe("Saudi pre-match hydration", () => {
     expect(hydrated).toBe(0);
     expect(matches[0].channel).toBe("ثمانية 1");
     expect(matches[0].broadcast.channelId).toBe("thmanyah-1");
+    expect(matches[0].channelId).toBeUndefined();
+    expect(commentaryIndex[0].channelId).toBeUndefined();
   });
 });
