@@ -1,6 +1,5 @@
 import {
-  isHttpRedirectStatus,
-  rewriteXtreamRedirect,
+  followXtreamRedirectChain,
   shouldRetryXtreamMediaWithoutRange,
   xtreamClientHeaders,
   xtreamMediaHeaders,
@@ -280,14 +279,6 @@ export function inspectMpegTsCodecs(bytes) {
   };
 }
 
-async function followXtreamRedirect(url, buildInit) {
-  const first = await fetch(url, buildInit());
-  const location = first.headers.get("Location");
-  if (!isHttpRedirectStatus(first.status) || !location) return first;
-  const followUrl = rewriteXtreamRedirect(url, location);
-  return followUrl ? fetch(followUrl, buildInit()) : first;
-}
-
 async function fetchProbeBytes(url, accept, timeoutMs = 8000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -296,7 +287,7 @@ async function fetchProbeBytes(url, accept, timeoutMs = 8000) {
       Accept: accept,
       Range: "bytes=0-13159",
     });
-    const response = await followXtreamRedirect(url, () => {
+    const response = await followXtreamRedirectChain(url, () => {
       return {
         method: "GET",
         headers,
@@ -509,7 +500,7 @@ export async function redirectXtreamMedia(env, token) {
 
 async function fetchXtreamTarget(target, request, { includeRange = true } = {}) {
   const method = request.method === "HEAD" ? "HEAD" : "GET";
-  return followXtreamRedirect(target, () => {
+  return followXtreamRedirectChain(target, () => {
     return {
       method,
       headers: xtreamMediaHeaders(request, { includeRange }),
