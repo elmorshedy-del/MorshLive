@@ -51,6 +51,8 @@
   let hls = null;
   let mpegTsPlayer = null;
   let loadController = null;
+  let reconnectTimer = null;
+  let playbackGeneration = 0;
 
   function setError(message) {
     errorBox.hidden = !message;
@@ -297,7 +299,14 @@
     }
   }
 
+  function clearReconnect() {
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+  }
+
   function destroyPlayer() {
+    clearReconnect();
+    video.onended = null;
     if (hls) {
       try { hls.destroy(); } catch (_) { /* noop */ }
       hls = null;
@@ -333,25 +342,37 @@
   }
 
   function playChannel(channel) {
+    playbackGeneration += 1;
+    const generation = playbackGeneration;
     destroyPlayer();
     setPlayingUi(true);
     if (pipBtn) pipBtn.hidden = !canPictureInPicture();
     playerState.textContent = "جارٍ التحميل";
     let usingHls = false;
     let hlsRecoveries = 0;
+    let tsStartupFailures = 0;
+    let tsEverPlayed = false;
     const hevc = isHevcChannel(channel);
-    const onPlaying = () => { playerState.textContent = usingHls ? "يعمل · HLS" : "يعمل · TS"; };
+    const onPlaying = () => {
+      if (generation !== playbackGeneration) return;
+      if (!usingHls) tsEverPlayed = true;
+      playerState.textContent = usingHls ? "يعمل · HLS" : "يعمل · TS مباشر";
+    };
+    video.addEventListener("playing", onPlaying);
     const onError = () => {
+      if (generation !== playbackGeneration) return;
       playerState.textContent = hevc
         ? "HEVC غير مدعوم هنا · استخدم BEIN SD"
         : "تعذر التشغيل";
     };
-    video.addEventListener("playing", onPlaying, { once: true });
     const hlsUrl = playbackUrl(channel.playbackUrl);
     const tsUrl = playbackUrl(channel.tsPlaybackUrl);
 
     const playHls = () => {
+      if (generation !== playbackGeneration) return;
+      clearReconnect();
       usingHls = true;
+      video.onended = null;
       releaseTsPlayer();
       video.pause();
       video.removeAttribute("src");
@@ -389,21 +410,62 @@
       if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
     };
 
-    if (!hevc && channel.tsPlaybackUrl && window.mpegts?.isSupported()) {
-      playerState.textContent = "جارٍ تجربة TS";
+    const playTs = () => {
+      if (generation !== playbackGeneration) return;
+      clearReconnect();
+      usingHls = false;
+      releaseTsPlayer();
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+      playerState.textContent = tsEverPlayed ? "إعادة وصل TS المباشر…" : "جارٍ تجربة TS";
+
+      const scheduleReconnect = (type, detail) => {
+        if (generation !== playbackGeneration || reconnectTimer) return;
+        releaseTsPlayer();
+        if (!tsEverPlayed) tsStartupFailures += 1;
+        if (!tsEverPlayed && tsStartupFailures > 3) {
+          playerState.textContent = "TS لم يبدأ · تجربة HLS";
+          reconnectTimer = setTimeout(() => {
+            reconnectTimer = null;
+            playHls();
+          }, 900);
+          return;
+        }
+        const delay = tsEverPlayed ? 700 : Math.min(800 * tsStartupFailures, 2400);
+        playerState.textContent = tsEverPlayed
+          ? "انقطع اتصال TS مؤقتاً · إعادة الوصل…"
+          : "تعذر بدء TS · إعادة المحاولة…";
+        console.warn("IPTV Lab TS reconnect", type || "ended", detail || "");
+        reconnectTimer = setTimeout(() => {
+          reconnectTimer = null;
+          playTs();
+        }, delay);
+      };
+
       mpegTsPlayer = window.mpegts.createPlayer(
         { type: "mpegts", isLive: true, url: tsUrl },
-        { enableWorker: false, enableStashBuffer: false, stashInitialSize: 128 },
+        {
+          enableWorker: false,
+          enableWorkerForMSE: false,
+          enableStashBuffer: true,
+          stashInitialSize: 384 * 1024,
+          liveSync: true,
+        },
       );
       mpegTsPlayer.attachMediaElement(video);
-      mpegTsPlayer.on(window.mpegts.Events.ERROR, () => {
-        releaseTsPlayer();
-        playerState.textContent = "TS توقف · انتظار تحرير الاتصال";
-        setTimeout(playHls, 500);
+      mpegTsPlayer.on(window.mpegts.Events.ERROR, (type, detail, info) => {
+        console.warn("IPTV Lab TS playback error", type, detail, info || "");
+        scheduleReconnect(type, detail);
       });
+      video.onended = () => scheduleReconnect("ended", "media element ended");
       mpegTsPlayer.load();
       const attempt = mpegTsPlayer.play();
       if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
+    };
+
+    if (!hevc && channel.tsPlaybackUrl && window.mpegts?.isSupported()) {
+      playTs();
       return;
     }
     playHls();
