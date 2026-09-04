@@ -1,8 +1,13 @@
 /* Shared bootstrap: preserve the original translation engine, then apply the
- * editorial, visual, and content-architecture layers across every page. */
+ * editorial, visual, content-architecture, and deterministic IPTV layers. */
 (function () {
   "use strict";
-  const stamp = "20260904restore1";
+  const stamp = "20260904unifiedfix1";
+  const params = new URLSearchParams(location.search);
+  const cleanPath = location.pathname.replace(/\/$/, "");
+  const isolatedXtreamWatch =
+    (cleanPath === "/watch.html" || cleanPath === "/watch")
+    && params.get("source") === "xtream";
 
   // Install the match-time formatter before data.js loads. Every visitor sees
   // their own browser/device-local kickoff time plus a constant Makkah reference.
@@ -59,6 +64,17 @@
     document.write(`<script src="/assets/js/watch-arabic-editorial.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/english-editorial.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/match-stats-editorial.js?v=${stamp}"><\/script>`);
+    if (!isolatedXtreamWatch) {
+      document.write(`<script src="/assets/js/iptv-channel-resolver.js?v=${stamp}"><\/script>`);
+      document.write(`<script src="/assets/js/iptv-window.js?v=${stamp}"><\/script>`);
+      document.write(`<script src="/assets/js/iptv-epg-match-core.js?v=${stamp}"><\/script>`);
+      document.write(`<script src="/assets/js/iptv-mutation-guard.js?v=${stamp}"><\/script>`);
+      document.write(`<script src="/assets/js/iptv-legacy-toggle-normalizer.js?v=${stamp}"><\/script>`);
+      document.write(`<script src="/assets/js/iptv-auto.js?v=${stamp}"><\/script>`);
+      document.write(`<script src="/assets/js/iptv-stage-copy.js?v=${stamp}"><\/script>`);
+      document.write(`<script src="/assets/js/iptv-premium-card-click.js?v=${stamp}"><\/script>`);
+      document.write(`<script>window.__KZ_RELEASE_IPTV_MUTATION_GUARD?.();<\/script>`);
+    }
   }
 
   if (document.readyState === "loading") {
@@ -94,4 +110,24 @@
       });
     });
   });
+
+  if (!isolatedXtreamWatch) {
+    addScript(`/assets/js/iptv-channel-resolver.js?v=${stamp}`, () => {
+      addScript(`/assets/js/iptv-window.js?v=${stamp}`, () => {
+        addScript(`/assets/js/iptv-epg-match-core.js?v=${stamp}`, () => {
+          addScript(`/assets/js/iptv-mutation-guard.js?v=${stamp}`, () => {
+            addScript(`/assets/js/iptv-legacy-toggle-normalizer.js?v=${stamp}`, () => {
+              addScript(`/assets/js/iptv-auto.js?v=${stamp}`, () => {
+                addScript(`/assets/js/iptv-stage-copy.js?v=${stamp}`, () => {
+                  addScript(`/assets/js/iptv-premium-card-click.js?v=${stamp}`, () => {
+                    window.__KZ_RELEASE_IPTV_MUTATION_GUARD?.();
+                  });
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+  }
 })();
