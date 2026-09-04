@@ -2,7 +2,7 @@
  * editorial, visual, content-architecture, and deterministic IPTV layers. */
 (function () {
   "use strict";
-  const stamp = "20260904unifiedfix2";
+  const stamp = "20260904freezefix1";
   const params = new URLSearchParams(location.search);
   const cleanPath = location.pathname.replace(/\/$/, "");
   const isolatedXtreamWatch =
