@@ -1,9 +1,10 @@
 /* Shared deterministic TV window for match-channel playback.
  *
  * TV becomes eligible 30 minutes before kickoff, stays eligible through the
- * normal 135-minute football window, then remains available for a 30-minute
- * post-match studio window. Replay/highlight retention is intentionally
- * separate and remains owned by data.js.
+ * normal 135-minute football window, then remains available until the
+ * conservative kickoff+165 cutoff. If the provider confirms full time earlier,
+ * the UI switches to post-match wording immediately while preserving that same
+ * safe availability cutoff. Replay/highlight retention remains owned by data.js.
  */
 (function (root, factory) {
   const api = factory();
@@ -31,9 +32,14 @@
 
   function phase(match, now = Date.now()) {
     const elapsed = minutesFromKickoff(match, now);
-    if (!Number.isFinite(elapsed)) return match?.status === "live" ? "live" : "details";
+    if (!Number.isFinite(elapsed)) {
+      if (match?.status === "live") return "live";
+      if (match?.status === "ended") return "after";
+      return "details";
+    }
     if (elapsed < -PRE_MATCH_MINUTES) return "details";
     if (elapsed < 0) return "pregame";
+    if (match?.status === "ended") return elapsed <= TV_END_MINUTES ? "postgame" : "after";
     if (match?.status === "live" || elapsed <= MATCH_WINDOW_MINUTES) return "live";
     if (elapsed <= TV_END_MINUTES) return "postgame";
     return "after";
