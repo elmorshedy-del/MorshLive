@@ -352,9 +352,9 @@ export async function getXtreamLive(env, searchParams) {
         ]);
         const apiRows = Array.isArray(streamRows) ? streamRows : [];
         const needExactSources =
-          Boolean(category || streamId)
-          || !apiRows.length
-          || (directRequested && allowedDirectPortals.has(portal.id) && Boolean(streamId));
+          Boolean(category || streamId) ||
+          !apiRows.length ||
+          (directRequested && allowedDirectPortals.has(portal.id) && Boolean(streamId));
         const sources = needExactSources
           ? await fetchXtreamSourceMaps(portal)
           : { hlsEntries: [], tsEntries: [], hls: new Map(), ts: new Map() };
