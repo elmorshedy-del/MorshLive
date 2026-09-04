@@ -1,8 +1,5 @@
 const { describe, expect, it } = require("vitest");
-const {
-  isSaudiProLeagueMatch,
-  resolveBroadcastChannel,
-} = require("../scripts/broadcast-registry");
+const { isSaudiProLeagueMatch, resolveBroadcastChannel } = require("../scripts/broadcast-registry");
 const {
   attachCommentators,
   ensureSaudiBroadcastFallback,
