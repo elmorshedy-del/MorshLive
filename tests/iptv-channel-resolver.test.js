@@ -11,6 +11,13 @@ describe("canonical IPTV channel map", () => {
     expect(resolver.canonicalKey("BEIN MAX 1")).toBe("bein-max-1");
   });
 
+  it("normalizes numbered Thmanyah identities in English and Arabic", () => {
+    expect(resolver.canonicalKey("thmanyah-2")).toBe("thmanyah-2");
+    expect(resolver.canonicalKey("Thmanyah 2 HD")).toBe("thmanyah-2");
+    expect(resolver.canonicalKey("Thmanya 1")).toBe("thmanyah-1");
+    expect(resolver.canonicalKey("ثمانية.٣")).toBe("thmanyah-3");
+  });
+
   it("maps the provider's current beIN Sports 2 naming to one canonical key", () => {
     const channels = [
       {
@@ -51,10 +58,34 @@ describe("canonical IPTV channel map", () => {
       channels,
     );
 
-    // The canonical key stays stable while the preferred provider variant and
-    // its current numeric stream id remain catalog data.
     expect(selected.streamId).toBe(2454);
     expect(selected.resolver.channelId).toBe("bein-sports-2");
+  });
+
+  it("resolves Saudi broadcast.channelId to the matching Thmanyah catalog row", () => {
+    const selected = resolver.resolveChannel(
+      {
+        channel: "ثمانية 2",
+        broadcast: { provider: "thmanyah", channelId: "thmanyah-2" },
+      },
+      [
+        { streamId: 7101, name: "ثمانية 1 HD", categoryName: "AR SPORTS" },
+        { streamId: 7102, name: "Thmanyah 2 HD", categoryName: "AR SPORTS" },
+        { streamId: 7103, name: "ثمانية.٣", categoryName: "AR SPORTS" },
+      ],
+    );
+
+    expect(selected.streamId).toBe(7102);
+    expect(selected.resolver.channelId).toBe("thmanyah-2");
+    expect(selected.resolver.method).toBe("broadcaster");
+  });
+
+  it("does not guess a numbered Thmanyah channel from generic network metadata", () => {
+    const selected = resolver.resolveChannel(
+      { channel: "ثمانية", broadcast: { provider: "thmanyah", channelId: "thmanyah" } },
+      [{ streamId: 7101, name: "ثمانية 1 HD", categoryName: "AR SPORTS" }],
+    );
+    expect(selected).toBeNull();
   });
 
   it("prefers stable provider metadata when the provider supplies it", () => {
@@ -112,5 +143,6 @@ describe("canonical IPTV channel map", () => {
 
   it("uses the canonical card channel id as the binding key", () => {
     expect(resolver.bindingKey({ channelId: "bein-max-3" })).toBe("channel:bein-max-3");
+    expect(resolver.bindingKey({ broadcast: { channelId: "thmanyah-3" } })).toBe("channel:thmanyah-3");
   });
 });
