@@ -1,0 +1,1051 @@
+{
+  "_comment": "Real slice of the live Xtream catalog, captured 2026-09-05. Includes the decoys the resolver must reject: English/French/Turkish feeds, Xtra, HEVC and 4K variants.",
+  "capturedAt": "2026-09-05",
+  "streams": [
+    {
+      "streamId": "4482",
+      "name": "BEIN BOX OFFICE 2 [TR]",
+      "categoryName": "Turkish"
+    },
+    {
+      "streamId": "4163",
+      "name": "BEIN SERIES COMEDY HD [TR]",
+      "categoryName": "Turkish"
+    },
+    {
+      "streamId": "4153",
+      "name": "BEIN SERIES VICE [TR]",
+      "categoryName": "Turkish"
+    },
+    {
+      "streamId": "3995",
+      "name": "BeIN Movies Premiere [TR]",
+      "categoryName": "Turkish"
+    },
+    {
+      "streamId": "4466",
+      "name": "BeIN SPORTS 1 HD [TR]",
+      "categoryName": "Turkish"
+    },
+    {
+      "streamId": "4463",
+      "name": "BeIN SPORTS 2 HD [TR]",
+      "categoryName": "Turkish"
+    },
+    {
+      "streamId": "31047",
+      "name": "BeIN_SPORTS_1_HD [TR]",
+      "categoryName": "Turkish"
+    },
+    {
+      "streamId": "31048",
+      "name": "BeIN_SPORTS_2_HD [TR]",
+      "categoryName": "Turkish"
+    },
+    {
+      "streamId": "31049",
+      "name": "BeIN_SPORTS_3_HD [TR]",
+      "categoryName": "Turkish"
+    },
+    {
+      "streamId": "31050",
+      "name": "BeIN_SPORTS_4_HD [TR]",
+      "categoryName": "Turkish"
+    },
+    {
+      "streamId": "4002",
+      "name": "beIN Movies Stars [TR]",
+      "categoryName": "Turkish"
+    },
+    {
+      "streamId": "65341",
+      "name": "beIN Sports Haber [TR]",
+      "categoryName": "Turkish"
+    },
+    {
+      "streamId": "7053",
+      "name": "beIN_Sport_1_H265",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "9384",
+      "name": "beIN_Sport_2_H265",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "9383",
+      "name": "beIN_Sport_3_H265  ",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "7029",
+      "name": "beIN_Sport_4_H265",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "7047",
+      "name": "beIN_Sport_5_H265",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "7048",
+      "name": "beIN_Sport_6_H265",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "7049",
+      "name": "beIN_Sport_7_H265",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "7050",
+      "name": "beIN_Sport_8_H265",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "7051",
+      "name": "beIN_Sport_9_H265",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "22997",
+      "name": "beIN_Sport_H265 1 8M",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "22998",
+      "name": "beIN_Sport_H265 2 8M",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "22999",
+      "name": "beIN_Sport_H265 3 8M",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "22990",
+      "name": "beIN_Sport_H265 4 8M",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "22991",
+      "name": "beIN_Sport_H265 5 8M",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "22992",
+      "name": "beIN_Sport_H265 6 8M",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "22993",
+      "name": "beIN_Sport_H265 7 8M",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "22994",
+      "name": "beIN_Sport_H265 8 8M",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "22995",
+      "name": "beIN_Sport_H265 9 8M",
+      "categoryName": "beIN H-265 -8M"
+    },
+    {
+      "streamId": "40811",
+      "name": "beIN_Max_1_H265",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "3607",
+      "name": "beIN_Max_1_HD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40807",
+      "name": "beIN_Max_1_HDD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "5952",
+      "name": "beIN_Max_1_Low",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "5467",
+      "name": "beIN_Max_1_SD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "83077",
+      "name": "beIN_Max_1_Ultra_4K",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40801",
+      "name": "beIN_Max_1_VEGA",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40812",
+      "name": "beIN_Max_2_H265",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "3608",
+      "name": "beIN_Max_2_HD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40808",
+      "name": "beIN_Max_2_HDD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "5953",
+      "name": "beIN_Max_2_Low",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "5468",
+      "name": "beIN_Max_2_SD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "83078",
+      "name": "beIN_Max_2_Ultra_4K",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40802",
+      "name": "beIN_Max_2_VEGA",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "285156",
+      "name": "beIN_Max_3_H265",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "11213",
+      "name": "beIN_Max_3_HD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40809",
+      "name": "beIN_Max_3_HDD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40805",
+      "name": "beIN_Max_3_Low",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40815",
+      "name": "beIN_Max_3_SD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "285158",
+      "name": "beIN_Max_3_Ultra_4K",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40803",
+      "name": "beIN_Max_3_VEGA",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "285157",
+      "name": "beIN_Max_4_H265",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "11214",
+      "name": "beIN_Max_4_HD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40810",
+      "name": "beIN_Max_4_HDD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40806",
+      "name": "beIN_Max_4_Low",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40816",
+      "name": "beIN_Max_4_SD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "285159",
+      "name": "beIN_Max_4_Ultra_4K",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "40804",
+      "name": "beIN_Max_4_VEGA",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "284748",
+      "name": "beIN_Max_5_HD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "284746",
+      "name": "beIN_Max_5_HDD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "41079",
+      "name": "beIN_Max_5_Low",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "41081",
+      "name": "beIN_Max_5_SD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "41077",
+      "name": "beIN_Max_5_VEGA",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "284749",
+      "name": "beIN_Max_6_HD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "284747",
+      "name": "beIN_Max_6_HDD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "41080",
+      "name": "beIN_Max_6_Low",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "41082",
+      "name": "beIN_Max_6_SD",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "41078",
+      "name": "beIN_Max_6_VEGA",
+      "categoryName": "beIN MAX"
+    },
+    {
+      "streamId": "59331",
+      "name": "beIN_SPORTS1_4K",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "59332",
+      "name": "beIN_SPORTS2_4K",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "59334",
+      "name": "beIN_SPORTS3_4K",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "59337",
+      "name": "beIN_SPORTS4_4K",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "59338",
+      "name": "beIN_SPORTS5_4K",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "59339",
+      "name": "beIN_SPORTS6_4K",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "59341",
+      "name": "beIN_SPORTS7_4K",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "59343",
+      "name": "beIN_SPORTS8_4K",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "59344",
+      "name": "beIN_SPORTS9_4K",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "74006",
+      "name": "beIN_SPORTS_1 FHD",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "74007",
+      "name": "beIN_SPORTS_2 FHD",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "74008",
+      "name": "beIN_SPORTS_3 FHD",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "74009",
+      "name": "beIN_SPORTS_4 FHD",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "74010",
+      "name": "beIN_SPORTS_5 FHD",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "74011",
+      "name": "beIN_SPORTS_6 FHD",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "74012",
+      "name": "beIN_SPORTS_7 FHD",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "74013",
+      "name": "beIN_SPORTS_8 FHD",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "74014",
+      "name": "beIN_SPORTS_9 FHD",
+      "categoryName": "beIN SPORTS 4K"
+    },
+    {
+      "streamId": "3270",
+      "name": "beIN_SPORTS_1English_1080p",
+      "categoryName": "beIN SPORTS English"
+    },
+    {
+      "streamId": "3614",
+      "name": "beIN_SPORTS_1English_HD720",
+      "categoryName": "beIN SPORTS English"
+    },
+    {
+      "streamId": "26",
+      "name": "beIN_SPORTS_1English_Low",
+      "categoryName": "beIN SPORTS English"
+    },
+    {
+      "streamId": "3843",
+      "name": "beIN_SPORTS_1English_VEGA",
+      "categoryName": "beIN SPORTS English"
+    },
+    {
+      "streamId": "3248",
+      "name": "beIN_SPORTS_1French_1080p",
+      "categoryName": "beIN SPORTS English"
+    },
+    {
+      "streamId": "32901",
+      "name": "beIN_SPORTS_1French_HD720",
+      "categoryName": "beIN SPORTS English"
+    },
+    {
+      "streamId": "12319",
+      "name": "beIN_SPORTS_2English_1080p",
+      "categoryName": "beIN SPORTS English"
+    },
+    {
+      "streamId": "32899",
+      "name": "beIN_SPORTS_2English_HD720",
+      "categoryName": "beIN SPORTS English"
+    },
+    {
+      "streamId": "3250",
+      "name": "beIN_SPORTS_2French_1080p",
+      "categoryName": "beIN SPORTS English"
+    },
+    {
+      "streamId": "32902",
+      "name": "beIN_SPORTS_2French_HD720",
+      "categoryName": "beIN SPORTS English"
+    },
+    {
+      "streamId": "24179",
+      "name": "beIN_1_H265_HQ",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "19331",
+      "name": "beIN_1_H265_SD",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "24180",
+      "name": "beIN_2_H265_HQ",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "19332",
+      "name": "beIN_2_H265_SD",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "24181",
+      "name": "beIN_3_H265_HQ",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "19333",
+      "name": "beIN_3_H265_SD",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "24172",
+      "name": "beIN_4_H265_HQ",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "19324",
+      "name": "beIN_4_H265_SD",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "24173",
+      "name": "beIN_5_H265_HQ",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "19325",
+      "name": "beIN_5_H265_SD",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "24174",
+      "name": "beIN_6_H265_HQ",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "19326",
+      "name": "beIN_6_H265_SD",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "24175",
+      "name": "beIN_7_H265_HQ",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "19327",
+      "name": "beIN_7_H265_SD",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "24176",
+      "name": "beIN_8_H265_HQ",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "19328",
+      "name": "beIN_8_H265_SD",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "24177",
+      "name": "beIN_9_H265_HQ",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "19329",
+      "name": "beIN_9_H265_SD",
+      "categoryName": "beIN SPORTS H265 SD"
+    },
+    {
+      "streamId": "2449",
+      "name": "beIN_1HD_1080p",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "3177",
+      "name": "beIN_1_HD720",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "2454",
+      "name": "beIN_2HD_1080p",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "3178",
+      "name": "beIN_2_HD720",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "2455",
+      "name": "beIN_3HD_1080p",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "3179",
+      "name": "beIN_3_HD720",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "2442",
+      "name": "beIN_4HD_1080p",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "3170",
+      "name": "beIN_4_HD720",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "2443",
+      "name": "beIN_5HD_1080p",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "3171",
+      "name": "beIN_5_HD720",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "2444",
+      "name": "beIN_6HD_1080p",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "3172",
+      "name": "beIN_6_HD720",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "2445",
+      "name": "beIN_7HD_1080p",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "3173",
+      "name": "beIN_7_HD720",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "2446",
+      "name": "beIN_8HD_1080p",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "3174",
+      "name": "beIN_8_HD720",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "2447",
+      "name": "beIN_9HD_1080p",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "3175",
+      "name": "beIN_9_HD720",
+      "categoryName": "beIN SPORTS HD"
+    },
+    {
+      "streamId": "4905",
+      "name": "beIN_1_512K",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "22",
+      "name": "beIN_1_Low",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "4906",
+      "name": "beIN_2_512K",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "23",
+      "name": "beIN_2_Low",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "4907",
+      "name": "beIN_3_512K",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "24",
+      "name": "beIN_3_Low",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "4898",
+      "name": "beIN_4_512K",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "16",
+      "name": "beIN_4_Low",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "4899",
+      "name": "beIN_5_512K",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "17",
+      "name": "beIN_5_Low",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "4900",
+      "name": "beIN_6_512K",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "18",
+      "name": "beIN_6_Low",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "4901",
+      "name": "beIN_7_512K",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "2391",
+      "name": "beIN_7_Low",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "4902",
+      "name": "beIN_8_512K",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "19",
+      "name": "beIN_8_Low",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "4903",
+      "name": "beIN_9_512K",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "20",
+      "name": "beIN_9_Low",
+      "categoryName": "beIN SPORTS Low"
+    },
+    {
+      "streamId": "46028",
+      "name": "beIN_SPORTS_1_1080FHD",
+      "categoryName": "beIN SPORTS Ultra 4k"
+    },
+    {
+      "streamId": "46029",
+      "name": "beIN_SPORTS_2_1080FHD",
+      "categoryName": "beIN SPORTS Ultra 4k"
+    },
+    {
+      "streamId": "46030",
+      "name": "beIN_SPORTS_3_1080FHD",
+      "categoryName": "beIN SPORTS Ultra 4k"
+    },
+    {
+      "streamId": "46031",
+      "name": "beIN_SPORTS_4_1080FHD",
+      "categoryName": "beIN SPORTS Ultra 4k"
+    },
+    {
+      "streamId": "46032",
+      "name": "beIN_SPORTS_5_1080FHD",
+      "categoryName": "beIN SPORTS Ultra 4k"
+    },
+    {
+      "streamId": "46033",
+      "name": "beIN_SPORTS_6_1080FHD",
+      "categoryName": "beIN SPORTS Ultra 4k"
+    },
+    {
+      "streamId": "46034",
+      "name": "beIN_SPORTS_7_1080FHD",
+      "categoryName": "beIN SPORTS Ultra 4k"
+    },
+    {
+      "streamId": "46035",
+      "name": "beIN_SPORTS_8_1080FHD",
+      "categoryName": "beIN SPORTS Ultra 4k"
+    },
+    {
+      "streamId": "46036",
+      "name": "beIN_SPORTS_9_1080FHD",
+      "categoryName": "beIN SPORTS Ultra 4k"
+    },
+    {
+      "streamId": "2463",
+      "name": "beIN_1SD",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "3645",
+      "name": "beIN_1_VEGA",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "2464",
+      "name": "beIN_2SD",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "3644",
+      "name": "beIN_2_VEGA",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "2465",
+      "name": "beIN_3SD",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "3653",
+      "name": "beIN_3_VEGA",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "2456",
+      "name": "beIN_4SD",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "3652",
+      "name": "beIN_4_VEGA",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "2457",
+      "name": "beIN_5SD",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "3651",
+      "name": "beIN_5_VEGA",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "2458",
+      "name": "beIN_6SD",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "3650",
+      "name": "beIN_6_VEGA",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "2459",
+      "name": "beIN_7SD",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "3649",
+      "name": "beIN_7_VEGA",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "2460",
+      "name": "beIN_8SD",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "3648",
+      "name": "beIN_8_VEGA",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "2461",
+      "name": "beIN_9SD",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "3647",
+      "name": "beIN_9_VEGA",
+      "categoryName": "beIN SPORTS VEGA"
+    },
+    {
+      "streamId": "118836",
+      "name": "beIN_SPORTS AFC HD",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "118835",
+      "name": "beIN_SPORTS AFC SD",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "57162",
+      "name": "beIN_SPORTS AFC1 H265",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "57165",
+      "name": "beIN_SPORTS AFC1 HD",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "57169",
+      "name": "beIN_SPORTS AFC1 SD",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "57163",
+      "name": "beIN_SPORTS AFC2 H265",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "57166",
+      "name": "beIN_SPORTS AFC2 HD",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "57170",
+      "name": "beIN_SPORTS AFC2 SD",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "57164",
+      "name": "beIN_SPORTS AFC3 H265",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "57167",
+      "name": "beIN_SPORTS AFC3 HD",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "57171",
+      "name": "beIN_SPORTS AFC3 SD",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "118829",
+      "name": "beIN_SPORTS AFC4 H265",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "118830",
+      "name": "beIN_SPORTS AFC4 HD",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "118831",
+      "name": "beIN_SPORTS AFC4 SD",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "118832",
+      "name": "beIN_SPORTS AFC5 H265",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "118833",
+      "name": "beIN_SPORTS AFC5 HD",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "118834",
+      "name": "beIN_SPORTS AFC5 SD",
+      "categoryName": "beIN Sport Afc"
+    },
+    {
+      "streamId": "3246",
+      "name": "beIN_SPORTS_1Xtra_1080p",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "3613",
+      "name": "beIN_SPORTS_1Xtra_HD720",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "25",
+      "name": "beIN_SPORTS_1Xtra_Low",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "3844",
+      "name": "beIN_SPORTS_1Xtra_VEGA",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "40532",
+      "name": "beIN_SPORTS_2Xtra_1080p",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "40531",
+      "name": "beIN_SPORTS_2Xtra_HD720",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "89760",
+      "name": "beIN_SPORTS_2Xtra_Low",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "31153",
+      "name": "beIN_SPORTS_2Xtra_VEGA",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "214704",
+      "name": "beIN_SPORTS_3Xtra_1080",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "115382",
+      "name": "beIN_SPORTS_3Xtra_HD720",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "115381",
+      "name": "beIN_SPORTS_3Xtra_Low",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "115383",
+      "name": "beIN_SPORTS_3Xtra_VEGA",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "214705",
+      "name": "beIN_SPORTS_4Xtra_1080",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "214711",
+      "name": "beIN_SPORTS_4Xtra_HD720",
+      "categoryName": "beIN XTRA-اكسترا"
+    },
+    {
+      "streamId": "214698",
+      "name": "beIN_SPORTS_4Xtra_Low",
+      "categoryName": "beIN XTRA-اكسترا"
+    }
+  ]
+}
