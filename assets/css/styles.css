@@ -1667,6 +1667,43 @@ img { max-width: 100%; display: block; }
 .channel-btn.srv-down { opacity: .45; }
 .channel-btn .srv-state { align-self: flex-end; margin-top: 2px; }
 
+/* Channel switcher — the viewer's escape hatch when the bound channel is
+   showing a different match. Deliberately reuses .channel-btn's shape so it
+   reads as the same control family as the rest of the watch page. */
+.channel-switch {
+  margin: 12px 0 0; padding: 14px 16px; border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.02);
+}
+.channel-switch-head { margin-bottom: 10px; }
+.channel-switch-title { margin: 0; font-size: .95rem; font-weight: 800; }
+.channel-switch-hint { margin: 4px 0 0; color: var(--muted); font-size: .8rem; line-height: 1.6; }
+.channel-switch-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.channel-switch-group { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.channel-switch-group-label {
+  font-size: .72rem; font-weight: 800; color: var(--muted);
+  letter-spacing: .04em; align-self: center;
+}
+/* Numbers only: the group label already says beIN / SSC, so repeating the
+   network on every button is noise at a glance. */
+.channel-switch-btn {
+  display: inline-flex; flex-direction: column; align-items: center; justify-content: center;
+  min-width: 54px; min-height: 44px; padding: 6px 12px; gap: 1px;
+  border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface-2); color: var(--text);
+  font-size: 1rem; font-weight: 800; line-height: 1.1;
+  cursor: pointer; transition: border-color .15s, background .15s;
+}
+.channel-switch-btn:hover { border-color: var(--brand); }
+.channel-switch-btn.active { border-color: var(--accent); background: rgba(24,226,154,.12); }
+.channel-switch-btn .switch-btn-tag {
+  font-size: .6rem; font-weight: 800; color: var(--gold); letter-spacing: .02em;
+}
+@media (max-width: 640px) {
+  .channel-switch { padding: 12px; }
+  .channel-switch-row { gap: 6px; }
+  .channel-switch-btn { min-width: 48px; font-size: .95rem; }
+}
+
 .server-row { display: block; margin-top: 0; }
 .server-groups { display: flex; flex-direction: column; gap: 10px; }
 .server-group { display: flex; flex-direction: column; gap: 5px; }
@@ -3351,7 +3388,21 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
   display: flex; flex-direction: column; align-items: stretch; gap: 10px;
   flex: 1 1 100%;
 }
-.page-watch .watch-topline__title { margin: 0; font-size: clamp(1rem, 2.5vw, 1.25rem); font-weight: 800; }
+.page-watch .watch-topline__title {
+  margin: 0; font-size: clamp(1rem, 2.5vw, 1.25rem); font-weight: 800;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+}
+/* "بث مباشر" is part of the H1 in the markup, not injected, so it is in the
+   document Google fetches even before any script runs. */
+.watch-live-word {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: .72em; font-weight: 800; letter-spacing: .01em;
+  color: var(--accent);
+}
+.watch-live-word::before {
+  content: ""; width: 7px; height: 7px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 0 3px rgba(24,226,154,.2);
+}
 .page-watch .player-toolbar { margin: 0; width: 100%; }
 .page-watch .watch-source-toggle { max-width: 560px; }
 .page-watch .no-ads-badge--inline { margin-bottom: 0; font-size: .78rem; padding: 5px 12px; }
@@ -3590,3 +3641,8 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 @media (max-width: 720px) {
   .archive-strip-inner, .season-notice-inner { display: grid; grid-template-columns: minmax(0, 1fr); }
 }
+
+/* A contested binding is a likely-wrong channel, so the switcher stops being a
+   quiet convenience and becomes the thing to look at. */
+.channel-switch--warn { border-color: rgba(255,200,87,.4); background: rgba(255,200,87,.05); }
+.channel-switch--warn .channel-switch-hint { color: var(--gold); }
