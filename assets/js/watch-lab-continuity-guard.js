@@ -1,21 +1,22 @@
-/* CHATGPT-STAMP 2026-09-05T08:54-04:00 — WATCH-LAB-CONTINUITY-2
+/* CHATGPT-STAMP 2026-09-05T09:21-04:00 — WATCH-LAB-CONTINUITY-3
  *
- * KoraZero watch-page integration only. DO NOT move this into IPTV Lab.
- * The Lab is the known-good reference and remains untouched.
+ * KoraZero watch-page integration only. IPTV Lab is the known-good reference
+ * and is intentionally untouched.
  *
- * Root problem on the surfaced watch page: the Lab player has explicit MPEG-TS
- * continuity handling (ERROR + ended => reconnect). The standard KoraZero watch
- * mount did not. When a live TS response ended or the buffer drained without a
- * hard browser error, the video could simply stop even though the same channel
- * kept running in IPTV Lab.
+ * Why this guard exists:
+ * KoraZero mounts the Lab-resolved MPEG-TS stream inside watch.js. The Lab page
+ * has continuity/recovery behavior, but the surfaced watch page previously
+ * allowed a live TS response to drain/finish and then remain stopped. This
+ * wrapper preserves the same signed TS URL and KZ_LIVE_TS_CONFIG while keeping
+ * one stable <video> element and rebuilding only the underlying mpegts.js child
+ * after a genuine drain/end.
  *
- * This wrapper gives the KoraZero watch surface the missing continuity behavior
- * while preserving the exact existing KZ_LIVE_TS_CONFIG and the same signed TS
- * URL. It keeps the same <video> element mounted, silently rebuilds only the
- * underlying mpegts.js player after a real drain/end, and forwards a failure to
- * watch.js only if startup never succeeds after three attempts.
+ * A reconnect is attempted only when media has stopped advancing AND buffered
+ * data has drained, or after a non-recovered mpegts error. Startup failure is
+ * returned to watch.js after three attempts so the existing source chain can
+ * take over. No Lab source/config/quality/resolver/recovery file is modified.
  *
- * Rollback: remove this script from watch-loader.js and delete this file.
+ * Rollback: revert the commit containing WATCH-LAB-CONTINUITY-3.
  */
 (function (global) {
   "use strict";
@@ -91,7 +92,6 @@
       child = originalCreatePlayer(source, config);
       if (media) child.attachMediaElement(media);
 
-      // Re-register non-error listeners the caller attached to the stable proxy.
       for (const [event, listener] of forwardedListeners) {
         try { child.on(event, listener); } catch (_) { /* noop */ }
       }
@@ -106,8 +106,6 @@
             if (destroyed) return;
             const now = Number(media?.currentTime || 0);
             if (now > checkpoint + MIN_ADVANCE_SECONDS && !media?.ended && !media?.error) {
-              // Same behavior sought by the Lab: a transient parser/network event
-              // that recovered while media kept advancing is not a disconnect.
               return;
             }
             scheduleReconnect(`mpegts-error:${type || "error"}:${detail || ""}`, [type, detail, info]);
@@ -198,9 +196,6 @@
       watchdogTimer = setTimeout(runWatchdog, WATCHDOG_MS);
     };
 
-    // Stable proxy: watch.js can keep its normal activeMpegTs reference while
-    // the child player is replaced underneath it, exactly where continuity is
-    // needed. Nothing here changes IPTV Lab or KZ_LIVE_TS_CONFIG.
     const proxy = {
       attachMediaElement(element) {
         media = element || null;
