@@ -58,12 +58,14 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 
 ## Production freshness
 
-`korazero.com` is the **production Worker**. PR Workers Builds only run `wrangler versions upload` and do **not** update the live site. Production Workers Builds on `main` run `npm run refresh:matches` then `npx wrangler deploy`. On Workers CI that refresh **skips the match crawl** (SEO pages from the committed `today.json` only) so a new commit is not stuck behind a multi-minute queue. A stale job whose SHA is no longer `origin/main` still exits 1 and does not deploy. Run `npm run refresh:matches:full` locally when the crawl itself is the work.
+`korazero.com` is the **production Worker**. PR Workers Builds only run `wrangler versions upload` and do **not** update the live site. Production Workers Builds on `main` run `npm run refresh:matches` then `npx wrangler deploy`.
+
+**Every deploy crawls matches — CI included.** Nothing else writes `assets/data/today.json`, so skipping the crawl on CI meant a repo that only deploys through CI stopped refreshing fixtures at all. That is not a cosmetic staleness: the broadcast join matches fixtures to today's channels by team pair, so a stale list silently loses every channel binding and leaves each match on the `bein-sports-1` default. The crawl can never block a deploy — third-party steps in `lib/refresh-for-deploy.js` are marked `required: false` with a time budget, so a slow or dead upstream is logged and the build carries on with the committed data. Do not reintroduce a skip: if a crawl step is too slow or flaky, lower its budget or mark it optional, and never treat a stale `today.json` as acceptable steady state. A stale job whose SHA is no longer `origin/main` still exits 1 and does not deploy. `npm run refresh:matches:full` runs the same steps locally, without the best-effort tolerance.
 
 After merging user-facing HTML/JS/CSS to `main`:
 
 1. **Curl live** — the page and the bumped `?v=` asset. Compare to `origin/main`.
-2. **Still old** — **force deploy now**: `npm run deploy` (Wrangler; skips the match crawl). Do not wait for Workers Builds. Re-curl until the new markup / `?v=` is live, then tell the user to hard-refresh.
+2. **Still old** — **force deploy now**: `npm run deploy` (Wrangler only; no crawl, so it ships code without refreshing fixtures). Do not wait for Workers Builds. Re-curl until the new markup / `?v=` is live, then tell the user to hard-refresh.
 3. **Live already has the new files** — skip deploy. Hard-refresh / cache, or it is a real product bug.
 
 Do not treat an in-flight `main` Workers Build as “good enough” while korazero.com is still serving the previous `?v=`.

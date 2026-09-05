@@ -1,12 +1,33 @@
 /**
- * Production build command helper. Workers CI skips the third-party crawl
- * so `npx wrangler deploy` can run immediately. Local/manual still crawls.
+ * Production build command helper.
+ *
+ * Every deploy — CI or local — refreshes the fixtures, because nothing else
+ * writes today.json and a stale fixture list silently drops every channel
+ * binding. Crawl steps are best-effort with a time budget, so an upstream
+ * outage costs freshness rather than the deploy.
  */
 import { spawnSync } from "node:child_process";
-import { refreshStepsForDeploy } from "../lib/refresh-for-deploy.js";
+import { isRequiredStep, refreshStepsForDeploy } from "../lib/refresh-for-deploy.js";
 
-const steps = refreshStepsForDeploy({ workersCi: process.env.WORKERS_CI });
-for (const step of steps) {
-  const result = spawnSync(process.execPath, [step], { stdio: "inherit" });
-  if (result.status !== 0) process.exit(result.status || 1);
+for (const step of refreshStepsForDeploy()) {
+  const result = spawnSync(process.execPath, [step.script], {
+    stdio: "inherit",
+    ...(step.timeoutMs ? { timeout: step.timeoutMs } : {}),
+  });
+
+  if (result.status === 0) continue;
+
+  if (isRequiredStep(step)) {
+    console.error(`[refresh] ${step.script} failed — stopping the deploy.`);
+    process.exit(result.status || 1);
+  }
+
+  const reason =
+    result.signal === "SIGTERM" && step.timeoutMs
+      ? `exceeded its ${Math.round(step.timeoutMs / 1000)}s budget`
+      : `exited ${result.status ?? result.signal}`;
+  console.warn(
+    `[refresh] ${step.script} ${reason} — continuing with the committed data. ` +
+      "The deploy is fine; today.json may be older than this build.",
+  );
 }
