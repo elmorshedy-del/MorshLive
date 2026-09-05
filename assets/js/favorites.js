@@ -109,3 +109,57 @@
     bookmarkSite, bookmarkHint, wireBookmarkButtons, toast,
   };
 })(window);
+
+/* Homepage hero: add Messi as a third slide without changing the hero's height. */
+(function () {
+  "use strict";
+
+  function initThreeSlideHero() {
+    const track = document.querySelector(".home-showdown-track");
+    if (!track || track.dataset.kzThreeSlides === "1") return;
+
+    if (!track.querySelector('img[src*="korazero-messi"]')) {
+      const messi = document.createElement("img");
+      messi.src = "assets/img/korazero-messi.avif?v=20260905messi";
+      messi.width = 1376;
+      messi.height = 768;
+      messi.alt = "KoraZero — جميع مباريات إنتر ميامي، تابعوا ميسي طوال الموسم";
+      messi.decoding = "async";
+      track.appendChild(messi);
+    }
+
+    const style = document.createElement("style");
+    style.id = "kz-three-slide-hero-style";
+    style.textContent = `
+      .home-showdown-track {
+        width: 300% !important;
+        animation: kz-home-showdown-slide-3 15s ease-in-out infinite !important;
+      }
+      .home-showdown-track img {
+        flex: 0 0 33.333333% !important;
+        width: 33.333333% !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      @keyframes kz-home-showdown-slide-3 {
+        0%, 26% { transform: translateX(0); }
+        33%, 59% { transform: translateX(-33.333333%); }
+        66%, 92% { transform: translateX(-66.666667%); }
+        100% { transform: translateX(0); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .home-showdown-track { animation: none !important; }
+      }
+    `;
+    document.getElementById(style.id)?.remove();
+    document.head.appendChild(style);
+    track.dataset.kzThreeSlides = "1";
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initThreeSlideHero, { once: true });
+  } else {
+    initThreeSlideHero();
+  }
+})();
