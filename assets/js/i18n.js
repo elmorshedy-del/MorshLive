@@ -64,7 +64,6 @@
     document.write(`<script src="/assets/js/watch-arabic-editorial.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/english-editorial.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/match-stats-editorial.js?v=${stamp}"><\/script>`);
-    document.write(`<script src="/assets/js/saudi-hero-status.js?v=20260904available1"><\/script>`);
     if (!isolatedXtreamWatch) {
       document.write(`<script src="/assets/js/iptv-channel-resolver.js?v=${stamp}"><\/script>`);
       document.write(`<script src="/assets/js/iptv-window.js?v=${stamp}"><\/script>`);
@@ -112,7 +111,6 @@
       });
     });
   });
-  addScript(`/assets/js/saudi-hero-status.js?v=20260904available1`);
 
   if (!isolatedXtreamWatch) {
     addScript(`/assets/js/iptv-channel-resolver.js?v=${stamp}`, () => {
