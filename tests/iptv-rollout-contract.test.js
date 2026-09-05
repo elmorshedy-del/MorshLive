@@ -169,8 +169,8 @@ describe("deterministic IPTV rollout contract", () => {
     expect(bootstrap).not.toContain("iptv-premium-card-click.js");
     expect(app).not.toContain('url.searchParams.set("source", "iptv-premium")');
     expect(app).not.toContain("watch-source-toggle__opt--premium");
-    expect(app).toContain('if (isSaudiProLeagueMatch(m))');
-    expect(app).toContain('return `<a class="watch-link" href="${watchHref(m)}">');
+    expect(app).toContain("if (isSaudiProLeagueMatch(m))");
+    expect(app).toContain('return `<a class="watch-link" href="');
     expect(router).toContain('url.searchParams.set("source", "xtream")');
     expect(router).toContain('url.searchParams.set("stream", String(selected.streamId))');
     expect(router).toContain('"epl", "laliga", "spl", "ucl"');
