@@ -2,12 +2,11 @@
  * editorial, visual, content-architecture, and deterministic IPTV layers. */
 (function () {
   "use strict";
-  const stamp = "20260904bindingfix1";
+  const stamp = "20260905normalwatch1";
   const params = new URLSearchParams(location.search);
   const cleanPath = location.pathname.replace(/\/$/, "");
-  const isolatedXtreamWatch =
-    (cleanPath === "/watch.html" || cleanPath === "/watch")
-    && params.get("source") === "xtream";
+  const isWatchPage = cleanPath === "/watch.html" || cleanPath === "/watch";
+  const isolatedXtreamWatch = isWatchPage && params.get("source") === "xtream";
 
   // Install the match-time formatter before data.js loads. Every visitor sees
   // their own browser/device-local kickoff time plus a constant Makkah reference.
@@ -71,9 +70,8 @@
       document.write(`<script src="/assets/js/iptv-mutation-guard.js?v=${stamp}"><\/script>`);
       document.write(`<script src="/assets/js/match-fetch-dedupe.js?v=${stamp}"><\/script>`);
       document.write(`<script src="/assets/js/iptv-legacy-toggle-normalizer.js?v=${stamp}"><\/script>`);
-      document.write(`<script src="/assets/js/iptv-auto.js?v=${stamp}"><\/script>`);
+      if (isWatchPage) document.write(`<script src="/assets/js/iptv-auto.js?v=${stamp}"><\/script>`);
       document.write(`<script src="/assets/js/iptv-stage-copy.js?v=${stamp}"><\/script>`);
-      document.write(`<script src="/assets/js/iptv-premium-card-click.js?v=${stamp}"><\/script>`);
       document.write(`<script>window.__KZ_RELEASE_IPTV_MUTATION_GUARD?.();<\/script>`);
     }
   }
@@ -119,13 +117,11 @@
           addScript(`/assets/js/iptv-mutation-guard.js?v=${stamp}`, () => {
             addScript(`/assets/js/match-fetch-dedupe.js?v=${stamp}`, () => {
               addScript(`/assets/js/iptv-legacy-toggle-normalizer.js?v=${stamp}`, () => {
-                addScript(`/assets/js/iptv-auto.js?v=${stamp}`, () => {
-                  addScript(`/assets/js/iptv-stage-copy.js?v=${stamp}`, () => {
-                    addScript(`/assets/js/iptv-premium-card-click.js?v=${stamp}`, () => {
-                      window.__KZ_RELEASE_IPTV_MUTATION_GUARD?.();
-                    });
-                  });
+                const loadStageCopy = () => addScript(`/assets/js/iptv-stage-copy.js?v=${stamp}`, () => {
+                  window.__KZ_RELEASE_IPTV_MUTATION_GUARD?.();
                 });
+                if (isWatchPage) addScript(`/assets/js/iptv-auto.js?v=${stamp}`, loadStageCopy);
+                else loadStageCopy();
               });
             });
           });
