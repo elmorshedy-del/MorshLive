@@ -404,7 +404,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-2",
-        "source": "livefootballtv:pinned:pinned:pinned:pinned",
+        "source": "livefootballtv:pinned:pinned:pinned:pinned:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -418,7 +418,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-3",
-        "source": "livefootballtv:pinned:pinned:pinned:pinned",
+        "source": "livefootballtv:pinned:pinned:pinned:pinned:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -432,7 +432,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned:pinned:pinned:pinned",
+        "source": "livefootballtv:pinned:pinned:pinned:pinned:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -3925,7 +3925,7 @@
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
-  "broadcastUpdatedAt": "2026-09-05T11:05:47.341Z",
+  "broadcastUpdatedAt": "2026-09-05T11:42:53.875Z",
   "broadcastIndex": [
     {
       "id": "espn-ksa.1-401900371",
@@ -3938,7 +3938,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-2",
-        "source": "livefootballtv:pinned:pinned:pinned:pinned",
+        "source": "livefootballtv:pinned:pinned:pinned:pinned:pinned",
         "confidence": "exact"
       },
       "commentators": []
@@ -3954,7 +3954,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-3",
-        "source": "livefootballtv:pinned:pinned:pinned:pinned",
+        "source": "livefootballtv:pinned:pinned:pinned:pinned:pinned",
         "confidence": "exact"
       },
       "commentators": []
@@ -3970,7 +3970,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned:pinned:pinned:pinned",
+        "source": "livefootballtv:pinned:pinned:pinned:pinned:pinned",
         "confidence": "exact"
       },
       "commentators": []
