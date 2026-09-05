@@ -150,9 +150,10 @@ describe("deterministic IPTV rollout contract", () => {
     expect(legacyNormalizer.labelFor({}, fakeWindow)).toBe("تفاصيل المباراة");
   });
 
-  it("boots the puzzle pieces in dependency order and routes resolved TV through Xtream", () => {
+  it("keeps match cards on the normal watch route and reserves IPTV auto-routing for the watch page", () => {
     const bootstrap = fs.readFileSync(new URL("../assets/js/i18n.js", import.meta.url), "utf8");
     const router = fs.readFileSync(new URL("../assets/js/iptv-auto.js", import.meta.url), "utf8");
+    const app = fs.readFileSync(new URL("../assets/js/app.js", import.meta.url), "utf8");
     const order = [
       "iptv-channel-resolver.js",
       "iptv-window.js",
@@ -160,11 +161,16 @@ describe("deterministic IPTV rollout contract", () => {
       "iptv-legacy-toggle-normalizer.js",
       "iptv-auto.js",
       "iptv-stage-copy.js",
-      "iptv-premium-card-click.js",
     ].map((name) => bootstrap.indexOf(name));
 
     expect(order.every((index) => index >= 0)).toBe(true);
     expect(order).toEqual([...order].sort((a, b) => a - b));
+    expect(bootstrap).toContain("if (isWatchPage)");
+    expect(bootstrap).not.toContain("iptv-premium-card-click.js");
+    expect(app).not.toContain('url.searchParams.set("source", "iptv-premium")');
+    expect(app).not.toContain("watch-source-toggle__opt--premium");
+    expect(app).toContain('if (isSaudiProLeagueMatch(m))');
+    expect(app).toContain('return `<a class="watch-link" href="${watchHref(m)}">');
     expect(router).toContain('url.searchParams.set("source", "xtream")');
     expect(router).toContain('url.searchParams.set("stream", String(selected.streamId))');
     expect(router).toContain('"epl", "laliga", "spl", "ucl"');
