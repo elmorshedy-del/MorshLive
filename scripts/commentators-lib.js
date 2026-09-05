@@ -139,6 +139,14 @@ function channelIdFor(entry, match) {
   return "bein-sports-1";
 }
 
+/* Whether channelIdFor actually knew the channel, or just defaulted. The watch
+   page needs to tell those apart: a defaulted binding routinely puts several
+   simultaneous matches on beIN Sports 1, and all but one of them then play the
+   wrong game. Mirrors lib/channel-binding.js — see that file for the reasoning. */
+function channelBindingFor(entry) {
+  return broadcastFor(entry).playbackChannelId ? "resolved" : "fallback";
+}
+
 function channelNameFor(entry, channelId) {
   const resolved = broadcastFor(entry);
   if (resolved.channel) return resolved.channel;
@@ -227,8 +235,13 @@ function attachCommentators(matches, html) {
       m.commentator = entry.commentators[0].name;
     }
     m.channel = channelName;
-    if (channelId) m.channelId = channelId;
-    else if (isSaudiProLeagueMatch(m)) delete m.channelId;
+    if (channelId) {
+      m.channelId = channelId;
+      m.channelBinding = channelBindingFor(entry);
+    } else if (isSaudiProLeagueMatch(m)) {
+      delete m.channelId;
+      delete m.channelBinding;
+    }
     if (broadcast) m.broadcast = broadcast;
     commentaryIndex.push({
       key: pairKey(m.home, m.away),
@@ -236,13 +249,49 @@ function attachCommentators(matches, html) {
       away: m.away,
       commentators: entry.commentators,
       channel: channelName,
-      ...(channelId ? { channelId } : {}),
+      ...(channelId ? { channelId, channelBinding: channelBindingFor(entry) } : {}),
       ...(broadcast ? { broadcast } : {}),
     });
   }
 
   ensureSaudiBroadcastFallback(matches, commentaryIndex);
+  markContestedBindings(matches);
   return { matched, commentaryIndex };
+}
+
+/* One channel cannot carry two simultaneous matches, so when an unverified
+   binding collides with another the page must not claim it is the right one.
+   Mirrors lib/channel-binding.js (ESM; this file is CommonJS). */
+const OVERLAP_MINUTES = 105;
+
+function markContestedBindings(matches) {
+  const rows = Array.isArray(matches) ? matches : [];
+  const byChannel = new Map();
+  for (const match of rows) {
+    if (!match?.channelId) continue;
+    if (!byChannel.has(match.channelId)) byChannel.set(match.channelId, []);
+    byChannel.get(match.channelId).push(match);
+  }
+  const kickoffMs = (match) => {
+    const ms = Date.parse(String(match?.kickoffUtc || ""));
+    return Number.isFinite(ms) ? ms : Number.NaN;
+  };
+  for (const group of byChannel.values()) {
+    if (group.length < 2) continue;
+    for (const match of group) {
+      const at = kickoffMs(match);
+      if (!Number.isFinite(at)) continue;
+      const clashes = group.some((other) => {
+        if (other === match) return false;
+        const otherAt = kickoffMs(other);
+        return Number.isFinite(otherAt) && Math.abs(otherAt - at) < OVERLAP_MINUTES * 60000;
+      });
+      if (clashes && match.channelBinding !== "resolved") {
+        match.channelBinding = "contested";
+      }
+    }
+  }
+  return rows;
 }
 
 function channelFieldsFrom(row) {
@@ -250,6 +299,7 @@ function channelFieldsFrom(row) {
   const out = {};
   if (row.channel) out.channel = row.channel;
   if (row.channelId) out.channelId = row.channelId;
+  if (row.channelBinding) out.channelBinding = row.channelBinding;
   if (row.broadcast) out.broadcast = row.broadcast;
   if (row.commentators && row.commentators.length) out.commentators = row.commentators;
   return out;
@@ -344,6 +394,7 @@ module.exports = {
   parseCommentators,
   buildIndex,
   attachCommentators,
+  markContestedBindings,
   ensureSaudiBroadcastFallback,
   pinEndedChannels,
   mergeCommentaryIndex,

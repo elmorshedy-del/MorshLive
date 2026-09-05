@@ -197,13 +197,7 @@
     const video = makeVideo();
     state.mpegts = window.mpegts.createPlayer(
       { type: "mpegts", isLive: true, url: tsUrl },
-      {
-        enableWorker: false,
-        enableWorkerForMSE: false,
-        enableStashBuffer: true,
-        stashInitialSize: 384 * 1024,
-        liveSync: true,
-      },
+      window.KZ_LIVE_TS_CONFIG,
     );
     state.mpegts.attachMediaElement(video);
     state.mpegts.on(window.mpegts.Events.ERROR, (type, detail, info) => {

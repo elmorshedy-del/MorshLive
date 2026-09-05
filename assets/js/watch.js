@@ -132,6 +132,10 @@
   }
 
   function applyWatchChrome() {
+    // Render the switcher from chrome rather than only from fillInfo: when the
+    // match feed fails, fillInfo never runs, and that is exactly the moment a
+    // viewer is staring at the wrong game and needs a way out.
+    renderChannelSwitch();
     const allow = allowLegacySourceChrome();
     document.body.classList.toggle("match-plan-chrome", !allow);
     document.body.classList.toggle("xtream-chrome", !!xtreamMode);
@@ -517,7 +521,7 @@
       video.load();
       activeMpegTs = window.mpegts.createPlayer(
         { type: "mpegts", isLive: true, url: tsUrl },
-        { enableWorker: true, enableStashBuffer: false, stashInitialSize: 128 },
+        window.KZ_LIVE_TS_CONFIG,
       );
       activeMpegTs.attachMediaElement(video);
       activeMpegTs.on(window.mpegts.Events.ERROR, refreshToken);
@@ -662,7 +666,7 @@
     if (tsUrl && window.mpegts?.isSupported()) {
       activeMpegTs = window.mpegts.createPlayer(
         { type: "mpegts", isLive: true, url: tsUrl },
-        { enableWorker: false, enableStashBuffer: false, stashInitialSize: 128 },
+        window.KZ_LIVE_TS_CONFIG,
       );
       activeMpegTs.attachMediaElement(video);
       activeMpegTs.on(window.mpegts.Events.ERROR, playHls);
@@ -1633,10 +1637,6 @@
       document.getElementById("ch-status").innerHTML = '<span class="status-pill status-live">مباشر</span>';
       document.title = `${name} — KoraZero`;
       document.getElementById("now-sub").textContent = `${portalLabel} · ${category}`;
-      document.getElementById("info-quality").textContent = "Live";
-      document.getElementById("info-group").textContent = category;
-      const route = document.getElementById("info-route");
-      if (route) route.textContent = `${xtreamDirect ? "Xtream Direct" : "Xtream"} · ${portalLabel}`;
       document.getElementById("info-commentator").textContent = "—";
       document.getElementById("info-league").textContent = category;
       const times = document.getElementById("info-times");
@@ -1649,8 +1649,11 @@
     }
     const live = !!(match && match.status === "live");
     const commentary = matchIsCommentary();
+    // The H1 is the page's one-line answer to "what am I watching". Both team
+    // names in the reader's own language, joined the way the SEO match pages
+    // join them; "بث مباشر" is already static in the markup beside it.
     const matchTitle = match
-      ? `${teamLabel(match.home)} × ${teamLabel(match.away)}`
+      ? `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)}`
       : channel.name;
     document.getElementById("ch-name").textContent = matchTitle;
     document.getElementById("ch-status").innerHTML = live
@@ -1673,30 +1676,11 @@
           : `${teamLabel(match.home)} ${t("watch.vs")} ${teamLabel(match.away)} · ${leagueLabel(match)}`
       : channel.quality;
 
-    document.getElementById("info-quality").textContent = channel.quality;
-    document.getElementById("info-group").textContent = channel.group;
-    const infoRoute = document.getElementById("info-route");
-    if (infoRoute) {
-      if (saudiStreamComingSoon(match, activePlan)) {
-        infoRoute.textContent = t("watch.saudiSoonTitle");
-      } else if (activePlan && activePlan.selected) {
-        const label = activePlan.selected.label || activePlan.selected.profile || activePlan.selected.kind;
-        infoRoute.textContent = `${activePlan.status} · ${label}`;
-      } else if (activePlan && (activePlan.status === "waiting" || activePlan.status === "conflict")) {
-        infoRoute.textContent = t("watch.planWaiting");
-      } else {
-        const key = window.SITE_DATA && window.SITE_DATA.embedKeyFor
-          ? window.SITE_DATA.embedKeyFor(channel.id)
-          : "";
-        infoRoute.textContent = key
-          ? `${key} ← ${match && match.channel ? match.channel : channel.name}`
-          : "—";
-      }
-    }
     document.getElementById("info-commentator").innerHTML = commentatorHtml(match);
     document.getElementById("info-league").textContent = leagueLabel(match) || "—";
     const infoTimes = document.getElementById("info-times");
     if (infoTimes) infoTimes.innerHTML = timeZoneHtml(match);
+    renderChannelSwitch();
     renderMatchDetail();
     renderMatchSummary();
     injectMatchSchema(match);
@@ -1731,6 +1715,98 @@
       slot.innerHTML = "";
       slot.hidden = true;
     });
+  }
+
+  /**
+   * The channels a given match could plausibly be on.
+   *
+   * A match is bound to one channel by the schedule, and when that binding is
+   * wrong the viewer just sees the wrong game. Rather than show all nine
+   * channels, offer the small set that shares the bound channel's network —
+   * beIN Sports 1/2 for one, beIN MAX 1-4 for another, SSC 1-3 for a Saudi
+   * broadcast. That is the mistake worth correcting: a wrong *number* inside
+   * the right network, not a jump from beIN to SSC.
+   */
+  function switchableChannels() {
+    const all = Array.isArray(CHANNELS) ? CHANNELS : [];
+    const current = all.find((ch) => ch.id === channel.id) || all[0];
+    if (!current) return [];
+    const siblings = all.filter((ch) => ch.group === current.group);
+    // A lone channel in its group is not a choice, so do not pretend it is one.
+    return siblings.length > 1 ? siblings : [];
+  }
+
+  /**
+   * How much the schedule actually knows about this match's channel.
+   * Mirrors lib/channel-binding.js, which carries the full reasoning; the
+   * browser cannot import it, so the three level names are repeated here.
+   */
+  function bindingConfidence(m) {
+    const value = String((m && m.channelBinding) || "");
+    if (value === "resolved" || value === "contested" || value === "fallback") return value;
+    if (!m || !m.channelId) return "fallback";
+    return m.channelId === "bein-sports-1" ? "fallback" : "resolved";
+  }
+
+  function renderChannelSwitch() {
+    const section = document.getElementById("channel-switch");
+    const row = document.getElementById("channel-switch-row");
+    if (!section || !row) return;
+
+    // Xtream and the IPTV catalogue have their own channel pickers.
+    const options = xtreamMode ? [] : switchableChannels();
+    if (!options.length) {
+      section.hidden = true;
+      row.innerHTML = "";
+      return;
+    }
+
+    // Say plainly when the channel was a guess. "contested" means another match
+    // claims this same channel at the same time, so it is likely to be wrong.
+    const confidence = bindingConfidence(match);
+    const hint = section.querySelector(".channel-switch-hint");
+    if (hint) {
+      hint.textContent =
+        confidence === "contested"
+          ? t("watch.switchHintContested")
+          : t("watch.switchHint");
+    }
+    section.classList.toggle("channel-switch--warn", confidence === "contested");
+
+    const matchCh = match && match.channelId;
+    const group = options[0].group;
+    row.innerHTML = `
+      <span class="channel-switch-group-label">${escapeHtml(group)}</span>
+      ${options
+        .map((ch) => {
+          const isActive = ch.id === channel.id;
+          const isMatch = ch.id === matchCh && !isActive;
+          const tag = isActive
+            ? t("watch.switchCurrent")
+            : isMatch
+              ? t("watch.matchChannel")
+              : "";
+          return `<button type="button" class="channel-switch-btn${isActive ? " active" : ""}"
+            data-ch="${escapeHtml(ch.id)}"
+            aria-pressed="${isActive ? "true" : "false"}"
+            aria-label="${escapeHtml(ch.name)}">
+            <span>${escapeHtml(ch.num || ch.name)}</span>
+            ${tag ? `<span class="switch-btn-tag">${escapeHtml(tag)}</span>` : ""}
+          </button>`;
+        })
+        .join("")}`;
+
+    row.querySelectorAll(".channel-switch-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const chId = btn.dataset.ch;
+        if (!chId || chId === channel.id) return;
+        const next = new URL(location.href);
+        next.searchParams.set("ch", chId);
+        if (match && match.id) next.searchParams.set("match", match.id);
+        location.href = next.toString();
+      });
+    });
+    section.hidden = false;
   }
 
   function renderChannels() {

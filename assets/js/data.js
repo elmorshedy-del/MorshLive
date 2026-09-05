@@ -167,12 +167,17 @@ function embedForKey(key) {
 // above, so a single match always maps to its actual channel — not a parity guess.
 // beIN Sports 1 stays first so it remains the default fallback channel.
 const CHANNEL_DEFS = [
-  { id: "bein-sports-1", name: "beIN Sports 1", group: "beIN", quality: "1080p", badge: "HD" },
-  { id: "bein-sports-2", name: "beIN Sports 2", group: "beIN", quality: "1080p", badge: "HD" },
-  { id: "bein-max-1", name: "beIN MAX 1", group: "beIN", quality: "1080p", badge: "HD" },
-  { id: "bein-max-2", name: "beIN MAX 2", group: "beIN", quality: "1080p", badge: "HD" },
-  { id: "bein-max-3", name: "beIN MAX 3", group: "beIN", quality: "1080p", badge: "HD" },
-  { id: "bein-max-4", name: "beIN MAX 4", group: "beIN", quality: "1080p", badge: "HD" },
+  { id: "bein-sports-1", name: "beIN Sports 1", group: "beIN", num: "1", quality: "1080p", badge: "HD" },
+  { id: "bein-sports-2", name: "beIN Sports 2", group: "beIN", num: "2", quality: "1080p", badge: "HD" },
+  { id: "bein-max-1", name: "beIN MAX 1", group: "beIN MAX", num: "1", quality: "1080p", badge: "HD" },
+  { id: "bein-max-2", name: "beIN MAX 2", group: "beIN MAX", num: "2", quality: "1080p", badge: "HD" },
+  { id: "bein-max-3", name: "beIN MAX 3", group: "beIN MAX", num: "3", quality: "1080p", badge: "HD" },
+  { id: "bein-max-4", name: "beIN MAX 4", group: "beIN MAX", num: "4", quality: "1080p", badge: "HD" },
+  // Saudi league rights sit with SSC, and the ids match the `ssc-${number}`
+  // shape scripts/broadcast-registry.js already emits for those broadcasts.
+  { id: "ssc-1", name: "SSC 1", group: "SSC", num: "1", quality: "1080p", badge: "HD" },
+  { id: "ssc-2", name: "SSC 2", group: "SSC", num: "2", quality: "1080p", badge: "HD" },
+  { id: "ssc-3", name: "SSC 3", group: "SSC", num: "3", quality: "1080p", badge: "HD" },
 ];
 const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: { ...embedFor(c.id), channelId: c.id } }));
 
