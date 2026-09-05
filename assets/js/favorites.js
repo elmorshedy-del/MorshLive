@@ -109,3 +109,74 @@
     bookmarkSite, bookmarkHint, wireBookmarkButtons, toast,
   };
 })(window);
+
+/* Homepage hero: preserve the original poster and rotate it with the two new campaigns. */
+(function () {
+  "use strict";
+
+  function initThreePosterHero() {
+    const track = document.querySelector(".home-showdown-track");
+    if (!track || track.dataset.kzThreePoster === "1") return;
+
+    const existing = [...track.querySelectorAll("img")];
+    const original = existing.find((img) => /korazero-showdown\.jpg/i.test(img.getAttribute("src") || ""));
+    const saudi = existing.find((img) => /korazero-saudi/i.test(img.getAttribute("src") || ""));
+    if (!original || !saudi) return;
+
+    original.src = "assets/img/korazero-showdown.jpg?v=20260905hero3";
+    original.width = 1374;
+    original.height = 768;
+    original.fetchPriority = "high";
+
+    saudi.src = "assets/img/korazero-saudi.avif?v=20260905hero3";
+    saudi.width = 1536;
+    saudi.height = 864;
+    saudi.alt = "كورة زيرو — متاح الآن، تابع الدوري السعودي للمحترفين";
+    saudi.removeAttribute("fetchpriority");
+
+    const messi = document.createElement("img");
+    messi.src = "assets/img/korazero-messi.avif?v=20260905hero3";
+    messi.width = 1376;
+    messi.height = 768;
+    messi.alt = "KoraZero — جميع مباريات إنتر ميامي، تابعوا ميسي طوال الموسم";
+    messi.decoding = "async";
+
+    // Requested order: original campaign, Saudi campaign, Messi / Inter Miami campaign.
+    track.replaceChildren(original, saudi, messi);
+    track.dataset.kzThreePoster = "1";
+
+    if (!document.getElementById("kz-three-poster-hero-style")) {
+      const style = document.createElement("style");
+      style.id = "kz-three-poster-hero-style";
+      style.textContent = `
+        .home-showdown-track {
+          width: 300% !important;
+          animation: kz-home-showdown-slide-3 15s ease-in-out infinite !important;
+        }
+        .home-showdown-track img {
+          flex: 0 0 33.333333% !important;
+          width: 33.333333% !important;
+          height: auto !important;
+          object-fit: contain !important;
+          object-position: center !important;
+        }
+        @keyframes kz-home-showdown-slide-3 {
+          0%, 26% { transform: translateX(0); }
+          33%, 59% { transform: translateX(-33.333333%); }
+          66%, 92% { transform: translateX(-66.666667%); }
+          100% { transform: translateX(0); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .home-showdown-track { animation: none !important; }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initThreePosterHero, { once: true });
+  } else {
+    initThreePosterHero();
+  }
+})();
