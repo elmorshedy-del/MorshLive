@@ -1085,10 +1085,6 @@
       }
       return;
     }
-    // Our own IPTV first. Everything below this point is a third-party
-    // aggregator we do not control, and those go dark without warning.
-    if (await mountLabChannel()) return;
-
     // Bridge and WC pinned mirrors are leftover 24/7 / World Cup rails.
     // Stream plans own playback — do not offer them on match watch.
     if (allowLegacySourceChrome() && activeEmbedKey === "bridge" && window.STREAM_BRIDGE && window.STREAM_BRIDGE.hasStream(channel.id)) {
@@ -1136,6 +1132,14 @@
       showPlanWaiting(activePlan.reason);
       return;
     }
+
+    // Our own IPTV, once every gate above has agreed this match is playable.
+    // It sits here rather than first on purpose: a plan that says "waiting",
+    // "conflict" or Saudi-soon means do not play, and playing anyway is how the
+    // channel buttons started a stream for a match that should have shown a
+    // waiting state. It still comes before the third-party aggregators, which
+    // we do not control and which go dark without warning.
+    if (await mountLabChannel()) return;
 
     if (planSource && mountPlanSource(planSource, activePlan)) {
       applyWatchChrome();
