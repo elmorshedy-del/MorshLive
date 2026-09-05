@@ -1004,7 +1004,20 @@
    * catalogue — so no 1.7MB catalogue reaches the browser and no stream id is
    * pinned in front-end code, which is what made the old map drift.
    */
+  // CHATGPT-STAMP 2026-09-05T08:08-04:00 — WATCH-SURFACE-PARITY-1
+  // KoraZero's watch page refreshes plan metadata every 20s and fixtures every
+  // 90s. Those refreshes call loadPlayer(), but the IPTV Lab itself does not.
+  // Preserve an already-healthy Lab-backed player so metadata refreshes never
+  // destroy/recreate the video. This is watch-page lifecycle only: NO IPTV Lab
+  // source, player config, fallback, quality, or recovery logic is modified.
   const labChannelCache = new Map();
+  let lastLabPlaybackKey = "";
+
+  function labChannelAlreadyHealthy(channelId) {
+    if (!shell || !activeMpegTs || lastLabPlaybackKey !== channelId) return false;
+    const video = shell.querySelector(".kz-main-video");
+    return !!(video && video.readyState >= 2 && !video.error && !video.ended);
+  }
 
   async function fetchLabChannel(channelId) {
     if (!channelId) return null;
@@ -1025,6 +1038,9 @@
   async function mountLabChannel() {
     if (!shell || !window.mpegts?.isSupported?.()) return false;
     const channelId = (match && match.channelId) || channel.id;
+    // CHATGPT-STAMP 2026-09-05T08:08-04:00 — the 20s/90s metadata ticks must
+    // not become playback ticks. Same channel + healthy media = leave it alone.
+    if (labChannelAlreadyHealthy(channelId)) return true;
     const info = await fetchLabChannel(channelId);
     if (!info?.tsPlaybackUrl) return false;
 
@@ -1041,6 +1057,7 @@
     activeMpegTs.on(window.mpegts.Events.ERROR, () => {
       // A dead feed must not strand the viewer on a black box: drop the cached
       // answer and let the normal source chain take over on the next attempt.
+      lastLabPlaybackKey = "";
       labChannelCache.delete(channelId);
       loadPlayer().catch(() => {});
     });
@@ -1049,6 +1066,7 @@
     if (attempt?.catch) attempt.catch(() => bindUnmuteOverlay(video));
     bindUnmuteOverlay(video);
     loadedUrl = `iptv-lab:${channelId}:${info.streamId}`;
+    lastLabPlaybackKey = channelId;
     applyWatchChrome();
     return true;
   }
