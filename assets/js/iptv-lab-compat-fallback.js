@@ -137,6 +137,9 @@
     } else {
       // Do not replace the original player error with a fake success. The
       // remaining class needs remux/transcode rather than another JS retry.
+      // Leaving "تجربة توافق…" on screen would claim an attempt is still
+      // running when it has already finished and failed.
+      state.textContent = "تعذر التشغيل بأي مسار متاح";
       window.dispatchEvent(new CustomEvent("kz:iptv-compat-unresolved", {
         detail: { streamId, codec, audio, protocol: probe.protocol || "" },
       }));
@@ -169,7 +172,7 @@
   });
 
   window.KZIptvLabCompatFallback = {
-    version: "20260905probe1",
+    version: "20260905ts2",
     getProbe,
   };
 })();

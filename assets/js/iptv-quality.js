@@ -46,7 +46,7 @@
   function browserSummary() {
     // Name the path the lab will actually take first, so a stutter or a black
     // frame can be attributed without opening the console.
-    const primary = nativeHls ? "المسار: HLS أصلي" : mpegTs ? "المسار: MPEG-TS" : "المسار: HLS.js";
+    const primary = mpegTs ? "المسار: MPEG-TS" : hlsJs ? "المسار: HLS.js" : "المسار: HLS أصلي";
     return `${primary} · ${hevc ? "HEVC معلن ✓" : "HEVC غير معلن ?"} · ${nativeHls ? "HLS أصلي ✓" : hlsJs ? "HLS.js ✓" : "HLS ✕"} · ${mpegTs ? "TS ✓" : "TS ✕"}`;
   }
 
@@ -295,7 +295,7 @@
   setValue(browserEl, browserSummary(), hevc ? "good" : "warn");
 
   const fallbackScript = document.createElement("script");
-  fallbackScript.src = "assets/js/iptv-lab-compat-fallback.js?v=20260905probe1";
+  fallbackScript.src = "assets/js/iptv-lab-compat-fallback.js?v=20260905ts2";
   fallbackScript.defer = true;
   document.head.appendChild(fallbackScript);
 })();

@@ -55,17 +55,20 @@
   let playbackGeneration = 0;
   let detachPlaybackListeners = null;
 
-  // Native HLS means Safari (desktop and iOS). It is the whole reason this file
-  // does not pick a player by user agent: capability, not UA sniffing.
+  // canPlayType('application/vnd.apple.mpegurl') is NOT a "this browser plays
+  // HLS" signal: measured on Chrome 152 desktop it answers "maybe" and then
+  // fails the load with MEDIA_ERR_SRC_NOT_SUPPORTED. It only tells us the
+  // element will accept the URL.
   const NATIVE_HLS = Boolean(video.canPlayType("application/vnd.apple.mpegurl"));
 
-  // mpegts.js remuxes the live TS into fMP4 and feeds it to MediaSource. Chrome
-  // and Firefox have full MSE and that path is the proven one. Safari has no
-  // plain MediaSource on iPhone at all — only Apple's ManagedMediaSource, which
-  // meters delivery on the assumption that the page is an adaptive player. A
-  // single-rate live remux cannot answer that, so the buffer bleeds down to
-  // zero and stalls. Safari plays the portal's own HLS natively instead: same
-  // stream, hardware decoder, no MSE in the loop.
+  // MPEG-TS is the primary path on every browser, Safari included. HLS is only
+  // a last resort here because the portal's HLS cannot be proxied: measured
+  // against production, the manifest returns 200 every time while every segment
+  // inside it returns 403. The panel binds HLS segments to the session that
+  // fetched the manifest, and a Cloudflare Worker egresses each subrequest from
+  // a different edge IP, so the segment request never matches. The TS endpoint
+  // has no such binding — one long-lived connection, measured steady at ~500
+  // KB/s with a 12s buffer and zero dropped frames.
   function mpegTsFeature(key) {
     try {
       return Boolean(window.mpegts?.getFeatureList?.()[key]);
@@ -369,8 +372,11 @@
   }
 
   function isHevcChannel(channel) {
-    const text = `${channel?.name || ""} ${channel?.categoryName || ""}`;
-    return /\bhevc\b/i.test(text) || /\bh\.?265\b/i.test(text);
+    // Providers separate the codec tag with underscores and dots as often as
+    // spaces ("beIN_Sport_H265 1 8M"). `_` is a word character, so a bare \b
+    // never fires there and the channel was read as H.264.
+    const text = `${channel?.name || ""} ${channel?.categoryName || ""}`.replace(/[_\-.]+/g, " ");
+    return /\bhevc\b/i.test(text) || /\bh\s?265\b/i.test(text);
   }
 
   function releaseTsPlayer() {
@@ -480,7 +486,11 @@
       video.removeAttribute("src");
       video.load();
       playerState.textContent = hevc ? "HEVC · HLS" : hlsFallbackFromTs ? "الانتقال إلى HLS المستمر…" : "جارٍ تجربة HLS";
-      if (NATIVE_HLS) {
+      // hls.js wherever it works; the element's own player only on Apple's
+      // stack or when hls.js has nothing to run on. Handing the raw manifest to
+      // Chrome because canPlayType said "maybe" just errors the element out.
+      const hlsJsUsable = Boolean(window.Hls && window.Hls.isSupported());
+      if (NATIVE_HLS && !hlsJsUsable) {
         video.src = hlsUrl;
         video.addEventListener("error", onError, { once: true });
         // Safari can accept a manifest and then sit at readyState 0 forever.
@@ -494,7 +504,7 @@
         if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
         return;
       }
-      if (!(window.Hls && window.Hls.isSupported())) {
+      if (!hlsJsUsable) {
         onError();
         return;
       }
@@ -605,9 +615,9 @@
       if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
     };
 
-    // Safari first plays the portal's HLS natively; every MSE-only browser
-    // keeps the proven MPEG-TS path. Each falls back to the other.
-    if (NATIVE_HLS || !tsUsable) {
+    // MPEG-TS first everywhere. HLS only when this browser cannot run the TS
+    // remux at all, and then mostly to produce an honest error.
+    if (!tsUsable) {
       playHls();
       return;
     }
