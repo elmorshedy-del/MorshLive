@@ -151,6 +151,44 @@ describe("Xtream adapter", () => {
     });
   });
 
+  it("asks for the manifest without a Range header and retries a ranged 403 segment", async () => {
+    const calls = [];
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((url, init) => {
+        const target = String(url);
+        const range = init?.headers?.Range || null;
+        calls.push({ target, range });
+        if (/\.ts(\?|$)|segment/i.test(target)) {
+          // Panels that gate on Range answer 403 for the segment. That used to
+          // fail the whole HLS probe and force every client onto the TS path.
+          if (range) return Promise.resolve(new Response(null, { status: 403 }));
+          const ts = new Uint8Array(376);
+          ts[0] = 0x47;
+          ts[188] = 0x47;
+          return Promise.resolve(
+            new Response(ts, { status: 200, headers: { "Content-Type": "video/mp2t" } }),
+          );
+        }
+        return Promise.resolve(
+          new Response("#EXTM3U\n#EXTINF:2,\nsegment.ts\n", {
+            status: 200,
+            headers: { "Content-Type": "application/vnd.apple.mpegurl" },
+          }),
+        );
+      }),
+    );
+    const portal = loadXtreamPortals(env).portals[0];
+    await expect(probeXtreamPlayback(portal, 123)).resolves.toMatchObject({
+      ok: true,
+      protocol: "hls",
+    });
+    const manifestCalls = calls.filter((call) => call.target.includes(".m3u8"));
+    expect(manifestCalls.length).toBeGreaterThan(0);
+    expect(manifestCalls.every((call) => call.range == null)).toBe(true);
+    expect(calls.filter((call) => call.target.includes("segment.ts"))).toHaveLength(2);
+  });
+
   it("rewrites manifest media URLs to encrypted same-origin routes", async () => {
     const upstream = "http://example.test:8080/live/owner/secret/123.m3u8";
     const token = await createMediaToken(env, upstream, 60);
@@ -324,5 +362,56 @@ describe("Xtream service", () => {
     expect(stream.tsPlaybackUrl).toMatch(/^\/api\/xtream\/media\//);
     expect(JSON.stringify(result.body)).not.toContain("owner");
     expect(JSON.stringify(result.body)).not.toContain("secret");
+  });
+
+  it("resolves the exact playlist URL for a searched channel, not a synthesized one", async () => {
+    // Country/reseller groups hand playback off to another origin, so the
+    // playlist URL is the only one that plays. A search hit must mint its
+    // token from that URL, exactly as a category browse already does.
+    const exactTs = "http://cdn-usa.example.test:2095/live/owner/secret/456.ts";
+    // Its own portal host: fetchXtreamSourceMaps keeps a module-level 60s
+    // playlist cache keyed by portal, and other tests in this file warm it.
+    const searchEnv = {
+      ...env,
+      XTREAM_PORTALS_JSON: JSON.stringify({
+        portals: [
+          {
+            url: "http://usa-portal.test:8080",
+            username: "owner",
+            password: "secret",
+            label: "USA",
+          },
+        ],
+      }),
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input) => {
+        const url = String(input);
+        if (url.includes("get.php")) {
+          const extension = url.includes("output=ts") ? "ts" : "m3u8";
+          return new Response(
+            `#EXTM3U\n#EXTINF:-1 group-title="USA",FOX Sports\nhttp://cdn-usa.example.test:2095/live/owner/secret/456.${extension}\n`,
+            { status: 200 },
+          );
+        }
+        if (url.includes("get_live_categories")) {
+          return new Response(JSON.stringify([{ category_id: "9", category_name: "USA" }]), {
+            status: 200,
+          });
+        }
+        if (url.includes("get_live_streams")) {
+          return new Response(JSON.stringify([{ stream_id: 456, name: "FOX Sports", category_id: "9" }]), {
+            status: 200,
+          });
+        }
+        return new Response(JSON.stringify({ user_info: { auth: 1 } }), { status: 200 });
+      }),
+    );
+
+    const result = await getXtreamLive(searchEnv, new URLSearchParams({ q: "fox", limit: "5" }));
+    const stream = result.body.portals[0].streams[0];
+    const token = stream.tsPlaybackUrl.replace("/api/xtream/media/", "");
+    await expect(decodeMediaToken(searchEnv, token)).resolves.toBe(exactTs);
   });
 });

@@ -53,16 +53,47 @@
   let loadController = null;
   let reconnectTimer = null;
   let playbackGeneration = 0;
+  let detachPlaybackListeners = null;
 
-  // Detect iPhone/iPad/iPod Safari (including modern iPadOS desktop-mode UA,
-  // which reports as "Mac OS X" but exposes touch points). Kept conservative
-  // so Chrome/desktop platforms are never misdetected as iOS.
-  function isIosSafari() {
-    const ua = String(window.navigator?.userAgent || "");
-    const isAppleTouchDevice = /iPhone|iPad|iPod/.test(ua)
-      || (/Mac OS X/.test(ua) && navigator.maxTouchPoints > 1);
-    if (!isAppleTouchDevice) return false;
-    return /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS|OPiOS/.test(ua);
+  // canPlayType('application/vnd.apple.mpegurl') is NOT a "this browser plays
+  // HLS" signal: measured on Chrome 152 desktop it answers "maybe" and then
+  // fails the load with MEDIA_ERR_SRC_NOT_SUPPORTED. It only tells us the
+  // element will accept the URL.
+  const NATIVE_HLS = Boolean(video.canPlayType("application/vnd.apple.mpegurl"));
+
+  // MPEG-TS is the primary path on every browser, Safari included. HLS is only
+  // a last resort here because the portal's HLS cannot be proxied: measured
+  // against production, the manifest returns 200 every time while every segment
+  // inside it returns 403. The panel binds HLS segments to the session that
+  // fetched the manifest, and a Cloudflare Worker egresses each subrequest from
+  // a different edge IP, so the segment request never matches. The TS endpoint
+  // has no such binding — one long-lived connection, measured steady at ~500
+  // KB/s with a 12s buffer and zero dropped frames.
+  function mpegTsFeature(key) {
+    try {
+      return Boolean(window.mpegts?.getFeatureList?.()[key]);
+    } catch {
+      return false;
+    }
+  }
+
+  function announceProtocol(protocol) {
+    window.dispatchEvent(new CustomEvent("kz:iptv-protocol", { detail: { protocol } }));
+  }
+
+  // Codec/resolution/fps straight off the running player. The quality panel
+  // used to get these from /api/iptv-lab/probe, which opens its own
+  // `/live/...` request against a line provisioned with max_connections: 1 —
+  // measured: the panel closes the player's stream ~3s after a probe starts
+  // and holds the slot as a ghost session. Nothing here costs a connection.
+  function announceMediaInfo(info) {
+    window.dispatchEvent(new CustomEvent("kz:iptv-media-info", { detail: info }));
+  }
+
+  // The player has stopped trying. Only now is it safe (and useful) for the
+  // diagnostics to open a probe: there is no playback left to starve.
+  function announcePlaybackFailed(reason) {
+    window.dispatchEvent(new CustomEvent("kz:iptv-playback-failed", { detail: { reason } }));
   }
 
   function setError(message) {
@@ -318,6 +349,10 @@
   function destroyPlayer() {
     clearReconnect();
     video.onended = null;
+    if (detachPlaybackListeners) {
+      detachPlaybackListeners();
+      detachPlaybackListeners = null;
+    }
     if (hls) {
       try { hls.destroy(); } catch (_) { /* noop */ }
       hls = null;
@@ -337,8 +372,11 @@
   }
 
   function isHevcChannel(channel) {
-    const text = `${channel?.name || ""} ${channel?.categoryName || ""}`;
-    return /\bhevc\b/i.test(text) || /\bh\.?265\b/i.test(text);
+    // Providers separate the codec tag with underscores and dots as often as
+    // spaces ("beIN_Sport_H265 1 8M"). `_` is a word character, so a bare \b
+    // never fires there and the channel was read as H.264.
+    const text = `${channel?.name || ""} ${channel?.categoryName || ""}`.replace(/[_\-.]+/g, " ");
+    return /\bhevc\b/i.test(text) || /\bh\s?265\b/i.test(text);
   }
 
   function releaseTsPlayer() {
@@ -363,18 +401,60 @@
     let hlsRecoveries = 0;
     let tsStartupFailures = 0;
     let tsEverPlayed = false;
+    let tsAttempted = false;
+    let hlsAttempted = false;
     let tsRuntimeHlsAttempted = false;
     let hlsFallbackFromTs = false;
     let hlsReturnedToTs = false;
+    let hlsWatchdog = null;
     const hevc = isHevcChannel(channel);
+    // An unlabelled HEVC feed is common, so never assume H.264. Only treat a
+    // channel as MSE-playable when this browser can actually decode HEVC
+    // through MediaSource; Safari's native path handles it either way.
+    const tsUsable =
+      Boolean(channel.tsPlaybackUrl)
+      && Boolean(window.mpegts?.isSupported())
+      && (!hevc || mpegTsFeature("mseH265Playback"));
+
+    const clearHlsWatchdog = () => {
+      if (hlsWatchdog) clearTimeout(hlsWatchdog);
+      hlsWatchdog = null;
+    };
+
     const onPlaying = () => {
       if (generation !== playbackGeneration) return;
+      clearHlsWatchdog();
       if (!usingHls) tsEverPlayed = true;
       playerState.textContent = usingHls ? "يعمل · HLS" : "يعمل · MPEG-TS";
+      announceProtocol(usingHls ? "HLS" : "MPEG-TS");
     };
     video.addEventListener("playing", onPlaying);
+    detachPlaybackListeners = () => {
+      clearHlsWatchdog();
+      video.removeEventListener("playing", onPlaying);
+      video.removeEventListener("error", onError);
+    };
+
+    // Falling back from HLS to TS. Used both when Safari's native player
+    // rejects the manifest outright and when it accepts it but never renders
+    // a frame (a stalled manifest fires no `error` at all).
+    const fallBackToTs = (reason) => {
+      if (generation !== playbackGeneration || reconnectTimer) return false;
+      if (!tsUsable || tsAttempted) return false;
+      clearHlsWatchdog();
+      playerState.textContent = "HLS غير متاح · تجربة MPEG-TS";
+      console.warn("IPTV Lab HLS did not start; trying MPEG-TS", reason || "");
+      reconnectTimer = setTimeout(() => {
+        reconnectTimer = null;
+        playTs();
+      }, 300);
+      return true;
+    };
+
     const onError = () => {
       if (generation !== playbackGeneration) return;
+      clearHlsWatchdog();
+      if (usingHls && !hlsFallbackFromTs && fallBackToTs("media error")) return;
       if (usingHls && hlsFallbackFromTs && !hlsReturnedToTs) {
         hlsReturnedToTs = true;
         hlsFallbackFromTs = false;
@@ -389,6 +469,7 @@
       playerState.textContent = hevc
         ? "HEVC غير مدعوم هنا · استخدم BEIN SD"
         : "تعذر التشغيل";
+      announcePlaybackFailed(hevc ? "hevc-unsupported" : "all-paths-failed");
     };
     const hlsUrl = playbackUrl(channel.playbackUrl);
     const tsUrl = playbackUrl(channel.tsPlaybackUrl);
@@ -396,21 +477,34 @@
     const playHls = () => {
       if (generation !== playbackGeneration) return;
       clearReconnect();
+      clearHlsWatchdog();
       usingHls = true;
+      hlsAttempted = true;
       video.onended = null;
       releaseTsPlayer();
       video.pause();
       video.removeAttribute("src");
       video.load();
       playerState.textContent = hevc ? "HEVC · HLS" : hlsFallbackFromTs ? "الانتقال إلى HLS المستمر…" : "جارٍ تجربة HLS";
-      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      // hls.js wherever it works; the element's own player only on Apple's
+      // stack or when hls.js has nothing to run on. Handing the raw manifest to
+      // Chrome because canPlayType said "maybe" just errors the element out.
+      const hlsJsUsable = Boolean(window.Hls && window.Hls.isSupported());
+      if (NATIVE_HLS && !hlsJsUsable) {
         video.src = hlsUrl;
         video.addEventListener("error", onError, { once: true });
+        // Safari can accept a manifest and then sit at readyState 0 forever.
+        // Without this the lab just shows "جارٍ تجربة HLS" and never recovers.
+        hlsWatchdog = setTimeout(() => {
+          hlsWatchdog = null;
+          if (generation !== playbackGeneration || video.readyState >= 3) return;
+          fallBackToTs("native HLS stalled");
+        }, 8000);
         const attempt = video.play();
         if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
         return;
       }
-      if (!(window.Hls && window.Hls.isSupported())) {
+      if (!hlsJsUsable) {
         onError();
         return;
       }
@@ -438,7 +532,9 @@
     const playTs = () => {
       if (generation !== playbackGeneration) return;
       clearReconnect();
+      clearHlsWatchdog();
       usingHls = false;
+      tsAttempted = true;
       releaseTsPlayer();
       video.pause();
       video.removeAttribute("src");
@@ -450,6 +546,13 @@
         releaseTsPlayer();
         if (!tsEverPlayed) tsStartupFailures += 1;
         if (!tsEverPlayed && tsStartupFailures > 3) {
+          // Safari arrives here having already failed HLS. Retrying it would
+          // just ping-pong the two dead paths forever, so stop and say so.
+          if (hlsAttempted) {
+            playerState.textContent = "تعذر التشغيل بأي مسار متاح";
+            announcePlaybackFailed("all-paths-failed");
+            return;
+          }
           playerState.textContent = "MPEG-TS لم يبدأ · تجربة HLS";
           reconnectTimer = setTimeout(() => {
             reconnectTimer = null;
@@ -479,27 +582,29 @@
         }, delay);
       };
 
-      const mpegTsConfig = isIosSafari()
-        ? {
-            enableWorker: false,
-            enableWorkerForMSE: true,
-            enableStashBuffer: true,
-            stashInitialSize: 384 * 1024,
-            lazyLoad: false,
-            liveSync: false,
-            liveBufferLatencyChasing: false,
-          }
-        : {
-            enableWorker: false,
-            enableStashBuffer: false,
-            stashInitialSize: 128,
-          };
-
+      // One config for every MSE browser. The iOS-specific variant that used to
+      // live here (enableWorkerForMSE + a 384KB stash) blacked Safari out: MSE
+      // in a dedicated worker is not a path Safari supports, and Safari is no
+      // longer routed through mpegts.js first anyway.
       mpegTsPlayer = window.mpegts.createPlayer(
         { type: "mpegts", isLive: true, url: tsUrl },
-        mpegTsConfig,
+        {
+          enableWorker: false,
+          enableStashBuffer: false,
+          stashInitialSize: 128,
+        },
       );
       mpegTsPlayer.attachMediaElement(video);
+      mpegTsPlayer.on(window.mpegts.Events.MEDIA_INFO, (info) => {
+        if (generation !== playbackGeneration) return;
+        announceMediaInfo({
+          videoCodec: info?.videoCodec || null,
+          audioCodec: info?.audioCodec || null,
+          width: info?.width || null,
+          height: info?.height || null,
+          fps: info?.fps || null,
+        });
+      });
       mpegTsPlayer.on(window.mpegts.Events.ERROR, (type, detail, info) => {
         console.warn("IPTV Lab MPEG-TS playback error", type, detail, info || "");
         scheduleReconnect(type, detail);
@@ -510,11 +615,13 @@
       if (attempt?.catch) attempt.catch(() => { playerState.textContent = "اضغط تشغيل"; });
     };
 
-    if (!hevc && channel.tsPlaybackUrl && window.mpegts?.isSupported()) {
-      playTs();
+    // MPEG-TS first everywhere. HLS only when this browser cannot run the TS
+    // remux at all, and then mostly to produce an honest error.
+    if (!tsUsable) {
+      playHls();
       return;
     }
-    playHls();
+    playTs();
   }
 
   function selectChannel(channel, button) {

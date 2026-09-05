@@ -28,10 +28,11 @@
     button, input, select { font: inherit; }
     button, a { -webkit-tap-highlight-color: transparent; }
     .topbar { position: sticky; top: 0; z-index: 30; border-bottom: 1px solid var(--line); background: rgba(8,11,18,.92); backdrop-filter: blur(18px); }
-    .topbar-inner { width: min(1440px, 92vw); min-height: 68px; margin: auto; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .topbar-inner { width: min(1440px, 92vw); min-height: 68px; margin: auto; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 18px; padding: 8px 0; }
     .brand { color: var(--text); text-decoration: none; font-weight: 800; font-size: 1.18rem; letter-spacing: -.02em; }
     .brand b { color: var(--green); }
     .chip { display: inline-flex; align-items: center; min-height: 32px; padding: 0 11px; border-radius: 999px; border: 1px solid rgba(255,200,87,.4); color: var(--warning); font-size: .78rem; font-weight: 800; }
+    .build-badge { margin-inline-end: auto; display: inline-flex; align-items: center; min-height: 32px; padding: 0 12px; border-radius: 999px; color: #05120d; background: var(--green); font-size: .78rem; font-weight: 800; letter-spacing: .01em; white-space: nowrap; }
     main { width: min(1440px, 92vw); margin: 0 auto; padding: 36px 0 70px; }
     .intro { margin-bottom: 22px; }
     .eyebrow { color: var(--warning); font-size: .78rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
@@ -80,6 +81,7 @@
     .quality-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 11px; }
     .quality-head strong { font-size: .9rem; }
     .quality-head span { color: var(--muted); font-size: .7rem; }
+    .probe-btn { min-height: 32px; padding: 0 11px; font-size: .74rem; font-weight: 700; }
     .quality-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(145px, 1fr)); gap: 8px; }
     .quality-item { min-width: 0; padding: 10px; border: 1px solid rgba(255,255,255,.07); border-radius: 9px; background: rgba(255,255,255,.025); }
     .quality-key { display: block; margin-bottom: 4px; color: var(--muted); font-size: .68rem; }
@@ -98,6 +100,10 @@
   <header class="topbar">
     <div class="topbar-inner">
       <a class="brand" href="index.html">Kora<b>Zero</b> / Lab</a>
+      <!-- Deploy marker. Bump the number on every landed fix so it is obvious
+           at a glance whether the page being tested is the new build or a
+           cached one. -->
+      <span class="build-badge" id="buildBadge" dir="ltr">Claude fix 1</span>
       <span class="chip">تجربة معزولة — ليست صفحة المشاهدة</span>
     </div>
   </header>
@@ -126,7 +132,10 @@
           <h2 id="selectedName">لا توجد قناة محددة</h2>
           <p id="selectedMeta">التشغيل يستخدم رابطاً مشفّراً قصير العمر من KoraZero.</p>
           <div class="quality-panel" id="qualityPanel" aria-live="polite">
-            <div class="quality-head"><strong>فحص الجودة والتوافق</strong><span>قياس مباشر من المشغّل</span></div>
+            <div class="quality-head">
+              <strong>فحص الجودة والتوافق</strong>
+              <button class="action-btn probe-btn" id="probeBtn" type="button">افحص المصدر</button>
+            </div>
             <div class="quality-grid">
               <div class="quality-item"><span class="quality-key">Codec</span><span class="quality-value" id="qualityCodec">اختر قناة</span></div>
               <div class="quality-item"><span class="quality-key">التوافق الحالي</span><span class="quality-value" id="qualityCompatibility">—</span></div>
@@ -139,7 +148,7 @@
             </div>
             <p class="quality-note" id="qualityNote">اختر قناة لقياس الجودة والتوافق الفعليين.</p>
           </div>
-          <div class="security-note">البوابة التجريبية تسمح عادة باتصال واحد — أغلق أي مشغّل آخر قبل التجربة. ابدأ من فئة CA SPORTS (H.264). مجموعات beIN هنا غالباً HEVC وقد تبقى سوداء على الهاتف. هذه الصفحة غير مربوطة بـ watch.</div>
+          <div class="security-note">البوابة التجريبية تسمح عادة باتصال واحد — أغلق أي مشغّل آخر قبل التجربة. التشغيل يتم عبر MPEG-TS في كل المتصفحات. مسار HLS للبوابة لا يعمل خلف الوسيط (الـmanifest يرد 200 بينما كل مقطع يرد 403)، لذا يبقى احتياطياً فقط. هذه الصفحة غير مربوطة بـ watch.</div>
         </div>
       </div>
 
@@ -169,7 +178,7 @@
     </section>
   </main>
 
-  <script src="assets/js/iptv-lab.js?v=20260904cursor3"></script>
-  <script src="assets/js/iptv-quality.js?v=20260904fallback3"></script>
+  <script src="assets/js/iptv-lab.js?v=20260905ts2"></script>
+  <script src="assets/js/iptv-quality.js?v=20260905ts2"></script>
 </body>
 </html>

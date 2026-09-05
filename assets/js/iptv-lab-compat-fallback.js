@@ -8,7 +8,6 @@
 
   const nativeHls = Boolean(video.canPlayType("application/vnd.apple.mpegurl"));
   const hlsJsSupported = Boolean(window.Hls && window.Hls.isSupported?.());
-  const probeCache = new Map();
   let generation = 0;
   let fallbackHls = null;
 
@@ -19,11 +18,14 @@
     return body;
   }
 
+  // Always go through the quality panel's shared probe. This file used to keep
+  // its own cache and fire a second /probe on every channel click; on a line
+  // provisioned with max_connections: 1 that was two extra `/live/...` requests
+  // racing the player for the only slot.
   async function getProbe(streamId) {
-    if (!probeCache.has(streamId)) {
-      probeCache.set(streamId, getJson(`/api/iptv-lab/probe?stream=${encodeURIComponent(streamId)}`).catch(() => null));
-    }
-    return probeCache.get(streamId);
+    const shared = window.KZIptvLabProbe?.request;
+    if (!shared) return null;
+    return shared(streamId).catch(() => null);
   }
 
   async function getChannel(streamId) {
@@ -109,12 +111,11 @@
   }
 
   async function maybeRecover(streamId, token) {
-    const probe = await getProbe(streamId);
-    if (token !== generation || !probe?.playable || probe.mobileCompatible) return;
-
-    // Give the existing player first chance. This helper is fallback-only.
-    await new Promise((resolve) => setTimeout(resolve, 2600));
     if (token !== generation || hasDecodedVideo()) return;
+
+    const probe = await getProbe(streamId);
+    if (token !== generation || hasDecodedVideo()) return;
+    if (!probe?.playable || probe.mobileCompatible) return;
 
     const channel = await getChannel(streamId).catch(() => null);
     if (token !== generation || !channel || hasDecodedVideo()) return;
@@ -136,26 +137,42 @@
     } else {
       // Do not replace the original player error with a fake success. The
       // remaining class needs remux/transcode rather than another JS retry.
+      // Leaving "تجربة توافق…" on screen would claim an attempt is still
+      // running when it has already finished and failed.
+      state.textContent = "تعذر التشغيل بأي مسار متاح";
       window.dispatchEvent(new CustomEvent("kz:iptv-compat-unresolved", {
         detail: { streamId, codec, audio, protocol: probe.protocol || "" },
       }));
     }
   }
 
+  // Selecting a channel only arms this helper — it makes no request of its own.
+  // It used to probe and fetch the channel on every click, which on a
+  // max_connections: 1 line was two more `/live/...` requests competing with
+  // the player that had just started.
+  let armedStreamId = "";
   grid.addEventListener("click", (event) => {
     const card = event.target.closest?.(".channel[data-stream-id]");
     if (!card) return;
     const streamId = String(card.dataset.streamId || "");
     if (!streamId) return;
     cleanupFallback();
-    const token = ++generation;
-    maybeRecover(streamId, token).catch((error) => {
+    armedStreamId = streamId;
+    generation += 1;
+  });
+
+  // Run only once the main player has exhausted its own MPEG-TS and HLS paths.
+  // By then nothing is holding the connection, so the extra attempt is free.
+  window.addEventListener("kz:iptv-playback-failed", () => {
+    if (!armedStreamId) return;
+    const token = generation;
+    maybeRecover(armedStreamId, token).catch((error) => {
       console.warn("IPTV Lab compatibility fallback failed", error);
     });
   });
 
   window.KZIptvLabCompatFallback = {
-    version: "20260904fallback1",
+    version: "20260905ts2",
     getProbe,
   };
 })();

@@ -1,3 +1,4 @@
+import { createTtlSingleFlight } from "../../lib/probe-cache.js";
 import {
   createMediaToken,
   fetchXtreamJson,
@@ -7,6 +8,11 @@ import {
   probeXtreamPlayback,
   streamUrl,
 } from "../adapters/xtream.js";
+
+// A probe is a real stream request. On a max_connections: 1 line it competes
+// with the player for the only slot, so never run two at once for the same
+// channel and reuse the answer instead of re-opening the stream.
+const probeCache = createTtlSingleFlight({ ttlMs: 5 * 60 * 1000 });
 
 function directPortalIds(env) {
   return new Set(
@@ -170,8 +176,13 @@ export async function probeXtreamChannel(env, searchParams) {
     return { body: { ok: false, playable: false, error: "stream is required" }, status: 400 };
   }
   const portal = selected.portals[0];
-  const sources = await fetchXtreamSourceMaps(portal).catch(() => ({ hls: new Map(), ts: new Map() }));
-  const result = await probeXtreamPlayback(portal, streamId, sources);
+  const result = await probeCache.run(`${portal.id}:${streamId}`, async () => {
+    const sources = await fetchXtreamSourceMaps(portal).catch(() => ({
+      hls: new Map(),
+      ts: new Map(),
+    }));
+    return probeXtreamPlayback(portal, streamId, sources);
+  });
   return {
     body: {
       ok: true,
@@ -351,8 +362,14 @@ export async function getXtreamLive(env, searchParams) {
           fetchXtreamJson(portal, "get_live_streams", 20000, streamParams).catch(() => []),
         ]);
         const apiRows = Array.isArray(streamRows) ? streamRows : [];
+        // A synthesized /live/user/pass/<id>.ts URL only matches panels that
+        // serve every channel from the portal host. Country/reseller groups
+        // (USA FOX, …) are handed off to another origin in the playlist, so a
+        // channel found by search used to play from a made-up URL while the
+        // same channel found by category played from the real one. Any filtered
+        // request now resolves the exact playlist URL.
         const needExactSources =
-          Boolean(category || streamId) ||
+          Boolean(category || streamId || query) ||
           !apiRows.length ||
           (directRequested && allowedDirectPortals.has(portal.id) && Boolean(streamId));
         const sources = needExactSources
