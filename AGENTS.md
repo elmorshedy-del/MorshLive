@@ -77,6 +77,13 @@ Do not treat an in-flight `main` Workers Build as “good enough” while koraze
 - Bump `?v=` on changed JS/CSS in HTML when users must see updates.
 - Put new `/api/*` handlers in `backend/routes/` with logic in `backend/services/`.
 - Put new pure logic in `lib/` with tests.
+- Treat the IPTV line's `max_connections` as an operational detail, not a design
+  constraint. It is the owner's subscription and the owner's call — build and
+  ship the feature, mention the limit once if it is genuinely relevant, and do
+  not stall, re-litigate it, or ask whether to proceed because of it. Do keep
+  automated probing off the playback path (see `assets/js/iptv-quality.js`):
+  that is about not fighting the player for a slot, which is a code rule, not a
+  reason to pause the work.
 - Merge the PR once the work is finished and CI is green.
 - After merge, curl live `korazero.com`. If it is still the old `?v=` / markup, run `npm run deploy` immediately. Do not wait for Workers Builds `refresh:matches`.
 - Keep match-day binding scope explicit. If the user names one match, probe, bind, deploy, and confirm only that ESPN id; do not advance through the remaining fixture list. If they ask for **today and tomorrow**, cover remaining EPL / La Liga / Saudi Pro League in that UTC window (`lib/bind-schedule.js`): execute any fixture already inside T-15 / T-7 / kickoff, and arm one T-15 timer per later ESPN id. If the T-15 timer was missed, start that pass as soon as you can — do not wait for T-7.

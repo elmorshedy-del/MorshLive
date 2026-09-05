@@ -1,4 +1,5 @@
 import { iptvLabWorkerEnv } from "../../lib/iptv-lab.js";
+import { resolveXtreamChannel } from "../../lib/xtream-channel-map.js";
 import { fetchXtreamJson, fetchXtreamSourceMaps, loadXtreamPortals } from "../adapters/xtream.js";
 import { getXtreamCategories, getXtreamLive, getXtreamStatus, probeXtreamChannel } from "./xtream.js";
 
@@ -299,6 +300,84 @@ export async function getIptvLabEpg(env) {
         source: "IPTV_LAB_JSON",
         error: String(error?.message || error),
       },
+      status: 502,
+    };
+  }
+}
+
+/**
+ * One call from a match page: "which stream is beIN Sports 1, and how do I play
+ * it right now".
+ *
+ * The catalogue is ~1.7MB, so the browser must never resolve this itself. The
+ * worker holds the catalogue, matches the channel by name (see
+ * lib/xtream-channel-map.js for why not by pinned id), and hands back the same
+ * short-lived signed URLs the lab player uses — so the watch page can mount the
+ * exact player the lab proved out, with nothing new in the middle.
+ */
+export async function getIptvLabChannel(env, searchParams) {
+  const lab = labOrError(env);
+  if (lab.error) return missingSecret(lab);
+
+  const channelId = String(searchParams.get("id") || "").trim();
+  if (!channelId) {
+    return { body: { ok: false, error: "id is required", isolated: true }, status: 400 };
+  }
+
+  try {
+    const { streams } = await loadCatalog(lab);
+    const resolved = resolveXtreamChannel(channelId, streams);
+    if (!resolved) {
+      // Say so rather than falling back to something adjacent: a wrong channel
+      // plays a different match, which is worse than no picture.
+      return {
+        body: {
+          ok: false,
+          channelId,
+          error: "channel not found in catalogue",
+          isolated: true,
+          source: "IPTV_LAB_JSON",
+        },
+        status: 404,
+      };
+    }
+
+    const params = new URLSearchParams({ stream: resolved.streamId, limit: "1" });
+    const live = await getXtreamLive(lab.env, params);
+    const row = (live.body?.portals || []).flatMap((block) => block.streams || [])[0] || null;
+    if (!row) {
+      return {
+        body: { ok: false, channelId, error: "stream unavailable", isolated: true },
+        status: 502,
+      };
+    }
+
+    return {
+      body: {
+        ok: true,
+        isolated: true,
+        source: "IPTV_LAB_JSON",
+        channelId,
+        streamId: resolved.streamId,
+        name: resolved.name,
+        codec: resolved.codec,
+        quality: resolved.quality,
+        playbackUrl: row.playbackUrl,
+        tsPlaybackUrl: row.tsPlaybackUrl,
+        // Same channel, lower-preference encodings. Handy when the picked feed
+        // is down, and never a different match.
+        alternates: resolved.alternates.slice(0, 4).map((alt) => ({
+          streamId: alt.streamId,
+          name: alt.name,
+          codec: alt.codec,
+          quality: alt.quality,
+        })),
+      },
+      status: 200,
+    };
+  } catch (error) {
+    return {
+      body: { ok: false, channelId, error: String(error?.message || error), isolated: true },
       status: 502,
     };
   }

@@ -994,6 +994,65 @@
     loadedUrl = `pinned-mirror:${url}`;
   }
 
+  /**
+   * Play the match from our own Xtream line, the way the IPTV lab does it.
+   *
+   * The lab proved this path: one MPEG-TS connection, the shared
+   * window.KZ_LIVE_TS_CONFIG, nothing else in the middle. The only thing the
+   * watch page needs on top is "which stream is this channel", and
+   * /api/iptv-lab/channel answers that server-side by matching the live
+   * catalogue — so no 1.7MB catalogue reaches the browser and no stream id is
+   * pinned in front-end code, which is what made the old map drift.
+   */
+  const labChannelCache = new Map();
+
+  async function fetchLabChannel(channelId) {
+    if (!channelId) return null;
+    if (!labChannelCache.has(channelId)) {
+      labChannelCache.set(
+        channelId,
+        fetch(`/api/iptv-lab/channel?id=${encodeURIComponent(channelId)}`, { cache: "no-store" })
+          .then(async (res) => {
+            const body = await res.json().catch(() => ({}));
+            return res.ok && body.ok ? body : null;
+          })
+          .catch(() => null),
+      );
+    }
+    return labChannelCache.get(channelId);
+  }
+
+  async function mountLabChannel() {
+    if (!shell || !window.mpegts?.isSupported?.()) return false;
+    const channelId = (match && match.channelId) || channel.id;
+    const info = await fetchLabChannel(channelId);
+    if (!info?.tsPlaybackUrl) return false;
+
+    destroyInlineHls();
+    shell.innerHTML = `<video class="kz-main-video" controls autoplay muted playsinline webkit-playsinline></video>`;
+    const video = shell.querySelector(".kz-main-video");
+    if (!video) return false;
+
+    activeMpegTs = window.mpegts.createPlayer(
+      { type: "mpegts", isLive: true, url: info.tsPlaybackUrl },
+      window.KZ_LIVE_TS_CONFIG,
+    );
+    activeMpegTs.attachMediaElement(video);
+    activeMpegTs.on(window.mpegts.Events.ERROR, () => {
+      // A dead feed must not strand the viewer on a black box: drop the cached
+      // answer and let the normal source chain take over on the next attempt.
+      labChannelCache.delete(channelId);
+      loadPlayer().catch(() => {});
+    });
+    activeMpegTs.load();
+    const attempt = activeMpegTs.play();
+    if (attempt?.catch) attempt.catch(() => bindUnmuteOverlay(video));
+    bindUnmuteOverlay(video);
+    loadedUrl = `iptv-lab:${channelId}:${info.streamId}`;
+    applyWatchChrome();
+    return true;
+  }
+
   async function loadPlayer() {
     if (!shell) return;
     if (xtreamMode) {
@@ -1008,6 +1067,10 @@
       }
       return;
     }
+    // Our own IPTV first. Everything below this point is a third-party
+    // aggregator we do not control, and those go dark without warning.
+    if (await mountLabChannel()) return;
+
     // Bridge and WC pinned mirrors are leftover 24/7 / World Cup rails.
     // Stream plans own playback — do not offer them on match watch.
     if (allowLegacySourceChrome() && activeEmbedKey === "bridge" && window.STREAM_BRIDGE && window.STREAM_BRIDGE.hasStream(channel.id)) {
