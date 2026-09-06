@@ -10,10 +10,10 @@
     return;
   }
 
-  // CHATGPT-STAMP 2026-09-05 — WATCH-ENTRY-GATE
-  // Keep every match card/link clickable, but let the watch page itself enforce
-  // the existing T-30 through post-match TV window before any player code loads.
-  // IPTV Lab is not modified.
+  // CHATGPT-STAMP 2026-09-06T10:19-04:00 — WATCH-ENTRY-GATE-2
+  // Cards stay clickable. The watch page enforces the T-30 window, while the
+  // gate preserves watch.js boot even when fixture resolution finishes after
+  // DOMContentLoaded. IPTV Lab is not modified.
   window.__KZ_WATCH_LOADER = "timing-gate";
-  document.write('<script src="assets/js/watch-entry-gate.js?v=20260905entrygate1"><\/script>');
+  document.write('<script src="assets/js/watch-entry-gate.js?v=20260906entrygate2"><\/script>');
 })();
