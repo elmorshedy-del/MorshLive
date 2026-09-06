@@ -58,6 +58,42 @@
       : `watch.html?ch=live&match=${m.id}`;
   }
 
+  function isBarcelonaMatch(m) {
+    return [m?.home, m?.away].some((name) => /^(?:fc\s+)?barcelona$/i.test(String(name || "").trim()));
+  }
+
+  function isManchesterCityMatch(m) {
+    return [m?.home, m?.away].some((name) => /^manchester\s+city$/i.test(String(name || "").trim()));
+  }
+
+  function isLiverpoolMatch(m) {
+    return [m?.home, m?.away].some((name) => /^liverpool$/i.test(String(name || "").trim()));
+  }
+
+  function isTottenhamMatch(m) {
+    return [m?.home, m?.away].some((name) => /^tottenham(?:\s+hotspur)?$/i.test(String(name || "").trim()));
+  }
+
+  function isAtleticoMadridMatch(m) {
+    return [m?.home, m?.away].some((name) => /^atl[eé]tico\s+madrid$/i.test(String(name || "").trim()));
+  }
+
+  function hasPremiumWatchTab(m) {
+    return (
+      isBarcelonaMatch(m)
+      || isManchesterCityMatch(m)
+      || isLiverpoolMatch(m)
+      || isTottenhamMatch(m)
+      || isAtleticoMadridMatch(m)
+    );
+  }
+
+  function premiumWatchHref(m) {
+    const url = new URL(watchHref(m), location.href);
+    url.searchParams.set("source", "iptv-premium");
+    return `${url.pathname.replace(/^\//, "")}${url.search}`;
+  }
+
   function isCommentaryAvailable(m) {
     return window.isRecentlyEndedMatch && window.isRecentlyEndedMatch(m);
   }
@@ -79,6 +115,21 @@
     }
     if (isSaudiProLeagueMatch(m)) {
       return `<a class="watch-link watch-link--soon" href="${watchHref(m)}">${saudiCentreLabel(m)}</a>`;
+    }
+    if (hasPremiumWatchTab(m)) {
+      return `
+        <div class="watch-source-toggle" role="group" aria-label="${t("watch.sourceTabsAria")}">
+          <span class="watch-source-toggle__kicker">${t("watch.sourceToggle")}</span>
+          <div class="watch-source-toggle__track">
+            <a class="watch-source-toggle__opt watch-source-toggle__opt--premium" href="${premiumWatchHref(m)}">
+              <span>${t("card.watchPremium")}</span>
+              <small>${t("card.experimental")}</small>
+            </a>
+            <a class="watch-source-toggle__opt watch-source-toggle__opt--original" href="${watchHref(m)}">
+              <span>${t("card.watchOriginal")}</span>
+            </a>
+          </div>
+        </div>`;
     }
     const label = m.status === "live" ? t("card.watchNow") : t("card.watch");
     return `<a class="watch-link" href="${watchHref(m)}">${ICON.play} ${label}</a>`;
