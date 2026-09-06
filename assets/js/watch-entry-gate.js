@@ -1,4 +1,4 @@
-/* CHATGPT-STAMP 2026-09-06T10:19-04:00 — WATCH-ENTRY-GATE-2
+/* CHATGPT-STAMP 2026-09-06T10:44-04:00 — WATCH-ISOLATION-HOTFIX-1
  *
  * Surgical watch-page gate only. Cards stay clickable and unchanged.
  * Outside the shared KZIptvWindow eligibility window, do not load watch.js at
@@ -13,8 +13,11 @@
  * by watch.js and invoke those listeners once. Existing page listeners are not
  * re-fired and the normal synchronous path remains unchanged.
  *
- * Rollback: remove this file and restore watch-loader.js to load watch.js
- * directly.
+ * Isolation hotfix: watch.js is restored to the pre-Lab-takeover playback path.
+ * The public watch page must not consume /api/iptv-lab/channel or compete with
+ * the isolated Lab account. This file only cache-busts that restored watch.js.
+ *
+ * Rollback: revert this commit; IPTV Lab files are intentionally untouched.
  */
 (function (global) {
   "use strict";
@@ -80,7 +83,7 @@
     } catch (_) {
       /* Continuity helper is best-effort; preserve the existing watch path. */
     }
-    await loadWatchScript("assets/js/watch.js?v=20260906entrygate2");
+    await loadWatchScript("assets/js/watch.js?v=20260906restoreplan1");
   }
 
   function hidePlaybackChrome() {
