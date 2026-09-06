@@ -5,6 +5,7 @@
   const stamp = "20260904bindingfix1";
   const params = new URLSearchParams(location.search);
   const cleanPath = location.pathname.replace(/\/$/, "");
+  const isHomePage = cleanPath === "" || cleanPath === "/index.html";
   const isolatedXtreamWatch =
     (cleanPath === "/watch.html" || cleanPath === "/watch")
     && params.get("source") === "xtream";
@@ -64,6 +65,10 @@
     document.write(`<script src="/assets/js/watch-arabic-editorial.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/english-editorial.js?v=${stamp}"><\/script>`);
     document.write(`<script src="/assets/js/match-stats-editorial.js?v=${stamp}"><\/script>`);
+    if (isHomePage) {
+      // CHATGPT-STAMP 2026-09-06T11:28-04:00 — homepage service-status copy only.
+      document.write('<script src="/assets/js/home-stream-notice.js?v=20260906streamnotice1"><\/script>');
+    }
     if (!isolatedXtreamWatch) {
       document.write(`<script src="/assets/js/iptv-channel-resolver.js?v=${stamp}"><\/script>`);
       document.write(`<script src="/assets/js/iptv-window.js?v=${stamp}"><\/script>`);
@@ -111,6 +116,10 @@
       });
     });
   });
+
+  if (isHomePage) {
+    addScript("/assets/js/home-stream-notice.js?v=20260906streamnotice1");
+  }
 
   if (!isolatedXtreamWatch) {
     addScript(`/assets/js/iptv-channel-resolver.js?v=${stamp}`, () => {
