@@ -13,6 +13,17 @@ describe("shouldRefuseStaleMainDeploy", () => {
     ).toBe(false);
   });
 
+  it("refuses every non-main Workers Build", () => {
+    expect(
+      shouldRefuseStaleMainDeploy({
+        workersCi: "1",
+        branch: "backup/pre-rollback",
+        headSha: "same",
+        mainSha: "same",
+      }),
+    ).toBe(true);
+  });
+
   it("refuses a Workers Builds main job whose commit is no longer origin/main", () => {
     expect(
       shouldRefuseStaleMainDeploy({
@@ -24,7 +35,7 @@ describe("shouldRefuseStaleMainDeploy", () => {
     ).toBe(true);
   });
 
-  it("lets the current main tip finish its crawl and deploy", () => {
+  it("lets the current main tip deploy", () => {
     expect(
       shouldRefuseStaleMainDeploy({
         workersCi: "1",
@@ -35,7 +46,18 @@ describe("shouldRefuseStaleMainDeploy", () => {
     ).toBe(false);
   });
 
-  it("fails open when git refs are missing so a fetch blip cannot freeze deploys", () => {
+  it("allows an unknown branch only when HEAD still proves it is current main", () => {
+    expect(
+      shouldRefuseStaleMainDeploy({
+        workersCi: "1",
+        branch: "",
+        headSha: "tip",
+        mainSha: "tip",
+      }),
+    ).toBe(false);
+  });
+
+  it("fails closed when the main ref cannot be proven", () => {
     expect(
       shouldRefuseStaleMainDeploy({
         workersCi: "1",
@@ -43,6 +65,6 @@ describe("shouldRefuseStaleMainDeploy", () => {
         headSha: "abc",
         mainSha: "",
       }),
-    ).toBe(false);
+    ).toBe(true);
   });
 });

@@ -1,0 +1,8 @@
+{
+  "baseline": "8fe04a34667a75637d20bb46c4072a9925ab573c",
+  "reason": "Describe the exact production streaming problem and why a playback change is necessary.",
+  "expiresAt": "2026-09-06T23:00:00Z",
+  "allowedFiles": [
+    "assets/js/watch.js"
+  ]
+}

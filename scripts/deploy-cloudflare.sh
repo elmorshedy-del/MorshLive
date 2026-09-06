@@ -4,6 +4,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
+# CHATGPT-STAMP 2026-09-06T14:33-04:00 — PRODUCTION-STREAM-LOCK-1
+# Refuse to deploy if production playback drifted from the known-good baseline.
+node scripts/verify-stream-lock.mjs
+
 if ! RESOLVE=$(node scripts/resolve-cloudflare-token.js --export 2>/dev/null); then
   echo "Could not find a deploy-capable Cloudflare token."
   echo ""
@@ -20,6 +24,9 @@ eval "$RESOLVE"
 
 echo "Token resolved. Verifying..."
 node scripts/verify-deploy-token.js
+
+# Check again at the last possible moment before replacing the production Worker.
+node scripts/verify-stream-lock.mjs
 
 echo "Deploying to Cloudflare Workers (morshlive)..."
 npx wrangler deploy
