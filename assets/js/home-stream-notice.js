@@ -1,4 +1,4 @@
-/* CHATGPT-STAMP 2026-09-06T11:31-04:00 — HOME-STREAM-NOTICE-2
+/* CHATGPT-STAMP 2026-09-06 — HOME-STREAM-NOTICE-3
  *
  * Homepage notice only. This does not touch playback, IPTV Lab, routing, or
  * match-card logic. Arabic wording follows natural service-status phrasing used
@@ -13,7 +13,7 @@
   const COPY = {
     ar: {
       kicker: "تنويه",
-      title: "تحديث على خدمة البث",
+      title: "نعمل على تحسين البث",
       body: "نعتذر عن أي اضطرابات واجهتكم مؤخراً أثناء المشاهدة. نعمل حالياً على تطوير نظام البث لتحسين الاستقرار وجودة المشاهدة. خلال فترة التحديث، قد تتأثر بعض المباريات بشكل مؤقت. تعمل فرقنا الفنية على معالجة أي مشكلة فور حدوثها وإعادة استقرار الخدمة بأسرع وقت ممكن. نشكركم على تفهمكم وصبركم.",
     },
     en: {
