@@ -1,11 +1,11 @@
-/* CHATGPT-STAMP 2026-09-06T11:28-04:00 — HOME-STREAM-NOTICE-1
+/* CHATGPT-STAMP 2026-09-06T11:31-04:00 — HOME-STREAM-NOTICE-2
  *
  * Homepage notice only. This does not touch playback, IPTV Lab, routing, or
- * match-card logic. It replaces the stale "stuttering is fixed" message with
- * a transparent service-status update while KoraZero rolls out a new streaming
- * system.
+ * match-card logic. Arabic wording follows natural service-status phrasing used
+ * by telecom and digital-service providers: temporary impact, active technical
+ * teams, restoring stability, and thanking users for their patience.
  *
- * Rollback: remove this file and its loader line from assets/js/i18n.js.
+ * Rollback: restore the previous version of this file.
  */
 (function (global) {
   "use strict";
@@ -13,8 +13,8 @@
   const COPY = {
     ar: {
       kicker: "تنويه",
-      title: "نعتذر عن مشاكل البث",
-      body: "نعتذر عن مشاكل البث التي ظهرت مؤخراً. تعمل KoraZero حالياً على إطلاق نظام بث جديد لتحسين الاستقرار وجودة المشاهدة. قد تحدث بعض الانقطاعات المؤقتة أثناء هذا التحديث، ونحن نعمل على حلها بأسرع وقت. شكراً لصبركم وتفهمكم.",
+      title: "تحديث على خدمة البث",
+      body: "نعتذر عن أي اضطرابات واجهتكم مؤخراً أثناء المشاهدة. نعمل حالياً على تطوير نظام البث لتحسين الاستقرار وجودة المشاهدة. خلال فترة التحديث، قد تتأثر بعض المباريات بشكل مؤقت. تعمل فرقنا الفنية على معالجة أي مشكلة فور حدوثها وإعادة استقرار الخدمة بأسرع وقت ممكن. نشكركم على تفهمكم وصبركم.",
     },
     en: {
       kicker: "Update",
