@@ -1,10 +1,17 @@
-/* CHATGPT-STAMP 2026-09-05 — WATCH-ENTRY-GATE
+/* CHATGPT-STAMP 2026-09-06T10:19-04:00 — WATCH-ENTRY-GATE-2
  *
  * Surgical watch-page gate only. Cards stay clickable and unchanged.
  * Outside the shared KZIptvWindow eligibility window, do not load watch.js at
  * all; render the existing waiting-state presentation instead. This prevents
  * generic channel buttons / fallback routes from accidentally starting a
  * stream hours before kickoff. IPTV Lab and its player logic are untouched.
+ *
+ * Regression fix: resolving match timing is asynchronous, so on a live match
+ * watch.js can be injected after DOMContentLoaded has already fired. watch.js
+ * registers its bootstrap on DOMContentLoaded, which meant the player could
+ * never initialize. When loading late, capture only the listeners registered
+ * by watch.js and invoke those listeners once. Existing page listeners are not
+ * re-fired and the normal synchronous path remains unchanged.
  *
  * Rollback: remove this file and restore watch-loader.js to load watch.js
  * directly.
@@ -27,6 +34,43 @@
     });
   }
 
+  async function loadWatchScript(src) {
+    if (document.readyState === "loading") {
+      await loadScript(src);
+      return;
+    }
+
+    const nativeAddEventListener = document.addEventListener;
+    const lateReadyListeners = [];
+
+    document.addEventListener = function patchedAddEventListener(type, listener, options) {
+      if (type === "DOMContentLoaded") {
+        lateReadyListeners.push(listener);
+        return;
+      }
+      return nativeAddEventListener.call(this, type, listener, options);
+    };
+
+    try {
+      await loadScript(src);
+    } finally {
+      document.addEventListener = nativeAddEventListener;
+    }
+
+    const readyEvent = new Event("DOMContentLoaded");
+    for (const listener of lateReadyListeners) {
+      try {
+        if (typeof listener === "function") {
+          await listener.call(document, readyEvent);
+        } else if (listener && typeof listener.handleEvent === "function") {
+          await listener.handleEvent.call(listener, readyEvent);
+        }
+      } catch (error) {
+        console.error("KoraZero late watch bootstrap failed", error);
+      }
+    }
+  }
+
   async function startWatch() {
     if (started) return;
     started = true;
@@ -36,7 +80,7 @@
     } catch (_) {
       /* Continuity helper is best-effort; preserve the existing watch path. */
     }
-    await loadScript("assets/js/watch.js?v=20260905entrygate1");
+    await loadWatchScript("assets/js/watch.js?v=20260906entrygate2");
   }
 
   function hidePlaybackChrome() {
@@ -134,7 +178,6 @@
   }
 
   async function boot() {
-    // Explicit diagnostic/Xtream URLs retain their existing isolated path.
     if (params.get("source") === "xtream") {
       await startWatch();
       return;
@@ -154,8 +197,6 @@
     }
 
     const match = await resolveMatch();
-    // Fail open if fixture lookup itself is unavailable; never strand a valid
-    // live match because of a metadata outage.
     if (!match) {
       await startWatch();
       return;
@@ -169,8 +210,6 @@
 
     renderWaiting(match, phase);
 
-    // If this is simply early, activate the normal player exactly at T-30
-    // without requiring the viewer to click the card again or refresh.
     const minutes = global.KZIptvWindow.minutesFromKickoff(match);
     if (Number.isFinite(minutes) && minutes < -global.KZIptvWindow.PRE_MATCH_MINUTES) {
       const untilOpen = Math.max(1000, (-global.KZIptvWindow.PRE_MATCH_MINUTES - minutes) * 60000 + 250);
