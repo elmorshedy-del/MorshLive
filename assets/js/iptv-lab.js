@@ -588,7 +588,11 @@
       // longer routed through mpegts.js first anyway.
       mpegTsPlayer = window.mpegts.createPlayer(
         { type: "mpegts", isLive: true, url: tsUrl },
-        window.KZ_LIVE_TS_CONFIG,
+        {
+          enableWorker: false,
+          enableStashBuffer: false,
+          stashInitialSize: 128,
+        },
       );
       mpegTsPlayer.attachMediaElement(video);
       mpegTsPlayer.on(window.mpegts.Events.MEDIA_INFO, (info) => {

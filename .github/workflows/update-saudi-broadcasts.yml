@@ -1,20 +1,15 @@
+# CHATGPT-STAMP 2026-09-06 — SAUDI-BROADCAST-REFRESH-PAUSED-1
+#
+# Temporarily pause the automatic Saudi broadcast refresh while production
+# streaming stability is being isolated. Scheduled and push-triggered runs are
+# disabled. Manual workflow_dispatch is retained for an explicit operator test.
+#
+# Rollback: restore the previous `on:` schedule/push triggers from rollback
+# snapshot 34a206c2f3e9f0e486aa2cafffa3b6c94be56b82.
 name: Update Saudi broadcast channels
 
 on:
-  schedule:
-    - cron: "*/15 * * * *"
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - "scripts/broadcast-registry.js"
-      - "scripts/commentators-lib.js"
-      - "scripts/refresh-saudi-broadcasts.js"
-      - "scripts/saudi-tv-guide-lib.js"
-      - "tests/saudi-broadcast.test.js"
-      - "tests/saudi-broadcast-refresh.test.js"
-      - "tests/saudi-tv-guide.test.js"
-      - ".github/workflows/update-saudi-broadcasts.yml"
 
 permissions:
   contents: write
