@@ -75,6 +75,20 @@ describe("deterministic IPTV rollout contract", () => {
     expect(tvWindow.isEligible(match, at(kickoffUtc, 166))).toBe(false);
   });
 
+  it("puts Saudi fixture broadcaster metadata ahead of the schedule's generic beIN fallback", () => {
+    // CHATGPT-STAMP 2026-09-07T11:08-04:00 — SAUDI-CARD-ROUTE-1 regression guard.
+    const router = fs.readFileSync(new URL("../assets/js/iptv-auto.js", import.meta.url), "utf8");
+    expect(router).toContain(
+      "const broadcast = override.broadcast || row.broadcast || match.broadcast || null;",
+    );
+    expect(router).toContain(
+      'const channelId = override.channelId || broadcast?.channelId || row.channelId || match.channelId || "";',
+    );
+    expect(router).not.toContain(
+      'const channelId = override.channelId || match.channelId || row.channelId || broadcast?.channelId || "";',
+    );
+  });
+
   it("keeps the existing European broadcaster path deterministic", () => {
     const match = {
       id: "espn-eng.1-1",
