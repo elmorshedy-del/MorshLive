@@ -193,16 +193,55 @@ const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: { ...embedFor(c.id), ch
 // Fallback only — shown if both the live API and cached today.json fail to load.
 const MATCHES = [];
 
-// broadcast-registry.js emits a network-level id ("thmanyah", "ssc") when the TV
-// guide has not published a numbered channel for a fixture yet. No such channel
-// exists to play, and letting it fall through to `channels[0]` would strand the
-// viewer on beIN Sports 1 — wrong network, wrong alternatives. Land them on the
-// first channel of the right network instead, so the match is labelled correctly
-// and the "قناة أخرى؟" row offers that network's numbers to pick from.
-function resolveNetworkChannelId(chId, channels) {
+// Two matches on one channel cannot both be right. lib/channel-binding.js calls
+// kickoffs this close a clash; reuse the number so both agree on what "at the
+// same time" means.
+const OVERLAP_MS = 105 * 60 * 1000;
+
+/**
+ * broadcast-registry.js emits a network-level id ("thmanyah", "ssc") while the
+ * TV guide has not published a numbered channel for a fixture. No channel by
+ * that id exists, so it would fall through to channels[0] and strand the match
+ * on beIN Sports 1 — wrong network, wrong alternatives.
+ *
+ * Picking the network's first channel instead is not safe either: a sibling may
+ * already be carrying another match kicking off in the same window, so landing
+ * there shows the wrong game, and offering it invites the viewer to do the same.
+ *
+ * watch.js builds the landing channel and the "قناة أخرى؟" row out of this one
+ * CHANNELS array, and picks siblings by `group`. So moving a taken channel into
+ * its own group drops it from both at once — it cannot be landed on and cannot
+ * be clicked — with no change to the locked watch page. When that leaves a
+ * single free channel, watch.js hides the row on its own: one option is not a
+ * choice.
+ */
+function resolveNetworkChannelId(chId, channels, matches, current) {
+  // Idempotent: this may run more than once per page, so start from the
+  // channels' real groups rather than a previous call's narrowing.
+  for (const channel of channels) {
+    if (channel.baseGroup === undefined) channel.baseGroup = channel.group;
+    channel.group = channel.baseGroup;
+  }
   if (!chId || channels.some((c) => c.id === chId)) return chId;
-  const numbered = channels.find((c) => c.id.startsWith(`${chId}-`));
-  return numbered ? numbered.id : chId;
+
+  const siblings = channels.filter((c) => c.id.startsWith(`${chId}-`));
+  if (!siblings.length) return chId;
+
+  const at = parseKickoffMs(current && current.kickoffUtc);
+  const taken = new Set(
+    (matches || [])
+      .filter((m) => m !== current && Math.abs(parseKickoffMs(m.kickoffUtc) - at) < OVERLAP_MS)
+      .map((m) => m.channelId),
+  );
+
+  const free = siblings.filter((c) => !taken.has(c.id));
+  // Every sibling spoken for: keep the first rather than bounce back to beIN.
+  if (!free.length) return siblings[0].id;
+
+  for (const channel of siblings) {
+    if (taken.has(channel.id)) channel.group = `${channel.baseGroup} · مشغولة`;
+  }
+  return free[0].id;
 }
 
 // Pick channel + match for the watch page. When a match id is in the URL, its
@@ -225,9 +264,9 @@ function resolveWatchSelection(matches, channels, searchParams) {
     chId = (channels[0] && channels[0].id) || "bein-sports-1";
   }
 
-  chId = resolveNetworkChannelId(chId, channels);
-
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
+  chId = resolveNetworkChannelId(chId, channels, matches, match);
+
   const channel = channels.find((c) => c.id === chId) || channels[0];
   const embedKey = (match && match.embedKey) || embedKeyFor(chId);
   const channelWithEmbed = { ...channel, embed: { ...embedForKey(embedKey), channelId: chId } };
