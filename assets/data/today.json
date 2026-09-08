@@ -24,7 +24,7 @@
         "source": "almaghrebsport",
         "confidence": "exact"
       },
-      "locked": false
+      "locked": true
     },
     {
       "key": "fcporto~manchestercity",
@@ -45,7 +45,7 @@
         "source": "almaghrebsport",
         "confidence": "exact"
       },
-      "locked": false
+      "locked": true
     },
     {
       "key": "ipswichtown~liverpool",
@@ -4216,5 +4216,5 @@
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-09-08T14:53:42.252Z"
+  "commentaryUpdatedAt": "2026-09-08T21:24:13.856Z"
 }
