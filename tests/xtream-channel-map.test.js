@@ -191,4 +191,55 @@ describe("edge cases", () => {
     const rows = [{ streamId: "5", name: "beIN Sports HD" }];
     expect(rankXtreamCandidates("bein-sports-1", rows)).toHaveLength(0);
   });
+
+  // Saudi Pro League rights moved to Thmanyah for 2025-26, but only beIN was
+  // ever resolvable here, so /api/iptv-lab/channel answered "channel not found
+  // in catalogue" for every Saudi fixture and the watch page could not mount one.
+  describe("Thmanyah", () => {
+    // Both spellings the provider ships in a single catalogue, at every quality.
+    const THMANYAH_CATALOG = [
+      { streamId: "241353", name: "Thmanayah 1 Low" },
+      { streamId: "241359", name: "Thmanayah 1 HD" },
+      { streamId: "241362", name: "Thmanayah 1 1080" },
+      { streamId: "241999", name: "Thmanayah 1 4K" },
+      { streamId: "243323", name: "Thamanya 1 Sport HD" },
+      { streamId: "241363", name: "Thmanayah 2 1080" },
+      { streamId: "243324", name: "Thamanya 2 Sport HD" },
+      { streamId: "241364", name: "Thmanayah 3 1080" },
+    ];
+
+    it("resolves a numbered channel to its best catalogue entry", () => {
+      expect(resolveXtreamChannel("thmanyah-2", THMANYAH_CATALOG)).toMatchObject({
+        streamId: "241363",
+        quality: "1080",
+        codec: "h264",
+      });
+    });
+
+    it("reads both of the provider's spellings as the same network", () => {
+      for (const name of ["Thmanayah 2 1080", "Thamanya 2 Sport HD"]) {
+        expect(parseXtreamChannelName(name)).toMatchObject({ network: "thmanyah", number: 2 });
+      }
+    });
+
+    it("does not read the 4 in 4K as the channel number", () => {
+      expect(parseXtreamChannelName("Thmanayah 2 4K")).toMatchObject({ number: 2, quality: "4k" });
+    });
+
+    it("prefers 1080 h264 over Low, SD and 4K", () => {
+      const ranked = rankXtreamCandidates("thmanyah-1", THMANYAH_CATALOG);
+      expect(ranked[0].streamId).toBe("241362");
+      expect(ranked.at(-1).quality).toBe("4k");
+    });
+
+    it("refuses the bare network id, which names no channel", () => {
+      expect(parseSiteChannelId("thmanyah")).toBeNull();
+      expect(resolveXtreamChannel("thmanyah", THMANYAH_CATALOG)).toBeNull();
+    });
+
+    it("keeps the two networks apart", () => {
+      expect(resolveXtreamChannel("thmanyah-1", CATALOG)).toBeNull();
+      expect(resolveXtreamChannel("bein-sports-1", THMANYAH_CATALOG)).toBeNull();
+    });
+  });
 });
