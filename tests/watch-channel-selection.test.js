@@ -97,6 +97,93 @@ describe("watch page channel selection", () => {
     expect(selection.channel.id).toBe("bein-sports-1");
   });
 
+  // Mirrors watch.js switchableChannels(): the row is the bound channel's group
+  // siblings, and it hides itself when that leaves fewer than two.
+  const switchRow = (selection) => CHANNELS.filter((channel) => channel.group === selection.channel.group);
+
+  describe("an unnumbered Saudi fixture avoids channels already carrying a match", () => {
+    const unnumbered = { id: "ksa-generic", channelId: "thmanyah", kickoffUtc: "2026-09-08T15:55Z" };
+
+    it("skips a channel taken by a match kicking off in the same window", () => {
+      const matches = [
+        unnumbered,
+        // 25 minutes earlier, well inside the 105-minute clash window.
+        { id: "ksa-a", channelId: "thmanyah-1", kickoffUtc: "2026-09-08T15:30Z" },
+      ];
+      const selection = window.resolveWatchSelection(
+        matches,
+        CHANNELS,
+        new URLSearchParams("match=ksa-generic"),
+      );
+
+      expect(selection.channel.id).toBe("thmanyah-2");
+      const offered = switchRow(selection).map((channel) => channel.id);
+      expect(offered).toEqual(["thmanyah-2", "thmanyah-3"]);
+      expect(offered).not.toContain("thmanyah-1");
+    });
+
+    it("leaves a single free channel, which watch.js then renders as no choice", () => {
+      const matches = [
+        unnumbered,
+        { id: "ksa-a", channelId: "thmanyah-1", kickoffUtc: "2026-09-08T15:30Z" },
+        { id: "ksa-b", channelId: "thmanyah-2", kickoffUtc: "2026-09-08T16:00Z" },
+      ];
+      const selection = window.resolveWatchSelection(
+        matches,
+        CHANNELS,
+        new URLSearchParams("match=ksa-generic"),
+      );
+
+      expect(selection.channel.id).toBe("thmanyah-3");
+      expect(switchRow(selection)).toHaveLength(1);
+    });
+
+    it("ignores a match far enough away to not clash", () => {
+      const matches = [unnumbered, { id: "ksa-a", channelId: "thmanyah-1", kickoffUtc: "2026-09-08T19:00Z" }];
+      const selection = window.resolveWatchSelection(
+        matches,
+        CHANNELS,
+        new URLSearchParams("match=ksa-generic"),
+      );
+
+      expect(selection.channel.id).toBe("thmanyah-1");
+      expect(switchRow(selection)).toHaveLength(3);
+    });
+
+    it("keeps the first channel when every sibling is spoken for", () => {
+      const matches = [
+        unnumbered,
+        { id: "ksa-a", channelId: "thmanyah-1", kickoffUtc: "2026-09-08T15:30Z" },
+        { id: "ksa-b", channelId: "thmanyah-2", kickoffUtc: "2026-09-08T16:00Z" },
+        { id: "ksa-c", channelId: "thmanyah-3", kickoffUtc: "2026-09-08T15:40Z" },
+      ];
+      const selection = window.resolveWatchSelection(
+        matches,
+        CHANNELS,
+        new URLSearchParams("match=ksa-generic"),
+      );
+
+      expect(selection.channel.id).toBe("thmanyah-1");
+      expect(selection.channel.group).toBe("ثمانية");
+    });
+
+    it("does not let one page's narrowing leak into the next call", () => {
+      const clashing = [
+        unnumbered,
+        { id: "ksa-a", channelId: "thmanyah-1", kickoffUtc: "2026-09-08T15:30Z" },
+      ];
+      window.resolveWatchSelection(clashing, CHANNELS, new URLSearchParams("match=ksa-generic"));
+
+      const selection = window.resolveWatchSelection(
+        [unnumbered],
+        CHANNELS,
+        new URLSearchParams("match=ksa-generic"),
+      );
+      expect(selection.channel.id).toBe("thmanyah-1");
+      expect(switchRow(selection)).toHaveLength(3);
+    });
+  });
+
   it("still groups a beIN match with its own network", () => {
     const matches = [{ id: "espn-eng.1-1", channelId: "bein-sports-2", status: "pre" }];
     const selection = window.resolveWatchSelection(
