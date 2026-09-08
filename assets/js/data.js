@@ -169,6 +169,10 @@ function embedForKey(key) {
 const CHANNEL_DEFS = [
   { id: "bein-sports-1", name: "beIN Sports 1", group: "beIN", num: "1", quality: "1080p", badge: "HD" },
   { id: "bein-sports-2", name: "beIN Sports 2", group: "beIN", num: "2", quality: "1080p", badge: "HD" },
+  // A Champions League night runs four simultaneous ties across beIN Sports 1-4,
+  // so a card on 3 or 4 had no channel to bind to and no alternative to offer.
+  { id: "bein-sports-3", name: "beIN Sports 3", group: "beIN", num: "3", quality: "1080p", badge: "HD" },
+  { id: "bein-sports-4", name: "beIN Sports 4", group: "beIN", num: "4", quality: "1080p", badge: "HD" },
   { id: "bein-max-1", name: "beIN MAX 1", group: "beIN MAX", num: "1", quality: "1080p", badge: "HD" },
   { id: "bein-max-2", name: "beIN MAX 2", group: "beIN MAX", num: "2", quality: "1080p", badge: "HD" },
   { id: "bein-max-3", name: "beIN MAX 3", group: "beIN MAX", num: "3", quality: "1080p", badge: "HD" },

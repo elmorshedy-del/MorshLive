@@ -73,7 +73,12 @@ describe("European fixtures keep beIN", () => {
   it("binds to beIN and offers beIN alternatives", () => {
     const selection = select(`match=${EURO}`);
     expect(selection.channel.id).toBe("bein-sports-1");
-    expect(switchRow(selection)).toEqual(["beIN Sports 1", "beIN Sports 2"]);
+    expect(switchRow(selection)).toEqual([
+      "beIN Sports 1",
+      "beIN Sports 2",
+      "beIN Sports 3",
+      "beIN Sports 4",
+    ]);
   });
 
   it("still switches between beIN channels by hand", () => {
@@ -91,6 +96,30 @@ describe("European fixtures keep beIN", () => {
 
   it("keeps beIN MAX reachable", () => {
     expect(select(`match=${EURO}&ch=bein-max-3`).channel.id).toBe("bein-max-3");
+  });
+
+  it("offers all four beIN Sports channels", () => {
+    // A Champions League night runs four simultaneous ties across beIN 1-4.
+    expect(switchRow(select(`match=${EURO}`))).toEqual([
+      "beIN Sports 1",
+      "beIN Sports 2",
+      "beIN Sports 3",
+      "beIN Sports 4",
+    ]);
+  });
+
+  it("binds a fixture carried on beIN Sports 3 or 4", () => {
+    for (const id of ["bein-sports-3", "bein-sports-4"]) {
+      const selection = select(`match=${EURO}&ch=${id}`);
+      expect(selection.channel.id).toBe(id);
+      expect(selection.channel.embed.channelId).toBe(id);
+    }
+  });
+
+  it("still keeps beIN 3 and 4 away from a Saudi fixture", () => {
+    for (const id of ["bein-sports-3", "bein-sports-4"]) {
+      expect(select(`match=${SAUDI}&ch=${id}`).channel.id).toBe("thmanyah-1");
+    }
   });
 });
 
