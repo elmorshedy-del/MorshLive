@@ -173,102 +173,16 @@ const CHANNEL_DEFS = [
   { id: "bein-max-2", name: "beIN MAX 2", group: "beIN MAX", num: "2", quality: "1080p", badge: "HD" },
   { id: "bein-max-3", name: "beIN MAX 3", group: "beIN MAX", num: "3", quality: "1080p", badge: "HD" },
   { id: "bein-max-4", name: "beIN MAX 4", group: "beIN MAX", num: "4", quality: "1080p", badge: "HD" },
-  // SSC held the Saudi league until 2025-26. Kept because older fixtures and
-  // links still carry `ssc-${number}` ids, which broadcast-registry.js emits.
+  // Saudi league rights sit with SSC, and the ids match the `ssc-${number}`
+  // shape scripts/broadcast-registry.js already emits for those broadcasts.
   { id: "ssc-1", name: "SSC 1", group: "SSC", num: "1", quality: "1080p", badge: "HD" },
   { id: "ssc-2", name: "SSC 2", group: "SSC", num: "2", quality: "1080p", badge: "HD" },
   { id: "ssc-3", name: "SSC 3", group: "SSC", num: "3", quality: "1080p", badge: "HD" },
-  // Saudi domestic rights moved to Thmanyah for 2025-26 through 2030-31, and the
-  // broadcast pipeline emits `thmanyah-1/2/3` ids for those fixtures. They must
-  // exist here or resolveWatchSelection's `channels.find(...) || channels[0]`
-  // silently coerces every Saudi match onto beIN Sports 1 — mislabelling the
-  // channel and offering beIN 1/2 as the "قناة أخرى؟" alternatives instead of
-  // the ثمانية channels the match is actually on.
-  { id: "thmanyah-1", name: "ثمانية 1", group: "ثمانية", num: "1", quality: "1080p", badge: "HD" },
-  { id: "thmanyah-2", name: "ثمانية 2", group: "ثمانية", num: "2", quality: "1080p", badge: "HD" },
-  { id: "thmanyah-3", name: "ثمانية 3", group: "ثمانية", num: "3", quality: "1080p", badge: "HD" },
 ];
 const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: { ...embedFor(c.id), channelId: c.id } }));
 
 // Fallback only — shown if both the live API and cached today.json fail to load.
 const MATCHES = [];
-
-// Two matches on one channel cannot both be right. lib/channel-binding.js calls
-// kickoffs this close a clash; reuse the number so both agree on what "at the
-// same time" means.
-const OVERLAP_MS = 105 * 60 * 1000;
-
-// getMatches has more than one path to a match object, and not all of them run
-// the commentary hydration that promotes broadcast.channelId onto the match.
-// Read both so a fixture is bound to its channel whichever path produced it.
-function boundChannelId(match) {
-  return (match && (match.channelId || match.broadcast?.channelId)) || "";
-}
-
-// The channel the viewer asked for by hand, when it is a real alternative to the
-// one this match is bound to: a different channel, on the same network. Anything
-// else — a stale id from another match, an unknown id, the bound channel itself
-// — is not a pick, and the caller keeps the binding.
-function pickedSibling(requested, bound, channels) {
-  if (!requested || requested === "live" || requested === bound) return "";
-  const wanted = channels.find((c) => c.id === requested);
-  if (!wanted) return "";
-  if (!bound) return wanted.id;
-  // An unnumbered fixture is bound to the network itself ("thmanyah"), whose
-  // channels are exactly the ids extending it.
-  if (wanted.id.startsWith(`${bound}-`)) return wanted.id;
-  // Compare the channels' real groups: resolveNetworkChannelId narrows `group`
-  // to hide occupied channels, and a narrowed group is not a different network.
-  const network = (c) => c.baseGroup || c.group;
-  const current = channels.find((c) => c.id === bound);
-  return current && network(current) === network(wanted) ? wanted.id : "";
-}
-
-/**
- * broadcast-registry.js emits a network-level id ("thmanyah", "ssc") while the
- * TV guide has not published a numbered channel for a fixture. No channel by
- * that id exists, so it would fall through to channels[0] and strand the match
- * on beIN Sports 1 — wrong network, wrong alternatives.
- *
- * Picking the network's first channel instead is not safe either: a sibling may
- * already be carrying another match kicking off in the same window, so landing
- * there shows the wrong game, and offering it invites the viewer to do the same.
- *
- * watch.js builds the landing channel and the "قناة أخرى؟" row out of this one
- * CHANNELS array, and picks siblings by `group`. So moving a taken channel into
- * its own group drops it from both at once — it cannot be landed on and cannot
- * be clicked — with no change to the locked watch page. When that leaves a
- * single free channel, watch.js hides the row on its own: one option is not a
- * choice.
- */
-function resolveNetworkChannelId(chId, channels, matches, current) {
-  // Idempotent: this may run more than once per page, so start from the
-  // channels' real groups rather than a previous call's narrowing.
-  for (const channel of channels) {
-    if (channel.baseGroup === undefined) channel.baseGroup = channel.group;
-    channel.group = channel.baseGroup;
-  }
-  if (!chId || channels.some((c) => c.id === chId)) return chId;
-
-  const siblings = channels.filter((c) => c.id.startsWith(`${chId}-`));
-  if (!siblings.length) return chId;
-
-  const at = parseKickoffMs(current && current.kickoffUtc);
-  const taken = new Set(
-    (matches || [])
-      .filter((m) => m !== current && Math.abs(parseKickoffMs(m.kickoffUtc) - at) < OVERLAP_MS)
-      .map(boundChannelId),
-  );
-
-  const free = siblings.filter((c) => !taken.has(c.id));
-  // Every sibling spoken for: keep the first rather than bounce back to beIN.
-  if (!free.length) return siblings[0].id;
-
-  for (const channel of siblings) {
-    if (taken.has(channel.id)) channel.group = `${channel.baseGroup} · مشغولة`;
-  }
-  return free[0].id;
-}
 
 // Pick channel + match for the watch page. When a match id is in the URL, its
 // channelId always wins — fixes showing Germany while another match is selected.
@@ -279,21 +193,11 @@ function resolveWatchSelection(matches, channels, searchParams) {
   const matchId = params.get("match");
   const explicitMatch = matchId ? matches.find((m) => m.id === matchId) : null;
 
-  // A match id in the URL normally outranks `ch`, so a stale `ch` cannot show
-  // Germany while another match is selected. But the "قناة أخرى؟" row asks for a
-  // channel by hand and keeps the match id, so that rule silently swallowed the
-  // click and the viewer could never leave the bound channel. Honour `ch` when
-  // it names a channel on the same network the match is bound to — the row only
-  // ever offers those — and keep the match binding against anything else.
-  const picked = pickedSibling(reqCh, boundChannelId(explicitMatch), channels);
-
   let chId;
-  if (picked) {
-    chId = picked;
-  } else if (explicitMatch && boundChannelId(explicitMatch)) {
-    chId = boundChannelId(explicitMatch);
-  } else if ((!reqCh || reqCh === "live") && liveMatch && boundChannelId(liveMatch)) {
-    chId = boundChannelId(liveMatch);
+  if (explicitMatch && explicitMatch.channelId) {
+    chId = explicitMatch.channelId;
+  } else if ((!reqCh || reqCh === "live") && liveMatch && liveMatch.channelId) {
+    chId = liveMatch.channelId;
   } else if (reqCh && reqCh !== "live") {
     chId = reqCh;
   } else {
@@ -301,8 +205,6 @@ function resolveWatchSelection(matches, channels, searchParams) {
   }
 
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
-  chId = resolveNetworkChannelId(chId, channels, matches, match);
-
   const channel = channels.find((c) => c.id === chId) || channels[0];
   const embedKey = (match && match.embedKey) || embedKeyFor(chId);
   const channelWithEmbed = { ...channel, embed: { ...embedForKey(embedKey), channelId: chId } };
@@ -493,17 +395,6 @@ function applyTodayChannelIds(matches, todayMatches) {
   });
 }
 
-/* broadcast-registry.js deliberately leaves `playbackChannelId` null for a
-   network whose channels the site could not play, so a Thmanyah row reaches the
-   browser carrying a label and `broadcast.channelId` but no `channelId`. The
-   watch page keys off `channelId`, so without this a Saudi match has no id at
-   all: resolveWatchSelection skips its branch and falls through to channels[0],
-   landing every one of them on beIN Sports 1. The ثمانية channels exist in
-   CHANNEL_DEFS now, so there is a real channel to name. */
-function commentaryChannelId(entry) {
-  return entry.channelId || entry.broadcast?.channelId || "";
-}
-
 function applyCommentary(matches, idx) {
   if (!idx) return matches;
   return matches.map((m) => {
@@ -519,16 +410,14 @@ function applyCommentary(matches, idx) {
 
     if (!ended) {
       if (entry.channel) out.channel = entry.channel;
-      const channelId = commentaryChannelId(entry);
-      if (channelId) out.channelId = channelId;
+      if (entry.channelId) out.channelId = entry.channelId;
       return out;
     }
 
     // Ended fixtures keep their pinned broadcast channel (set in today.json).
     if (entry.locked) {
       if (entry.channel) out.channel = entry.channel;
-      const channelId = commentaryChannelId(entry);
-      if (channelId) out.channelId = channelId;
+      if (entry.channelId) out.channelId = entry.channelId;
     }
     return out;
   });
