@@ -123,6 +123,52 @@ describe("European fixtures keep beIN", () => {
   });
 });
 
+/**
+ * watch.js resolves twice. It calls resolveWatchSelection once with its own
+ * empty MATCHES, then reassigns MATCHES from the fixtures feed and calls it
+ * again. Only the second pass has an explicitMatch, and it is the pass that
+ * decides what the viewer ends up on — so a rule that only holds for the first
+ * pass is not a rule at all. Every case here supplies the fixture.
+ */
+describe("once the fixtures have loaded", () => {
+  const euro = [{ id: EURO, channelId: "bein-sports-2", status: "live" }];
+  const saudi = [{ id: SAUDI, channelId: "thmanyah-2", status: "live" }];
+  const pick = (matches, query) =>
+    window.resolveWatchSelection(matches, CHANNELS, new URLSearchParams(query)).channel.id;
+
+  it("uses the fixture's own channel when nothing was picked", () => {
+    expect(pick(euro, `match=${EURO}`)).toBe("bein-sports-2");
+    expect(pick(saudi, `match=${SAUDI}`)).toBe("thmanyah-2");
+  });
+
+  it("keeps a channel the viewer picked by hand", () => {
+    // The regression this guards: the second pass overwrote the click with the
+    // fixture's own channel, so the row appeared to do nothing.
+    expect(pick(euro, `match=${EURO}&ch=bein-sports-1`)).toBe("bein-sports-1");
+    expect(pick(euro, `match=${EURO}&ch=bein-sports-4`)).toBe("bein-sports-4");
+    expect(pick(saudi, `match=${SAUDI}&ch=thmanyah-3`)).toBe("thmanyah-3");
+  });
+
+  it("still refuses a channel from the other network", () => {
+    expect(pick(euro, `match=${EURO}&ch=thmanyah-2`)).toBe("bein-sports-2");
+    expect(pick(saudi, `match=${SAUDI}&ch=bein-sports-2`)).toBe("thmanyah-2");
+  });
+
+  it("ignores a channel that does not exist", () => {
+    expect(pick(euro, `match=${EURO}&ch=bein-sports-9`)).toBe("bein-sports-2");
+    expect(pick(euro, `match=${EURO}&ch=not-a-channel`)).toBe("bein-sports-2");
+  });
+
+  it("carries the pick into the embed", () => {
+    const selection = window.resolveWatchSelection(
+      euro,
+      CHANNELS,
+      new URLSearchParams(`match=${EURO}&ch=bein-sports-3`),
+    );
+    expect(selection.channel.embed.channelId).toBe("bein-sports-3");
+  });
+});
+
 describe("with no fixture named", () => {
   it("defaults to beIN Sports 1", () => {
     expect(select("").channel.id).toBe("bein-sports-1");
