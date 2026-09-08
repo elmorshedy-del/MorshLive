@@ -97,6 +97,47 @@ describe("watch page channel selection", () => {
     expect(selection.channel.id).toBe("bein-sports-1");
   });
 
+  it("binds a match that carries only broadcast.channelId", () => {
+    // broadcast-registry.js leaves playbackChannelId null for Thmanyah, so a
+    // Saudi row reaches the browser with a label and broadcast.channelId but no
+    // channelId. Reading only channelId left the match unbound and dropped it
+    // onto channels[0] — beIN Sports 1, offering beIN 1/2.
+    const matches = [
+      {
+        id: "espn-ksa.1-3",
+        status: "live",
+        channel: "ثمانية 2",
+        broadcast: { provider: "thmanyah", channelId: "thmanyah-2", confidence: "exact" },
+      },
+    ];
+    const selection = window.resolveWatchSelection(
+      matches,
+      CHANNELS,
+      new URLSearchParams("match=espn-ksa.1-3"),
+    );
+
+    expect(selection.channel.id).toBe("thmanyah-2");
+    expect(selection.channel.group).toBe("ثمانية");
+  });
+
+  it("counts a broadcast-only match as occupying its channel", () => {
+    const matches = [
+      { id: "ksa-generic", channelId: "thmanyah", kickoffUtc: "2026-09-08T15:55Z" },
+      {
+        id: "ksa-a",
+        kickoffUtc: "2026-09-08T15:30Z",
+        broadcast: { provider: "thmanyah", channelId: "thmanyah-1" },
+      },
+    ];
+    const selection = window.resolveWatchSelection(
+      matches,
+      CHANNELS,
+      new URLSearchParams("match=ksa-generic"),
+    );
+
+    expect(selection.channel.id).toBe("thmanyah-2");
+  });
+
   // Mirrors watch.js switchableChannels(): the row is the bound channel's group
   // siblings, and it hides itself when that leaves fewer than two.
   const switchRow = (selection) => CHANNELS.filter((channel) => channel.group === selection.channel.group);
