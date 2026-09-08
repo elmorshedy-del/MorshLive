@@ -178,11 +178,42 @@ const CHANNEL_DEFS = [
   { id: "ssc-1", name: "SSC 1", group: "SSC", num: "1", quality: "1080p", badge: "HD" },
   { id: "ssc-2", name: "SSC 2", group: "SSC", num: "2", quality: "1080p", badge: "HD" },
   { id: "ssc-3", name: "SSC 3", group: "SSC", num: "3", quality: "1080p", badge: "HD" },
+  // Saudi rights moved from SSC to Thmanyah for 2025-26 through 2030-31, which
+  // scripts/broadcast-registry.js already encodes.
+  { id: "thmanyah-1", name: "ثمانية 1", group: "ثمانية", num: "1", quality: "1080p", badge: "HD" },
+  { id: "thmanyah-2", name: "ثمانية 2", group: "ثمانية", num: "2", quality: "1080p", badge: "HD" },
+  { id: "thmanyah-3", name: "ثمانية 3", group: "ثمانية", num: "3", quality: "1080p", badge: "HD" },
 ];
 const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: { ...embedFor(c.id), channelId: c.id } }));
 
 // Fallback only — shown if both the live API and cached today.json fail to load.
 const MATCHES = [];
+
+/**
+ * Which network a fixture is actually on, from its own id.
+ *
+ * The watch page calls resolveWatchSelection with an empty fixture list
+ * (MATCHES above), so `ch` would otherwise choose a channel with nothing to
+ * check it against. That is not only a wrong switch row: the same id becomes
+ * embed.channelId and the id watch.js hands to /api/iptv-lab/channel, so a
+ * mismatch picks a real stream from the wrong network where nobody can see it.
+ * The match id is the one signal always present here, and it carries the league.
+ */
+const SAUDI_FIXTURE = /espn-ksa\.1-/;
+const THMANYAH_CHANNEL = /^thmanyah-[1-9]$/;
+
+/** Saudi fixtures belong on Thmanyah, and only Saudi fixtures do. */
+function channelFitsFixture(channelId, matchId) {
+  return THMANYAH_CHANNEL.test(String(channelId || "")) === SAUDI_FIXTURE.test(String(matchId || ""));
+}
+
+function defaultChannelFor(matchId, channels) {
+  if (SAUDI_FIXTURE.test(String(matchId || ""))) {
+    const thmanyah = channels.find((c) => THMANYAH_CHANNEL.test(c.id));
+    if (thmanyah) return thmanyah.id;
+  }
+  return (channels[0] && channels[0].id) || "bein-sports-1";
+}
 
 // Pick channel + match for the watch page. When a match id is in the URL, its
 // channelId always wins — fixes showing Germany while another match is selected.
@@ -203,6 +234,11 @@ function resolveWatchSelection(matches, channels, searchParams) {
   } else {
     chId = (channels[0] && channels[0].id) || "bein-sports-1";
   }
+
+  // Swap the networks over: a Saudi fixture takes its Thmanyah channel rather
+  // than the beIN default it used to inherit, and a European fixture can never
+  // be handed a Thmanyah channel by a `ch` left over from a Saudi card.
+  if (!channelFitsFixture(chId, matchId)) chId = defaultChannelFor(matchId, channels);
 
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
