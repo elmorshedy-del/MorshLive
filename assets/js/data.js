@@ -198,6 +198,13 @@ const MATCHES = [];
 // same time" means.
 const OVERLAP_MS = 105 * 60 * 1000;
 
+// getMatches has more than one path to a match object, and not all of them run
+// the commentary hydration that promotes broadcast.channelId onto the match.
+// Read both so a fixture is bound to its channel whichever path produced it.
+function boundChannelId(match) {
+  return (match && (match.channelId || match.broadcast?.channelId)) || "";
+}
+
 /**
  * broadcast-registry.js emits a network-level id ("thmanyah", "ssc") while the
  * TV guide has not published a numbered channel for a fixture. No channel by
@@ -231,7 +238,7 @@ function resolveNetworkChannelId(chId, channels, matches, current) {
   const taken = new Set(
     (matches || [])
       .filter((m) => m !== current && Math.abs(parseKickoffMs(m.kickoffUtc) - at) < OVERLAP_MS)
-      .map((m) => m.channelId),
+      .map(boundChannelId),
   );
 
   const free = siblings.filter((c) => !taken.has(c.id));
@@ -254,10 +261,10 @@ function resolveWatchSelection(matches, channels, searchParams) {
   const explicitMatch = matchId ? matches.find((m) => m.id === matchId) : null;
 
   let chId;
-  if (explicitMatch && explicitMatch.channelId) {
-    chId = explicitMatch.channelId;
-  } else if ((!reqCh || reqCh === "live") && liveMatch && liveMatch.channelId) {
-    chId = liveMatch.channelId;
+  if (explicitMatch && boundChannelId(explicitMatch)) {
+    chId = boundChannelId(explicitMatch);
+  } else if ((!reqCh || reqCh === "live") && liveMatch && boundChannelId(liveMatch)) {
+    chId = boundChannelId(liveMatch);
   } else if (reqCh && reqCh !== "live") {
     chId = reqCh;
   } else {
@@ -457,6 +464,17 @@ function applyTodayChannelIds(matches, todayMatches) {
   });
 }
 
+/* broadcast-registry.js deliberately leaves `playbackChannelId` null for a
+   network whose channels the site could not play, so a Thmanyah row reaches the
+   browser carrying a label and `broadcast.channelId` but no `channelId`. The
+   watch page keys off `channelId`, so without this a Saudi match has no id at
+   all: resolveWatchSelection skips its branch and falls through to channels[0],
+   landing every one of them on beIN Sports 1. The ثمانية channels exist in
+   CHANNEL_DEFS now, so there is a real channel to name. */
+function commentaryChannelId(entry) {
+  return entry.channelId || entry.broadcast?.channelId || "";
+}
+
 function applyCommentary(matches, idx) {
   if (!idx) return matches;
   return matches.map((m) => {
@@ -472,14 +490,16 @@ function applyCommentary(matches, idx) {
 
     if (!ended) {
       if (entry.channel) out.channel = entry.channel;
-      if (entry.channelId) out.channelId = entry.channelId;
+      const channelId = commentaryChannelId(entry);
+      if (channelId) out.channelId = channelId;
       return out;
     }
 
     // Ended fixtures keep their pinned broadcast channel (set in today.json).
     if (entry.locked) {
       if (entry.channel) out.channel = entry.channel;
-      if (entry.channelId) out.channelId = entry.channelId;
+      const channelId = commentaryChannelId(entry);
+      if (channelId) out.channelId = channelId;
     }
     return out;
   });
