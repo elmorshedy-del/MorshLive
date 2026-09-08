@@ -6,12 +6,54 @@
   "commentarySource": "almaghrebsport",
   "commentaryIndex": [
     {
+      "key": "aekathens~lasklinz",
+      "home": "AEK Athens",
+      "away": "LASK Linz",
+      "commentators": [
+        {
+          "name": "أحمد فؤاد",
+          "channel": "beIN Sports 2"
+        }
+      ],
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "channelBinding": "resolved",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-2",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
+      "locked": true
+    },
+    {
       "key": "astonvilla~clubbrugge",
       "home": "Club Brugge",
       "away": "Aston Villa",
       "commentators": [
         {
           "name": "علي الكعبي",
+          "channel": "beIN Sports 1"
+        }
+      ],
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "channelBinding": "resolved",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-1",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
+      "locked": true
+    },
+    {
+      "key": "borussiadortmund~villarreal",
+      "home": "Borussia Dortmund",
+      "away": "Villarreal",
+      "commentators": [
+        {
+          "name": "محمد بركات",
           "channel": "beIN Sports 1"
         }
       ],
@@ -42,6 +84,27 @@
       "broadcast": {
         "provider": "bein",
         "channelId": "bein-sports-2",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
+      "locked": true
+    },
+    {
+      "key": "lille~realbetis",
+      "home": "Lille",
+      "away": "Real Betis",
+      "commentators": [
+        {
+          "name": "علي محمد علي",
+          "channel": "beIN Sports 1"
+        }
+      ],
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "channelBinding": "resolved",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-1",
         "source": "almaghrebsport",
         "confidence": "exact"
       },
@@ -4216,5 +4279,5 @@
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-09-08T21:24:13.856Z"
+  "commentaryUpdatedAt": "2026-09-08T22:15:18.273Z"
 }
