@@ -111,6 +111,27 @@
       "locked": true
     },
     {
+      "key": "internazionale~realmadrid",
+      "home": "Real Madrid",
+      "away": "Internazionale",
+      "commentators": [
+        {
+          "name": "عصام الشوالي",
+          "channel": "beIN Sports 1"
+        }
+      ],
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "channelBinding": "resolved",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-1",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
+      "locked": true
+    },
+    {
       "key": "ipswichtown~liverpool",
       "home": "Ipswich Town",
       "away": "Liverpool",
@@ -4219,5 +4240,5 @@
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-09-08T22:15:18.273Z"
+  "commentaryUpdatedAt": "2026-09-08T22:26:45.016Z"
 }
