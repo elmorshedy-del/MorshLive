@@ -9,6 +9,44 @@ const {
   parseCommentators,
 } = require("../scripts/commentators-lib");
 
+/**
+ * beIN Sports numbering. A Champions League night runs four simultaneous ties
+ * across beIN Sports 1-4, and the registry used to collapse every number that
+ * was not 2 down to 1 — while still reporting "exact". Three of those four ties
+ * were therefore recorded as beIN Sports 1, confidently and invisibly.
+ */
+describe("beIN Sports channel numbers", () => {
+  it.each([
+    ["beIN Sports 1", "bein-sports-1"],
+    ["beIN Sports 2", "bein-sports-2"],
+    ["beIN Sports 3", "bein-sports-3"],
+    ["beIN Sports 4", "bein-sports-4"],
+  ])("keeps %s as itself", (label, channelId) => {
+    expect(resolveBroadcastChannel(label)).toMatchObject({
+      broadcastChannelId: channelId,
+      confidence: "exact",
+    });
+  });
+
+  it.each([
+    ["بي إن سبورت 4", "bein-sports-4"],
+    ["بين سبورت 3", "bein-sports-3"],
+  ])("reads the Arabic label %s", (label, channelId) => {
+    expect(resolveBroadcastChannel(label)).toMatchObject({ broadcastChannelId: channelId });
+  });
+
+  it("falls back to beIN Sports 1 only when no number is given, and says so", () => {
+    expect(resolveBroadcastChannel("beIN Sports")).toMatchObject({
+      broadcastChannelId: "bein-sports-1",
+      confidence: "network",
+    });
+  });
+
+  it("leaves the MAX tier alone", () => {
+    expect(resolveBroadcastChannel("beIN MAX 3")).toMatchObject({ broadcastChannelId: "bein-max-3" });
+  });
+});
+
 describe("Saudi broadcast registry", () => {
   it("normalizes official Thmanyah channel names including Arabic digits", () => {
     expect(resolveBroadcastChannel("ثمانية.١")).toMatchObject({
