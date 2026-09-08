@@ -72,6 +72,31 @@ describe("watch page channel selection", () => {
     expect(siblings.some((channel) => channel.id.startsWith("bein"))).toBe(false);
   });
 
+  it("sends an unnumbered Saudi row to ثمانية 1 rather than beIN Sports 1", () => {
+    // LiveFootballTV publishes a numbered channel only a couple of days out, so
+    // a fixture can legitimately carry the network-level id "thmanyah". There is
+    // no such channel to play; the viewer picks the right number themselves from
+    // the alternatives, which must be the ثمانية ones.
+    const matches = [{ id: "espn-ksa.1-2", channelId: "thmanyah", status: "pre" }];
+    const selection = window.resolveWatchSelection(
+      matches,
+      CHANNELS,
+      new URLSearchParams("match=espn-ksa.1-2"),
+    );
+
+    expect(selection.channel.id).toBe("thmanyah-1");
+    expect(selection.channel.group).toBe("ثمانية");
+
+    const siblings = CHANNELS.filter((channel) => channel.group === selection.channel.group);
+    expect(siblings.map((channel) => channel.id)).toEqual(["thmanyah-1", "thmanyah-2", "thmanyah-3"]);
+  });
+
+  it("leaves an id that names no known network alone", () => {
+    const matches = [{ id: "x", channelId: "not-a-network", status: "pre" }];
+    const selection = window.resolveWatchSelection(matches, CHANNELS, new URLSearchParams("match=x"));
+    expect(selection.channel.id).toBe("bein-sports-1");
+  });
+
   it("still groups a beIN match with its own network", () => {
     const matches = [{ id: "espn-eng.1-1", channelId: "bein-sports-2", status: "pre" }];
     const selection = window.resolveWatchSelection(

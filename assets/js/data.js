@@ -193,6 +193,18 @@ const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: { ...embedFor(c.id), ch
 // Fallback only — shown if both the live API and cached today.json fail to load.
 const MATCHES = [];
 
+// broadcast-registry.js emits a network-level id ("thmanyah", "ssc") when the TV
+// guide has not published a numbered channel for a fixture yet. No such channel
+// exists to play, and letting it fall through to `channels[0]` would strand the
+// viewer on beIN Sports 1 — wrong network, wrong alternatives. Land them on the
+// first channel of the right network instead, so the match is labelled correctly
+// and the "قناة أخرى؟" row offers that network's numbers to pick from.
+function resolveNetworkChannelId(chId, channels) {
+  if (!chId || channels.some((c) => c.id === chId)) return chId;
+  const numbered = channels.find((c) => c.id.startsWith(`${chId}-`));
+  return numbered ? numbered.id : chId;
+}
+
 // Pick channel + match for the watch page. When a match id is in the URL, its
 // channelId always wins — fixes showing Germany while another match is selected.
 function resolveWatchSelection(matches, channels, searchParams) {
@@ -212,6 +224,8 @@ function resolveWatchSelection(matches, channels, searchParams) {
   } else {
     chId = (channels[0] && channels[0].id) || "bein-sports-1";
   }
+
+  chId = resolveNetworkChannelId(chId, channels);
 
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
