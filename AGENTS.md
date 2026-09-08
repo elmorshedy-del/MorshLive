@@ -68,6 +68,64 @@ After merging user-facing HTML/JS/CSS to `main`:
 
 Do not treat an in-flight `main` Workers Build as “good enough” while korazero.com is still serving the previous `?v=`.
 
+## Hero images (`assets/img/*.jpg`)
+
+The homepage heroes are **artwork the owner supplies**. They are not yours to
+resize, re-encode “for performance”, or regenerate. Ship the owner's file at its
+own pixel dimensions. This has gone wrong repeatedly, so the rules are explicit.
+
+**Never**
+
+- Downscale. `korazero-saudi.jpg` has shipped at 640×360 more than once when its
+  source was far larger. If you think a hero is too heavy, say so and let the
+  owner decide — do not shrink it and move on.
+- Re-encode an existing hero to “optimise” it. Every pass loses more.
+- Use 4:2:0 chroma subsampling. These images carry saturated text and logos, and
+  4:2:0 smears their edges. Always `subsampling=0`.
+- Reach for WebP here. Measured on the Saudi hero, WebP scored 37–38 dB against
+  the source where JPEG q95 scored 43 dB, because the crowd and floodlight detail
+  defeat its perceptual model. JPEG 4:4:4 is the right format for this artwork.
+
+**How to replace one**
+
+Convert from the owner's original, at its native size, in one pass:
+
+```python
+from PIL import Image
+im = Image.open(SOURCE).convert("RGB")          # never .resize(...)
+im.save("assets/img/<name>.jpg", "JPEG",
+        quality=95, subsampling=0,               # 4:4:4, no chroma loss
+        optimize=True, progressive=False)
+```
+
+Then, in the same commit:
+
+1. Update `width`/`height` on the `<img>` in `index.html` to the **real** pixel
+   size. A stale pair here is the clearest signal a hero was silently downscaled.
+2. Bump the `?v=` on that `src`.
+
+**Verify before committing** — a hero has shipped corrupt, not merely small:
+
+```bash
+python3 -c "from PIL import Image; im=Image.open('assets/img/korazero-saudi.jpg'); im.load(); print(im.size)"
+ls -l assets/img/korazero-saudi.jpg
+```
+
+`im.load()` decodes the whole frame, so a truncated file raises here instead of
+reaching production. `korazero-saudi.jpg` once sat on `main` at 19 KB as a
+**truncated, undecodable** JPEG that browsers rendered as a part-frame. Size
+alone would not have caught it. Expect a few hundred KB to ~1 MB for a hero; tens
+of KB means something ate it.
+
+**Why this keeps regressing**
+
+Usually nothing “re-compressed” the file. `6b9aeb7 Restore full-quality Saudi
+hero` put a 331 KB image on `main`, and the very next rollback to a known-good
+*streaming* snapshot (`0504e4c`) restored the whole tree — reverting the hero
+along with it, back to the 19 KB copy. A rollback aimed at playback silently
+reverts assets too. **After any tree-wide rollback, re-check the heroes** with
+the command above and restore them in a follow-up commit.
+
 ## Boundaries
 
 **Always**
@@ -100,6 +158,9 @@ Do not treat an in-flight `main` Workers Build as “good enough” while koraze
 - Commit secrets (`.env`, Wrangler tokens). Use Wrangler secrets for prod.
 - Strip inline player scripts in replay embed sanitizer (breaks RadiantMP).
 - Disable lint/tests to green CI — fix the cause.
+- Resize, re-encode, or regenerate a homepage hero — see **Hero images** above.
+  `tests/hero-images.test.js` enforces it; if that test fails, restore the
+  owner's artwork rather than editing the expected size to match a shrunk file.
 - Install “vibecode” prompt kits as a substitute for tests/lint.
 
 ## References

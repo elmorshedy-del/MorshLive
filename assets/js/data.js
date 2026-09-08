@@ -205,6 +205,25 @@ function boundChannelId(match) {
   return (match && (match.channelId || match.broadcast?.channelId)) || "";
 }
 
+// The channel the viewer asked for by hand, when it is a real alternative to the
+// one this match is bound to: a different channel, on the same network. Anything
+// else — a stale id from another match, an unknown id, the bound channel itself
+// — is not a pick, and the caller keeps the binding.
+function pickedSibling(requested, bound, channels) {
+  if (!requested || requested === "live" || requested === bound) return "";
+  const wanted = channels.find((c) => c.id === requested);
+  if (!wanted) return "";
+  if (!bound) return wanted.id;
+  // An unnumbered fixture is bound to the network itself ("thmanyah"), whose
+  // channels are exactly the ids extending it.
+  if (wanted.id.startsWith(`${bound}-`)) return wanted.id;
+  // Compare the channels' real groups: resolveNetworkChannelId narrows `group`
+  // to hide occupied channels, and a narrowed group is not a different network.
+  const network = (c) => c.baseGroup || c.group;
+  const current = channels.find((c) => c.id === bound);
+  return current && network(current) === network(wanted) ? wanted.id : "";
+}
+
 /**
  * broadcast-registry.js emits a network-level id ("thmanyah", "ssc") while the
  * TV guide has not published a numbered channel for a fixture. No channel by
@@ -260,8 +279,18 @@ function resolveWatchSelection(matches, channels, searchParams) {
   const matchId = params.get("match");
   const explicitMatch = matchId ? matches.find((m) => m.id === matchId) : null;
 
+  // A match id in the URL normally outranks `ch`, so a stale `ch` cannot show
+  // Germany while another match is selected. But the "قناة أخرى؟" row asks for a
+  // channel by hand and keeps the match id, so that rule silently swallowed the
+  // click and the viewer could never leave the bound channel. Honour `ch` when
+  // it names a channel on the same network the match is bound to — the row only
+  // ever offers those — and keep the match binding against anything else.
+  const picked = pickedSibling(reqCh, boundChannelId(explicitMatch), channels);
+
   let chId;
-  if (explicitMatch && boundChannelId(explicitMatch)) {
+  if (picked) {
+    chId = picked;
+  } else if (explicitMatch && boundChannelId(explicitMatch)) {
     chId = boundChannelId(explicitMatch);
   } else if ((!reqCh || reqCh === "live") && liveMatch && boundChannelId(liveMatch)) {
     chId = boundChannelId(liveMatch);
