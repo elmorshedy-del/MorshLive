@@ -183,3 +183,32 @@ describe("with no fixture named", () => {
     expect(select("ch=live").channel.id).toBe("bein-sports-1");
   });
 });
+
+/**
+ * Resolving the channel correctly is only half of it — the player has to mount
+ * the channel the resolver chose. mountLabChannel() used to read
+ * `match.channelId` first, which put the fixture's own channel back after
+ * resolveWatchSelection had honoured the viewer's pick: the قناة أخرى؟ row moved
+ * its highlight and the stream never changed. Saudi cards looked fine only
+ * because their fixtures carry no channelId, so the fallback was already the
+ * resolver's answer.
+ *
+ * watch.js is stream-locked and its IIFE cannot be imported, so this reads the
+ * source. That is the point — the invariant is that playback takes its channel
+ * from one place.
+ */
+describe("the player mounts the channel the resolver picked", () => {
+  const watchSource = readFileSync(require.resolve("../assets/js/watch.js"), "utf8");
+  const mountBody = watchSource.slice(
+    watchSource.indexOf("async function mountLabChannel()"),
+    watchSource.indexOf("async function loadPlayer()"),
+  );
+
+  it("reads the resolved channel", () => {
+    expect(mountBody).toContain("const channelId = channel.id;");
+  });
+
+  it("does not take the channel from the fixture instead", () => {
+    expect(mountBody).not.toMatch(/match\s*&&\s*match\.channelId/);
+  });
+});

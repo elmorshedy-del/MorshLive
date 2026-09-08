@@ -36,7 +36,11 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
   "assets/js/watch-loader.js": "d40237ad871bb08164150881ff0f397d8786dafb",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
-  "assets/js/watch.js": "b2a9181ee1c801b6f5d33b732402215657ea31d3",
+  // Advanced past 8fe04a34 on 2026-09-08: mountLabChannel() now mounts the
+  // channel resolveWatchSelection() picked instead of re-reading the fixture's
+  // own channelId, so the قناة أخرى؟ row changes the stream and not just the
+  // highlighted button. Playback itself is untouched.
+  "assets/js/watch.js": "90e80d1a90dc65d7b6175bda4addf07c4582bdb3",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
