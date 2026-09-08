@@ -1,15 +1,40 @@
-# CHATGPT-STAMP 2026-09-06 — SAUDI-BROADCAST-REFRESH-PAUSED-1
+# Automatic Saudi broadcast refresh — resumed.
 #
-# Temporarily pause the automatic Saudi broadcast refresh while production
-# streaming stability is being isolated. Scheduled and push-triggered runs are
-# disabled. Manual workflow_dispatch is retained for an explicit operator test.
+# This was paused (SAUDI-BROADCAST-REFRESH-PAUSED-1) because the job appeared to
+# push to main — and so rebuild production — endlessly. The real cause was a bug
+# in refresh-saudi-broadcasts.js: `preservePreviousExact` appended a fresh
+# `:pinned` suffix to `broadcast.source` on every pass, so `rowsChanged` reported
+# a diff even when no channel assignment had moved. Pinning is idempotent now and
+# the job commits only on a genuine change; see the regression test in
+# tests/saudi-broadcast-refresh.test.js.
 #
-# Rollback: restore the previous `on:` schedule/push triggers from rollback
-# snapshot 34a206c2f3e9f0e486aa2cafffa3b6c94be56b82.
+# Pausing it also froze `broadcastIndex`, which is the bug it was masking: with no
+# refresh, every upcoming fixture decays to the generic `thmanyah` fallback, and
+# KZIptvChannelResolver deliberately resolves nothing for an unnumbered channel.
+# Saudi cards then open with no stream at all. This job is what keeps the exact
+# ثمانية 1/2/3 assignments flowing, so leaving it paused breaks Saudi playback.
+#
+# Playback code is protected independently by the stream lock
+# (scripts/verify-stream-lock.mjs), which runs before and after the Cloudflare
+# refresh build and refuses the deploy on any drift. This job writes only
+# assets/data/today.json, which the lock does not cover and does not need to.
 name: Update Saudi broadcast channels
 
 on:
+  schedule:
+    - cron: "*/15 * * * *"
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/broadcast-registry.js"
+      - "scripts/commentators-lib.js"
+      - "scripts/refresh-saudi-broadcasts.js"
+      - "scripts/saudi-tv-guide-lib.js"
+      - "tests/saudi-broadcast.test.js"
+      - "tests/saudi-broadcast-refresh.test.js"
+      - "tests/saudi-tv-guide.test.js"
+      - ".github/workflows/update-saudi-broadcasts.yml"
 
 permissions:
   contents: write
