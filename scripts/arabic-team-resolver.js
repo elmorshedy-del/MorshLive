@@ -70,8 +70,43 @@ function buildTeamIndex(teamArJson) {
   return { exact, fuzzy };
 }
 
+/**
+ * How far a spelling may drift and still be the same club.
+ *
+ * A flat floor of 2 was far too generous for short names: two edits on a three
+ * or four letter word reaches most of the alphabet, so "ليل" (Lille) landed on
+ * "ويلز" (Wales), "بوكا" (Boca) on Panama, and "زد" (the Egyptian club ZED) on
+ * Al Hazem — a Saudi club, whose match would then inherit an Egyptian channel.
+ * An invented match is worse than none: a miss leaves the fixture unhydrated,
+ * where a wrong hit binds it to another competition's stream. Short names must
+ * therefore be spelled correctly; only longer ones have room for variants.
+ */
 function fuzzyThreshold(len) {
-  return Math.max(2, Math.ceil(len * 0.22));
+  if (len <= 4) return 0;
+  if (len <= 7) return 1;
+  return Math.ceil(len * 0.22);
+}
+
+/**
+ * The feed writes short forms — "لاسك" for لاسك لينتس, "دورتموند" for بوروسيا
+ * دورتموند, "نيوكاسل" for نيوكاسل يونايتد — all of which are in the dictionary
+ * under their full names and are far beyond any sane edit distance from them.
+ * Accept a name that is contained in exactly one entry: containment is a much
+ * stronger signal than distance, and the single-candidate rule keeps a shared
+ * fragment from picking a club at random.
+ */
+function containedMatch(norm, index) {
+  if (norm.length < 4) return null;
+  let found = null;
+  for (const { norm: candidate, en } of index.fuzzy) {
+    // Both sides must be long enough to be distinctive. A short entry such as
+    // "ليل" would otherwise be swallowed by any longer name containing it.
+    if (candidate.length < 4) continue;
+    if (!candidate.includes(norm) && !norm.includes(candidate)) continue;
+    if (found && found !== en) return null;
+    found = en;
+  }
+  return found;
 }
 
 function resolveArabicTeam(ar, index) {
@@ -85,6 +120,9 @@ function resolveArabicTeam(ar, index) {
 
   const compact = norm.replace(/\s+/g, "");
   if (index.exact.has(compact)) return index.exact.get(compact);
+
+  const contained = containedMatch(norm, index);
+  if (contained) return contained;
 
   let best = null;
   let bestDist = Infinity;
