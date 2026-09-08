@@ -173,16 +173,37 @@ const CHANNEL_DEFS = [
   { id: "bein-max-2", name: "beIN MAX 2", group: "beIN MAX", num: "2", quality: "1080p", badge: "HD" },
   { id: "bein-max-3", name: "beIN MAX 3", group: "beIN MAX", num: "3", quality: "1080p", badge: "HD" },
   { id: "bein-max-4", name: "beIN MAX 4", group: "beIN MAX", num: "4", quality: "1080p", badge: "HD" },
-  // Saudi league rights sit with SSC, and the ids match the `ssc-${number}`
-  // shape scripts/broadcast-registry.js already emits for those broadcasts.
+  // SSC held the Saudi league until 2025-26. Kept because older fixtures and
+  // links still carry `ssc-${number}` ids, which broadcast-registry.js emits.
   { id: "ssc-1", name: "SSC 1", group: "SSC", num: "1", quality: "1080p", badge: "HD" },
   { id: "ssc-2", name: "SSC 2", group: "SSC", num: "2", quality: "1080p", badge: "HD" },
   { id: "ssc-3", name: "SSC 3", group: "SSC", num: "3", quality: "1080p", badge: "HD" },
+  // Saudi domestic rights moved to Thmanyah for 2025-26 through 2030-31, and the
+  // broadcast pipeline emits `thmanyah-1/2/3` ids for those fixtures. They must
+  // exist here or resolveWatchSelection's `channels.find(...) || channels[0]`
+  // silently coerces every Saudi match onto beIN Sports 1 — mislabelling the
+  // channel and offering beIN 1/2 as the "قناة أخرى؟" alternatives instead of
+  // the ثمانية channels the match is actually on.
+  { id: "thmanyah-1", name: "ثمانية 1", group: "ثمانية", num: "1", quality: "1080p", badge: "HD" },
+  { id: "thmanyah-2", name: "ثمانية 2", group: "ثمانية", num: "2", quality: "1080p", badge: "HD" },
+  { id: "thmanyah-3", name: "ثمانية 3", group: "ثمانية", num: "3", quality: "1080p", badge: "HD" },
 ];
 const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: { ...embedFor(c.id), channelId: c.id } }));
 
 // Fallback only — shown if both the live API and cached today.json fail to load.
 const MATCHES = [];
+
+// broadcast-registry.js emits a network-level id ("thmanyah", "ssc") when the TV
+// guide has not published a numbered channel for a fixture yet. No such channel
+// exists to play, and letting it fall through to `channels[0]` would strand the
+// viewer on beIN Sports 1 — wrong network, wrong alternatives. Land them on the
+// first channel of the right network instead, so the match is labelled correctly
+// and the "قناة أخرى؟" row offers that network's numbers to pick from.
+function resolveNetworkChannelId(chId, channels) {
+  if (!chId || channels.some((c) => c.id === chId)) return chId;
+  const numbered = channels.find((c) => c.id.startsWith(`${chId}-`));
+  return numbered ? numbered.id : chId;
+}
 
 // Pick channel + match for the watch page. When a match id is in the URL, its
 // channelId always wins — fixes showing Germany while another match is selected.
@@ -203,6 +224,8 @@ function resolveWatchSelection(matches, channels, searchParams) {
   } else {
     chId = (channels[0] && channels[0].id) || "bein-sports-1";
   }
+
+  chId = resolveNetworkChannelId(chId, channels);
 
   const match = explicitMatch || ((!reqCh || reqCh === "live") && liveMatch ? liveMatch : null);
   const channel = channels.find((c) => c.id === chId) || channels[0];
