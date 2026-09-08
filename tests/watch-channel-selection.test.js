@@ -138,6 +138,54 @@ describe("watch page channel selection", () => {
     expect(selection.channel.id).toBe("thmanyah-2");
   });
 
+  describe("the قناة أخرى؟ row can actually change the channel", () => {
+    // The row keeps the match id in the URL and sets ch. A match id normally
+    // outranks ch, which silently swallowed the click once Saudi fixtures were
+    // bound to a channel at all.
+    const saudi = {
+      id: "espn-ksa.1-9",
+      status: "live",
+      broadcast: { provider: "thmanyah", channelId: "thmanyah-2" },
+    };
+
+    it("honours a hand-picked channel on the same network", () => {
+      const selection = window.resolveWatchSelection(
+        [saudi],
+        CHANNELS,
+        new URLSearchParams("match=espn-ksa.1-9&ch=thmanyah-3"),
+      );
+      expect(selection.channel.id).toBe("thmanyah-3");
+    });
+
+    it("lets an unnumbered fixture be moved off its guessed channel", () => {
+      const unnumbered = { id: "ksa-generic", channelId: "thmanyah", kickoffUtc: "2026-09-08T15:55Z" };
+      const selection = window.resolveWatchSelection(
+        [unnumbered],
+        CHANNELS,
+        new URLSearchParams("match=ksa-generic&ch=thmanyah-3"),
+      );
+      expect(selection.channel.id).toBe("thmanyah-3");
+    });
+
+    it("still ignores a stale ch from another network", () => {
+      const selection = window.resolveWatchSelection(
+        [saudi],
+        CHANNELS,
+        new URLSearchParams("match=espn-ksa.1-9&ch=bein-sports-2"),
+      );
+      expect(selection.channel.id).toBe("thmanyah-2");
+    });
+
+    it("still ignores an unknown ch", () => {
+      const selection = window.resolveWatchSelection(
+        [saudi],
+        CHANNELS,
+        new URLSearchParams("match=espn-ksa.1-9&ch=not-a-channel"),
+      );
+      expect(selection.channel.id).toBe("thmanyah-2");
+    });
+  });
+
   // Mirrors watch.js switchableChannels(): the row is the bound channel's group
   // siblings, and it hides itself when that leaves fewer than two.
   const switchRow = (selection) => CHANNELS.filter((channel) => channel.group === selection.channel.group);
