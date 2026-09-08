@@ -145,6 +145,7 @@ function createArabicTeamResolver(teamArPath = DEFAULT_TEAM_AR) {
 
 module.exports = {
   normalizeArabic,
+  canonicalEnglish,
   levenshtein,
   buildTeamIndex,
   resolveArabicTeam,

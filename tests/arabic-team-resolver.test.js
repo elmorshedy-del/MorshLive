@@ -47,7 +47,7 @@ describe("Arabic team resolver", () => {
       ["مانشستر سيتي", "Manchester City"],
       ["ليفربول", "Liverpool"],
       ["أستون فيلا", "Aston Villa"],
-      ["إنتر ميلان", "Inter Milan"],
+      ["إنتر ميلان", "Internazionale"],
       ["الهلال", "Al Hilal"],
       ["ويلز", "Wales"],
     ])("resolves %s", (arabic, english) => {
