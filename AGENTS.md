@@ -126,6 +126,69 @@ along with it, back to the 19 KB copy. A rollback aimed at playback silently
 reverts assets too. **After any tree-wide rollback, re-check the heroes** with
 the command above and restore them in a follow-up commit.
 
+## How a match reaches the player
+
+Most “the stream is broken” reports are not playback bugs. The chain from a
+fixture to a moving picture has six links in four files, each failing with its
+own symptom, and guessing which one broke is what leads to edits in the locked
+playback code that were never needed. Walk it in order.
+
+| # | Step | Where | Output |
+|---|------|-------|--------|
+| 1 | Fixture → broadcaster | `scripts/refresh-saudi-broadcasts.js` | `broadcastIndex` in `today.json`: `broadcast.channelId` = `thmanyah-1/2/3`, or bare `thmanyah` until the guide publishes a number |
+| 2 | Row → match object | `applyCommentary` in `assets/js/data.js` | `match.channelId`, promoted from `broadcast.channelId` |
+| 3 | Match → channel | `resolveWatchSelection` in `assets/js/data.js` | the bound channel, a hand-picked `?ch=` sibling winning over it |
+| 4 | Channel → stream | `assets/js/iptv-auto.js` | rewrites the watch link to `?source=xtream&portal=lab&stream=<id>&ch=<key>` |
+| 5 | Probe | `assets/js/watch-xtream.js` → `/api/xtream/probe` | `protocol: "ts"` or `"hls"` |
+| 6 | Mount | `mountTs` (mpegts.js, needs MSE) or `mountHls` | video |
+
+**Read the symptom before touching anything.**
+
+- Card offers **beIN 1/2 on a Saudi match** → step 2 or 3. The match reached the
+  page with no `channelId`, so `resolveWatchSelection` fell through to
+  `channels[0]`. Nothing to do with playback.
+- Card shows the right channel, player sits on **“جاري تحديد قناة المباراة”** →
+  step 4. The page has no `source=xtream`, so the router never routed this visit.
+- Player errors **“لا يدعم تشغيل MPEG-TS عبر Media Source”** → step 6. The
+  browser has no MSE, or mpegts.js did not load.
+- Everything resolves and one channel plays while another does not → **not a
+  code path**. Every channel goes through the same `load()`; there is no
+  per-league branch in the player. Look at the line, not the code.
+
+Check the data before the code — it is one command and settles steps 1-3:
+
+```bash
+curl -s https://korazero.com/assets/data/today.json | \
+  node -e "let s='';process.stdin.on('data',d=>s+=d).on('end',()=>{for(const r of JSON.parse(s).broadcastIndex||[])console.log(r.kickoffUtc,r.broadcast?.channelId,r.home,'v',r.away)})"
+```
+
+**Never probe a stream while someone is watching.** Every `/api/xtream/probe`
+and every media fetch opens a connection on the owner's line. If it is at its
+connection limit, a debugging probe takes the slot from the live viewer — you
+are then debugging the outage you just caused. This is the concrete reason
+behind the “keep automated probing off the playback path” rule below.
+
+**Reproducing locally.** Serve the working tree and proxy `/api/*` to
+production, so the browser runs your code against real catalogue data:
+static files from the repo, and anything under `/api/` fetched from
+`https://korazero.com`. Point Playwright at `127.0.0.1`, which bypasses the
+agent proxy that resets the browser's TLS to the live site.
+
+Its one hard limit, worth knowing before you trust a result: **Playwright's
+Chromium ships without an H.264 decoder**, so `mpegts.isSupported()` is false
+there and *every* MPEG-TS channel fails identically, beIN included. That proves
+nothing about a real device. The harness is good for steps 1-5 — what the
+router resolved, which URL it built, what the probe returned — and useless for
+step 6. `page.route("**cdn.jsdelivr.net/**", …)` can serve mpegts.js/hls.js from
+disk, and it still will not decode.
+
+**The lock covers step 5 onward.** Steps 1-4 live in unlocked files, so almost
+every routing and mapping bug is fixable without unlocking anything. If a fix
+genuinely needs `watch-xtream.js`, `backend/services/xtream.js` or
+`mpegts-config.js`, that is the documented `config/stream-change-plan.json` +
+`KZ_STREAM_CHANGE_APPROVED` flow, and the baseline is re-established afterwards
+— not a reason to edit them quietly.
+
 ## Boundaries
 
 **Always**
