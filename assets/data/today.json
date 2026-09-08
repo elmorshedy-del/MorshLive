@@ -469,12 +469,7 @@
       "key": "alettifaq~alfaisaly",
       "home": "Al Ettifaq",
       "away": "Al Faisaly",
-      "commentators": [
-        {
-          "name": "راشد الدوسري",
-          "channel": "ثمانية 2"
-        }
-      ],
+      "commentators": [],
       "channel": "ثمانية 2",
       "broadcast": {
         "provider": "thmanyah",
@@ -488,17 +483,12 @@
       "key": "alhazem~altaawoun",
       "home": "Al Hazem",
       "away": "Al Taawoun",
-      "commentators": [
-        {
-          "name": "سعد يحيي",
-          "channel": "ثمانية"
-        }
-      ],
+      "commentators": [],
       "channel": "ثمانية",
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah",
-        "source": "almaghrebsport",
+        "source": "spl-rights-holder",
         "confidence": "network"
       },
       "locked": false
@@ -507,12 +497,7 @@
       "key": "alahli~alqadsiah",
       "home": "Al Qadsiah",
       "away": "Al Ahli",
-      "commentators": [
-        {
-          "name": "عبدالله الحربي",
-          "channel": "ثمانية 1"
-        }
-      ],
+      "commentators": [],
       "channel": "ثمانية 1",
       "broadcast": {
         "provider": "thmanyah",
@@ -526,12 +511,7 @@
       "key": "alfayha~alittihad",
       "home": "Al Ittihad",
       "away": "Al Fayha",
-      "commentators": [
-        {
-          "name": "مشاري القرني",
-          "channel": "ثمانية 3"
-        }
-      ],
+      "commentators": [],
       "channel": "ثمانية 3",
       "broadcast": {
         "provider": "thmanyah",
@@ -3945,7 +3925,7 @@
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
-  "broadcastUpdatedAt": "2026-09-08T14:53:41.011Z",
+  "broadcastUpdatedAt": "2026-09-08T14:59:22.238Z",
   "broadcastIndex": [
     {
       "id": "espn-ksa.1-401900365",
@@ -3993,12 +3973,7 @@
         "source": "livefootballtv",
         "confidence": "exact"
       },
-      "commentators": [
-        {
-          "name": "راشد الدوسري",
-          "channel": "ثمانية 2"
-        }
-      ]
+      "commentators": []
     },
     {
       "id": "espn-ksa.1-401900362",
@@ -4011,15 +3986,10 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah",
-        "source": "almaghrebsport",
+        "source": "spl-rights-holder",
         "confidence": "network"
       },
-      "commentators": [
-        {
-          "name": "سعد يحيي",
-          "channel": "ثمانية"
-        }
-      ]
+      "commentators": []
     },
     {
       "id": "espn-ksa.1-401900361",
@@ -4035,12 +4005,7 @@
         "source": "livefootballtv",
         "confidence": "exact"
       },
-      "commentators": [
-        {
-          "name": "عبدالله الحربي",
-          "channel": "ثمانية 1"
-        }
-      ]
+      "commentators": []
     },
     {
       "id": "espn-ksa.1-401900360",
@@ -4056,12 +4021,7 @@
         "source": "livefootballtv",
         "confidence": "exact"
       },
-      "commentators": [
-        {
-          "name": "مشاري القرني",
-          "channel": "ثمانية 3"
-        }
-      ]
+      "commentators": []
     },
     {
       "id": "espn-ksa.1-401900359",
