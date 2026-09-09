@@ -24,6 +24,7 @@ const path = require("path");
 const { ESPN_LEAGUES, normalizeEspnEvent } = require("./matches-lib");
 const { attachCommentators, mergeCommentaryIndex } = require("./commentators-lib");
 const { isSaudiProLeagueMatch } = require("./broadcast-registry");
+const { loadChannelOverrides, applyChannelOverrides } = require("./channel-overrides-lib.js");
 
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
 const OUT = path.join(__dirname, "..", "assets", "data", "today.json");
@@ -122,6 +123,13 @@ async function main() {
   const matches = nonSaudiFixtures(allMatches);
   const { matched, commentaryIndex: fresh } = attachCommentators(matches, commentatorsHtml);
   console.log(`Broadcast refresh: ${matches.length} non-Saudi fixtures, ${matched} matched a channel`);
+
+  // almaghrebsport names commentators well and channel numbers badly — when it
+  // is unsure it says beIN 1, which is how a tie on beIN 4 reached the site as
+  // beIN 1. Anything a better source has pinned wins here, every run, so a
+  // correction survives this refresh instead of being rewritten by it.
+  const overridden = applyChannelOverrides(matches, fresh, loadChannelOverrides());
+  if (overridden) console.log(`Broadcast refresh: ${overridden} channels taken from overrides`);
 
   const commentaryIndex = mergeCommentaryIndex(fresh, previousPayload.commentaryIndex || [], matches);
 
