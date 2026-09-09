@@ -182,6 +182,23 @@ async function main() {
       `${fixtures.length - resolved - unlisted} listed without a channel yet, ${unlisted} not listed`,
   );
 
+  // A timestamp that moves on every run is a diff on every run, and the workflow
+  // commits whatever differs — so an unconditional generatedAt would push and
+  // rebuild the site every six hours whether or not a single channel changed.
+  // Nothing downstream reads it; it exists to date the rows, so it only moves
+  // when the rows do.
+  let previous = null;
+  try {
+    previous = JSON.parse(fs.readFileSync(OUT, "utf8"));
+  } catch {
+    /* first run, or a file we are about to replace anyway */
+  }
+  const unchanged = previous && JSON.stringify(previous.rows || {}) === JSON.stringify(rows);
+  if (unchanged) {
+    console.log(`Overrides unchanged (${Object.keys(rows).length} rows); leaving the file alone`);
+    return;
+  }
+
   const payload = {
     source: "goal.com",
     note: "Machine-generated. Rewritten whole by scripts/refresh-goal-broadcasts.js; do not hand-edit — use assets/data/manual-channel-overrides.json, which outranks this file.",
