@@ -107,3 +107,47 @@ describe("matching a fixture to goal.com's listing", () => {
     expect(findGoalFixture({ kickoffUtc: "", home: "Napoli", away: "Arsenal" }, [senior])).toBeNull();
   });
 });
+
+/**
+ * A refresh that rewrites its output on every run makes the workflow commit on
+ * every run, and every commit rebuilds the site. That is how the Saudi refresh
+ * once ended up in a push/rebuild loop from an ever-growing ":pinned" suffix.
+ * The timestamp here is the same hazard: nothing reads it, so it must not move
+ * on its own.
+ */
+describe("the overrides file only changes when the channels do", () => {
+  it("leaves generatedAt alone when the rows are identical", async () => {
+    const { mkdtempSync, readFileSync, writeFileSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const { join } = await import("node:path");
+
+    const dir = mkdtempSync(join(tmpdir(), "kz-goal-"));
+    const file = join(dir, "broadcast-overrides.json");
+    const rows = { "espn-uefa.champions-1": { channel: "beIN Sports 4", channelId: "bein-sports-4" } };
+
+    // Mirrors the write in refresh-goal-broadcasts.js: same rows means no write.
+    const write = (nextRows) => {
+      let previous = null;
+      try {
+        previous = JSON.parse(readFileSync(file, "utf8"));
+      } catch {
+        previous = null;
+      }
+      if (previous && JSON.stringify(previous.rows || {}) === JSON.stringify(nextRows)) return false;
+      writeFileSync(
+        file,
+        `${JSON.stringify({ generatedAt: new Date().toISOString(), rows: nextRows }, null, 2)}\n`,
+      );
+      return true;
+    };
+
+    expect(write(rows)).toBe(true);
+    const first = readFileSync(file, "utf8");
+    expect(write({ ...rows })).toBe(false);
+    expect(readFileSync(file, "utf8")).toBe(first);
+
+    // A real change still lands.
+    expect(write({ ...rows, "espn-uefa.champions-2": { channelId: "bein-sports-1" } })).toBe(true);
+    expect(readFileSync(file, "utf8")).not.toBe(first);
+  });
+});
