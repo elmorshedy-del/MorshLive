@@ -151,3 +151,44 @@ describe("the overrides file only changes when the channels do", () => {
     expect(readFileSync(file, "utf8")).not.toBe(first);
   });
 });
+
+/**
+ * The workflow treats a failed harvest as non-fatal on purpose, so a harvest
+ * that returns nothing must not look like a harvest that found nothing. Writing
+ * only what one run saw would let goal.com refusing the geo hint, changing its
+ * markup, or rate-limiting blank a file full of correct assignments — sending
+ * every card back to the feed's beIN 1 guess with nothing to alarm on.
+ */
+describe("a failed harvest cannot wipe good assignments", () => {
+  const NOW = Date.parse("2026-09-09T13:40:00Z");
+  const previous = {
+    upcoming: { channelId: "bein-sports-4", kickoffUtc: "2026-09-10T19:00Z" },
+    played: { channelId: "bein-sports-2", kickoffUtc: "2026-09-08T19:00Z" },
+  };
+
+  // Mirrors the carry-forward in refresh-goal-broadcasts.js.
+  const carryForward = (rows, prev, now) => {
+    const kept = {};
+    for (const [id, row] of Object.entries(prev)) {
+      if (rows[id]) continue;
+      const kickoff = Date.parse(row?.kickoffUtc || "");
+      if (Number.isFinite(kickoff) && kickoff > now) kept[id] = row;
+    }
+    return { ...rows, ...kept };
+  };
+
+  it("keeps a channel whose fixture has not kicked off", () => {
+    expect(carryForward({}, previous, NOW).upcoming.channelId).toBe("bein-sports-4");
+  });
+
+  it("drops one whose fixture has been played, so the file stays finite", () => {
+    expect(carryForward({}, previous, NOW).played).toBeUndefined();
+  });
+
+  it("lets a fresh answer overwrite the carried one", () => {
+    // goal.com moving a fixture to another channel must still win — only
+    // silence is refused, not disagreement.
+    const fresh = { upcoming: { channelId: "bein-sports-1", kickoffUtc: "2026-09-10T19:00Z" } };
+    expect(carryForward(fresh, previous, NOW).upcoming.channelId).toBe("bein-sports-1");
+  });
+});
