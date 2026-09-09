@@ -1,7 +1,7 @@
 {
   "source": "goal.com",
   "note": "Machine-generated. Rewritten whole by scripts/refresh-goal-broadcasts.js; do not hand-edit — use assets/data/manual-channel-overrides.json, which outranks this file.",
-  "generatedAt": "2026-09-09T12:53:52.477Z",
+  "generatedAt": "2026-09-09T12:59:23.113Z",
   "window": {
     "from": "2026-09-09",
     "days": 7
