@@ -6,6 +6,83 @@
   "commentarySource": "almaghrebsport",
   "commentaryIndex": [
     {
+      "key": "afcbournemouth~brentford",
+      "home": "AFC Bournemouth",
+      "away": "Brentford",
+      "commentators": [],
+      "channel": "beIN Sports 3",
+      "channelId": "bein-sports-3",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "astonvilla~nottinghamforest",
+      "home": "Aston Villa",
+      "away": "Nottingham Forest",
+      "commentators": [],
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "chelsea~hullcity",
+      "home": "Chelsea",
+      "away": "Hull City",
+      "commentators": [],
+      "channel": "beIN Sports 4",
+      "channelId": "bein-sports-4",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "crystalpalace~ipswichtown",
+      "home": "Crystal Palace",
+      "away": "Ipswich Town",
+      "commentators": [],
+      "channel": "beIN Sports 5",
+      "channelId": "bein-sports-5",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "fulham~liverpool",
+      "home": "Liverpool",
+      "away": "Fulham",
+      "commentators": [],
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "everton~tottenhamhotspur",
+      "home": "Tottenham Hotspur",
+      "away": "Everton",
+      "commentators": [],
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "arsenal~sunderland",
+      "home": "Sunderland",
+      "away": "Arsenal",
+      "commentators": [],
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
       "key": "sevilla~valencia",
       "home": "Sevilla",
       "away": "Valencia",
@@ -17,20 +94,31 @@
       "locked": false
     },
     {
-      "key": "barcelona~feyenoordrotterdam",
-      "home": "Barcelona",
-      "away": "Feyenoord Rotterdam",
+      "key": "alaves~racingsantander",
+      "home": "Racing Santander",
+      "away": "Alavés",
       "commentators": [],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
+      "channel": "beIN Sports 9",
+      "channelId": "bein-sports-9",
       "channelBinding": "resolved",
       "channelSource": "goal.com",
       "locked": false
     },
     {
-      "key": "vfbstuttgart~vikingfk",
-      "home": "VfB Stuttgart",
-      "away": "Viking FK",
+      "key": "espanyol~osasuna",
+      "home": "Osasuna",
+      "away": "Espanyol",
+      "commentators": [],
+      "channel": "beIN Sports 9",
+      "channelId": "bein-sports-9",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "athleticclub~elche",
+      "home": "Athletic Club",
+      "away": "Elche",
       "commentators": [],
       "channel": "beIN Sports 2",
       "channelId": "bein-sports-2",
@@ -39,45 +127,12 @@
       "locked": false
     },
     {
-      "key": "atleticomadrid~liverpool",
-      "home": "Liverpool",
-      "away": "Atlético Madrid",
-      "commentators": [],
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "arsenal~napoli",
-      "home": "Napoli",
-      "away": "Arsenal",
+      "key": "rayovallecano~realmadrid",
+      "home": "Real Madrid",
+      "away": "Rayo Vallecano",
       "commentators": [],
       "channel": "beIN Sports 2",
       "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "parissaintgermain~slovanbratislava",
-      "home": "Paris Saint-Germain",
-      "away": "Slovan Bratislava",
-      "commentators": [],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "galatasaray~sportingcp",
-      "home": "Sporting CP",
-      "away": "Galatasaray",
-      "commentators": [],
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "channelBinding": "resolved",
       "channelSource": "goal.com",
       "locked": false
@@ -136,6 +191,72 @@
       "channelBinding": "resolved",
       "channelSource": "goal.com",
       "locked": false
+    },
+    {
+      "key": "barcelona~feyenoordrotterdam",
+      "home": "Barcelona",
+      "away": "Feyenoord Rotterdam",
+      "commentators": [],
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": true
+    },
+    {
+      "key": "vfbstuttgart~vikingfk",
+      "home": "VfB Stuttgart",
+      "away": "Viking FK",
+      "commentators": [],
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": true
+    },
+    {
+      "key": "atleticomadrid~liverpool",
+      "home": "Liverpool",
+      "away": "Atlético Madrid",
+      "commentators": [],
+      "channel": "beIN Sports 3",
+      "channelId": "bein-sports-3",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": true
+    },
+    {
+      "key": "arsenal~napoli",
+      "home": "Napoli",
+      "away": "Arsenal",
+      "commentators": [],
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": true
+    },
+    {
+      "key": "parissaintgermain~slovanbratislava",
+      "home": "Paris Saint-Germain",
+      "away": "Slovan Bratislava",
+      "commentators": [],
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": true
+    },
+    {
+      "key": "galatasaray~sportingcp",
+      "home": "Sporting CP",
+      "away": "Galatasaray",
+      "commentators": [],
+      "channel": "beIN Sports 4",
+      "channelId": "bein-sports-4",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": true
     },
     {
       "key": "aekathens~lasklinz",
@@ -4372,5 +4493,5 @@
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-09-09T12:59:23.442Z"
+  "commentaryUpdatedAt": "2026-09-09T21:11:09.747Z"
 }

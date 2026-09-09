@@ -1,12 +1,68 @@
 {
   "source": "goal.com",
   "note": "Machine-generated. Rewritten whole by scripts/refresh-goal-broadcasts.js; do not hand-edit — use assets/data/manual-channel-overrides.json, which outranks this file.",
-  "generatedAt": "2026-09-09T13:44:00.289Z",
+  "generatedAt": "2026-09-09T21:11:09.391Z",
   "window": {
-    "from": "2026-09-09",
+    "from": "2026-09-10",
     "days": 7
   },
   "rows": {
+    "espn-eng.1-401878779": {
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "kickoffUtc": "2026-09-12T19:00Z",
+      "home": "Sunderland",
+      "away": "Arsenal",
+      "goalId": "c8bkvwAzpfwfqLxwNk4uu"
+    },
+    "espn-eng.1-401879277": {
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "kickoffUtc": "2026-09-12T16:30Z",
+      "home": "Tottenham Hotspur",
+      "away": "Everton",
+      "goalId": "o8HciJcmqhvtveIJZkT2c"
+    },
+    "espn-eng.1-401879279": {
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "kickoffUtc": "2026-09-12T14:00Z",
+      "home": "Liverpool",
+      "away": "Fulham",
+      "goalId": "w9GSIb6yf7FYsfTiDJOLZ"
+    },
+    "espn-eng.1-401879281": {
+      "channel": "beIN Sports 5",
+      "channelId": "bein-sports-5",
+      "kickoffUtc": "2026-09-12T14:00Z",
+      "home": "Crystal Palace",
+      "away": "Ipswich Town",
+      "goalId": "dQBcUMivUblZVc26Qw_IU"
+    },
+    "espn-eng.1-401879283": {
+      "channel": "beIN Sports 4",
+      "channelId": "bein-sports-4",
+      "kickoffUtc": "2026-09-12T14:00Z",
+      "home": "Chelsea",
+      "away": "Hull City",
+      "goalId": "sf34-VeBGJZV0MkmnLRwZ"
+    },
+    "espn-eng.1-401879284": {
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "kickoffUtc": "2026-09-12T14:00Z",
+      "home": "Aston Villa",
+      "away": "Nottingham Forest",
+      "goalId": "y_ECR9nxhDcjrB3wUYXj7"
+    },
+    "espn-eng.1-401879285": {
+      "channel": "beIN Sports 3",
+      "channelId": "bein-sports-3",
+      "kickoffUtc": "2026-09-12T14:00Z",
+      "home": "AFC Bournemouth",
+      "away": "Brentford",
+      "goalId": "S5OKGP9DZ3KjwyIFcK06y"
+    },
     "espn-esp.1-401882878": {
       "channel": "beIN Sports 4",
       "channelId": "bein-sports-4",
@@ -15,6 +71,38 @@
       "away": "Valencia",
       "goalId": "mvyy2x6CAO-MyjCMBUXjz"
     },
+    "espn-esp.1-401882880": {
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "kickoffUtc": "2026-09-12T19:00Z",
+      "home": "Real Madrid",
+      "away": "Rayo Vallecano",
+      "goalId": "NAdYQGt3M_ZuU0agZUaez"
+    },
+    "espn-esp.1-401882881": {
+      "channel": "beIN Sports 9",
+      "channelId": "bein-sports-9",
+      "kickoffUtc": "2026-09-12T12:00Z",
+      "home": "Racing Santander",
+      "away": "Alavés",
+      "goalId": "cTxD2fTSlxkb-eBfpDVhC"
+    },
+    "espn-esp.1-401882882": {
+      "channel": "beIN Sports 9",
+      "channelId": "bein-sports-9",
+      "kickoffUtc": "2026-09-12T14:15Z",
+      "home": "Osasuna",
+      "away": "Espanyol",
+      "goalId": "WzK-gU-bYMDziDpYFmoWJ"
+    },
+    "espn-esp.1-401882886": {
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "kickoffUtc": "2026-09-12T16:30Z",
+      "home": "Athletic Club",
+      "away": "Elche",
+      "goalId": "BAspkwXCAOempc_EHxNi1"
+    },
     "espn-uefa.champions-401915422": {
       "channel": "beIN Sports 2",
       "channelId": "bein-sports-2",
@@ -22,22 +110,6 @@
       "home": "PSV Eindhoven",
       "away": "Shakhtar Donetsk",
       "goalId": "4BzYfOy1VPF-TGlzfD0DW"
-    },
-    "espn-uefa.champions-401915423": {
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "kickoffUtc": "2026-09-09T19:00Z",
-      "home": "Napoli",
-      "away": "Arsenal",
-      "goalId": "yeIy8FOqDdiQaVGOTFZp9"
-    },
-    "espn-uefa.champions-401915424": {
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "kickoffUtc": "2026-09-09T16:45Z",
-      "home": "Barcelona",
-      "away": "Feyenoord Rotterdam",
-      "goalId": "BmZmNapiiYVNhac92aduw"
     },
     "espn-uefa.champions-401915440": {
       "channel": "beIN Sports 4",
@@ -70,38 +142,6 @@
       "home": "Fenerbahce",
       "away": "AS Roma",
       "goalId": "kxzDuDQ-_ZiLUATbrPAjE"
-    },
-    "espn-uefa.champions-401915445": {
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "kickoffUtc": "2026-09-09T19:00Z",
-      "home": "Paris Saint-Germain",
-      "away": "Slovan Bratislava",
-      "goalId": "6Xke_d5-JmaNtv-aTjueH"
-    },
-    "espn-uefa.champions-401915446": {
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
-      "kickoffUtc": "2026-09-09T19:00Z",
-      "home": "Liverpool",
-      "away": "Atlético Madrid",
-      "goalId": "Pa5Jgy-eUzFLax_f1AkzP"
-    },
-    "espn-uefa.champions-401915447": {
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
-      "kickoffUtc": "2026-09-09T19:00Z",
-      "home": "Sporting CP",
-      "away": "Galatasaray",
-      "goalId": "jvGSzRO-ZwS81PXs-fQm4"
-    },
-    "espn-uefa.champions-401915448": {
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "kickoffUtc": "2026-09-09T16:45Z",
-      "home": "VfB Stuttgart",
-      "away": "Viking FK",
-      "goalId": "IcysFKcTPvu743K-ufH2Z"
     }
   }
 }
