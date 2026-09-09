@@ -182,18 +182,44 @@ async function main() {
       `${fixtures.length - resolved - unlisted} listed without a channel yet, ${unlisted} not listed`,
   );
 
-  // A timestamp that moves on every run is a diff on every run, and the workflow
-  // commits whatever differs — so an unconditional generatedAt would push and
-  // rebuild the site every six hours whether or not a single channel changed.
-  // Nothing downstream reads it; it exists to date the rows, so it only moves
-  // when the rows do.
   let previous = null;
   try {
     previous = JSON.parse(fs.readFileSync(OUT, "utf8"));
   } catch {
     /* first run, or a file we are about to replace anyway */
   }
-  const unchanged = previous && JSON.stringify(previous.rows || {}) === JSON.stringify(rows);
+
+  // Carry forward a channel this run could not see, as long as its fixture has
+  // not kicked off yet.
+  //
+  // Writing only what one harvest returned makes every failure destructive:
+  // goal.com refusing the geo hint, changing its markup, or rate-limiting all
+  // produce zero rows, and zero rows would blank a file full of correct
+  // assignments — sending every card back to the feed's beIN 1 guess with
+  // nothing to alarm on, because the workflow treats a failed harvest as
+  // non-fatal on purpose. A fresh answer still wins; only silence is refused.
+  //
+  // Rows are dropped once their kickoff has passed, so this stays self-cleaning
+  // rather than accumulating a season of dead fixtures.
+  const kept = {};
+  const now = Date.now();
+  for (const [id, row] of Object.entries(previous?.rows || {})) {
+    if (rows[id]) continue;
+    const kickoff = Date.parse(row?.kickoffUtc || "");
+    if (Number.isFinite(kickoff) && kickoff > now) kept[id] = row;
+  }
+  if (Object.keys(kept).length) {
+    console.log(`goal.com refresh: kept ${Object.keys(kept).length} previously resolved channels this run could not see`);
+    Object.assign(rows, kept);
+  }
+
+  // A timestamp that moves on every run is a diff on every run, and the workflow
+  // commits whatever differs — so an unconditional generatedAt would push and
+  // rebuild the site every six hours whether or not a single channel changed.
+  // Nothing downstream reads it; it exists to date the rows, so it only moves
+  // when the rows do.
+  const sortedRows = Object.fromEntries(Object.keys(rows).sort().map((id) => [id, rows[id]]));
+  const unchanged = previous && JSON.stringify(previous.rows || {}) === JSON.stringify(sortedRows);
   if (unchanged) {
     console.log(`Overrides unchanged (${Object.keys(rows).length} rows); leaving the file alone`);
     return;
@@ -204,10 +230,10 @@ async function main() {
     note: "Machine-generated. Rewritten whole by scripts/refresh-goal-broadcasts.js; do not hand-edit — use assets/data/manual-channel-overrides.json, which outranks this file.",
     generatedAt: new Date().toISOString(),
     window: { from, days: LOOKAHEAD_DAYS },
-    rows,
+    rows: sortedRows,
   };
   fs.writeFileSync(OUT, `${JSON.stringify(payload, null, 2)}\n`);
-  console.log(`Wrote ${Object.keys(rows).length} override rows to ${path.relative(process.cwd(), OUT)}`);
+  console.log(`Wrote ${Object.keys(sortedRows).length} override rows to ${path.relative(process.cwd(), OUT)}`);
 }
 
 if (require.main === module) {
