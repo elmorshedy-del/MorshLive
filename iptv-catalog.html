@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IPTV Full Catalog</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #0b0d10;
+      color: #f5f7fa;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #0b0d10; color: #f5f7fa; }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 16px;
+      border-bottom: 1px solid #252a31;
+      background: rgba(11,13,16,.96);
+      backdrop-filter: blur(14px);
+    }
+    h1 { margin: 0 0 5px; font-size: 20px; }
+    .sub { color: #a7b0bb; font-size: 13px; margin-bottom: 12px; }
+    .controls {
+      display: grid;
+      grid-template-columns: minmax(220px, 2fr) minmax(180px, 1fr) auto auto;
+      gap: 8px;
+    }
+    input, select, button {
+      border: 1px solid #303640;
+      border-radius: 10px;
+      background: #171b20;
+      color: #f5f7fa;
+      padding: 10px 12px;
+      font-size: 14px;
+    }
+    button { cursor: pointer; }
+    button:hover { background: #22272e; }
+    main { padding: 14px 16px 40px; }
+    .meta { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; color: #a7b0bb; font-size: 13px; }
+    .pill { border: 1px solid #303640; border-radius: 999px; padding: 5px 9px; }
+    .error { color: #ff9e9e; white-space: pre-wrap; margin: 10px 0; }
+    .table-wrap { overflow: auto; border: 1px solid #252a31; border-radius: 12px; }
+    table { width: 100%; min-width: 1060px; border-collapse: collapse; background: #111419; }
+    th, td { padding: 9px 10px; border-bottom: 1px solid #252a31; text-align: left; font-size: 13px; vertical-align: middle; }
+    th { position: sticky; top: 118px; z-index: 4; background: #171b20; color: #cbd2dc; }
+    tbody tr:hover td { background: #171b20; }
+    .name { font-weight: 650; }
+    .muted { color: #8f99a6; }
+    .icon { width: 40px; height: 28px; object-fit: contain; border-radius: 5px; background: #0d0f12; }
+    @media (max-width: 760px) {
+      .controls { grid-template-columns: 1fr 1fr; }
+      th { top: 174px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>IPTV Full Catalog</h1>
+    <div class="sub">Complete IPTV Lab catalog. Search by channel, brand, country, category, stream ID, or EPG ID.</div>
+    <div class="controls">
+      <input id="search" type="search" placeholder="Search Netflix, HBO, USA, Egypt, Tunisia..." autocomplete="off" />
+      <select id="category"><option value="">All categories</option></select>
+      <button id="json">Download JSON</button>
+      <button id="csv">Download CSV</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="meta">
+      <span class="pill" id="shown">0 shown</span>
+      <span class="pill" id="total">0 total</span>
+      <span class="pill" id="categories">0 categories</span>
+      <span id="updated"></span>
+    </div>
+    <div id="error" class="error"></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Logo</th>
+            <th>Channel</th>
+            <th>Category</th>
+            <th>Category ID</th>
+            <th>Stream ID</th>
+            <th>EPG ID</th>
+            <th>Type</th>
+            <th>Archive</th>
+            <th>Added</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    const ENDPOINT = "/api/iptv-lab/catalog";
+    let streams = [];
+
+    const $ = (id) => document.getElementById(id);
+    const esc = (value) => String(value ?? "").replace(/[&<>\"']/g, (c) => ({
+      "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+    }[c]));
+
+    function addedDate(value) {
+      const n = Number(value);
+      if (!n) return "";
+      const d = new Date(n * 1000);
+      return Number.isNaN(d.getTime()) ? "" : d.toISOString().slice(0, 10);
+    }
+
+    function buildCategories() {
+      const counts = new Map();
+      for (const s of streams) {
+        const name = s.categoryName || "(Uncategorized)";
+        counts.set(name, (counts.get(name) || 0) + 1);
+      }
+      const list = [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0], undefined, { sensitivity: "base" }));
+      $("category").innerHTML = '<option value="">All categories</option>' +
+        list.map(([name, count]) => `<option value="${esc(name)}">${esc(name)} (${count})</option>`).join("");
+      $("categories").textContent = `${list.length.toLocaleString()} categories`;
+    }
+
+    function getFiltered() {
+      const q = $("search").value.trim().toLowerCase();
+      const category = $("category").value;
+      return streams.filter((s) => {
+        const haystack = [
+          s.name, s.categoryName, s.categoryId, s.streamId, s.epgChannelId,
+          s.providerChannelId, s.serviceId, s.portalLabel
+        ].join(" ").toLowerCase();
+        const channelCategory = s.categoryName || "(Uncategorized)";
+        return (!q || haystack.includes(q)) && (!category || channelCategory === category);
+      });
+    }
+
+    function render() {
+      const rows = getFiltered();
+      $("shown").textContent = `${rows.length.toLocaleString()} shown`;
+      $("total").textContent = `${streams.length.toLocaleString()} total`;
+      $("rows").innerHTML = rows.map((s, i) => `
+        <tr>
+          <td class="muted">${i + 1}</td>
+          <td>${s.icon ? `<img class="icon" loading="lazy" src="${esc(s.icon)}" alt="">` : ""}</td>
+          <td class="name">${esc(s.name)}</td>
+          <td>${esc(s.categoryName)}</td>
+          <td class="muted">${esc(s.categoryId)}</td>
+          <td>${esc(s.streamId)}</td>
+          <td class="muted">${esc(s.epgChannelId)}</td>
+          <td class="muted">${esc(s.streamType)}</td>
+          <td class="muted">${Number(s.tvArchive || 0) ? "Yes" : "No"}</td>
+          <td class="muted">${esc(addedDate(s.added))}</td>
+        </tr>`).join("");
+    }
+
+    function download(filename, text, type) {
+      const blob = new Blob([text], { type });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    }
+
+    function downloadJson() {
+      download("iptv-lab-full-catalog.json", JSON.stringify({ count: streams.length, streams }, null, 2), "application/json");
+    }
+
+    function downloadCsv() {
+      const cols = ["name", "categoryName", "categoryId", "streamId", "epgChannelId", "providerChannelId", "serviceId", "streamType", "tvArchive", "added", "icon"];
+      const quote = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+      const csv = [cols.join(","), ...streams.map((s) => cols.map((c) => quote(s[c])).join(","))].join("\n");
+      download("iptv-lab-full-catalog.csv", csv, "text/csv;charset=utf-8");
+    }
+
+    async function loadCatalog() {
+      try {
+        const response = await fetch(ENDPOINT, { cache: "no-store" });
+        if (!response.ok) throw new Error(`Catalog request failed: HTTP ${response.status}`);
+        const data = await response.json();
+        if (!data?.ok || !Array.isArray(data.streams)) throw new Error("Catalog returned an unexpected response.");
+        streams = data.streams;
+        buildCategories();
+        render();
+        $("updated").textContent = `Loaded ${new Date().toLocaleString()}`;
+      } catch (error) {
+        $("error").textContent = String(error?.message || error);
+      }
+    }
+
+    $("search").addEventListener("input", render);
+    $("category").addEventListener("change", render);
+    $("json").addEventListener("click", downloadJson);
+    $("csv").addEventListener("click", downloadCsv);
+    loadCatalog();
+  </script>
+</body>
+</html>
