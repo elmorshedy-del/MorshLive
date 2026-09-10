@@ -173,6 +173,18 @@ const CHANNEL_DEFS = [
   // so a card on 3 or 4 had no channel to bind to and no alternative to offer.
   { id: "bein-sports-3", name: "beIN Sports 3", group: "beIN", num: "3", quality: "1080p", badge: "HD" },
   { id: "bein-sports-4", name: "beIN Sports 4", group: "beIN", num: "4", quality: "1080p", badge: "HD" },
+  // beIN MENA runs 1-9, and a Saturday Premier League or LaLiga round uses the
+  // upper numbers: goal.com put Crystal Palace v Ipswich on 5 and two LaLiga
+  // fixtures on 9. Stopping at 4 did not leave those cards without a toggle, it
+  // silently played the wrong match — resolveWatchSelection falls back to
+  // channels[0] for an id it does not know, so a card correctly hydrated for
+  // beIN 5 resolved to beIN 1, and an explicit ?ch=bein-sports-5 was refused.
+  // The IPTV lab already carries 5-9 (streams 2443-2447).
+  { id: "bein-sports-5", name: "beIN Sports 5", group: "beIN", num: "5", quality: "1080p", badge: "HD" },
+  { id: "bein-sports-6", name: "beIN Sports 6", group: "beIN", num: "6", quality: "1080p", badge: "HD" },
+  { id: "bein-sports-7", name: "beIN Sports 7", group: "beIN", num: "7", quality: "1080p", badge: "HD" },
+  { id: "bein-sports-8", name: "beIN Sports 8", group: "beIN", num: "8", quality: "1080p", badge: "HD" },
+  { id: "bein-sports-9", name: "beIN Sports 9", group: "beIN", num: "9", quality: "1080p", badge: "HD" },
   { id: "bein-max-1", name: "beIN MAX 1", group: "beIN MAX", num: "1", quality: "1080p", badge: "HD" },
   { id: "bein-max-2", name: "beIN MAX 2", group: "beIN MAX", num: "2", quality: "1080p", badge: "HD" },
   { id: "bein-max-3", name: "beIN MAX 3", group: "beIN MAX", num: "3", quality: "1080p", badge: "HD" },
