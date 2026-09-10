@@ -146,7 +146,7 @@
       "channelId": "bein-sports-1",
       "channelBinding": "resolved",
       "channelSource": "goal.com",
-      "locked": false
+      "locked": true
     },
     {
       "key": "psveindhoven~shakhtardonetsk",
@@ -157,7 +157,7 @@
       "channelId": "bein-sports-2",
       "channelBinding": "resolved",
       "channelSource": "goal.com",
-      "locked": false
+      "locked": true
     },
     {
       "key": "como~rbleipzig",
@@ -168,7 +168,7 @@
       "channelId": "bein-sports-3",
       "channelBinding": "resolved",
       "channelSource": "goal.com",
-      "locked": false
+      "locked": true
     },
     {
       "key": "manchesterunited~sabahfk",
@@ -179,7 +179,7 @@
       "channelId": "bein-sports-1",
       "channelBinding": "resolved",
       "channelSource": "goal.com",
-      "locked": false
+      "locked": true
     },
     {
       "key": "lens~slaviaprague",
@@ -190,7 +190,7 @@
       "channelId": "bein-sports-4",
       "channelBinding": "resolved",
       "channelSource": "goal.com",
-      "locked": false
+      "locked": true
     },
     {
       "key": "barcelona~feyenoordrotterdam",
@@ -4373,5 +4373,5 @@
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-09-09T21:11:09.747Z"
+  "commentaryUpdatedAt": "2026-09-10T21:12:57.342Z"
 }

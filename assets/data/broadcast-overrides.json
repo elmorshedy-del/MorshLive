@@ -1,9 +1,9 @@
 {
   "source": "goal.com",
   "note": "Machine-generated. Rewritten whole by scripts/refresh-goal-broadcasts.js; do not hand-edit — use assets/data/manual-channel-overrides.json, which outranks this file.",
-  "generatedAt": "2026-09-09T21:11:09.391Z",
+  "generatedAt": "2026-09-10T21:12:57.002Z",
   "window": {
-    "from": "2026-09-10",
+    "from": "2026-09-11",
     "days": 7
   },
   "rows": {
@@ -102,46 +102,6 @@
       "home": "Athletic Club",
       "away": "Elche",
       "goalId": "BAspkwXCAOempc_EHxNi1"
-    },
-    "espn-uefa.champions-401915422": {
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "kickoffUtc": "2026-09-10T16:45Z",
-      "home": "PSV Eindhoven",
-      "away": "Shakhtar Donetsk",
-      "goalId": "4BzYfOy1VPF-TGlzfD0DW"
-    },
-    "espn-uefa.champions-401915440": {
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
-      "kickoffUtc": "2026-09-10T19:00Z",
-      "home": "Slavia Prague",
-      "away": "Lens",
-      "goalId": "8tl536s9YeGCuVkrI5O7Y"
-    },
-    "espn-uefa.champions-401915441": {
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
-      "kickoffUtc": "2026-09-10T19:00Z",
-      "home": "Como",
-      "away": "RB Leipzig",
-      "goalId": "To4ceX8YEcDIiY2qrvhuf"
-    },
-    "espn-uefa.champions-401915442": {
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "kickoffUtc": "2026-09-10T19:00Z",
-      "home": "Manchester United",
-      "away": "Sabah FK",
-      "goalId": "ojkEuSEOT740meqR8DgXI"
-    },
-    "espn-uefa.champions-401915444": {
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "kickoffUtc": "2026-09-10T16:45Z",
-      "home": "Fenerbahce",
-      "away": "AS Roma",
-      "goalId": "kxzDuDQ-_ZiLUATbrPAjE"
     }
   }
 }
