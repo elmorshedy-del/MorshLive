@@ -164,8 +164,8 @@
       "home": "Celta Vigo",
       "away": "Málaga",
       "commentators": [],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
+      "channel": "beIN Sports 5",
+      "channelId": "bein-sports-5",
       "channelBinding": "resolved",
       "channelSource": "goal.com",
       "locked": false
@@ -4349,5 +4349,5 @@
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-09-11T11:49:17.065Z"
+  "commentaryUpdatedAt": "2026-09-11T16:46:07.289Z"
 }

@@ -1,7 +1,7 @@
 {
   "source": "goal.com",
   "note": "Machine-generated. Rewritten whole by scripts/refresh-goal-broadcasts.js; do not hand-edit — use assets/data/manual-channel-overrides.json, which outranks this file.",
-  "generatedAt": "2026-09-11T11:49:16.832Z",
+  "generatedAt": "2026-09-11T16:46:06.878Z",
   "window": {
     "from": "2026-09-11",
     "days": 7
@@ -136,8 +136,8 @@
       "goalId": "OqAhq49Bz_oeI-rmtkopN"
     },
     "espn-esp.1-401882885": {
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
+      "channel": "beIN Sports 5",
+      "channelId": "bein-sports-5",
       "kickoffUtc": "2026-09-13T12:00Z",
       "home": "Celta Vigo",
       "away": "Málaga",
