@@ -83,6 +83,28 @@
       "locked": false
     },
     {
+      "key": "brightonhovealbion~coventrycity",
+      "home": "Coventry City",
+      "away": "Brighton & Hove Albion",
+      "commentators": [],
+      "channel": "beIN Sports 4",
+      "channelId": "bein-sports-4",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "manchestercity~manchesterunited",
+      "home": "Manchester United",
+      "away": "Manchester City",
+      "commentators": [],
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
       "key": "sevilla~valencia",
       "home": "Sevilla",
       "away": "Valencia",
@@ -133,6 +155,50 @@
       "commentators": [],
       "channel": "beIN Sports 2",
       "channelId": "bein-sports-2",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "celtavigo~malaga",
+      "home": "Celta Vigo",
+      "away": "Málaga",
+      "commentators": [],
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "barcelona~levante",
+      "home": "Levante",
+      "away": "Barcelona",
+      "commentators": [],
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "deportivo~getafe",
+      "home": "Getafe",
+      "away": "Deportivo",
+      "commentators": [],
+      "channel": "beIN Sports 5",
+      "channelId": "bein-sports-5",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "atleticomadrid~realsociedad",
+      "home": "Real Sociedad",
+      "away": "Atlético Madrid",
+      "commentators": [],
+      "channel": "beIN Sports 3",
+      "channelId": "bein-sports-3",
       "channelBinding": "resolved",
       "channelSource": "goal.com",
       "locked": false
@@ -4283,5 +4349,5 @@
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-09-10T21:12:57.342Z"
+  "commentaryUpdatedAt": "2026-09-11T11:49:17.065Z"
 }
