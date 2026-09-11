@@ -1,9 +1,9 @@
 {
   "source": "goal.com",
   "note": "Machine-generated. Rewritten whole by scripts/refresh-goal-broadcasts.js; do not hand-edit — use assets/data/manual-channel-overrides.json, which outranks this file.",
-  "generatedAt": "2026-09-11T16:46:06.878Z",
+  "generatedAt": "2026-09-11T21:18:34.234Z",
   "window": {
-    "from": "2026-09-11",
+    "from": "2026-09-12",
     "days": 7
   },
   "rows": {
@@ -38,6 +38,14 @@
       "home": "Liverpool",
       "away": "Fulham",
       "goalId": "w9GSIb6yf7FYsfTiDJOLZ"
+    },
+    "espn-eng.1-401879280": {
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "kickoffUtc": "2026-09-14T19:00Z",
+      "home": "Leeds United",
+      "away": "Newcastle United",
+      "goalId": "_GDfilUHD4vbWB4kq3RIG"
     },
     "espn-eng.1-401879281": {
       "channel": "beIN Sports 5",
@@ -79,13 +87,13 @@
       "away": "Brentford",
       "goalId": "S5OKGP9DZ3KjwyIFcK06y"
     },
-    "espn-esp.1-401882878": {
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
-      "kickoffUtc": "2026-09-11T19:00Z",
-      "home": "Sevilla",
-      "away": "Valencia",
-      "goalId": "mvyy2x6CAO-MyjCMBUXjz"
+    "espn-esp.1-401882877": {
+      "channel": "beIN Sports 5",
+      "channelId": "bein-sports-5",
+      "kickoffUtc": "2026-09-14T19:00Z",
+      "home": "Villarreal",
+      "away": "Real Betis",
+      "goalId": "RdYoc6Vb4lPsvVmflypCU"
     },
     "espn-esp.1-401882879": {
       "channel": "beIN Sports 3",

@@ -105,12 +105,12 @@
       "locked": false
     },
     {
-      "key": "sevilla~valencia",
-      "home": "Sevilla",
-      "away": "Valencia",
+      "key": "leedsunited~newcastleunited",
+      "home": "Leeds United",
+      "away": "Newcastle United",
       "commentators": [],
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
       "channelBinding": "resolved",
       "channelSource": "goal.com",
       "locked": false
@@ -202,6 +202,28 @@
       "channelBinding": "resolved",
       "channelSource": "goal.com",
       "locked": false
+    },
+    {
+      "key": "realbetis~villarreal",
+      "home": "Villarreal",
+      "away": "Real Betis",
+      "commentators": [],
+      "channel": "beIN Sports 5",
+      "channelId": "bein-sports-5",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "sevilla~valencia",
+      "home": "Sevilla",
+      "away": "Valencia",
+      "commentators": [],
+      "channel": "beIN Sports 4",
+      "channelId": "bein-sports-4",
+      "channelBinding": "resolved",
+      "channelSource": "goal.com",
+      "locked": true
     },
     {
       "key": "asroma~fenerbahce",
@@ -4349,5 +4371,5 @@
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-09-11T16:46:07.289Z"
+  "commentaryUpdatedAt": "2026-09-11T21:18:34.694Z"
 }
