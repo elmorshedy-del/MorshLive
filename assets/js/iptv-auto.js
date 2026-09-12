@@ -17,6 +17,16 @@
 (function () {
   "use strict";
 
+  // Defense in depth: the current bootstrap loads this router only on the watch
+  // page, but older cached/rolled-back bootstraps loaded it on the homepage and
+  // recreated the retired gold/silver source cards there. Never mutate cards or
+  // start routing work unless this is the normal watch surface. Explicit Xtream
+  // URLs already have their own player and must not be rewritten again either.
+  const pageParams = new URLSearchParams(location.search);
+  const cleanPath = location.pathname.replace(/\/$/, "");
+  const isWatchPage = cleanPath === "/watch.html" || cleanPath === "/watch";
+  if (!isWatchPage || pageParams.get("source") === "xtream") return;
+
   const resolver = () => window.KZIptvChannelResolver;
   const tvWindow = () => window.KZIptvWindow;
   const epgMatcher = () => window.KZIptvEpgMatcherCore;
