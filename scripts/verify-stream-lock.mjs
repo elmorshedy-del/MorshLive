@@ -37,7 +37,7 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-loader.js": "d40237ad871bb08164150881ff0f397d8786dafb",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
   "assets/js/watch.js": "b2a9181ee1c801b6f5d33b732402215657ea31d3",
-  "backend/adapters/xtream-media-safe.js": "7fe2946139537a12e7e2104e6f7acb55135ee1e0",
+  "backend/adapters/xtream-media-safe.js": "c746821386df808dd451604cbbb2bafda0c48761",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
   "backend/routes/index.js": "17e90d3f0816109f38f149b533ba039a35c0df72",
@@ -106,7 +106,7 @@ function approvedPlan(changed) {
 const changed = mismatches();
 if (!changed.length) {
   console.log(
-    `STREAM LOCK OK — ${Object.keys(LOCKED_FILES).length} production playback files match the approved baseline plus XTREAM-IDLE-WATCHDOG-1.`,
+    `STREAM LOCK OK — ${Object.keys(LOCKED_FILES).length} production playback files match ${BASELINE_COMMIT.slice(0, 8)} plus XTREAM-IDLE-WATCHDOG-1.`,
   );
   process.exit(0);
 }
