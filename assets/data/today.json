@@ -9,10 +9,21 @@
       "key": "afcbournemouth~brentford",
       "home": "AFC Bournemouth",
       "away": "Brentford",
-      "commentators": [],
+      "commentators": [
+        {
+          "name": "محمد مبروكي",
+          "channel": "beIN Sports 3"
+        }
+      ],
       "channel": "beIN Sports 3",
       "channelId": "bein-sports-3",
       "channelBinding": "resolved",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-3",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
       "channelSource": "goal.com",
       "locked": false
     },
@@ -20,7 +31,12 @@
       "key": "astonvilla~nottinghamforest",
       "home": "Aston Villa",
       "away": "Nottingham Forest",
-      "commentators": [],
+      "commentators": [
+        {
+          "name": "علي محمد علي",
+          "channel": "أون سبورت 2"
+        }
+      ],
       "channel": "beIN Sports 2",
       "channelId": "bein-sports-2",
       "channelBinding": "resolved",
@@ -31,10 +47,21 @@
       "key": "chelsea~hullcity",
       "home": "Chelsea",
       "away": "Hull City",
-      "commentators": [],
+      "commentators": [
+        {
+          "name": "عصام الشوالي",
+          "channel": "beIN Sports 4"
+        }
+      ],
       "channel": "beIN Sports 4",
       "channelId": "bein-sports-4",
       "channelBinding": "resolved",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-4",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
       "channelSource": "goal.com",
       "locked": false
     },
@@ -42,21 +69,33 @@
       "key": "crystalpalace~ipswichtown",
       "home": "Crystal Palace",
       "away": "Ipswich Town",
-      "commentators": [],
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
+      "commentators": [
+        {
+          "name": "سمير اليعقوبي",
+          "channel": "beIN Sports 5"
+        }
+      ],
       "locked": false
     },
     {
       "key": "fulham~liverpool",
       "home": "Liverpool",
       "away": "Fulham",
-      "commentators": [],
+      "commentators": [
+        {
+          "name": "عامر الخوذيري",
+          "channel": "beIN Sports 1"
+        }
+      ],
       "channel": "beIN Sports 1",
       "channelId": "bein-sports-1",
       "channelBinding": "resolved",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-1",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
       "channelSource": "goal.com",
       "locked": false
     },
@@ -64,10 +103,21 @@
       "key": "everton~tottenhamhotspur",
       "home": "Tottenham Hotspur",
       "away": "Everton",
-      "commentators": [],
+      "commentators": [
+        {
+          "name": "حفيظ دراجي",
+          "channel": "beIN Sports 1"
+        }
+      ],
       "channel": "beIN Sports 1",
       "channelId": "bein-sports-1",
       "channelBinding": "resolved",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-1",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
       "channelSource": "goal.com",
       "locked": false
     },
@@ -75,10 +125,89 @@
       "key": "arsenal~sunderland",
       "home": "Sunderland",
       "away": "Arsenal",
-      "commentators": [],
+      "commentators": [
+        {
+          "name": "خليل البلوشي",
+          "channel": "beIN Sports 1"
+        }
+      ],
       "channel": "beIN Sports 1",
       "channelId": "bein-sports-1",
       "channelBinding": "resolved",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-1",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "alaves~racingsantander",
+      "home": "Racing Santander",
+      "away": "Alavés",
+      "commentators": [
+        {
+          "name": "محمد بركات",
+          "channel": "beIN Sports 9"
+        }
+      ],
+      "locked": true
+    },
+    {
+      "key": "espanyol~osasuna",
+      "home": "Osasuna",
+      "away": "Espanyol",
+      "commentators": [
+        {
+          "name": "محمد السعدي",
+          "channel": "beIN Sports 9"
+        }
+      ],
+      "locked": false
+    },
+    {
+      "key": "athleticclub~elche",
+      "home": "Athletic Club",
+      "away": "Elche",
+      "commentators": [
+        {
+          "name": "أحمد فؤاد",
+          "channel": "beIN Sports 2"
+        }
+      ],
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "channelBinding": "resolved",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-2",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
+      "channelSource": "goal.com",
+      "locked": false
+    },
+    {
+      "key": "rayovallecano~realmadrid",
+      "home": "Real Madrid",
+      "away": "Rayo Vallecano",
+      "commentators": [
+        {
+          "name": "حسن العيدروس",
+          "channel": "beIN Sports 2"
+        }
+      ],
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "channelBinding": "resolved",
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-2",
+        "source": "almaghrebsport",
+        "confidence": "exact"
+      },
       "channelSource": "goal.com",
       "locked": false
     },
@@ -116,78 +245,12 @@
       "locked": false
     },
     {
-      "key": "alaves~racingsantander",
-      "home": "Racing Santander",
-      "away": "Alavés",
-      "commentators": [],
-      "channel": "beIN Sports 9",
-      "channelId": "bein-sports-9",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "espanyol~osasuna",
-      "home": "Osasuna",
-      "away": "Espanyol",
-      "commentators": [],
-      "channel": "beIN Sports 9",
-      "channelId": "bein-sports-9",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "athleticclub~elche",
-      "home": "Athletic Club",
-      "away": "Elche",
-      "commentators": [],
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "rayovallecano~realmadrid",
-      "home": "Real Madrid",
-      "away": "Rayo Vallecano",
-      "commentators": [],
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "celtavigo~malaga",
-      "home": "Celta Vigo",
-      "away": "Málaga",
-      "commentators": [],
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
       "key": "barcelona~levante",
       "home": "Levante",
       "away": "Barcelona",
       "commentators": [],
       "channel": "beIN Sports 2",
       "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "deportivo~getafe",
-      "home": "Getafe",
-      "away": "Deportivo",
-      "commentators": [],
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
       "channelBinding": "resolved",
       "channelSource": "goal.com",
       "locked": false
@@ -204,14 +267,24 @@
       "locked": false
     },
     {
+      "key": "celtavigo~malaga",
+      "home": "Celta Vigo",
+      "away": "Málaga",
+      "commentators": [],
+      "locked": false
+    },
+    {
+      "key": "deportivo~getafe",
+      "home": "Getafe",
+      "away": "Deportivo",
+      "commentators": [],
+      "locked": false
+    },
+    {
       "key": "realbetis~villarreal",
       "home": "Villarreal",
       "away": "Real Betis",
       "commentators": [],
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
       "locked": false
     },
     {
@@ -4371,5 +4444,5 @@
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-09-11T21:18:34.694Z"
+  "commentaryUpdatedAt": "2026-09-12T14:32:55.110Z"
 }

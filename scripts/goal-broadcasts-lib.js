@@ -72,13 +72,28 @@ function sameTeam(a, b) {
  * carrying separate numbering, and taking one would send an Arabic viewer to an
  * English commentary channel with a number that means nothing here.
  */
+/* Only the channels assets/js/data.js models. Naming one it does not is worse
+   than naming none: resolveWatchSelection falls back to channels[0] for the row
+   while mountLabChannel mounts match.channelId directly, so the card shows one
+   channel and the player asks the lab for another. beIN 5-9 reached viewers that
+   way and drained instead of buffering. Widen this only together with
+   CHANNEL_DEFS, and only once the feed is confirmed to deliver video. */
+const ROUTABLE_SPORTS = 4;
+const ROUTABLE_MAX = 4;
+
 function pickArabicBeinChannel(names) {
   for (const raw of Array.isArray(names) ? names : []) {
     const name = String(raw || "").replace(/\s+/g, " ").trim();
     const max = /^bein\s+sports?\s+max\s+([1-9])$/i.exec(name);
-    if (max) return { channel: `beIN Max ${max[1]}`, channelId: `bein-max-${max[1]}` };
+    if (max) {
+      if (Number(max[1]) > ROUTABLE_MAX) continue;
+      return { channel: `beIN Max ${max[1]}`, channelId: `bein-max-${max[1]}` };
+    }
     const sports = /^bein\s+sports?\s+([1-9])$/i.exec(name);
-    if (sports) return { channel: `beIN Sports ${sports[1]}`, channelId: `bein-sports-${sports[1]}` };
+    if (sports) {
+      if (Number(sports[1]) > ROUTABLE_SPORTS) continue;
+      return { channel: `beIN Sports ${sports[1]}`, channelId: `bein-sports-${sports[1]}` };
+    }
   }
   return null;
 }

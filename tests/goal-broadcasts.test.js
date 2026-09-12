@@ -192,3 +192,24 @@ describe("a failed harvest cannot wipe good assignments", () => {
     expect(carryForward(fresh, previous, NOW).upcoming.channelId).toBe("bein-sports-1");
   });
 });
+
+describe("the harvester only names channels the site can route", () => {
+  it("refuses beIN Sports above the modelled range", () => {
+    // goal.com legitimately reports 5-9; the site models 1-4. Emitting one it
+    // cannot route is what drained. Widen this only with CHANNEL_DEFS, and only
+    // once the feed is confirmed to deliver video.
+    expect(pickArabicBeinChannel(["beIN SPORTS 9"])).toBeNull();
+    expect(pickArabicBeinChannel(["beIN SPORTS 5"])).toBeNull();
+    expect(pickArabicBeinChannel(["beIN SPORTS MAX 7"])).toBeNull();
+  });
+
+  it("still takes a routable channel listed after an unroutable one", () => {
+    expect(pickArabicBeinChannel(["beIN SPORTS 9", "beIN SPORTS 3"]).channelId).toBe("bein-sports-3");
+  });
+
+  it("keeps the range it does model", () => {
+    for (const n of [1, 2, 3, 4]) {
+      expect(pickArabicBeinChannel([`beIN SPORTS ${n}`]).channelId).toBe(`bein-sports-${n}`);
+    }
+  });
+});

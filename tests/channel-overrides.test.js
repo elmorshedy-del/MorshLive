@@ -148,3 +148,66 @@ describe("applying overrides", () => {
     expect(match.channelId).toBe("bein-sports-1");
   });
 });
+
+/**
+ * A channel CHANNEL_DEFS does not model is worse than no channel at all:
+ * resolveWatchSelection falls back to channels[0] for the row while
+ * mountLabChannel reads match.channelId directly, so the card shows one channel
+ * and the player asks the lab for another. beIN 5-9 reached viewers that way and
+ * drained instead of buffering.
+ *
+ * Taking the channels back out of CHANNEL_DEFS did not stop it, because
+ * mergeCommentaryIndex carries a previously written row forward for as long as
+ * its fixture is around. This runs after the merge for that reason.
+ */
+describe("channels the site cannot route are stripped", () => {
+  const { stripUnroutableChannels } = require("../scripts/channel-overrides-lib.js");
+
+  it("clears an unroutable channel and keeps the commentators", () => {
+    const row = {
+      key: "a|b",
+      channel: "beIN Sports 9",
+      channelId: "bein-sports-9",
+      channelBinding: "resolved",
+      channelSource: "goal.com",
+      commentators: [{ name: "حفيظ دراجي" }],
+    };
+    expect(stripUnroutableChannels([], [row])).toBe(1);
+    expect(row.channelId).toBeUndefined();
+    expect(row.channel).toBeUndefined();
+    expect(row.channelBinding).toBeUndefined();
+    expect(row.commentators).toEqual([{ name: "حفيظ دراجي" }]);
+  });
+
+  it("leaves every channel the site does model alone", () => {
+    const rows = ["bein-sports-1", "bein-sports-4", "bein-max-2", "ssc-3", "thmanyah-2"].map((id) => ({
+      channelId: id,
+      channel: id,
+    }));
+    expect(stripUnroutableChannels([], rows)).toBe(0);
+    expect(rows.map((r) => r.channelId)).toEqual([
+      "bein-sports-1",
+      "bein-sports-4",
+      "bein-max-2",
+      "ssc-3",
+      "thmanyah-2",
+    ]);
+  });
+
+  it("cleans the fixture as well as its row", () => {
+    // mountLabChannel reads match.channelId, so leaving the fixture dirty would
+    // leave the player still asking for the channel that drains.
+    const match = { id: "espn-esp.1-1", channelId: "bein-sports-9", channel: "beIN Sports 9" };
+    expect(stripUnroutableChannels([match], [])).toBe(1);
+    expect(match.channelId).toBeUndefined();
+  });
+
+  it("drops a broadcast block pointing at the same unroutable channel", () => {
+    const row = {
+      channelId: "bein-sports-5",
+      broadcast: { provider: "bein", channelId: "bein-sports-5" },
+    };
+    stripUnroutableChannels([], [row]);
+    expect(row.broadcast).toBeUndefined();
+  });
+});
