@@ -7,9 +7,11 @@ import { createMediaToken, decodeMediaToken } from "./xtream.js";
 
 const MANIFEST_SNIFF_BYTES = 64;
 const MAX_MANIFEST_BYTES = 2 * 1024 * 1024;
-const UPSTREAM_HEADER_TIMEOUT_MS = 8_000;
-const SNIFF_IDLE_MS = 8_000;
-const PUMP_IDLE_MS = 15_000;
+const DEFAULT_TIMEOUTS = Object.freeze({
+  headers: 8_000,
+  sniff: 8_000,
+  pump: 15_000,
+});
 const textDecoder = new TextDecoder();
 
 class UpstreamIdleError extends Error {
@@ -17,6 +19,18 @@ class UpstreamIdleError extends Error {
     super(`Xtream upstream idle during ${stage} for ${ms}ms`);
     this.name = "UpstreamIdleError";
   }
+}
+
+function resolveTimeouts(overrides = {}) {
+  const positive = (value, fallback) => {
+    const n = Number(value);
+    return Number.isFinite(n) && n > 0 ? n : fallback;
+  };
+  return {
+    headers: positive(overrides.headers, DEFAULT_TIMEOUTS.headers),
+    sniff: positive(overrides.sniff, DEFAULT_TIMEOUTS.sniff),
+    pump: positive(overrides.pump, DEFAULT_TIMEOUTS.pump),
+  };
 }
 
 function abortUpstream(controller, reason) {
@@ -75,16 +89,16 @@ function upstreamTimeoutResponse(request) {
   });
 }
 
-async function fetchXtreamTarget(target, request, { includeRange = true } = {}) {
+async function fetchXtreamTarget(target, request, timeouts, { includeRange = true } = {}) {
   const method = request.method === "HEAD" ? "HEAD" : "GET";
   const upstreamController = new AbortController();
   let timer;
   const timeout = new Promise((_, reject) => {
     timer = setTimeout(() => {
-      const error = timeoutError("response headers", UPSTREAM_HEADER_TIMEOUT_MS);
+      const error = timeoutError("response headers", timeouts.headers);
       reject(error);
       abortUpstream(upstreamController, error);
-    }, UPSTREAM_HEADER_TIMEOUT_MS);
+    }, timeouts.headers);
   });
 
   try {
@@ -106,8 +120,8 @@ async function fetchXtreamTarget(target, request, { includeRange = true } = {}) 
   }
 }
 
-async function fetchXtreamMedia(target, request) {
-  const ranged = await fetchXtreamTarget(target, request, { includeRange: true });
+async function fetchXtreamMedia(target, request, timeouts) {
+  const ranged = await fetchXtreamTarget(target, request, timeouts, { includeRange: true });
   if (
     request.method !== "HEAD" &&
     !ranged.response.ok &&
@@ -115,7 +129,7 @@ async function fetchXtreamMedia(target, request) {
   ) {
     // Do not leave the first response holding the provider slot while retrying.
     abortUpstream(ranged.upstreamController, "retry without Range");
-    const retry = await fetchXtreamTarget(target, request, { includeRange: false });
+    const retry = await fetchXtreamTarget(target, request, timeouts, { includeRange: false });
     if (retry.response.ok) return retry;
     abortUpstream(retry.upstreamController, "range retry rejected");
   }
@@ -169,7 +183,7 @@ function concatChunks(chunks, total) {
   return result;
 }
 
-async function sniffBody(response, upstreamController) {
+async function sniffBody(response, upstreamController, timeouts) {
   if (!response.body) return { kind: "stream", body: null };
   const reader = response.body.getReader();
   const chunks = [];
@@ -177,7 +191,7 @@ async function sniffBody(response, upstreamController) {
   let done = false;
 
   while (!done && total < MANIFEST_SNIFF_BYTES) {
-    const next = await readOrTimeout(reader, SNIFF_IDLE_MS, upstreamController, "payload sniff");
+    const next = await readOrTimeout(reader, timeouts.sniff, upstreamController, "payload sniff");
     done = next.done;
     if (next.value?.byteLength) {
       chunks.push(next.value);
@@ -203,7 +217,7 @@ async function sniffBody(response, upstreamController) {
         const pump = async () => {
           try {
             while (true) {
-              const next = await readOrTimeout(reader, PUMP_IDLE_MS, upstreamController, "media stream");
+              const next = await readOrTimeout(reader, timeouts.pump, upstreamController, "media stream");
               if (next.done) {
                 controller.close();
                 return;
@@ -226,7 +240,7 @@ async function sniffBody(response, upstreamController) {
   }
 
   while (!done) {
-    const next = await readOrTimeout(reader, SNIFF_IDLE_MS, upstreamController, "manifest body");
+    const next = await readOrTimeout(reader, timeouts.sniff, upstreamController, "manifest body");
     done = next.done;
     if (!next.value?.byteLength) continue;
     total += next.value.byteLength;
@@ -254,11 +268,12 @@ async function sniffBody(response, upstreamController) {
  * errors the downstream body. Both paths abort the actual upstream fetch so a
  * silent provider cannot pin the account's single connection slot indefinitely.
  */
-export async function proxyXtreamMediaSafe(request, env, token) {
+export async function proxyXtreamMediaSafe(request, env, token, timeoutOverrides) {
   const target = await decodeMediaToken(env, token);
+  const timeouts = resolveTimeouts(timeoutOverrides);
   let upstream;
   try {
-    upstream = await fetchXtreamMedia(target, request);
+    upstream = await fetchXtreamMedia(target, request, timeouts);
   } catch (error) {
     if (error instanceof UpstreamIdleError) return upstreamTimeoutResponse(request);
     throw error;
@@ -286,7 +301,7 @@ export async function proxyXtreamMediaSafe(request, env, token) {
 
   let sniffed;
   try {
-    sniffed = await sniffBody(response, upstreamController);
+    sniffed = await sniffBody(response, upstreamController, timeouts);
   } catch (error) {
     abortUpstream(upstreamController, error);
     if (error instanceof UpstreamIdleError) return upstreamTimeoutResponse(request);
