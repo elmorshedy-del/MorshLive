@@ -6,386 +6,12 @@
   "commentarySource": "almaghrebsport",
   "commentaryIndex": [
     {
-      "key": "afcbournemouth~brentford",
-      "home": "AFC Bournemouth",
-      "away": "Brentford",
-      "commentators": [],
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "astonvilla~nottinghamforest",
-      "home": "Aston Villa",
-      "away": "Nottingham Forest",
-      "commentators": [],
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "chelsea~hullcity",
-      "home": "Chelsea",
-      "away": "Hull City",
-      "commentators": [],
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "fulham~liverpool",
-      "home": "Liverpool",
-      "away": "Fulham",
-      "commentators": [],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "everton~tottenhamhotspur",
-      "home": "Tottenham Hotspur",
-      "away": "Everton",
-      "commentators": [],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "arsenal~sunderland",
-      "home": "Sunderland",
-      "away": "Arsenal",
-      "commentators": [],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "brightonhovealbion~coventrycity",
-      "home": "Coventry City",
-      "away": "Brighton & Hove Albion",
-      "commentators": [],
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "manchestercity~manchesterunited",
-      "home": "Manchester United",
-      "away": "Manchester City",
-      "commentators": [],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "leedsunited~newcastleunited",
-      "home": "Leeds United",
-      "away": "Newcastle United",
-      "commentators": [],
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "athleticclub~elche",
-      "home": "Athletic Club",
-      "away": "Elche",
-      "commentators": [],
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "rayovallecano~realmadrid",
-      "home": "Real Madrid",
-      "away": "Rayo Vallecano",
-      "commentators": [],
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "barcelona~levante",
-      "home": "Levante",
-      "away": "Barcelona",
-      "commentators": [],
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "atleticomadrid~realsociedad",
-      "home": "Real Sociedad",
-      "away": "Atlético Madrid",
-      "commentators": [],
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": false
-    },
-    {
-      "key": "crystalpalace~ipswichtown",
-      "home": "Crystal Palace",
-      "away": "Ipswich Town",
-      "commentators": [
-        {
-          "name": "سمير اليعقوبي",
-          "channel": "beIN Sports 5"
-        }
-      ],
-      "locked": false
-    },
-    {
-      "key": "alaves~racingsantander",
-      "home": "Racing Santander",
-      "away": "Alavés",
-      "commentators": [
-        {
-          "name": "محمد بركات",
-          "channel": "beIN Sports 9"
-        }
-      ],
-      "locked": true
-    },
-    {
-      "key": "espanyol~osasuna",
-      "home": "Osasuna",
-      "away": "Espanyol",
-      "commentators": [
-        {
-          "name": "محمد السعدي",
-          "channel": "beIN Sports 9"
-        }
-      ],
-      "locked": false
-    },
-    {
-      "key": "celtavigo~malaga",
-      "home": "Celta Vigo",
-      "away": "Málaga",
-      "commentators": [],
-      "locked": false
-    },
-    {
-      "key": "deportivo~getafe",
-      "home": "Getafe",
-      "away": "Deportivo",
-      "commentators": [],
-      "locked": false
-    },
-    {
-      "key": "realbetis~villarreal",
-      "home": "Villarreal",
-      "away": "Real Betis",
-      "commentators": [],
-      "locked": false
-    },
-    {
-      "key": "sevilla~valencia",
-      "home": "Sevilla",
-      "away": "Valencia",
-      "commentators": [],
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": true
-    },
-    {
-      "key": "asroma~fenerbahce",
-      "home": "Fenerbahce",
-      "away": "AS Roma",
-      "commentators": [],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": true
-    },
-    {
-      "key": "psveindhoven~shakhtardonetsk",
-      "home": "PSV Eindhoven",
-      "away": "Shakhtar Donetsk",
-      "commentators": [],
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": true
-    },
-    {
-      "key": "como~rbleipzig",
-      "home": "Como",
-      "away": "RB Leipzig",
-      "commentators": [],
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": true
-    },
-    {
-      "key": "manchesterunited~sabahfk",
-      "home": "Manchester United",
-      "away": "Sabah FK",
-      "commentators": [],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": true
-    },
-    {
-      "key": "lens~slaviaprague",
-      "home": "Slavia Prague",
-      "away": "Lens",
-      "commentators": [],
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": true
-    },
-    {
-      "key": "barcelona~feyenoordrotterdam",
-      "home": "Barcelona",
-      "away": "Feyenoord Rotterdam",
-      "commentators": [],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": true
-    },
-    {
-      "key": "vfbstuttgart~vikingfk",
-      "home": "VfB Stuttgart",
-      "away": "Viking FK",
-      "commentators": [],
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": true
-    },
-    {
-      "key": "atleticomadrid~liverpool",
-      "home": "Liverpool",
-      "away": "Atlético Madrid",
-      "commentators": [],
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": true
-    },
-    {
-      "key": "arsenal~napoli",
-      "home": "Napoli",
-      "away": "Arsenal",
-      "commentators": [],
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": true
-    },
-    {
-      "key": "parissaintgermain~slovanbratislava",
-      "home": "Paris Saint-Germain",
-      "away": "Slovan Bratislava",
-      "commentators": [],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": true
-    },
-    {
-      "key": "galatasaray~sportingcp",
-      "home": "Sporting CP",
-      "away": "Galatasaray",
-      "commentators": [],
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
-      "channelBinding": "resolved",
-      "channelSource": "goal.com",
-      "locked": true
-    },
-    {
-      "key": "aekathens~lasklinz",
-      "home": "AEK Athens",
-      "away": "LASK Linz",
-      "commentators": [
-        {
-          "name": "أحمد فؤاد",
-          "channel": "beIN Sports 2"
-        }
-      ],
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "channelBinding": "resolved",
-      "broadcast": {
-        "provider": "bein",
-        "channelId": "bein-sports-2",
-        "source": "almaghrebsport",
-        "confidence": "exact"
-      },
-      "locked": true
-    },
-    {
       "key": "astonvilla~clubbrugge",
       "home": "Club Brugge",
       "away": "Aston Villa",
       "commentators": [
         {
           "name": "علي الكعبي",
-          "channel": "beIN Sports 1"
-        }
-      ],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "channelBinding": "resolved",
-      "broadcast": {
-        "provider": "bein",
-        "channelId": "bein-sports-1",
-        "source": "almaghrebsport",
-        "confidence": "exact"
-      },
-      "locked": true
-    },
-    {
-      "key": "borussiadortmund~villarreal",
-      "home": "Borussia Dortmund",
-      "away": "Villarreal",
-      "commentators": [
-        {
-          "name": "محمد بركات",
           "channel": "beIN Sports 1"
         }
       ],
@@ -416,48 +42,6 @@
       "broadcast": {
         "provider": "bein",
         "channelId": "bein-sports-2",
-        "source": "almaghrebsport",
-        "confidence": "exact"
-      },
-      "locked": true
-    },
-    {
-      "key": "lille~realbetis",
-      "home": "Lille",
-      "away": "Real Betis",
-      "commentators": [
-        {
-          "name": "علي محمد علي",
-          "channel": "beIN Sports 1"
-        }
-      ],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "channelBinding": "resolved",
-      "broadcast": {
-        "provider": "bein",
-        "channelId": "bein-sports-1",
-        "source": "almaghrebsport",
-        "confidence": "exact"
-      },
-      "locked": true
-    },
-    {
-      "key": "internazionale~realmadrid",
-      "home": "Real Madrid",
-      "away": "Internazionale",
-      "commentators": [
-        {
-          "name": "عصام الشوالي",
-          "channel": "beIN Sports 1"
-        }
-      ],
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "channelBinding": "resolved",
-      "broadcast": {
-        "provider": "bein",
-        "channelId": "bein-sports-1",
         "source": "almaghrebsport",
         "confidence": "exact"
       },
@@ -854,51 +438,37 @@
       "locked": false
     },
     {
-      "key": "alettifaq~alqadsiah",
-      "home": "Al Qadsiah",
-      "away": "Al Ettifaq",
+      "key": "alkhaleej~alriyadh",
+      "home": "Al Khaleej",
+      "away": "Al Riyadh",
       "commentators": [],
-      "channel": "ثمانية 1",
+      "channel": "ثمانية",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
       },
       "locked": false
     },
     {
-      "key": "alfaisaly~alittihad",
-      "home": "Al Faisaly",
-      "away": "Al Ittihad",
+      "key": "alhilal~neomsc",
+      "home": "Al Hilal",
+      "away": "Neom SC",
       "commentators": [],
-      "channel": "ثمانية 2",
+      "channel": "ثمانية",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah-2",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
       },
       "locked": false
     },
     {
-      "key": "alahli~alhazem",
-      "home": "Al Ahli",
-      "away": "Al Hazem",
-      "commentators": [],
-      "channel": "ثمانية 1",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
-      "key": "alhilal~altaawoun",
-      "home": "Al Taawoun",
-      "away": "Al Hilal",
+      "key": "alettifaq~alfaisaly",
+      "home": "Al Ettifaq",
+      "away": "Al Faisaly",
       "commentators": [],
       "channel": "ثمانية 2",
       "broadcast": {
@@ -910,8 +480,36 @@
       "locked": false
     },
     {
-      "key": "alfayha~alshabab",
-      "home": "Al Shabab",
+      "key": "alhazem~altaawoun",
+      "home": "Al Hazem",
+      "away": "Al Taawoun",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "alahli~alqadsiah",
+      "home": "Al Qadsiah",
+      "away": "Al Ahli",
+      "commentators": [],
+      "channel": "ثمانية 1",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah-1",
+        "source": "livefootballtv",
+        "confidence": "exact"
+      },
+      "locked": false
+    },
+    {
+      "key": "alfayha~alittihad",
+      "home": "Al Ittihad",
       "away": "Al Fayha",
       "commentators": [],
       "channel": "ثمانية 3",
@@ -924,23 +522,9 @@
       "locked": false
     },
     {
-      "key": "alkhaleej~alnassr",
-      "home": "Al Khaleej",
-      "away": "Al Nassr",
-      "commentators": [],
-      "channel": "ثمانية 1",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
-      "key": "alfateh~neomsc",
-      "home": "Neom SC",
-      "away": "Al Fateh",
+      "key": "alkholood~alshabab",
+      "home": "Al Kholood",
+      "away": "Al Shabab",
       "commentators": [],
       "channel": "ثمانية 2",
       "broadcast": {
@@ -952,8 +536,8 @@
       "locked": false
     },
     {
-      "key": "abha~aldiriyah",
-      "home": "Al Diriyah",
+      "key": "abha~alnassr",
+      "home": "Al Nassr",
       "away": "Abha",
       "commentators": [],
       "channel": "ثمانية 1",
@@ -966,9 +550,9 @@
       "locked": false
     },
     {
-      "key": "alkholood~alriyadh",
-      "home": "Al Riyadh",
-      "away": "Al Kholood",
+      "key": "aldiriyah~alfateh",
+      "home": "Al Fateh",
+      "away": "Al Diriyah",
       "commentators": [],
       "channel": "ثمانية 3",
       "broadcast": {
@@ -976,6 +560,132 @@
         "channelId": "thmanyah-3",
         "source": "livefootballtv",
         "confidence": "exact"
+      },
+      "locked": false
+    },
+    {
+      "key": "alettifaq~alqadsiah",
+      "home": "Al Qadsiah",
+      "away": "Al Ettifaq",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "alfaisaly~alittihad",
+      "home": "Al Faisaly",
+      "away": "Al Ittihad",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "alahli~alhazem",
+      "home": "Al Ahli",
+      "away": "Al Hazem",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "alhilal~altaawoun",
+      "home": "Al Taawoun",
+      "away": "Al Hilal",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "alfayha~alshabab",
+      "home": "Al Shabab",
+      "away": "Al Fayha",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "alkhaleej~alnassr",
+      "home": "Al Khaleej",
+      "away": "Al Nassr",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "alfateh~neomsc",
+      "home": "Neom SC",
+      "away": "Al Fateh",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "abha~aldiriyah",
+      "home": "Al Diriyah",
+      "away": "Abha",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "alkholood~alriyadh",
+      "home": "Al Riyadh",
+      "away": "Al Kholood",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
       },
       "locked": false
     }
@@ -4215,8 +3925,152 @@
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
-  "broadcastUpdatedAt": "2026-09-11T23:15:18.820Z",
+  "broadcastUpdatedAt": "2026-09-08T14:59:22.238Z",
   "broadcastIndex": [
+    {
+      "id": "espn-ksa.1-401900365",
+      "key": "alkhaleej~alriyadh",
+      "home": "Al Khaleej",
+      "away": "Al Riyadh",
+      "kickoffUtc": "2026-09-07T15:30Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900364",
+      "key": "alhilal~neomsc",
+      "home": "Al Hilal",
+      "away": "Neom SC",
+      "kickoffUtc": "2026-09-07T18:00Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900363",
+      "key": "alettifaq~alfaisaly",
+      "home": "Al Ettifaq",
+      "away": "Al Faisaly",
+      "kickoffUtc": "2026-09-08T15:30Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية 2",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah-2",
+        "source": "livefootballtv",
+        "confidence": "exact"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900362",
+      "key": "alhazem~altaawoun",
+      "home": "Al Hazem",
+      "away": "Al Taawoun",
+      "kickoffUtc": "2026-09-08T15:55Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900361",
+      "key": "alahli~alqadsiah",
+      "home": "Al Qadsiah",
+      "away": "Al Ahli",
+      "kickoffUtc": "2026-09-08T18:00Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية 1",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah-1",
+        "source": "livefootballtv",
+        "confidence": "exact"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900360",
+      "key": "alfayha~alittihad",
+      "home": "Al Ittihad",
+      "away": "Al Fayha",
+      "kickoffUtc": "2026-09-08T18:00Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية 3",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah-3",
+        "source": "livefootballtv",
+        "confidence": "exact"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900359",
+      "key": "alkholood~alshabab",
+      "home": "Al Kholood",
+      "away": "Al Shabab",
+      "kickoffUtc": "2026-09-09T15:55Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية 2",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah-2",
+        "source": "livefootballtv",
+        "confidence": "exact"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900357",
+      "key": "abha~alnassr",
+      "home": "Al Nassr",
+      "away": "Abha",
+      "kickoffUtc": "2026-09-09T18:00Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية 1",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah-1",
+        "source": "livefootballtv",
+        "confidence": "exact"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900358",
+      "key": "aldiriyah~alfateh",
+      "home": "Al Fateh",
+      "away": "Al Diriyah",
+      "kickoffUtc": "2026-09-09T18:00Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية 3",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah-3",
+        "source": "livefootballtv",
+        "confidence": "exact"
+      },
+      "commentators": []
+    },
     {
       "id": "espn-ksa.1-401900920",
       "key": "alettifaq~alqadsiah",
@@ -4224,12 +4078,12 @@
       "away": "Al Ettifaq",
       "kickoffUtc": "2026-09-11T15:25Z",
       "leagueSlug": "ksa.1",
-      "channel": "ثمانية 1",
+      "channel": "ثمانية",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
       },
       "commentators": []
     },
@@ -4240,12 +4094,12 @@
       "away": "Al Ittihad",
       "kickoffUtc": "2026-09-11T15:45Z",
       "leagueSlug": "ksa.1",
-      "channel": "ثمانية 2",
+      "channel": "ثمانية",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah-2",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
       },
       "commentators": []
     },
@@ -4256,12 +4110,12 @@
       "away": "Al Hazem",
       "kickoffUtc": "2026-09-11T18:00Z",
       "leagueSlug": "ksa.1",
-      "channel": "ثمانية 1",
+      "channel": "ثمانية",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
       },
       "commentators": []
     },
@@ -4272,12 +4126,12 @@
       "away": "Al Hilal",
       "kickoffUtc": "2026-09-12T15:50Z",
       "leagueSlug": "ksa.1",
-      "channel": "ثمانية 2",
+      "channel": "ثمانية",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah-2",
-        "source": "livefootballtv",
-        "confidence": "exact"
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
       },
       "commentators": []
     },
@@ -4288,12 +4142,12 @@
       "away": "Al Fayha",
       "kickoffUtc": "2026-09-12T18:00Z",
       "leagueSlug": "ksa.1",
-      "channel": "ثمانية 3",
+      "channel": "ثمانية",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah-3",
-        "source": "livefootballtv",
-        "confidence": "exact"
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
       },
       "commentators": []
     },
@@ -4304,12 +4158,12 @@
       "away": "Al Nassr",
       "kickoffUtc": "2026-09-12T18:00Z",
       "leagueSlug": "ksa.1",
-      "channel": "ثمانية 1",
+      "channel": "ثمانية",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv",
-        "confidence": "exact"
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
       },
       "commentators": []
     },
@@ -4320,12 +4174,12 @@
       "away": "Al Fateh",
       "kickoffUtc": "2026-09-13T16:20Z",
       "leagueSlug": "ksa.1",
-      "channel": "ثمانية 2",
+      "channel": "ثمانية",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah-2",
-        "source": "livefootballtv",
-        "confidence": "exact"
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
       },
       "commentators": []
     },
@@ -4336,12 +4190,12 @@
       "away": "Abha",
       "kickoffUtc": "2026-09-13T18:00Z",
       "leagueSlug": "ksa.1",
-      "channel": "ثمانية 1",
+      "channel": "ثمانية",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv",
-        "confidence": "exact"
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
       },
       "commentators": []
     },
@@ -4352,15 +4206,15 @@
       "away": "Al Kholood",
       "kickoffUtc": "2026-09-13T18:00Z",
       "leagueSlug": "ksa.1",
-      "channel": "ثمانية 3",
+      "channel": "ثمانية",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah-3",
-        "source": "livefootballtv",
-        "confidence": "exact"
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
       },
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-09-12T14:36:42.748Z"
+  "commentaryUpdatedAt": "2026-09-08T21:24:13.856Z"
 }

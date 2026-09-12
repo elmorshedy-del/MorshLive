@@ -154,46 +154,6 @@ playback code that were never needed. Walk it in order.
 - Everything resolves and one channel plays while another does not → **not a
   code path**. Every channel goes through the same `load()`; there is no
   per-league branch in the player. Look at the line, not the code.
-- Card names the **wrong beIN number** (a tie on beIN 4 showing as beIN 1) →
-  step 1, and a sourcing problem rather than a code one. See below.
-
-### Where a European channel number comes from
-
-Three sources feed step 1 for non-Saudi fixtures, and they are applied in this
-order — later wins:
-
-| Source | File | Owns |
-|--------|------|------|
-| almaghrebsport | `scripts/refresh-broadcasts.js` | commentators, and a channel guess |
-| goal.com | `assets/data/broadcast-overrides.json` | the channel number |
-| by hand | `assets/data/manual-channel-overrides.json` | anything either got wrong |
-
-almaghrebsport is a **commentator** feed. It names commentators reliably and
-channel numbers incidentally, and when it is unsure it says beIN 1 — which is how
-four simultaneous Champions League ties once all read beIN 1. goal.com publishes
-the broadcaster's own listing and gets the number right, so
-`scripts/refresh-goal-broadcasts.js` harvests it into
-`assets/data/broadcast-overrides.json` and `scripts/channel-overrides-lib.js`
-applies it after the feed on every run.
-
-Two things about goal.com, both learned the hard way:
-
-- Listings are **geo-scoped**. Without a MENA hint every page returns an empty
-  `tvChannels`, which reads exactly like "no channel published yet".
-- Only the **ar-sa** edition carries the beIN listing. `en-ae` returns an empty
-  array even from a Saudi address.
-
-goal.com publishes a fixture's channel two to three days ahead, not a week, so a
-seven-day run legitimately fills the near days and leaves the far ones empty. A
-later run fills them in. That horizon is the reason this is a schedule and not a
-one-off correction.
-
-**Never hand-edit a channel number into `today.json`.** The scheduled refresh
-rewrites `commentaryIndex` from almaghrebsport on every run and your correction
-is gone by the next one — silently, because nothing reports a discarded edit.
-Put it in `manual-channel-overrides.json`, which nothing generates and which
-outranks both other sources. `broadcast-overrides.json` is machine-owned and
-rewritten whole, so an edit there is lost on the next harvest instead.
 
 Check the data before the code — it is one command and settles steps 1-3:
 

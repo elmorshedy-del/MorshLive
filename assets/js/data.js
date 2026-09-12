@@ -228,22 +228,8 @@ function resolveWatchSelection(matches, channels, searchParams) {
   const matchId = params.get("match");
   const explicitMatch = matchId ? matches.find((m) => m.id === matchId) : null;
 
-  // A deliberate pick outranks the fixture's own channel. watch.js resolves
-  // twice — once before its fixtures load and again after — and on the second
-  // pass explicitMatch exists, so without this the match's channel silently
-  // overwrote the channel the viewer had just chosen from the "قناة أخرى؟" row.
-  // channelFitsFixture still decides what may be picked, so a `ch` left over
-  // from another competition is refused rather than honoured.
-  const requested = reqCh && reqCh !== "live" ? reqCh : "";
-  const picked =
-    requested && channels.some((c) => c.id === requested) && channelFitsFixture(requested, matchId)
-      ? requested
-      : "";
-
   let chId;
-  if (picked) {
-    chId = picked;
-  } else if (explicitMatch && explicitMatch.channelId) {
+  if (explicitMatch && explicitMatch.channelId) {
     chId = explicitMatch.channelId;
   } else if ((!reqCh || reqCh === "live") && liveMatch && liveMatch.channelId) {
     chId = liveMatch.channelId;

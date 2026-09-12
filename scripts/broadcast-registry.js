@@ -76,13 +76,7 @@ function resolveBroadcastChannel(label) {
 
   if (/(?:بي\s*إن|بين|bein)/i.test(raw)) {
     const number = channelNumber(raw);
-    // Emit the channel the broadcaster actually named. This used to collapse to
-    // `number === 2 ? 2 : 1`, from when the site carried only beIN Sports 1 and
-    // 2 — so a fixture on 3 or 4 was recorded as 1 and still stamped "exact",
-    // which is the worst shape for a mistake: confidently wrong, and invisible.
-    // A Champions League night runs four simultaneous ties across 1-4, so that
-    // silently mislabelled three of them.
-    const resolved = number >= 1 && number <= 9 ? number : 1;
+    const resolved = number === 2 ? 2 : 1;
     return {
       channel: `beIN Sports ${resolved}`,
       provider: "bein",

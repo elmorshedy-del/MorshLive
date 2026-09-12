@@ -20,20 +20,9 @@ async function verify(name, browserType, contextOptions = {}) {
       window.KZIptvLegacyToggleNormalizer
       && window.KZIptvWindow
       && window.KZIptvChannelResolver
+      && window.__KZ_MATCH_CARD_CLICK_BUILD === "20260904cardclick4"
     ));
 
-    const homepageScripts = await page.evaluate(() =>
-      [...document.scripts].map((script) => script.src).filter(Boolean)
-    );
-    if (homepageScripts.some((src) => src.includes("/assets/js/iptv-auto.js"))) {
-      throw new Error("homepage loaded iptv-auto.js; retired gold/silver routing can resurface");
-    }
-    if (homepageScripts.some((src) => src.includes("/assets/js/iptv-premium-card-click.js"))) {
-      throw new Error("homepage loaded retired iptv-premium-card-click.js");
-    }
-
-    // Defense-in-depth check: even if old markup is injected, the legacy
-    // normalizer must collapse it back to the single normal watch link.
     await page.evaluate(() => {
       document.getElementById("pw-legacy-euro-card")?.remove();
       const card = document.createElement("article");
@@ -71,27 +60,30 @@ async function verify(name, browserType, contextOptions = {}) {
         text: link?.textContent?.trim() || "",
         href: link?.getAttribute("href") || "",
         legacyPremiumCount: card.querySelectorAll('a[href*="source=iptv-premium"]').length,
-        xtreamCount: card.querySelectorAll('a[href*="source=xtream"]').length,
-        toggleCount: card.querySelectorAll(".watch-source-toggle, .iptv-auto-toggle").length,
+        toggleCount: card.querySelectorAll(".watch-source-toggle").length,
       };
     });
-    if (synthetic.legacyPremiumCount !== 0 || synthetic.xtreamCount !== 0 || synthetic.toggleCount !== 0) {
+    if (synthetic.legacyPremiumCount !== 0 || synthetic.toggleCount !== 0) {
       throw new Error(`legacy Euro toggle was not collapsed: ${JSON.stringify(synthetic)}`);
+    }
+    if (!synthetic.text.includes("تفاصيل") && !/details/i.test(synthetic.text)) {
+      throw new Error(`legacy Euro card did not normalize to match details: ${JSON.stringify(synthetic)}`);
     }
 
     await page.waitForTimeout(1500);
-    const realBadRoutes = await page.locator(
-      '#matches-grid a[href*="source=iptv-premium"], #matches-grid a[href*="source=xtream"], #matches-grid .iptv-auto-toggle'
-    ).count();
-    if (realBadRoutes !== 0) {
-      throw new Error(`production homepage still exposes retired source routing (${realBadRoutes} nodes)`);
+    const realLegacyCount = await page.locator('#matches-grid a[href*="source=iptv-premium"]').count();
+    if (realLegacyCount !== 0) {
+      const hrefs = await page.locator('#matches-grid a[href*="source=iptv-premium"]').evaluateAll((nodes) =>
+        nodes.slice(0, 5).map((node) => node.getAttribute("href"))
+      );
+      throw new Error(`production still exposes retired premium card routes: ${JSON.stringify(hrefs)}`);
     }
 
     console.log(JSON.stringify({
       browser: name,
-      homepageRoutingContract: "pass",
+      unifiedStageContract: "pass",
       syntheticLegacyEuro: synthetic,
-      productionRetiredRoutes: realBadRoutes,
+      productionLegacyPremiumRoutes: realLegacyCount,
     }, null, 2));
   } finally {
     await browser.close();
@@ -100,4 +92,4 @@ async function verify(name, browserType, contextOptions = {}) {
 
 await verify("chromium", chromium, { viewport: { width: 390, height: 844 } });
 await verify("webkit", webkit, { viewport: { width: 390, height: 844 } });
-console.log("✓ homepage routing contract passes in deployed Chromium + WebKit");
+console.log("✓ unified IPTV card-stage contract passes in deployed Chromium + WebKit");
