@@ -11,6 +11,16 @@
 (function () {
   "use strict";
 
+  // Defense in depth: the current bootstrap loads this router only on the watch
+  // page, but older cached/rolled-back bootstraps loaded it on the homepage and
+  // recreated the retired gold/silver source cards there. Never mutate cards or
+  // start routing work unless this is the normal watch surface. Explicit Xtream
+  // URLs already have their own player and must not be rewritten again either.
+  const pageParams = new URLSearchParams(location.search);
+  const cleanPath = location.pathname.replace(/\/$/, "");
+  const isWatchPage = cleanPath === "/watch.html" || cleanPath === "/watch";
+  if (!isWatchPage || pageParams.get("source") === "xtream") return;
+
   const resolver = () => window.KZIptvChannelResolver;
   const tvWindow = () => window.KZIptvWindow;
   const epgMatcher = () => window.KZIptvEpgMatcherCore;
@@ -110,9 +120,9 @@
         .map((match) => {
           const override = overrides?.[String(match.id)] || {};
           const row = maps.byId.get(String(match.id)) || maps.byPair.get(pairKey(match.home, match.away)) || {};
-          const broadcast = override.broadcast || match.broadcast || row.broadcast || null;
-          const channelId = override.channelId || match.channelId || row.channelId || broadcast?.channelId || "";
-          const channel = override.channel || match.channel || row.channel || "";
+          const broadcast = override.broadcast || row.broadcast || match.broadcast || null;
+          const channelId = override.channelId || broadcast?.channelId || row.channelId || match.channelId || "";
+          const channel = override.channel || row.channel || match.channel || "";
           return [
             String(match.id),
             {
