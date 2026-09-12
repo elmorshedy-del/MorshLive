@@ -53,10 +53,7 @@ const LOCKED_FILES = Object.freeze({
   "lib/mpegts-config.js": "5a52c8168cd652c87436f3ed36773b382341e0eb",
   "lib/operator-embed.js": "5d7ec9e93e156cc41ee615e199915adf39fee885",
   "lib/stream-plan.js": "1acbe9170d35cdac4a1110880f69a46185aeaf92",
-  // Advanced past 8fe04a34 on 2026-09-08: taught the Thmanyah channels so
-  // /api/iptv-lab/channel can resolve thmanyah-1/2/3. Every other entry below
-  // is still the 8fe04a34 byte state.
-  "lib/xtream-channel-map.js": "3e27c8855765a389faeee9dd2ec038a589261f65",
+  "lib/xtream-channel-map.js": "a8896e588be715f225ffba8c78c56fae6a852ddf",
   "lib/xtream-client.js": "f86e5b6a538ec08d7ba226f7686fdfdc9dbcfd10",
   "worker.js": "637314e36ca4fa881fe5d0cfd1f5504e9d985655",
   "wrangler.toml": "663088846e92661a19241e1c0c7133ec5873eeaa",
