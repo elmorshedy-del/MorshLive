@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 /**
- * CHATGPT-STAMP 2026-09-12T17:37-04:00 — XTREAM-IDLE-WATCHDOG-1
+ * CHATGPT-STAMP 2026-09-06T14:33-04:00 — PRODUCTION-STREAM-LOCK-1
  *
- * Production playback remains frozen at the original 8fe04a34 state except for
- * one deliberate, isolated deviation: backend/adapters/xtream-media-safe.js now
- * aborts silent upstream Xtream reads instead of allowing a provider connection
- * to occupy the account's single slot indefinitely. Every other protected file
- * remains byte-for-byte identical to the original known-good baseline.
+ * Freeze the known-good production playback implementation without freezing the
+ * rest of the repository. Every file below must remain byte-for-byte identical
+ * to the approved 8fe04a34 state unless an explicit, short-lived stream-change
+ * plan is present AND the deploy environment carries the manual approval flag.
  *
  * This guard runs before and after Cloudflare's refresh build and from the local
  * deploy wrapper. Do not weaken or bypass it for ordinary content/data work.
@@ -20,8 +19,9 @@ const APPROVAL_VALUE = "YES_I_INTEND_TO_CHANGE_PRODUCTION_STREAMING";
 const PLAN_PATH = resolve("config/stream-change-plan.json");
 const MAX_PLAN_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-// Git blob SHAs from the known-good production tree, with only the explicitly
-// approved Xtream idle-watchdog deviation re-baselined below.
+// Git blob SHAs from the known-good production tree. These are exact-byte
+// fingerprints, not semantic guesses. Lab and KoraZero Live are intentionally
+// locked separately inside the same table.
 const LOCKED_FILES = Object.freeze({
   "iptv-lab.html": "67ace9fbc5e58c6dc08c532a5169fe294518e3f9",
   "watch.html": "1221e76d929c3f1fcead13bb88e9504d9102905b",
@@ -37,7 +37,7 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-loader.js": "d40237ad871bb08164150881ff0f397d8786dafb",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
   "assets/js/watch.js": "b2a9181ee1c801b6f5d33b732402215657ea31d3",
-  "backend/adapters/xtream-media-safe.js": "c746821386df808dd451604cbbb2bafda0c48761",
+  "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
   "backend/routes/index.js": "17e90d3f0816109f38f149b533ba039a35c0df72",
@@ -106,7 +106,7 @@ function approvedPlan(changed) {
 const changed = mismatches();
 if (!changed.length) {
   console.log(
-    `STREAM LOCK OK — ${Object.keys(LOCKED_FILES).length} production playback files match ${BASELINE_COMMIT.slice(0, 8)} plus XTREAM-IDLE-WATCHDOG-1.`,
+    `STREAM LOCK OK — ${Object.keys(LOCKED_FILES).length} production playback files match ${BASELINE_COMMIT.slice(0, 8)}.`,
   );
   process.exit(0);
 }
@@ -122,7 +122,7 @@ if (plan) {
 
 console.error("");
 console.error("❌ STREAM LOCK — production playback differs from the approved known-good state.");
-console.error(`Baseline: ${BASELINE_COMMIT} + XTREAM-IDLE-WATCHDOG-1`);
+console.error(`Baseline: ${BASELINE_COMMIT}`);
 console.error("");
 for (const { file, expected, actual } of changed) {
   console.error(`  ${file}`);
