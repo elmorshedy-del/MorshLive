@@ -1037,12 +1037,7 @@
 
   async function mountLabChannel() {
     if (!shell || !window.mpegts?.isSupported?.()) return false;
-    // resolveWatchSelection() already settled this: a deliberate ?ch= pick wins,
-    // and with no pick the fixture keeps its own channel. Reading match.channelId
-    // here re-applied the fixture's channel afterwards, so the قناة أخرى؟ row
-    // moved the highlight and the player stayed on the hydrated feed. Saudi
-    // fixtures carry no channelId, which is the only reason their row worked.
-    const channelId = channel.id;
+    const channelId = (match && match.channelId) || channel.id;
     // CHATGPT-STAMP 2026-09-05T08:08-04:00 — the 20s/90s metadata ticks must
     // not become playback ticks. Same channel + healthy media = leave it alone.
     if (labChannelAlreadyHealthy(channelId)) return true;

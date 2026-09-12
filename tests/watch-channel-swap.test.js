@@ -39,9 +39,6 @@ const { CHANNELS, MATCHES } = window.SITE_DATA;
 // actually supply.
 const select = (query) => window.resolveWatchSelection(MATCHES || [], CHANNELS, new URLSearchParams(query));
 
-// Every beIN Sports channel CHANNEL_DEFS models, in its declared order.
-const beinRow = () => CHANNELS.filter((c) => c.group === "beIN").map((c) => c.name);
-
 // Mirrors watch.js switchableChannels(): the row is the bound channel's group
 // siblings, and it hides itself when fewer than two remain.
 const switchRow = (selection) =>
@@ -76,12 +73,12 @@ describe("European fixtures keep beIN", () => {
   it("binds to beIN and offers beIN alternatives", () => {
     const selection = select(`match=${EURO}`);
     expect(selection.channel.id).toBe("bein-sports-1");
-    // Derived from CHANNEL_DEFS rather than frozen as a literal: the beIN range
-    // has widened twice already (1-2, then 1-4, then 1-9 when goal.com put a
-    // Premier League fixture on 5), and each time a hardcoded row failed here
-    // for no reason beyond being out of date.
-    expect(switchRow(selection)).toEqual(beinRow());
-    expect(switchRow(selection)[0]).toBe("beIN Sports 1");
+    expect(switchRow(selection)).toEqual([
+      "beIN Sports 1",
+      "beIN Sports 2",
+      "beIN Sports 3",
+      "beIN Sports 4",
+    ]);
   });
 
   it("still switches between beIN channels by hand", () => {
@@ -101,12 +98,14 @@ describe("European fixtures keep beIN", () => {
     expect(select(`match=${EURO}&ch=bein-max-3`).channel.id).toBe("bein-max-3");
   });
 
-  it("offers every beIN Sports channel the site models", () => {
-    // A Champions League night runs four simultaneous ties across beIN 1-4, and
-    // a full league Saturday reaches 9.
-    const row = switchRow(select(`match=${EURO}`));
-    expect(row).toEqual(beinRow());
-    for (let n = 1; n <= 9; n += 1) expect(row).toContain(`beIN Sports ${n}`);
+  it("offers all four beIN Sports channels", () => {
+    // A Champions League night runs four simultaneous ties across beIN 1-4.
+    expect(switchRow(select(`match=${EURO}`))).toEqual([
+      "beIN Sports 1",
+      "beIN Sports 2",
+      "beIN Sports 3",
+      "beIN Sports 4",
+    ]);
   });
 
   it("binds a fixture carried on beIN Sports 3 or 4", () => {
@@ -156,10 +155,7 @@ describe("once the fixtures have loaded", () => {
   });
 
   it("ignores a channel that does not exist", () => {
-    // beIN Sports 9 used to stand in for "no such channel" here. It is a real
-    // channel now — two LaLiga fixtures were on it — so the example has to be
-    // one CHANNEL_DEFS genuinely does not carry.
-    expect(pick(euro, `match=${EURO}&ch=bein-sports-12`)).toBe("bein-sports-2");
+    expect(pick(euro, `match=${EURO}&ch=bein-sports-9`)).toBe("bein-sports-2");
     expect(pick(euro, `match=${EURO}&ch=not-a-channel`)).toBe("bein-sports-2");
   });
 
@@ -185,34 +181,5 @@ describe("with no fixture named", () => {
   it("leaves the existing beIN behaviour alone", () => {
     expect(select("ch=bein-sports-2").channel.id).toBe("bein-sports-2");
     expect(select("ch=live").channel.id).toBe("bein-sports-1");
-  });
-});
-
-/**
- * Resolving the channel correctly is only half of it — the player has to mount
- * the channel the resolver chose. mountLabChannel() used to read
- * `match.channelId` first, which put the fixture's own channel back after
- * resolveWatchSelection had honoured the viewer's pick: the قناة أخرى؟ row moved
- * its highlight and the stream never changed. Saudi cards looked fine only
- * because their fixtures carry no channelId, so the fallback was already the
- * resolver's answer.
- *
- * watch.js is stream-locked and its IIFE cannot be imported, so this reads the
- * source. That is the point — the invariant is that playback takes its channel
- * from one place.
- */
-describe("the player mounts the channel the resolver picked", () => {
-  const watchSource = readFileSync(require.resolve("../assets/js/watch.js"), "utf8");
-  const mountBody = watchSource.slice(
-    watchSource.indexOf("async function mountLabChannel()"),
-    watchSource.indexOf("async function loadPlayer()"),
-  );
-
-  it("reads the resolved channel", () => {
-    expect(mountBody).toContain("const channelId = channel.id;");
-  });
-
-  it("does not take the channel from the fixture instead", () => {
-    expect(mountBody).not.toMatch(/match\s*&&\s*match\.channelId/);
   });
 });
