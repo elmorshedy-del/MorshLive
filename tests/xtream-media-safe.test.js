@@ -6,8 +6,13 @@ const env = {
   STREAM_SIGNING_SECRET: "safe-proxy-test-secret",
 };
 
+const TEST_TIMEOUTS = {
+  headers: 25,
+  sniff: 25,
+  pump: 25,
+};
+
 afterEach(() => {
-  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -53,7 +58,6 @@ describe("Xtream payload-sniffing media proxy", () => {
   });
 
   it("returns 504 and aborts the provider fetch when payload sniffing goes idle", async () => {
-    vi.useFakeTimers();
     const upstream = "http://provider.test/live/u/p/2454.m3u8";
     const token = await createMediaToken(env, upstream, 60);
     let aborted = false;
@@ -76,16 +80,13 @@ describe("Xtream payload-sniffing media proxy", () => {
     );
 
     const request = new Request(`https://korazero.com/api/xtream/media/${token}`);
-    const pending = proxyXtreamMediaSafe(request, env, token);
-    await vi.advanceTimersByTimeAsync(8_001);
-    const response = await pending;
+    const response = await proxyXtreamMediaSafe(request, env, token, TEST_TIMEOUTS);
 
     expect(response.status).toBe(504);
     expect(aborted).toBe(true);
   });
 
   it("aborts an upstream fetch that never produces response headers", async () => {
-    vi.useFakeTimers();
     const upstream = "http://provider.test/live/u/p/2454.ts";
     const token = await createMediaToken(env, upstream, 60);
     let aborted = false;
@@ -101,16 +102,13 @@ describe("Xtream payload-sniffing media proxy", () => {
     );
 
     const request = new Request(`https://korazero.com/api/xtream/media/${token}`);
-    const pending = proxyXtreamMediaSafe(request, env, token);
-    await vi.advanceTimersByTimeAsync(8_001);
-    const response = await pending;
+    const response = await proxyXtreamMediaSafe(request, env, token, TEST_TIMEOUTS);
 
     expect(response.status).toBe(504);
     expect(aborted).toBe(true);
   });
 
   it("aborts a started MPEG-TS stream when the upstream pump goes idle", async () => {
-    vi.useFakeTimers();
     const upstream = "http://provider.test/live/u/p/2454.ts";
     const token = await createMediaToken(env, upstream, 60);
     let aborted = false;
@@ -135,16 +133,15 @@ describe("Xtream payload-sniffing media proxy", () => {
     );
 
     const request = new Request(`https://korazero.com/api/xtream/media/${token}`);
-    const response = await proxyXtreamMediaSafe(request, env, token);
+    const response = await proxyXtreamMediaSafe(request, env, token, TEST_TIMEOUTS);
     expect(response.status).toBe(200);
 
     const reader = response.body.getReader();
     const first = await reader.read();
     expect(first.value[0]).toBe(0x47);
-    const second = reader.read();
+    const rejectedRead = expect(reader.read()).rejects.toThrow("Xtream upstream idle during media stream");
 
-    await vi.advanceTimersByTimeAsync(15_001);
-    await expect(second).rejects.toThrow("Xtream upstream idle during media stream");
+    await rejectedRead;
     expect(aborted).toBe(true);
   });
 
