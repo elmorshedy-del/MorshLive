@@ -1,24 +1,8 @@
-# Non-Saudi (beIN / European) broadcast assignments.
-#
-# Cadence is deliberately modest. This job has produced exactly one commit in the
-# repository's history: European channel assignments are published well ahead and
-# almost never move, and refresh-broadcasts.js exits early when commentaryIndex is
-# unchanged, so extra runs are pure cost.
-#
-# The previous "*/5" was never real. GitHub throttles frequent scheduled workflows
-# on shared runners and silently drops the rest — that cron asked for 288 runs a
-# day and actually delivered ~8, every 3-4 hours. Asking for a cadence you do not
-# get is worse than asking for one you do: it invites the assumption that data is
-# five minutes fresh when it can be three hours stale. Run workflow_dispatch when
-# an assignment must land before a specific kickoff.
-#
-# Minute 43 rather than 0 keeps it off the top-of-hour peak, where GitHub queues
-# are most contended and scheduled runs are delayed longest.
 name: Update broadcast channels
 
 on:
   schedule:
-    - cron: "43 */6 * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
   push:
     branches: [main]

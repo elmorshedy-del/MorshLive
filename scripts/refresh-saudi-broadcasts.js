@@ -80,14 +80,6 @@ function sameFixture(a, b) {
   return a.key === b.key && a.kickoffUtc === b.kickoffUtc;
 }
 
-// A pin is a state, not an event: re-pinning an already-pinned row must be a
-// no-op. Appending `:pinned` on every pass made `rowsChanged` fire each run,
-// which committed and pushed to main (and so rebuilt production) forever.
-function pinnedSource(source) {
-  const base = String(source || "previous");
-  return base.endsWith(":pinned") ? base : `${base}:pinned`;
-}
-
 function preservePreviousExact(freshRows, previousRows) {
   const previous = Array.isArray(previousRows) ? previousRows : [];
   return freshRows.map((row) => {
@@ -99,7 +91,7 @@ function preservePreviousExact(freshRows, previousRows) {
       channel: pinned.channel,
       broadcast: {
         ...pinned.broadcast,
-        source: pinnedSource(pinned.broadcast.source),
+        source: `${pinned.broadcast.source || "previous"}:pinned`,
       },
       commentators: row.commentators?.length ? row.commentators : pinned.commentators || [],
     };
