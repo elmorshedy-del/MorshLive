@@ -24,7 +24,11 @@ const path = require("path");
 const { ESPN_LEAGUES, normalizeEspnEvent } = require("./matches-lib");
 const { attachCommentators, mergeCommentaryIndex } = require("./commentators-lib");
 const { isSaudiProLeagueMatch } = require("./broadcast-registry");
-const { loadChannelOverrides, applyChannelOverrides } = require("./channel-overrides-lib.js");
+const {
+  applyChannelOverrides,
+  loadChannelOverrides,
+  stripUnroutableChannels,
+} = require("./channel-overrides-lib.js");
 
 const COMMENTATORS_URL = "https://almaghrebsport.com/commentators/";
 const OUT = path.join(__dirname, "..", "assets", "data", "today.json");
@@ -132,6 +136,12 @@ async function main() {
   if (overridden) console.log(`Broadcast refresh: ${overridden} channels taken from overrides`);
 
   const commentaryIndex = mergeCommentaryIndex(fresh, previousPayload.commentaryIndex || [], matches);
+
+  // After the merge, not before: mergeCommentaryIndex carries a previously
+  // written row forward, so a channel the site can no longer route survives here
+  // even once every source has stopped naming it.
+  const stripped = stripUnroutableChannels(matches, commentaryIndex);
+  if (stripped) console.log(`Broadcast refresh: stripped ${stripped} channels the site cannot route`);
 
   if (JSON.stringify(previousPayload.commentaryIndex || []) === JSON.stringify(commentaryIndex)) {
     console.log("Broadcasts unchanged");

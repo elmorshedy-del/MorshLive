@@ -99,4 +99,49 @@ function applyChannelOverrides(matches, commentaryIndex, overrides) {
   return applied;
 }
 
-module.exports = { loadChannelOverrides, applyChannelOverrides, MANUAL, GENERATED };
+/* The channels assets/js/data.js models. Keep in step with CHANNEL_DEFS. */
+const ROUTABLE = new Set([
+  ...[1, 2, 3, 4].map((n) => `bein-sports-${n}`),
+  ...[1, 2, 3, 4].map((n) => `bein-max-${n}`),
+  ...[1, 2, 3].map((n) => `ssc-${n}`),
+  ...[1, 2, 3].map((n) => `thmanyah-${n}`),
+]);
+
+/**
+ * Strip any channel the site cannot route.
+ *
+ * A channel CHANNEL_DEFS does not model is worse than no channel at all.
+ * resolveWatchSelection falls back to channels[0] for the row, while
+ * mountLabChannel reads match.channelId directly — so the card shows one channel
+ * and the player asks the lab for another. beIN 5-9 reached viewers that way and
+ * drained instead of buffering, and removing the channels from CHANNEL_DEFS did
+ * not stop it, because mergeCommentaryIndex carries a previously written row
+ * forward for as long as its fixture is around.
+ *
+ * Dropping the channel and keeping the row leaves the commentators intact and
+ * lets the fixture fall back to a channel that plays.
+ */
+function stripUnroutableChannels(matches, commentaryIndex) {
+  let stripped = 0;
+  const clear = (row) => {
+    if (!row?.channelId || ROUTABLE.has(row.channelId)) return;
+    delete row.channelId;
+    delete row.channel;
+    delete row.channelBinding;
+    delete row.channelSource;
+    if (row.broadcast && !ROUTABLE.has(row.broadcast.channelId)) delete row.broadcast;
+    stripped += 1;
+  };
+  for (const row of commentaryIndex || []) clear(row);
+  for (const match of matches || []) clear(match);
+  return stripped;
+}
+
+module.exports = {
+  loadChannelOverrides,
+  applyChannelOverrides,
+  stripUnroutableChannels,
+  ROUTABLE,
+  MANUAL,
+  GENERATED,
+};

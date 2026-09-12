@@ -47,14 +47,6 @@
       "away": "Newcastle United",
       "goalId": "_GDfilUHD4vbWB4kq3RIG"
     },
-    "espn-eng.1-401879281": {
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
-      "kickoffUtc": "2026-09-12T14:00Z",
-      "home": "Crystal Palace",
-      "away": "Ipswich Town",
-      "goalId": "dQBcUMivUblZVc26Qw_IU"
-    },
     "espn-eng.1-401879282": {
       "channel": "beIN Sports 4",
       "channelId": "bein-sports-4",
@@ -87,14 +79,6 @@
       "away": "Brentford",
       "goalId": "S5OKGP9DZ3KjwyIFcK06y"
     },
-    "espn-esp.1-401882877": {
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
-      "kickoffUtc": "2026-09-14T19:00Z",
-      "home": "Villarreal",
-      "away": "Real Betis",
-      "goalId": "RdYoc6Vb4lPsvVmflypCU"
-    },
     "espn-esp.1-401882879": {
       "channel": "beIN Sports 3",
       "channelId": "bein-sports-3",
@@ -111,22 +95,6 @@
       "away": "Rayo Vallecano",
       "goalId": "NAdYQGt3M_ZuU0agZUaez"
     },
-    "espn-esp.1-401882881": {
-      "channel": "beIN Sports 9",
-      "channelId": "bein-sports-9",
-      "kickoffUtc": "2026-09-12T12:00Z",
-      "home": "Racing Santander",
-      "away": "Alavés",
-      "goalId": "cTxD2fTSlxkb-eBfpDVhC"
-    },
-    "espn-esp.1-401882882": {
-      "channel": "beIN Sports 9",
-      "channelId": "bein-sports-9",
-      "kickoffUtc": "2026-09-12T14:15Z",
-      "home": "Osasuna",
-      "away": "Espanyol",
-      "goalId": "WzK-gU-bYMDziDpYFmoWJ"
-    },
     "espn-esp.1-401882883": {
       "channel": "beIN Sports 2",
       "channelId": "bein-sports-2",
@@ -134,22 +102,6 @@
       "home": "Levante",
       "away": "Barcelona",
       "goalId": "yIjUEP_4ATKfv2dgC_aZ7"
-    },
-    "espn-esp.1-401882884": {
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
-      "kickoffUtc": "2026-09-13T16:30Z",
-      "home": "Getafe",
-      "away": "Deportivo",
-      "goalId": "OqAhq49Bz_oeI-rmtkopN"
-    },
-    "espn-esp.1-401882885": {
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
-      "kickoffUtc": "2026-09-13T12:00Z",
-      "home": "Celta Vigo",
-      "away": "Málaga",
-      "goalId": "iZVl2x2PEEL32gaY1m43T"
     },
     "espn-esp.1-401882886": {
       "channel": "beIN Sports 2",
