@@ -2,7 +2,7 @@
  * editorial, visual, content-architecture, and deterministic IPTV layers. */
 (function () {
   "use strict";
-  const stamp = "20260905normalwatch2";
+  const stamp = "20260912cardroutefix1";
   const params = new URLSearchParams(location.search);
   const cleanPath = location.pathname.replace(/\/$/, "");
   const isWatchPage = cleanPath === "/watch.html" || cleanPath === "/watch";
