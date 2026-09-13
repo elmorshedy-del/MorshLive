@@ -1,28 +1,12 @@
 {
   "source": "goal.com",
   "note": "Machine-generated. Rewritten whole by scripts/refresh-goal-broadcasts.js; do not hand-edit — use assets/data/manual-channel-overrides.json, which outranks this file.",
-  "generatedAt": "2026-09-11T21:18:34.234Z",
+  "generatedAt": "2026-09-13T03:33:19.007Z",
   "window": {
-    "from": "2026-09-12",
+    "from": "2026-09-13",
     "days": 7
   },
   "rows": {
-    "espn-eng.1-401878779": {
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "kickoffUtc": "2026-09-12T19:00Z",
-      "home": "Sunderland",
-      "away": "Arsenal",
-      "goalId": "c8bkvwAzpfwfqLxwNk4uu"
-    },
-    "espn-eng.1-401879277": {
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "kickoffUtc": "2026-09-12T16:30Z",
-      "home": "Tottenham Hotspur",
-      "away": "Everton",
-      "goalId": "o8HciJcmqhvtveIJZkT2c"
-    },
     "espn-eng.1-401879278": {
       "channel": "beIN Sports 1",
       "channelId": "bein-sports-1",
@@ -30,14 +14,6 @@
       "home": "Manchester United",
       "away": "Manchester City",
       "goalId": "1C77M_-tuYjWVQpjrfx0L"
-    },
-    "espn-eng.1-401879279": {
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
-      "kickoffUtc": "2026-09-12T14:00Z",
-      "home": "Liverpool",
-      "away": "Fulham",
-      "goalId": "w9GSIb6yf7FYsfTiDJOLZ"
     },
     "espn-eng.1-401879280": {
       "channel": "beIN Sports 2",
@@ -55,29 +31,21 @@
       "away": "Brighton & Hove Albion",
       "goalId": "TQW-svsFP60IyqCAmB4uq"
     },
-    "espn-eng.1-401879283": {
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
-      "kickoffUtc": "2026-09-12T14:00Z",
-      "home": "Chelsea",
-      "away": "Hull City",
-      "goalId": "sf34-VeBGJZV0MkmnLRwZ"
-    },
-    "espn-eng.1-401879284": {
+    "espn-esp.1-401882868": {
       "channel": "beIN Sports 2",
       "channelId": "bein-sports-2",
-      "kickoffUtc": "2026-09-12T14:00Z",
-      "home": "Aston Villa",
-      "away": "Nottingham Forest",
-      "goalId": "y_ECR9nxhDcjrB3wUYXj7"
+      "kickoffUtc": "2026-09-15T17:00Z",
+      "home": "Rayo Vallecano",
+      "away": "Espanyol",
+      "goalId": "q3PSOrdLpYp18VV_d58WX"
     },
-    "espn-eng.1-401879285": {
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
-      "kickoffUtc": "2026-09-12T14:00Z",
-      "home": "AFC Bournemouth",
-      "away": "Brentford",
-      "goalId": "S5OKGP9DZ3KjwyIFcK06y"
+    "espn-esp.1-401882872": {
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "kickoffUtc": "2026-09-15T19:30Z",
+      "home": "Elche",
+      "away": "Real Madrid",
+      "goalId": "lRGbfuxyiQWb-wJ7tPObF"
     },
     "espn-esp.1-401882879": {
       "channel": "beIN Sports 3",
@@ -87,14 +55,6 @@
       "away": "Atlético Madrid",
       "goalId": "UHXaBM9yWYeGUDfYTDJNf"
     },
-    "espn-esp.1-401882880": {
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "kickoffUtc": "2026-09-12T19:00Z",
-      "home": "Real Madrid",
-      "away": "Rayo Vallecano",
-      "goalId": "NAdYQGt3M_ZuU0agZUaez"
-    },
     "espn-esp.1-401882883": {
       "channel": "beIN Sports 2",
       "channelId": "bein-sports-2",
@@ -102,14 +62,6 @@
       "home": "Levante",
       "away": "Barcelona",
       "goalId": "yIjUEP_4ATKfv2dgC_aZ7"
-    },
-    "espn-esp.1-401882886": {
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
-      "kickoffUtc": "2026-09-12T16:30Z",
-      "home": "Athletic Club",
-      "away": "Elche",
-      "goalId": "BAspkwXCAOempc_EHxNi1"
     }
   }
 }
