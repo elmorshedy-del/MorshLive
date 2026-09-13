@@ -5,34 +5,7 @@ import {
   xtreamMediaHeaders,
 } from "../../lib/xtream-client.js";
 
-/**
- * How long a signed /api/xtream/media URL stays playable.
- *
- * This was 6 hours. A URL lifted out of devtools therefore played for the rest
- * of the day, and on a line provisioned with max_connections: 1 that is the
- * whole account: one client pulled 5.21GB across 46 requests in six hours and
- * every real viewer, IPTV Lab included, drained behind it.
- *
- * 30 minutes was wrong and shipped broken. The continuity guard in
- * assets/js/watch-lab-continuity-guard.js reconnects with the *same* captured
- * URL, so the TTL must outlive the whole viewing session, not a reconnect
- * cycle. A football match is 90-120 minutes; with pre-match and half-time a
- * session runs past two hours. At minute 31 every reconnect started coming
- * back 403 (backend/routes/xtream.js maps an expired token to 403), which
- * looked exactly like the drain this work set out to stop. Real viewers hit it
- * within an hour of deploy.
- *
- * 3 hours covers a full session with margin and is still half the original 6.
- * The TTL was never the real defence anyway: what stops a scraped URL being
- * useful is the same-origin gate on the endpoints that mint them
- * (backend/routes/iptv-lab.js) — without that, a short TTL just means the
- * scraper re-mints more often, while an honest viewer gets cut off mid-match.
- *
- * The TTL is only half the fix. It bounds a *stolen* URL; it does nothing about
- * minting a fresh one, because /api/iptv-lab/live will hand anybody a new URL on
- * request. See the same-origin gate in backend/routes/iptv-lab.js.
- */
-const TOKEN_TTL_SECONDS = 3 * 60 * 60;
+const TOKEN_TTL_SECONDS = 6 * 60 * 60;
 const PLAYLIST_CACHE_MS = 60 * 1000;
 const keyCache = new Map();
 const playlistCache = new Map();

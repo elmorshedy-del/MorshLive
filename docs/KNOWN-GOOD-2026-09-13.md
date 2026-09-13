@@ -32,8 +32,20 @@ them, and a fresh deploy does not recreate them.
    `80.155.183.76` account-wide. That client pulled 5.21GB across 46 requests in
    six hours while real viewers and IPTV Lab drained behind it. Removing this
    rule re-opens the drain.
-3. **Same-origin gate** on `/api/iptv-lab/{live,channel,probe}` and **30-minute**
-   media token TTL — in git, `MEDIA-URL-LEECH-1`.
+3. ~~**Same-origin gate** on `/api/iptv-lab/{live,channel,probe}` and a shortened
+   media token TTL — `MEDIA-URL-LEECH-1`.~~ **Reverted 2026-09-13 at the owner's
+   direction.** `backend/adapters/xtream.js` and `backend/routes/iptv-lab.js` are
+   byte-identical to the `8fe04a34` baseline again; the TTL is back to 6 hours
+   and the minting endpoints are ungated. The leech is held off by items 1 and 2
+   instead, which are the ones actually doing the work.
+
+   Do not re-land the short TTL without changing how the player reconnects. At
+   30 minutes it cut real viewers off mid-match: the continuity guard reconnects
+   with the *same* captured URL, `backend/routes/xtream.js` maps an expired token
+   to 403, and a football match outlives the token. One viewer in Jordan took 63
+   consecutive 403s before it was caught. Any future TTL must outlive a full
+   viewing session, or the reconnect path must re-resolve instead of replaying
+   the old URL.
 4. **`assets/data/today.json` naming only channels the site can route** — the
    Thmanyah resolver is back in `lib/xtream-channel-map.js`
    (THMANYAH-RESOLVER-1), so Saudi ids resolve again.

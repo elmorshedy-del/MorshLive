@@ -20,21 +20,18 @@ import { describe, expect, it } from "vitest";
  * rather than letting either come back quietly a third time.
  */
 
-const read = (relativePath) =>
-  fs.readFileSync(new URL(`../${relativePath}`, import.meta.url), "utf8");
+const read = (relativePath) => fs.readFileSync(new URL(`../${relativePath}`, import.meta.url), "utf8");
 
 describe("retired premium (991/992) playback path", () => {
   it("does not render the premium source tabs on the watch page", () => {
     const watch = read("assets/js/watch.js");
 
-    expect(
-      watch,
-      "watch.js must not build the gold premium source tab",
-    ).not.toContain("watch-source-toggle__opt--premium");
-    expect(
-      watch,
-      "watch.js must not link into the retired ?source=iptv-premium route",
-    ).not.toContain('premiumUrl.searchParams.set("source", "iptv-premium")');
+    expect(watch, "watch.js must not build the gold premium source tab").not.toContain(
+      "watch-source-toggle__opt--premium",
+    );
+    expect(watch, "watch.js must not link into the retired ?source=iptv-premium route").not.toContain(
+      'premiumUrl.searchParams.set("source", "iptv-premium")',
+    );
   });
 
   it("never activates premium mode, so a cached or bookmarked link falls through", () => {
@@ -42,10 +39,9 @@ describe("retired premium (991/992) playback path", () => {
 
     // Reading the param back would re-arm the dead path for anyone holding an
     // old link, which is how it kept resurfacing after the card toggle went.
-    expect(
-      watch,
-      "premiumRequested must stay hard-false, not read from the URL",
-    ).not.toContain('const premiumRequested = params.get("source") === "iptv-premium"');
+    expect(watch, "premiumRequested must stay hard-false, not read from the URL").not.toContain(
+      'const premiumRequested = params.get("source") === "iptv-premium"',
+    );
     expect(watch).toContain("const premiumRequested = false;");
   });
 
