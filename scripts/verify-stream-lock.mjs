@@ -2,6 +2,7 @@
 /**
  * CHATGPT-STAMP 2026-09-12T22:26-04:00 — PRE-BEIN-5-9-RESTORE-1
  * CLAUDE-STAMP 2026-09-13T00:35-04:00 — MEDIA-URL-LEECH-1
+ * CLAUDE-STAMP 2026-09-13T11:58-04:00 — PREMIUM-991-PATH-RETIRED-1
  *
  * Production playback remains frozen at the original 8fe04a34 state except for
  * three deliberate, isolated deviations that were already proven independently:
@@ -18,6 +19,15 @@
  *   client used that to pull 5.21GB across 46 requests in six hours while real
  *   viewers and the Lab drained behind it on a max_connections: 1 line.
  *   Metadata endpoints stay ungated; no player, config or recovery file moves.
+ * - assets/js/watch.js carries PREMIUM-991-PATH-RETIRED-1: the watch-page
+ *   premium source tabs no longer render, and `?source=iptv-premium` no longer
+ *   activates. That path mounted PREMIUM_CHANNELS, which pins stream ids 991
+ *   and 992 — ids lib/xtream-channel-map.js documents as absent from the
+ *   current catalogue, so it either failed or played whichever channel now
+ *   owns the id. It was a second playback path bypassing the resolver, and on
+ *   a max_connections: 1 line a second path is a drain. Requests now fall
+ *   through to the normal route. No player mount, config or recovery logic
+ *   is otherwise changed.
  *
  * Every other protected file remains byte-for-byte identical to the original
  * known-good baseline. Do not widen this exception for ordinary data work.
@@ -47,7 +57,7 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
   "assets/js/watch-loader.js": "d40237ad871bb08164150881ff0f397d8786dafb",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
-  "assets/js/watch.js": "b2a9181ee1c801b6f5d33b732402215657ea31d3",
+  "assets/js/watch.js": "64341739361a85aca8afac0cc15b27989668bce0",
   "backend/adapters/xtream-media-safe.js": "c746821386df808dd451604cbbb2bafda0c48761",
   "backend/adapters/xtream.js": "01866e6a8274461ed64d677359dd9b2eb4fc8222",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
