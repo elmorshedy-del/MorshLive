@@ -1,15 +1,23 @@
 #!/usr/bin/env node
 /**
  * CHATGPT-STAMP 2026-09-12T22:26-04:00 — PRE-BEIN-5-9-RESTORE-1
+ * CLAUDE-STAMP 2026-09-13T00:35-04:00 — MEDIA-URL-LEECH-1
  *
  * Production playback remains frozen at the original 8fe04a34 state except for
- * two deliberate, isolated deviations that were already proven independently:
+ * three deliberate, isolated deviations that were already proven independently:
  *
  * - lib/xtream-channel-map.js carries the Thmanyah resolver used by the known
  *   pre-#245 card state, so restored Saudi card ids resolve instead of failing.
  * - backend/adapters/xtream-media-safe.js carries XTREAM-IDLE-WATCHDOG-1, which
  *   aborts silent upstream Xtream reads so a stale request cannot hold the
  *   provider slot indefinitely.
+ * - backend/adapters/xtream.js and backend/routes/iptv-lab.js carry
+ *   MEDIA-URL-LEECH-1: signed /api/xtream/media URLs expire in 30 minutes
+ *   instead of 6 hours, and the endpoints that mint a playable URL (live,
+ *   channel, probe) require a same-origin request. Both were open, and one
+ *   client used that to pull 5.21GB across 46 requests in six hours while real
+ *   viewers and the Lab drained behind it on a max_connections: 1 line.
+ *   Metadata endpoints stay ungated; no player, config or recovery file moves.
  *
  * Every other protected file remains byte-for-byte identical to the original
  * known-good baseline. Do not widen this exception for ordinary data work.
@@ -41,10 +49,10 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
   "assets/js/watch.js": "b2a9181ee1c801b6f5d33b732402215657ea31d3",
   "backend/adapters/xtream-media-safe.js": "c746821386df808dd451604cbbb2bafda0c48761",
-  "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
+  "backend/adapters/xtream.js": "01866e6a8274461ed64d677359dd9b2eb4fc8222",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
   "backend/routes/index.js": "17e90d3f0816109f38f149b533ba039a35c0df72",
-  "backend/routes/iptv-lab.js": "1abd3a9a3a5b1b03085bcb8b2933dc838b28639f",
+  "backend/routes/iptv-lab.js": "1488d5cde86fef687e4db654187b8805b43e2e16",
   "backend/routes/stream-plan.js": "9383c53caa67085b2dd26a0f41e44cb6b5d54fff",
   "backend/routes/xtream.js": "443cfaed838dcdc6d0dc397793a1487c92a51d2a",
   "backend/services/iptv-lab.js": "ffe3967558222b8ebae55b0411defcc02524f9eb",
