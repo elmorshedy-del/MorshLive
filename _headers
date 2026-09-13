@@ -5,3 +5,8 @@
 
 /assets/*
   Cache-Control: public, max-age=0, must-revalidate
+
+# Temporary hard cache-bust for the restored channel/card model. Keep this
+# scoped to data.js so playback/player assets remain untouched.
+/assets/js/data.js
+  Cache-Control: no-store, no-cache, max-age=0, must-revalidate
