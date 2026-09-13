@@ -76,18 +76,13 @@ function resolveBroadcastChannel(label) {
 
   if (/(?:بي\s*إن|بين|bein)/i.test(raw)) {
     const number = channelNumber(raw);
-    // Temporary production boundary: match cards intentionally stop at Sports 4.
-    // The Lab/catalogue may still know 5-9, but a source naming one of those
-    // channels must not put a normal viewer back onto the failure regime that
-    // #245 exposed. Re-open 5-9 later as one deliberate, separately verified change.
-    const exact = number >= 1 && number <= 4 ? number : null;
-    const resolved = exact || 1;
+    const resolved = number === 2 ? 2 : 1;
     return {
       channel: `beIN Sports ${resolved}`,
       provider: "bein",
       broadcastChannelId: `bein-sports-${resolved}`,
       playbackChannelId: `bein-sports-${resolved}`,
-      confidence: exact ? "exact" : "network",
+      confidence: number ? "exact" : "network",
     };
   }
 

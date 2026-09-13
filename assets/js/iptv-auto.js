@@ -1,25 +1,21 @@
 /* Deterministic match -> broadcaster -> IPTV router.
  *
- * Existing match metadata is authoritative. The router first resolves the
- * published broadcaster identity against the current IPTV catalog. If that is
- * unavailable, it uses the provider's own EPG with the same fail-closed
- * two-team/timing matcher that was previously experimental.
+ * CHATGPT-STAMP 2026-09-07T11:08-04:00 — SAUDI-CARD-ROUTE-1
+ * Verified fixture-level broadcaster metadata outranks the schedule feed's
+ * generic playback fallback. Saudi ESPN fixtures can otherwise inherit beIN
+ * Sports 1/2 before their Thmanyah mapping is applied, which prevents the
+ * deterministic Thmanyah/EPG resolver from ever getting a chance to run.
+ *
+ * The router first resolves the published broadcaster identity against the
+ * current IPTV catalog. If that is unavailable, it uses the provider's own EPG
+ * with the same fail-closed two-team/timing matcher that was previously
+ * experimental.
  *
  * IPTV is exposed only during the shared TV window (T-30 through the short
  * post-match studio window). Outside it, cards remain match-detail/replay UI.
  */
 (function () {
   "use strict";
-
-  // Defense in depth: the current bootstrap loads this router only on the watch
-  // page, but older cached/rolled-back bootstraps loaded it on the homepage and
-  // recreated the retired gold/silver source cards there. Never mutate cards or
-  // start routing work unless this is the normal watch surface. Explicit Xtream
-  // URLs already have their own player and must not be rewritten again either.
-  const pageParams = new URLSearchParams(location.search);
-  const cleanPath = location.pathname.replace(/\/$/, "");
-  const isWatchPage = cleanPath === "/watch.html" || cleanPath === "/watch";
-  if (!isWatchPage || pageParams.get("source") === "xtream") return;
 
   const resolver = () => window.KZIptvChannelResolver;
   const tvWindow = () => window.KZIptvWindow;
@@ -120,6 +116,8 @@
         .map((match) => {
           const override = overrides?.[String(match.id)] || {};
           const row = maps.byId.get(String(match.id)) || maps.byPair.get(pairKey(match.home, match.away)) || {};
+          // Broadcast rows are fixture-specific and therefore outrank the
+          // schedule's generic beIN fallback. Manual overrides still win.
           const broadcast = override.broadcast || row.broadcast || match.broadcast || null;
           const channelId = override.channelId || broadcast?.channelId || row.channelId || match.channelId || "";
           const channel = override.channel || row.channel || match.channel || "";

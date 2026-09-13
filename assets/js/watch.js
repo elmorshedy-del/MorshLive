@@ -40,21 +40,7 @@
   }
 
   const xtreamMode = params.get("source") === "xtream";
-  /*
-   * Retired path. `?source=iptv-premium` mounted PREMIUM_CHANNELS below, which
-   * pins stream ids 991 and 992. Those ids are not in the current catalogue —
-   * the portal was rebuilt underneath them, which is exactly why
-   * lib/xtream-channel-map.js resolves channels by description instead of by
-   * pinned id. A pinned id does not fail loudly: it 404s, or it now belongs to
-   * some other channel and quietly plays the wrong match.
-   *
-   * Either way it is a second playback path that bypasses the working resolver,
-   * and on a max_connections: 1 line a second path is a drain. Forcing this to
-   * false means a cached link, a bookmark, or a stale card href falls through
-   * to the normal route and gets a feed that plays, instead of a dead one.
-   * The param is still read above for `xtream`, which is the live path.
-   */
-  const premiumRequested = false;
+  const premiumRequested = params.get("source") === "iptv-premium";
   const PREMIUM_CATEGORY_ID = "6454";
   const PREMIUM_CHANNELS = {
     barcelona: { streamId: "991", nameRe: /^bein\s+sports?\s+1\s+sd$/i },
@@ -2067,22 +2053,31 @@
   function renderPremiumSourceTabs() {
     const host = document.getElementById("player-toolbar");
     if (!host) return;
-    /*
-     * The cleanup stays, the tabs do not. This drew the gold "watch premium" /
-     * silver "original" pair on the watch page for five hardcoded clubs
-     * (Barcelona, Manchester City, Liverpool, Tottenham, Atletico Madrid), and
-     * its gold href pointed at `?source=iptv-premium` — the retired 991/992
-     * path described where premiumRequested is set.
-     *
-     * Removing the markup here is what actually retires it: the card-side
-     * toggle in assets/js/app.js was only one of the two entry points, and
-     * taking that one out on its own left this one still offering the dead
-     * route to anyone already on a match page.
-     *
-     * The two removes above are deliberately kept and still run on every
-     * render, so a toggle left in the DOM by a cached script is cleared rather
-     * than stranded.
-     */
+    host.querySelector(".watch-source-toggle")?.remove();
+    host.querySelector(".premium-source-tabs")?.remove();
+    if (!premiumChannelFor(match)) return;
+
+    const originalUrl = new URL(location.href);
+    originalUrl.searchParams.delete("source");
+    const premiumUrl = new URL(originalUrl);
+    premiumUrl.searchParams.set("source", "iptv-premium");
+    const premiumActive = premiumMode();
+    const tabs = document.createElement("div");
+    tabs.className = "watch-source-toggle";
+    tabs.setAttribute("role", "tablist");
+    tabs.setAttribute("aria-label", t("watch.sourceTabsAria"));
+    tabs.innerHTML = `
+      <span class="watch-source-toggle__kicker">${t("watch.sourceToggle")}</span>
+      <div class="watch-source-toggle__track">
+        <a class="watch-source-toggle__opt watch-source-toggle__opt--premium${premiumActive ? " is-active" : ""}" role="tab" aria-selected="${premiumActive}" href="${premiumUrl.pathname}${premiumUrl.search}">
+          <span>${t("card.watchPremium")}</span>
+          <small>${t("card.experimental")}</small>
+        </a>
+        <a class="watch-source-toggle__opt watch-source-toggle__opt--original${premiumActive ? "" : " is-active"}" role="tab" aria-selected="${!premiumActive}" href="${originalUrl.pathname}${originalUrl.search}">
+          <span>${t("card.watchOriginal")}</span>
+        </a>
+      </div>`;
+    host.prepend(tabs);
   }
 
   function resolveSelection() {

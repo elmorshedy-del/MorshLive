@@ -23,6 +23,7 @@ on:
       - "tests/iptv-rollout-contract.test.js"
       - "scripts/diagnose-homepage.mjs"
       - "scripts/verify-iptv-stage-contract.mjs"
+      - "scripts/verify-xtream-continuous.mjs"
       - ".github/workflows/premium-iptv-smoke.yml"
   workflow_dispatch:
 
@@ -45,31 +46,33 @@ jobs:
           ln -s /tmp/kz-playwright/node_modules node_modules
       - name: Install Playwright browsers
         run: /tmp/kz-playwright/node_modules/.bin/playwright install --with-deps chromium webkit
-      - name: Wait for repaired production routing build
+      - name: Wait for Cloudflare Workers Build
         shell: bash
         run: |
           set -euo pipefail
           for attempt in $(seq 1 36); do
-            home="$(curl -fsS "https://korazero.com/?build=${GITHUB_SHA}" 2>/dev/null || true)"
+            loader="$(curl -fsS "https://korazero.com/assets/js/watch-loader.js?v=${GITHUB_SHA}" 2>/dev/null || true)"
             bootstrap="$(curl -fsS "https://korazero.com/assets/js/i18n.js?v=${GITHUB_SHA}" 2>/dev/null || true)"
+            normalizer="$(curl -fsS "https://korazero.com/assets/js/iptv-legacy-toggle-normalizer.js?v=${GITHUB_SHA}" 2>/dev/null || true)"
             auto="$(curl -fsS "https://korazero.com/assets/js/iptv-auto.js?v=${GITHUB_SHA}" 2>/dev/null || true)"
-            if grep -q 'i18n.js?v=20260912cardroutefix1' <<<"$home" \
-              && grep -q 'app.js?v=20260912cardroutefix1' <<<"$home" \
-              && grep -q 'const stamp = "20260912cardroutefix1"' <<<"$bootstrap" \
-              && grep -q 'if (!isWatchPage || pageParams.get("source") === "xtream") return;' <<<"$auto"; then
-              echo "Production has the repaired homepage routing boundary."
+            clicker="$(curl -fsS "https://korazero.com/assets/js/iptv-premium-card-click.js?v=${GITHUB_SHA}" 2>/dev/null || true)"
+            if grep -q 'watch-xtream.js?v=20260904continuous1' <<<"$loader" \
+              && grep -q '20260904saudirollout2' <<<"$bootstrap" \
+              && grep -q 'iptv-legacy-toggle-normalizer.js' <<<"$bootstrap" \
+              && grep -q 'isLegacyPremiumHref' <<<"$normalizer" \
+              && grep -q 'SUPPORTED_COMPETITIONS' <<<"$auto" \
+              && grep -q 'T-30' <<<"$auto" \
+              && grep -q '20260904cardclick4' <<<"$clicker"; then
+              echo "Production has the deterministic T-30 IPTV rollout and unified card-stage normalizer."
               exit 0
             fi
             sleep 10
           done
-          echo "Cloudflare production did not expose the repaired homepage routing build." >&2
+          echo "Cloudflare production did not expose the expected deterministic IPTV rollout build." >&2
           exit 1
       - name: Diagnose homepage rendering
         run: node scripts/diagnose-homepage.mjs
-      - name: Playwright homepage routing verification
+      - name: Playwright unified card-stage verification
         run: node scripts/verify-iptv-stage-contract.mjs
-
-      # Do not add automatic live-stream probes here. The IPTV line can have a
-      # single upstream connection; a CI probe can steal that slot from a real
-      # viewer and recreate the exact buffer-drain failure this workflow exists
-      # to prevent. Playback continuity belongs to Stream Lock/manual testing.
+      - name: Live Thmanyah catalog and continuous Xtream playback
+        run: node scripts/verify-xtream-continuous.mjs

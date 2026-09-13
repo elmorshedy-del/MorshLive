@@ -1,24 +1,14 @@
 #!/usr/bin/env node
 /**
- * CLAUDE-STAMP 2026-09-13 — RESTORE-ORIGINAL-FREEZE-1
+ * CHATGPT-STAMP 2026-09-06T14:33-04:00 — PRODUCTION-STREAM-LOCK-1
  *
- * Production playback is back at the original 8fe04a34 freeze, with one
- * remaining deviation:
+ * Freeze the known-good production playback implementation without freezing the
+ * rest of the repository. Every file below must remain byte-for-byte identical
+ * to the approved 8fe04a34 state unless an explicit, short-lived stream-change
+ * plan is present AND the deploy environment carries the manual approval flag.
  *
- * - assets/js/watch.js carries PREMIUM-991-PATH-RETIRED-1: the watch-page
- *   premium source tabs do not render and ?source=iptv-premium does not
- *   activate, so the pinned 991/992 stream ids cannot be mounted.
- *
- * Removed on 2026-09-13 at the owner's direction, all back to baseline bytes:
- *   THMANYAH-RESOLVER-1   (lib/xtream-channel-map.js)
- *   XTREAM-IDLE-WATCHDOG-1 (backend/adapters/xtream-media-safe.js)
- *   MEDIA-URL-LEECH-1     (backend/adapters/xtream.js, backend/routes/iptv-lab.js)
- *
- * The leech is held off outside git: the Cloudflare IP block on
- * 80.155.183.76 and the rotated XTREAM_TOKEN_SECRET.
- *
- * Every other protected file is byte-for-byte the original baseline. Do not
- * widen this for ordinary data work.
+ * This guard runs before and after Cloudflare's refresh build and from the local
+ * deploy wrapper. Do not weaken or bypass it for ordinary content/data work.
  */
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
@@ -29,8 +19,9 @@ const APPROVAL_VALUE = "YES_I_INTEND_TO_CHANGE_PRODUCTION_STREAMING";
 const PLAN_PATH = resolve("config/stream-change-plan.json");
 const MAX_PLAN_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-// Git blob SHAs from the original known-good production tree. Only
-// assets/js/watch.js deviates, for PREMIUM-991-PATH-RETIRED-1.
+// Git blob SHAs from the known-good production tree. These are exact-byte
+// fingerprints, not semantic guesses. Lab and KoraZero Live are intentionally
+// locked separately inside the same table.
 const LOCKED_FILES = Object.freeze({
   "iptv-lab.html": "67ace9fbc5e58c6dc08c532a5169fe294518e3f9",
   "watch.html": "1221e76d929c3f1fcead13bb88e9504d9102905b",
@@ -45,7 +36,7 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
   "assets/js/watch-loader.js": "d40237ad871bb08164150881ff0f397d8786dafb",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
-  "assets/js/watch.js": "64341739361a85aca8afac0cc15b27989668bce0",
+  "assets/js/watch.js": "b2a9181ee1c801b6f5d33b732402215657ea31d3",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
@@ -62,7 +53,10 @@ const LOCKED_FILES = Object.freeze({
   "lib/mpegts-config.js": "5a52c8168cd652c87436f3ed36773b382341e0eb",
   "lib/operator-embed.js": "5d7ec9e93e156cc41ee615e199915adf39fee885",
   "lib/stream-plan.js": "1acbe9170d35cdac4a1110880f69a46185aeaf92",
-  "lib/xtream-channel-map.js": "a8896e588be715f225ffba8c78c56fae6a852ddf",
+  // Advanced past 8fe04a34 on 2026-09-08: taught the Thmanyah channels so
+  // /api/iptv-lab/channel can resolve thmanyah-1/2/3. Every other entry below
+  // is still the 8fe04a34 byte state.
+  "lib/xtream-channel-map.js": "3e27c8855765a389faeee9dd2ec038a589261f65",
   "lib/xtream-client.js": "f86e5b6a538ec08d7ba226f7686fdfdc9dbcfd10",
   "worker.js": "637314e36ca4fa881fe5d0cfd1f5504e9d985655",
   "wrangler.toml": "663088846e92661a19241e1c0c7133ec5873eeaa",
@@ -115,7 +109,7 @@ function approvedPlan(changed) {
 const changed = mismatches();
 if (!changed.length) {
   console.log(
-    `STREAM LOCK OK — ${Object.keys(LOCKED_FILES).length} production playback files match ${BASELINE_COMMIT.slice(0, 8)} plus PREMIUM-991-PATH-RETIRED-1.`,
+    `STREAM LOCK OK — ${Object.keys(LOCKED_FILES).length} production playback files match ${BASELINE_COMMIT.slice(0, 8)}.`,
   );
   process.exit(0);
 }
@@ -131,7 +125,7 @@ if (plan) {
 
 console.error("");
 console.error("❌ STREAM LOCK — production playback differs from the approved known-good state.");
-console.error(`Baseline: ${BASELINE_COMMIT} + PREMIUM-991-PATH-RETIRED-1`);
+console.error(`Baseline: ${BASELINE_COMMIT}`);
 console.error("");
 for (const { file, expected, actual } of changed) {
   console.error(`  ${file}`);

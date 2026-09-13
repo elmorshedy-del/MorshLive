@@ -2,23 +2,12 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { LIVE_TS_CONFIG, MPEGTS_VERSION } from "../lib/mpegts-config.js";
 
+// CHATGPT-STAMP 2026-09-06T14:56-04:00 — STREAM-LOCK-TEST-ALIGN-1
+// Production intentionally has two measured-good playback configs:
+// - IPTV Lab is frozen byte-for-byte at Claude fix 1 and keeps its inline TS config.
+// - KoraZero public watch/admin use the later shared KZ_LIVE_TS_CONFIG.
 const PLAYER_PAGES = ["watch.html", "iptv-lab.html", "iptv-admin.html"];
-
-/**
- * IPTV Lab is pinned by Stream Lock to a baseline that predates the shared
- * mpegts-config refactor, so it still carries its own inline config. That is
- * deliberate: the Lab is the known-good playback reference, and the Sep-12
- * rollback restored `iptv-lab.html` and `assets/js/iptv-lab.js` to exactly the
- * bytes that are verified working. Editing them to satisfy this test would mean
- * changing locked playback files for tidiness, which is the exact move that
- * caused the Sep 9-12 outage.
- *
- * So the two assertions below cover the surfaces that did adopt the shared
- * config, and the Lab is exempt until it is deliberately migrated and
- * re-baselined. Every other assertion in this file still covers the Lab —
- * notably the pinned mpegts.js version, which is what actually has to match.
- */
-const SHARED_CONFIG_PAGES = PLAYER_PAGES.filter((page) => page !== "iptv-lab.html");
+const SHARED_CONFIG_PAGES = ["watch.html", "iptv-admin.html"];
 const SHARED_CONFIG_SCRIPTS = ["assets/js/watch.js", "assets/js/watch-xtream.js"];
 
 function readRepoFile(relativePath) {
@@ -59,14 +48,23 @@ describe("MPEG-TS live config", () => {
     }
   });
 
-  it("has every migrated player page load the shared config before its player script", () => {
+  it("has KoraZero shared-config pages load the shared config", () => {
     for (const page of SHARED_CONFIG_PAGES) {
       const html = readRepoFile(page);
       expect(html, `${page} should load mpegts-config.js`).toContain("assets/js/mpegts-config.js");
     }
   });
 
-  it("leaves no hand-rolled mpegts config behind in migrated player scripts", () => {
+  it("preserves the locked Claude-fix-1 Lab config instead of importing KZ Live config", () => {
+    const html = readRepoFile("iptv-lab.html");
+    const source = readRepoFile("assets/js/iptv-lab.js");
+    expect(html).not.toContain("assets/js/mpegts-config.js");
+    expect(source).toMatch(/enableWorker\s*:\s*false/);
+    expect(source).toMatch(/enableStashBuffer\s*:\s*false/);
+    expect(source).toMatch(/stashInitialSize\s*:\s*128/);
+  });
+
+  it("leaves no hand-rolled MPEG-TS config in KoraZero shared-config player scripts", () => {
     for (const file of SHARED_CONFIG_SCRIPTS) {
       const source = readRepoFile(file);
       expect(source, `${file} should not inline stashInitialSize`).not.toMatch(/stashInitialSize\s*:/);
