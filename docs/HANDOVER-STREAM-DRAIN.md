@@ -42,6 +42,12 @@ help, and why redeploying did not help — none of those touched the leech.
 - Both locked files re-baselined in `scripts/verify-stream-lock.mjs` under
   `CLAUDE-STAMP … MEDIA-URL-LEECH-1`, same pattern as the watchdog change.
 
+**Guards now back in place (items 1-3 below are done):**
+- `stripUnroutableChannels` and the `pickArabicBeinChannel` clamp are on `main`.
+- `tests/channel-coverage.test.js` is restored: every channel the data names must
+  be one `CHANNEL_DEFS` models, and beIN 5-9 must stay unmodelled. Verified to
+  fail on the exact Sep-09 data that caused the outage.
+
 **Still open for whoever picks this up:**
 - Watch the media bytes for a few days. If a *new* IP starts pulling GBs, the
   same-origin gate is being defeated (a scraper can forge `Referer`) and the

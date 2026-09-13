@@ -81,6 +81,9 @@ time.
 
 - `max_connections: 1` on the line. Two honest viewers still drain each other.
   Nothing here changes that ceiling.
-- `npm test` is red on `main`: 2 pre-existing failures in
-  `tests/mpegts-config.test.js`, fallout from the Sep-12 tree-wide rollback.
-  Unrelated to playback and unrelated to this state.
+- IPTV Lab is pinned to a baseline predating the shared `mpegts-config`
+  refactor, so `iptv-lab.html` and `assets/js/iptv-lab.js` still carry their own
+  inline config. `tests/mpegts-config.test.js` documents that exemption rather
+  than asserting against it — the locked, working bytes are authoritative. If
+  the Lab is ever migrated, migrate and re-baseline it deliberately, and drop
+  the exemption in the same change.
