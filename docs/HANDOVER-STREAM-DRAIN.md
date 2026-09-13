@@ -2,6 +2,56 @@
 
 Read this, then `AGENTS.md` and `docs/STREAM-LOCK.md`. Work on a branch off `main`.
 
+## START HERE — the drain was a leech, not the channel data
+
+Everything below this section is still accurate about the beIN 5-9 / Thmanyah
+channel bugs, and those are still worth fixing. **They were not what drained the
+streams.** Cloudflare analytics settled it on Sep 13:
+
+- In one 6-hour window, `/api/xtream/media` served **155 requests / 5.44GB**.
+- **5.21GB of that (96%) came from a single client, `80.155.183.76`** (Windows/
+  Firefox), running continuously through the night. The owner's own phone
+  accounted for 0.23GB.
+- The per-minute timeline shows both clients interleaved: a burst of 200s, then
+  a `504` from the idle watchdog, then the other client gets a burst. That is
+  two clients thrashing over a `max_connections: 1` line — the drain, captured
+  live.
+
+The line was effectively a public IPTV proxy: `/api/iptv-lab/live` minted a
+signed, playable URL for anyone, with no Origin/Referer check (verified by
+calling it from a bare container), and `TOKEN_TTL_SECONDS` was **6 hours**, so a
+URL lifted from devtools played for the rest of the day.
+
+This is why the drain hit IPTV Lab too, why reverting the channel data did not
+help, and why redeploying did not help — none of those touched the leech.
+
+**Done on Sep 13 (live, already in effect):**
+- `80.155.183.76` blocked account-wide (Cloudflare IP Access Rule
+  `aa3191d3ce104b98a586f6f73e32e994`).
+- `XTREAM_TOKEN_SECRET` set to a fresh value on the `morshlive` worker,
+  invalidating every outstanding media URL. It did not exist before, so it now
+  takes precedence over `STREAM_SIGNING_SECRET` for media tokens only;
+  `/wk/hls` signing is unchanged.
+
+**Done in code (this branch, needs merge to reach production):**
+- `TOKEN_TTL_SECONDS` 6h → 30min (`backend/adapters/xtream.js`).
+- Same-origin gate on the playback-minting actions `live`, `channel`, `probe`
+  (`backend/routes/iptv-lab.js`); metadata actions stay open.
+- Edge cache on `catalog`/`categories` — `iptv-auto.js` was pulling the ~1.7MB
+  catalogue every 45s per tab, 1,030 provider hits in 6 hours.
+- Both locked files re-baselined in `scripts/verify-stream-lock.mjs` under
+  `CLAUDE-STAMP … MEDIA-URL-LEECH-1`, same pattern as the watchdog change.
+
+**Still open for whoever picks this up:**
+- Watch the media bytes for a few days. If a *new* IP starts pulling GBs, the
+  same-origin gate is being defeated (a scraper can forge `Referer`) and the
+  next step is binding the token to the client IP at mint time.
+- `npm test` is red on `main` — 2 pre-existing failures in
+  `tests/mpegts-config.test.js`, fallout from the Sep-12 tree-wide rollback, not
+  from this work.
+- `max_connections: 1` is still the ceiling. Two honest viewers still drain each
+  other. Nothing above changes that.
+
 ## What actually broke
 
 Not the playback code. It was frozen the whole time and stayed frozen.
