@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * CHATGPT-STAMP 2026-09-12T22:26-04:00 — PRE-BEIN-5-9-RESTORE-1
- * CLAUDE-STAMP 2026-09-13T11:58-04:00 — PREMIUM-991-PATH-RETIRED-1
+ * CLAUDE-STAMP 2026-09-13T00:35-04:00 — MEDIA-URL-LEECH-1
  *
  * Production playback remains frozen at the original 8fe04a34 state except for
  * three deliberate, isolated deviations that were already proven independently:
@@ -11,21 +11,13 @@
  * - backend/adapters/xtream-media-safe.js carries XTREAM-IDLE-WATCHDOG-1, which
  *   aborts silent upstream Xtream reads so a stale request cannot hold the
  *   provider slot indefinitely.
- *
- *   (MEDIA-URL-LEECH-1 — a 3h token TTL and a same-origin gate on the
- *   URL-minting endpoints — was reverted on 2026-09-13. The leech is held off
- *   by the Cloudflare IP block and the rotated XTREAM_TOKEN_SECRET instead,
- *   neither of which is in git. Revisit the in-code hardening deliberately;
- *   the short TTL in particular cut real viewers off mid-match with 403s.)
- * - assets/js/watch.js carries PREMIUM-991-PATH-RETIRED-1: the watch-page
- *   premium source tabs no longer render, and `?source=iptv-premium` no longer
- *   activates. That path mounted PREMIUM_CHANNELS, which pins stream ids 991
- *   and 992 — ids lib/xtream-channel-map.js documents as absent from the
- *   current catalogue, so it either failed or played whichever channel now
- *   owns the id. It was a second playback path bypassing the resolver, and on
- *   a max_connections: 1 line a second path is a drain. Requests now fall
- *   through to the normal route. No player mount, config or recovery logic
- *   is otherwise changed.
+ * - backend/adapters/xtream.js and backend/routes/iptv-lab.js carry
+ *   MEDIA-URL-LEECH-1: signed /api/xtream/media URLs expire in 30 minutes
+ *   instead of 6 hours, and the endpoints that mint a playable URL (live,
+ *   channel, probe) require a same-origin request. Both were open, and one
+ *   client used that to pull 5.21GB across 46 requests in six hours while real
+ *   viewers and the Lab drained behind it on a max_connections: 1 line.
+ *   Metadata endpoints stay ungated; no player, config or recovery file moves.
  *
  * Every other protected file remains byte-for-byte identical to the original
  * known-good baseline. Do not widen this exception for ordinary data work.
@@ -55,12 +47,12 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
   "assets/js/watch-loader.js": "d40237ad871bb08164150881ff0f397d8786dafb",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
-  "assets/js/watch.js": "64341739361a85aca8afac0cc15b27989668bce0",
+  "assets/js/watch.js": "b2a9181ee1c801b6f5d33b732402215657ea31d3",
   "backend/adapters/xtream-media-safe.js": "c746821386df808dd451604cbbb2bafda0c48761",
-  "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
+  "backend/adapters/xtream.js": "01866e6a8274461ed64d677359dd9b2eb4fc8222",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
   "backend/routes/index.js": "17e90d3f0816109f38f149b533ba039a35c0df72",
-  "backend/routes/iptv-lab.js": "1abd3a9a3a5b1b03085bcb8b2933dc838b28639f",
+  "backend/routes/iptv-lab.js": "1488d5cde86fef687e4db654187b8805b43e2e16",
   "backend/routes/stream-plan.js": "9383c53caa67085b2dd26a0f41e44cb6b5d54fff",
   "backend/routes/xtream.js": "443cfaed838dcdc6d0dc397793a1487c92a51d2a",
   "backend/services/iptv-lab.js": "ffe3967558222b8ebae55b0411defcc02524f9eb",
