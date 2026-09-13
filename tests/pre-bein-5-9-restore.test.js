@@ -36,12 +36,7 @@ describe("pre-beIN-5-9 production boundary", () => {
       .filter((channel) => channel.group === "beIN")
       .map((channel) => channel.id);
 
-    expect(ids).toEqual([
-      "bein-sports-1",
-      "bein-sports-2",
-      "bein-sports-3",
-      "bein-sports-4",
-    ]);
+    expect(ids).toEqual(["bein-sports-1", "bein-sports-2", "bein-sports-3", "bein-sports-4"]);
   });
 
   it("keeps automatic broadcaster routing inside Sports 1-4", () => {
