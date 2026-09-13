@@ -1,16 +1,45 @@
+# Non-Saudi (beIN / European) broadcast assignments.
+#
+# Cadence is deliberately modest. This job has produced exactly one commit in the
+# repository's history: European channel assignments are published well ahead and
+# almost never move, and refresh-broadcasts.js exits early when commentaryIndex is
+# unchanged, so extra runs are pure cost.
+#
+# The previous "*/5" was never real. GitHub throttles frequent scheduled workflows
+# on shared runners and silently drops the rest — that cron asked for 288 runs a
+# day and actually delivered ~8, every 3-4 hours. Asking for a cadence you do not
+# get is worse than asking for one you do: it invites the assumption that data is
+# five minutes fresh when it can be three hours stale. Run workflow_dispatch when
+# an assignment must land before a specific kickoff.
+#
+# Minute 43 rather than 0 keeps it off the top-of-hour peak, where GitHub queues
+# are most contended and scheduled runs are delayed longest.
+#
+# Two sources run here, in order. goal.com carries the broadcaster's own listing
+# and gets the channel number right; almaghrebsport is a commentator feed whose
+# channel guess defaults to beIN 1, which is how four simultaneous ties once all
+# read beIN 1. goal.com publishes only two to three days ahead, so a run fills in
+# the near days and a later run fills the rest — which is the reason this is a
+# schedule and not a one-off correction.
 name: Update broadcast channels
 
 on:
   schedule:
-    - cron: "*/5 * * * *"
+    - cron: "43 */6 * * *"
   workflow_dispatch:
   push:
     branches: [main]
     paths:
+      - "assets/data/manual-channel-overrides.json"
+      - "assets/data/team-names-ar.json"
+      - "scripts/arabic-team-resolver.js"
       - "scripts/broadcast-registry.js"
+      - "scripts/channel-overrides-lib.js"
       - "scripts/commentators-lib.js"
+      - "scripts/goal-broadcasts-lib.js"
       - "scripts/matches-lib.js"
       - "scripts/refresh-broadcasts.js"
+      - "scripts/refresh-goal-broadcasts.js"
       - "tests/refresh-broadcasts.test.js"
       - ".github/workflows/update-broadcasts.yml"
 
@@ -34,20 +63,26 @@ jobs:
         with:
           node-version: "22"
 
+      # Non-fatal on purpose: goal.com being unreachable must not also stop the
+      # commentator refresh below, which still has commentators to deliver. The
+      # previous overrides file stays in place and is used as-is.
+      - name: Rebuild channel overrides from goal.com
+        run: node scripts/refresh-goal-broadcasts.js || echo "goal.com refresh failed; keeping existing overrides"
+
       - name: Refresh non-Saudi channel assignments
         run: node scripts/refresh-broadcasts.js
 
       - name: Commit only meaningful broadcast changes
         run: |
           set -euo pipefail
-          if git diff --quiet -- assets/data/today.json; then
+          if git diff --quiet -- assets/data/today.json assets/data/broadcast-overrides.json; then
             echo "Broadcast assignments unchanged."
             exit 0
           fi
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add assets/data/today.json
+          git add assets/data/today.json assets/data/broadcast-overrides.json
           git commit -m "chore: refresh broadcast channels"
           git pull --rebase origin main
           git push origin HEAD:main
