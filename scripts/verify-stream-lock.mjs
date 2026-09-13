@@ -3,6 +3,8 @@
  * CHATGPT-STAMP 2026-09-12T22:26-04:00 — PRE-BEIN-5-9-RESTORE-1
  * CLAUDE-STAMP 2026-09-13T00:35-04:00 — MEDIA-URL-LEECH-1
  * CLAUDE-STAMP 2026-09-13T11:58-04:00 — PREMIUM-991-PATH-RETIRED-1
+ * CLAUDE-STAMP 2026-09-13T12:10-04:00 — MEDIA-TTL-3H-1 (30min cut real viewers
+ *   off mid-match with 403s; the same-origin gate, not the TTL, is the defence)
  *
  * Production playback remains frozen at the original 8fe04a34 state except for
  * three deliberate, isolated deviations that were already proven independently:
@@ -13,8 +15,8 @@
  *   aborts silent upstream Xtream reads so a stale request cannot hold the
  *   provider slot indefinitely.
  * - backend/adapters/xtream.js and backend/routes/iptv-lab.js carry
- *   MEDIA-URL-LEECH-1: signed /api/xtream/media URLs expire in 30 minutes
- *   instead of 6 hours, and the endpoints that mint a playable URL (live,
+ *   MEDIA-URL-LEECH-1: signed /api/xtream/media URLs expire in 3 hours
+ *   instead of 6, and the endpoints that mint a playable URL (live,
  *   channel, probe) require a same-origin request. Both were open, and one
  *   client used that to pull 5.21GB across 46 requests in six hours while real
  *   viewers and the Lab drained behind it on a max_connections: 1 line.
@@ -59,7 +61,7 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
   "assets/js/watch.js": "64341739361a85aca8afac0cc15b27989668bce0",
   "backend/adapters/xtream-media-safe.js": "c746821386df808dd451604cbbb2bafda0c48761",
-  "backend/adapters/xtream.js": "01866e6a8274461ed64d677359dd9b2eb4fc8222",
+  "backend/adapters/xtream.js": "f88179d63b12af5d8e8321025c1edaacd3112116",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
   "backend/routes/index.js": "17e90d3f0816109f38f149b533ba039a35c0df72",
   "backend/routes/iptv-lab.js": "1488d5cde86fef687e4db654187b8805b43e2e16",
