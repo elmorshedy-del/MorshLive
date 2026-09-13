@@ -1,36 +1,24 @@
 #!/usr/bin/env node
 /**
- * CHATGPT-STAMP 2026-09-12T22:26-04:00 — PRE-BEIN-5-9-RESTORE-1
- * CLAUDE-STAMP 2026-09-13T00:35-04:00 — MEDIA-URL-LEECH-1
- * CLAUDE-STAMP 2026-09-13T11:58-04:00 — PREMIUM-991-PATH-RETIRED-1
+ * CLAUDE-STAMP 2026-09-13 — RESTORE-ORIGINAL-FREEZE-1
  *
- * Production playback remains frozen at the original 8fe04a34 state except for
- * three deliberate, isolated deviations that were already proven independently:
+ * Production playback is back at the original 8fe04a34 freeze, with one
+ * remaining deviation:
  *
- * - lib/xtream-channel-map.js carries the Thmanyah resolver used by the known
- *   pre-#245 card state, so restored Saudi card ids resolve instead of failing.
- * - backend/adapters/xtream-media-safe.js carries XTREAM-IDLE-WATCHDOG-1, which
- *   aborts silent upstream Xtream reads so a stale request cannot hold the
- *   provider slot indefinitely.
- * - backend/adapters/xtream.js and backend/routes/iptv-lab.js carry
- *   MEDIA-URL-LEECH-1: signed /api/xtream/media URLs expire in 30 minutes
- *   instead of 6 hours, and the endpoints that mint a playable URL (live,
- *   channel, probe) require a same-origin request. Both were open, and one
- *   client used that to pull 5.21GB across 46 requests in six hours while real
- *   viewers and the Lab drained behind it on a max_connections: 1 line.
- *   Metadata endpoints stay ungated; no player, config or recovery file moves.
  * - assets/js/watch.js carries PREMIUM-991-PATH-RETIRED-1: the watch-page
- *   premium source tabs no longer render, and `?source=iptv-premium` no longer
- *   activates. That path mounted PREMIUM_CHANNELS, which pins stream ids 991
- *   and 992 — ids lib/xtream-channel-map.js documents as absent from the
- *   current catalogue, so it either failed or played whichever channel now
- *   owns the id. It was a second playback path bypassing the resolver, and on
- *   a max_connections: 1 line a second path is a drain. Requests now fall
- *   through to the normal route. No player mount, config or recovery logic
- *   is otherwise changed.
+ *   premium source tabs do not render and ?source=iptv-premium does not
+ *   activate, so the pinned 991/992 stream ids cannot be mounted.
  *
- * Every other protected file remains byte-for-byte identical to the original
- * known-good baseline. Do not widen this exception for ordinary data work.
+ * Removed on 2026-09-13 at the owner's direction, all back to baseline bytes:
+ *   THMANYAH-RESOLVER-1   (lib/xtream-channel-map.js)
+ *   XTREAM-IDLE-WATCHDOG-1 (backend/adapters/xtream-media-safe.js)
+ *   MEDIA-URL-LEECH-1     (backend/adapters/xtream.js, backend/routes/iptv-lab.js)
+ *
+ * The leech is held off outside git: the Cloudflare IP block on
+ * 80.155.183.76 and the rotated XTREAM_TOKEN_SECRET.
+ *
+ * Every other protected file is byte-for-byte the original baseline. Do not
+ * widen this for ordinary data work.
  */
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
@@ -41,8 +29,8 @@ const APPROVAL_VALUE = "YES_I_INTEND_TO_CHANGE_PRODUCTION_STREAMING";
 const PLAN_PATH = resolve("config/stream-change-plan.json");
 const MAX_PLAN_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-// Git blob SHAs from the known-good production tree, with only the explicitly
-// approved Thmanyah resolver and Xtream idle-watchdog deviations below.
+// Git blob SHAs from the original known-good production tree. Only
+// assets/js/watch.js deviates, for PREMIUM-991-PATH-RETIRED-1.
 const LOCKED_FILES = Object.freeze({
   "iptv-lab.html": "67ace9fbc5e58c6dc08c532a5169fe294518e3f9",
   "watch.html": "1221e76d929c3f1fcead13bb88e9504d9102905b",
@@ -58,11 +46,11 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-loader.js": "d40237ad871bb08164150881ff0f397d8786dafb",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
   "assets/js/watch.js": "64341739361a85aca8afac0cc15b27989668bce0",
-  "backend/adapters/xtream-media-safe.js": "c746821386df808dd451604cbbb2bafda0c48761",
-  "backend/adapters/xtream.js": "01866e6a8274461ed64d677359dd9b2eb4fc8222",
+  "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
+  "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
   "backend/routes/index.js": "17e90d3f0816109f38f149b533ba039a35c0df72",
-  "backend/routes/iptv-lab.js": "1488d5cde86fef687e4db654187b8805b43e2e16",
+  "backend/routes/iptv-lab.js": "1abd3a9a3a5b1b03085bcb8b2933dc838b28639f",
   "backend/routes/stream-plan.js": "9383c53caa67085b2dd26a0f41e44cb6b5d54fff",
   "backend/routes/xtream.js": "443cfaed838dcdc6d0dc397793a1487c92a51d2a",
   "backend/services/iptv-lab.js": "ffe3967558222b8ebae55b0411defcc02524f9eb",
@@ -74,7 +62,7 @@ const LOCKED_FILES = Object.freeze({
   "lib/mpegts-config.js": "5a52c8168cd652c87436f3ed36773b382341e0eb",
   "lib/operator-embed.js": "5d7ec9e93e156cc41ee615e199915adf39fee885",
   "lib/stream-plan.js": "1acbe9170d35cdac4a1110880f69a46185aeaf92",
-  "lib/xtream-channel-map.js": "3e27c8855765a389faeee9dd2ec038a589261f65",
+  "lib/xtream-channel-map.js": "a8896e588be715f225ffba8c78c56fae6a852ddf",
   "lib/xtream-client.js": "f86e5b6a538ec08d7ba226f7686fdfdc9dbcfd10",
   "worker.js": "637314e36ca4fa881fe5d0cfd1f5504e9d985655",
   "wrangler.toml": "663088846e92661a19241e1c0c7133ec5873eeaa",
@@ -127,7 +115,7 @@ function approvedPlan(changed) {
 const changed = mismatches();
 if (!changed.length) {
   console.log(
-    `STREAM LOCK OK — ${Object.keys(LOCKED_FILES).length} production playback files match ${BASELINE_COMMIT.slice(0, 8)} plus THMANYAH-RESOLVER-1 and XTREAM-IDLE-WATCHDOG-1.`,
+    `STREAM LOCK OK — ${Object.keys(LOCKED_FILES).length} production playback files match ${BASELINE_COMMIT.slice(0, 8)} plus PREMIUM-991-PATH-RETIRED-1.`,
   );
   process.exit(0);
 }
@@ -143,7 +131,7 @@ if (plan) {
 
 console.error("");
 console.error("❌ STREAM LOCK — production playback differs from the approved known-good state.");
-console.error(`Baseline: ${BASELINE_COMMIT} + THMANYAH-RESOLVER-1 + XTREAM-IDLE-WATCHDOG-1`);
+console.error(`Baseline: ${BASELINE_COMMIT} + PREMIUM-991-PATH-RETIRED-1`);
 console.error("");
 for (const { file, expected, actual } of changed) {
   console.error(`  ${file}`);
