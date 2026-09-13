@@ -1,15 +1,18 @@
 #!/usr/bin/env node
 /**
- * CHATGPT-STAMP 2026-09-12T17:37-04:00 — XTREAM-IDLE-WATCHDOG-1
+ * CHATGPT-STAMP 2026-09-12T22:26-04:00 — PRE-BEIN-5-9-RESTORE-1
  *
  * Production playback remains frozen at the original 8fe04a34 state except for
- * one deliberate, isolated deviation: backend/adapters/xtream-media-safe.js now
- * aborts silent upstream Xtream reads instead of allowing a provider connection
- * to occupy the account's single slot indefinitely. Every other protected file
- * remains byte-for-byte identical to the original known-good baseline.
+ * two deliberate, isolated deviations that were already proven independently:
  *
- * This guard runs before and after Cloudflare's refresh build and from the local
- * deploy wrapper. Do not weaken or bypass it for ordinary content/data work.
+ * - lib/xtream-channel-map.js carries the Thmanyah resolver used by the known
+ *   pre-#245 card state, so restored Saudi card ids resolve instead of failing.
+ * - backend/adapters/xtream-media-safe.js carries XTREAM-IDLE-WATCHDOG-1, which
+ *   aborts silent upstream Xtream reads so a stale request cannot hold the
+ *   provider slot indefinitely.
+ *
+ * Every other protected file remains byte-for-byte identical to the original
+ * known-good baseline. Do not widen this exception for ordinary data work.
  */
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
@@ -21,7 +24,7 @@ const PLAN_PATH = resolve("config/stream-change-plan.json");
 const MAX_PLAN_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 // Git blob SHAs from the known-good production tree, with only the explicitly
-// approved Xtream idle-watchdog deviation re-baselined below.
+// approved Thmanyah resolver and Xtream idle-watchdog deviations below.
 const LOCKED_FILES = Object.freeze({
   "iptv-lab.html": "67ace9fbc5e58c6dc08c532a5169fe294518e3f9",
   "watch.html": "1221e76d929c3f1fcead13bb88e9504d9102905b",
@@ -53,7 +56,7 @@ const LOCKED_FILES = Object.freeze({
   "lib/mpegts-config.js": "5a52c8168cd652c87436f3ed36773b382341e0eb",
   "lib/operator-embed.js": "5d7ec9e93e156cc41ee615e199915adf39fee885",
   "lib/stream-plan.js": "1acbe9170d35cdac4a1110880f69a46185aeaf92",
-  "lib/xtream-channel-map.js": "a8896e588be715f225ffba8c78c56fae6a852ddf",
+  "lib/xtream-channel-map.js": "3e27c8855765a389faeee9dd2ec038a589261f65",
   "lib/xtream-client.js": "f86e5b6a538ec08d7ba226f7686fdfdc9dbcfd10",
   "worker.js": "637314e36ca4fa881fe5d0cfd1f5504e9d985655",
   "wrangler.toml": "663088846e92661a19241e1c0c7133ec5873eeaa",
@@ -106,7 +109,7 @@ function approvedPlan(changed) {
 const changed = mismatches();
 if (!changed.length) {
   console.log(
-    `STREAM LOCK OK — ${Object.keys(LOCKED_FILES).length} production playback files match ${BASELINE_COMMIT.slice(0, 8)} plus XTREAM-IDLE-WATCHDOG-1.`,
+    `STREAM LOCK OK — ${Object.keys(LOCKED_FILES).length} production playback files match ${BASELINE_COMMIT.slice(0, 8)} plus THMANYAH-RESOLVER-1 and XTREAM-IDLE-WATCHDOG-1.`,
   );
   process.exit(0);
 }
@@ -122,7 +125,7 @@ if (plan) {
 
 console.error("");
 console.error("❌ STREAM LOCK — production playback differs from the approved known-good state.");
-console.error(`Baseline: ${BASELINE_COMMIT} + XTREAM-IDLE-WATCHDOG-1`);
+console.error(`Baseline: ${BASELINE_COMMIT} + THMANYAH-RESOLVER-1 + XTREAM-IDLE-WATCHDOG-1`);
 console.error("");
 for (const { file, expected, actual } of changed) {
   console.error(`  ${file}`);
