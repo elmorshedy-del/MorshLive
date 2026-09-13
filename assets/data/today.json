@@ -958,48 +958,6 @@
       "locked": false
     },
     {
-      "key": "alhilal~altaawoun",
-      "home": "Al Taawoun",
-      "away": "Al Hilal",
-      "commentators": [],
-      "channel": "ثمانية 2",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-2",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
-      "key": "alfayha~alshabab",
-      "home": "Al Shabab",
-      "away": "Al Fayha",
-      "commentators": [],
-      "channel": "ثمانية 3",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-3",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
-      "key": "alkhaleej~alnassr",
-      "home": "Al Khaleej",
-      "away": "Al Nassr",
-      "commentators": [],
-      "channel": "ثمانية 1",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
       "key": "alfateh~neomsc",
       "home": "Neom SC",
       "away": "Al Fateh",
@@ -1008,7 +966,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-2",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -1022,7 +980,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-1",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -1036,7 +994,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-3",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -4277,56 +4235,8 @@
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
-  "broadcastUpdatedAt": "2026-09-13T16:53:46.921Z",
+  "broadcastUpdatedAt": "2026-09-13T23:11:47.407Z",
   "broadcastIndex": [
-    {
-      "id": "espn-ksa.1-401900917",
-      "key": "alhilal~altaawoun",
-      "home": "Al Taawoun",
-      "away": "Al Hilal",
-      "kickoffUtc": "2026-09-12T15:50Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية 2",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-2",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "commentators": []
-    },
-    {
-      "id": "espn-ksa.1-401900918",
-      "key": "alfayha~alshabab",
-      "home": "Al Shabab",
-      "away": "Al Fayha",
-      "kickoffUtc": "2026-09-12T18:00Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية 3",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-3",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "commentators": []
-    },
-    {
-      "id": "espn-ksa.1-401900921",
-      "key": "alkhaleej~alnassr",
-      "home": "Al Khaleej",
-      "away": "Al Nassr",
-      "kickoffUtc": "2026-09-12T18:00Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية 1",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "commentators": []
-    },
     {
       "id": "espn-ksa.1-401900915",
       "key": "alfateh~neomsc",
@@ -4338,7 +4248,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-2",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "commentators": []
@@ -4354,7 +4264,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-1",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "commentators": []
@@ -4370,7 +4280,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-3",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "commentators": []
