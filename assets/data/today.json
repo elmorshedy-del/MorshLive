@@ -956,48 +956,6 @@
       "channel": "beIN MAX 1",
       "channelId": "bein-max-1",
       "locked": false
-    },
-    {
-      "key": "alfateh~neomsc",
-      "home": "Neom SC",
-      "away": "Al Fateh",
-      "commentators": [],
-      "channel": "ثمانية 2",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-2",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
-      "key": "abha~aldiriyah",
-      "home": "Al Diriyah",
-      "away": "Abha",
-      "commentators": [],
-      "channel": "ثمانية 1",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
-      "key": "alkholood~alriyadh",
-      "home": "Al Riyadh",
-      "away": "Al Kholood",
-      "commentators": [],
-      "channel": "ثمانية 3",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-3",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "locked": false
     }
   ],
   "highlightsIndex": [
@@ -4235,56 +4193,7 @@
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
-  "broadcastUpdatedAt": "2026-09-13T23:11:47.407Z",
-  "broadcastIndex": [
-    {
-      "id": "espn-ksa.1-401900915",
-      "key": "alfateh~neomsc",
-      "home": "Neom SC",
-      "away": "Al Fateh",
-      "kickoffUtc": "2026-09-13T16:20Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية 2",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-2",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "commentators": []
-    },
-    {
-      "id": "espn-ksa.1-401900916",
-      "key": "abha~aldiriyah",
-      "home": "Al Diriyah",
-      "away": "Abha",
-      "kickoffUtc": "2026-09-13T18:00Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية 1",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "commentators": []
-    },
-    {
-      "id": "espn-ksa.1-401900919",
-      "key": "alkholood~alriyadh",
-      "home": "Al Riyadh",
-      "away": "Al Kholood",
-      "kickoffUtc": "2026-09-13T18:00Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية 3",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-3",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "commentators": []
-    }
-  ],
+  "broadcastUpdatedAt": "2026-09-14T23:52:53.257Z",
+  "broadcastIndex": [],
   "commentaryUpdatedAt": "2026-09-14T22:02:56.310Z"
 }
