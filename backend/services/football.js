@@ -53,7 +53,11 @@ function calendarDaysInRange(data, requestedDays) {
   return [
     ...new Set(
       calendar
-        .map((entry) => String(entry || "").slice(0, 10).replace(/-/g, ""))
+        .map((entry) =>
+          String(entry || "")
+            .slice(0, 10)
+            .replace(/-/g, ""),
+        )
         .filter((day) => allowed.has(day)),
     ),
   ];
@@ -79,22 +83,15 @@ async function fetchEspnScoreboardDaily(slug, range) {
   try {
     first = await fetchEspnScoreboard(slug, firstDay);
   } catch {
-    const settled = await Promise.allSettled(
-      days.slice(1).map((day) => fetchEspnScoreboard(slug, day)),
-    );
+    const settled = await Promise.allSettled(days.slice(1).map((day) => fetchEspnScoreboard(slug, day)));
     const rows = settled.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
     if (!rows.length) throw new Error("ESPN daily scoreboard unavailable");
     return mergeScoreboardData(rows);
   }
 
   const scheduledDays = calendarDaysInRange(first, days).filter((day) => day !== firstDay);
-  const settled = await Promise.allSettled(
-    scheduledDays.map((day) => fetchEspnScoreboard(slug, day)),
-  );
-  const rows = [
-    first,
-    ...settled.flatMap((result) => (result.status === "fulfilled" ? [result.value] : [])),
-  ];
+  const settled = await Promise.allSettled(scheduledDays.map((day) => fetchEspnScoreboard(slug, day)));
+  const rows = [first, ...settled.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []))];
   return mergeScoreboardData(rows);
 }
 
