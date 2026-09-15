@@ -1,4 +1,5 @@
 import { fetchEspnScoreboard, fetchEspnSummary } from "../adapters/espn.js";
+import { fetchSportsDbDay } from "../adapters/thesportsdb.js";
 
 export const FOOTBALL_LEAGUES = Object.freeze([
   "eng.1",
@@ -9,6 +10,27 @@ export const FOOTBALL_LEAGUES = Object.freeze([
 ]);
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const SPORTSDB_LEAGUE_SLUGS = new Map([
+  ["english premier league", "eng.1"],
+  ["spanish la liga", "esp.1"],
+  ["spanish laliga", "esp.1"],
+  ["laliga", "esp.1"],
+  ["saudi pro league", "ksa.1"],
+  ["saudi-arabian pro league", "ksa.1"],
+  ["saudi professional league", "ksa.1"],
+  ["roshn saudi league", "ksa.1"],
+  ["uefa champions league", "uefa.champions"],
+  ["uefa champions league qualifying", "uefa.champions_qual"],
+]);
+const SPORTSDB_LEAGUE_NAMES = Object.freeze({
+  "eng.1": "English Premier League",
+  "esp.1": "Spanish La Liga",
+  "ksa.1": "Saudi Pro League",
+  "uefa.champions": "UEFA Champions League",
+  "uefa.champions_qual": "UEFA Champions League Qualifying",
+});
+const ENDED_STATUSES = new Set(["FT", "AET", "PEN", "MATCH FINISHED", "AWD", "WO", "CANC", "ABD", "PST"]);
+const LIVE_STATUSES = new Set(["1H", "2H", "HT", "ET", "BT", "P", "LIVE", "IN PLAY", "INT"]);
 
 function defaultDateRange(now = Date.now()) {
   const day = (offset) => {
@@ -95,6 +117,108 @@ async function fetchEspnScoreboardDaily(slug, range) {
   return mergeScoreboardData(rows);
 }
 
+function sportsDbSlug(event) {
+  return (
+    SPORTSDB_LEAGUE_SLUGS.get(
+      String(event?.strLeague || "")
+        .trim()
+        .toLowerCase(),
+    ) || null
+  );
+}
+
+function sportsDbKickoff(event) {
+  const value = String(event?.strTimestamp || "").trim();
+  if (!value) return null;
+  return /(?:Z|[+-]\d{2}:?\d{2})$/.test(value) ? value : `${value}Z`;
+}
+
+function sportsDbStatus(event) {
+  const raw = String(event?.strStatus || "")
+    .trim()
+    .toUpperCase();
+  if (ENDED_STATUSES.has(raw) || raw.startsWith("FT")) {
+    return { displayClock: event.strStatus || "FT", type: { state: "post", completed: true } };
+  }
+  if (LIVE_STATUSES.has(raw) || /^\d+$/.test(raw) || raw.includes("'")) {
+    return {
+      displayClock: event.strProgress || event.strStatus || "LIVE",
+      type: { state: "in", completed: false },
+    };
+  }
+  return { displayClock: event.strStatus || "", type: { state: "pre", completed: false } };
+}
+
+function sportsDbEventToEspnShape(event) {
+  const kickoff = sportsDbKickoff(event);
+  return {
+    id: String(event.idEvent || ""),
+    date: kickoff,
+    name: event.strEvent || `${event.strHomeTeam || ""} vs ${event.strAwayTeam || ""}`,
+    source: "thesportsdb",
+    competitions: [
+      {
+        date: kickoff,
+        altGameNote: event.strLeague || "",
+        status: sportsDbStatus(event),
+        competitors: [
+          {
+            homeAway: "home",
+            score: event.intHomeScore,
+            team: {
+              displayName: event.strHomeTeam || "",
+              name: event.strHomeTeam || "",
+              logo: event.strHomeTeamBadge || "",
+            },
+          },
+          {
+            homeAway: "away",
+            score: event.intAwayScore,
+            team: {
+              displayName: event.strAwayTeam || "",
+              name: event.strAwayTeam || "",
+              logo: event.strAwayTeamBadge || "",
+            },
+          },
+        ],
+        venue: {
+          fullName: event.strVenue || "",
+          address: { city: event.strCity || "", country: event.strCountry || "" },
+        },
+      },
+    ],
+  };
+}
+
+async function fetchSportsDbRows(range) {
+  const settled = await Promise.allSettled(dateRangeDays(range).map((day) => fetchSportsDbDay(day)));
+  const fulfilled = settled.filter((result) => result.status === "fulfilled");
+  if (!fulfilled.length) throw new Error("TheSportsDB scoreboards unavailable");
+
+  const eventsBySlug = new Map(FOOTBALL_LEAGUES.map((slug) => [slug, new Map()]));
+  for (const result of fulfilled) {
+    for (const event of result.value) {
+      const slug = sportsDbSlug(event);
+      if (!slug) continue;
+      const id = String(event.idEvent || `${event.strTimestamp || ""}|${event.strEvent || ""}`);
+      eventsBySlug.get(slug).set(id, sportsDbEventToEspnShape(event));
+    }
+  }
+
+  return new Map(
+    FOOTBALL_LEAGUES.map((slug) => [
+      slug,
+      {
+        slug,
+        data: {
+          leagues: [{ name: SPORTSDB_LEAGUE_NAMES[slug], slug }],
+          events: [...eventsBySlug.get(slug).values()],
+        },
+      },
+    ]),
+  );
+}
+
 export async function getFootballScoreboards(params) {
   const requested = params.get("dates") || defaultDateRange();
   if (!validDateRange(requested)) throw new Error("Invalid scoreboard date range");
@@ -118,15 +242,31 @@ export async function getFootballScoreboards(params) {
     }),
   );
 
-  const leagues = recovered.filter(Boolean);
+  let sportsDbRows = null;
+  if (recovered.some((row) => !row)) {
+    try {
+      sportsDbRows = await fetchSportsDbRows(requested);
+    } catch {
+      sportsDbRows = null;
+    }
+  }
+
+  const leagues = FOOTBALL_LEAGUES.map(
+    (slug, index) => recovered[index] || sportsDbRows?.get(slug) || null,
+  ).filter(Boolean);
   if (!leagues.length) throw new Error("Football scoreboards unavailable");
 
+  const usedSportsDb = leagues.some(
+    (row, index) => !recovered[index] && row === sportsDbRows?.get(FOOTBALL_LEAGUES[index]),
+  );
+  const usedEspn = recovered.some(Boolean);
+
   return {
-    source: "espn",
+    source: usedSportsDb ? (usedEspn ? "espn+thesportsdb" : "thesportsdb") : "espn",
     unofficial: true,
     dates: requested,
     leagues,
-    unavailable: FOOTBALL_LEAGUES.filter((_, index) => !recovered[index]),
+    unavailable: FOOTBALL_LEAGUES.filter((slug, index) => !recovered[index] && !sportsDbRows?.get(slug)),
   };
 }
 
