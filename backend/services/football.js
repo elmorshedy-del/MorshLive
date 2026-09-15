@@ -1,11 +1,15 @@
 import { fetchEspnScoreboard, fetchEspnSummary } from "../adapters/espn.js";
 
+const EMERGENCY_CARABAO_SLUG = "eng.league_cup";
+const EMERGENCY_CARABAO_EVENT_ID = "401914257";
+
 export const FOOTBALL_LEAGUES = Object.freeze([
   "eng.1",
   "esp.1",
   "ksa.1",
   "uefa.champions",
   "uefa.champions_qual",
+  EMERGENCY_CARABAO_SLUG,
 ]);
 
 function defaultDateRange(now = Date.now()) {
@@ -32,6 +36,14 @@ function requireLeague(slug) {
   return slug;
 }
 
+function filterEmergencyCarabaoFixture(slug, data) {
+  if (slug !== EMERGENCY_CARABAO_SLUG) return data;
+  const events = Array.isArray(data?.events)
+    ? data.events.filter((event) => String(event?.id || "") === EMERGENCY_CARABAO_EVENT_ID)
+    : [];
+  return { ...data, events };
+}
+
 export async function getFootballScoreboards(params) {
   const requested = params.get("dates") || defaultDateRange();
   if (!validDateRange(requested)) throw new Error("Invalid scoreboard date range");
@@ -39,7 +51,7 @@ export async function getFootballScoreboards(params) {
   const settled = await Promise.allSettled(
     FOOTBALL_LEAGUES.map(async (slug) => ({
       slug,
-      data: await fetchEspnScoreboard(slug, requested),
+      data: filterEmergencyCarabaoFixture(slug, await fetchEspnScoreboard(slug, requested)),
     })),
   );
   const leagues = settled.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
