@@ -118,7 +118,13 @@ async function fetchEspnScoreboardDaily(slug, range) {
 }
 
 function sportsDbSlug(event) {
-  return SPORTSDB_LEAGUE_SLUGS.get(String(event?.strLeague || "").trim().toLowerCase()) || null;
+  return (
+    SPORTSDB_LEAGUE_SLUGS.get(
+      String(event?.strLeague || "")
+        .trim()
+        .toLowerCase(),
+    ) || null
+  );
 }
 
 function sportsDbKickoff(event) {
@@ -128,12 +134,17 @@ function sportsDbKickoff(event) {
 }
 
 function sportsDbStatus(event) {
-  const raw = String(event?.strStatus || "").trim().toUpperCase();
+  const raw = String(event?.strStatus || "")
+    .trim()
+    .toUpperCase();
   if (ENDED_STATUSES.has(raw) || raw.startsWith("FT")) {
     return { displayClock: event.strStatus || "FT", type: { state: "post", completed: true } };
   }
   if (LIVE_STATUSES.has(raw) || /^\d+$/.test(raw) || raw.includes("'")) {
-    return { displayClock: event.strProgress || event.strStatus || "LIVE", type: { state: "in", completed: false } };
+    return {
+      displayClock: event.strProgress || event.strStatus || "LIVE",
+      type: { state: "in", completed: false },
+    };
   }
   return { displayClock: event.strStatus || "", type: { state: "pre", completed: false } };
 }
@@ -240,10 +251,14 @@ export async function getFootballScoreboards(params) {
     }
   }
 
-  const leagues = FOOTBALL_LEAGUES.map((slug, index) => recovered[index] || sportsDbRows?.get(slug) || null).filter(Boolean);
+  const leagues = FOOTBALL_LEAGUES.map(
+    (slug, index) => recovered[index] || sportsDbRows?.get(slug) || null,
+  ).filter(Boolean);
   if (!leagues.length) throw new Error("Football scoreboards unavailable");
 
-  const usedSportsDb = leagues.some((row, index) => !recovered[index] && row === sportsDbRows?.get(FOOTBALL_LEAGUES[index]));
+  const usedSportsDb = leagues.some(
+    (row, index) => !recovered[index] && row === sportsDbRows?.get(FOOTBALL_LEAGUES[index]),
+  );
   const usedEspn = recovered.some(Boolean);
 
   return {
