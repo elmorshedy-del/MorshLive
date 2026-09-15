@@ -90,25 +90,26 @@ describe("football routes", () => {
       const parsed = new URL(String(url));
       if (parsed.hostname === "www.thesportsdb.com") {
         const date = parsed.searchParams.get("d");
-        const events = date === "2026-09-16"
-          ? [
-              {
-                idEvent: "2506227",
-                strTimestamp: "2026-09-16T15:00:00",
-                strEvent: "Rayo Vallecano vs Espanyol",
-                strLeague: "Spanish La Liga",
-                strHomeTeam: "Rayo Vallecano",
-                strAwayTeam: "Espanyol",
-                strHomeTeamBadge: "https://example.com/rayo.png",
-                strAwayTeamBadge: "https://example.com/espanyol.png",
-                intHomeScore: null,
-                intAwayScore: null,
-                strStatus: "NS",
-                strVenue: "Estadio de Vallecas",
-                strCountry: "Spain",
-              },
-            ]
-          : [];
+        const events =
+          date === "2026-09-16"
+            ? [
+                {
+                  idEvent: "2506227",
+                  strTimestamp: "2026-09-16T15:00:00",
+                  strEvent: "Rayo Vallecano vs Espanyol",
+                  strLeague: "Spanish La Liga",
+                  strHomeTeam: "Rayo Vallecano",
+                  strAwayTeam: "Espanyol",
+                  strHomeTeamBadge: "https://example.com/rayo.png",
+                  strAwayTeamBadge: "https://example.com/espanyol.png",
+                  intHomeScore: null,
+                  intAwayScore: null,
+                  strStatus: "NS",
+                  strVenue: "Estadio de Vallecas",
+                  strCountry: "Spain",
+                },
+              ]
+            : [];
         return new Response(JSON.stringify({ events }), {
           headers: { "Content-Type": "application/json" },
         });
