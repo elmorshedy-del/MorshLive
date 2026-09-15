@@ -85,6 +85,68 @@ describe("football routes", () => {
     expect(upstream).toHaveBeenCalledTimes(15);
   });
 
+  it("recovers match cards from TheSportsDB when ESPN is unavailable", async () => {
+    const upstream = vi.fn(async (url) => {
+      const parsed = new URL(String(url));
+      if (parsed.hostname === "www.thesportsdb.com") {
+        const date = parsed.searchParams.get("d");
+        const events = date === "2026-09-16"
+          ? [
+              {
+                idEvent: "2506227",
+                strTimestamp: "2026-09-16T15:00:00",
+                strEvent: "Rayo Vallecano vs Espanyol",
+                strLeague: "Spanish La Liga",
+                strHomeTeam: "Rayo Vallecano",
+                strAwayTeam: "Espanyol",
+                strHomeTeamBadge: "https://example.com/rayo.png",
+                strAwayTeamBadge: "https://example.com/espanyol.png",
+                intHomeScore: null,
+                intAwayScore: null,
+                strStatus: "NS",
+                strVenue: "Estadio de Vallecas",
+                strCountry: "Spain",
+              },
+            ]
+          : [];
+        return new Response(JSON.stringify({ events }), {
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+      return new Response("espn unavailable", { status: 500 });
+    });
+    vi.stubGlobal("fetch", upstream);
+
+    const res = await dispatchBackendRoutes(
+      [footballRoute],
+      new Request("https://korazero.com/api/football/scoreboard?dates=20260915-20260916"),
+      {},
+      {},
+    );
+
+    expect(res?.status).toBe(200);
+    const body = await res.json();
+    expect(body.source).toBe("thesportsdb");
+    expect(body.unavailable).toEqual([]);
+    const laliga = body.leagues.find((row) => row.slug === "esp.1");
+    expect(laliga.data.events).toHaveLength(1);
+    expect(laliga.data.events[0]).toMatchObject({
+      id: "2506227",
+      date: "2026-09-16T15:00:00Z",
+      name: "Rayo Vallecano vs Espanyol",
+      source: "thesportsdb",
+      competitions: [
+        {
+          status: { type: { state: "pre", completed: false } },
+          competitors: [
+            { homeAway: "home", team: { displayName: "Rayo Vallecano" } },
+            { homeAway: "away", team: { displayName: "Espanyol" } },
+          ],
+        },
+      ],
+    });
+  });
+
   it("proxies an allowlisted ESPN match summary for live detail", async () => {
     const upstream = vi.fn(
       async () =>
