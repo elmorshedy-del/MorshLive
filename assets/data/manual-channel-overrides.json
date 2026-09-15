@@ -4,17 +4,5 @@
     "channelId": "bein-sports-2",
     "premiumTest": true,
     "reason": "manual verified broadcaster override"
-  },
-  "espn-eng.league_cup-401914257": {
-    "leagueSlug": "eng.1",
-    "channel": "beIN Sports 3",
-    "channelId": "bein-sports-3",
-    "broadcast": {
-      "provider": "bein",
-      "channelId": "bein-sports-3",
-      "source": "manual-emergency",
-      "confidence": "exact"
-    },
-    "reason": "2026-09-15 Liverpool vs Tottenham Carabao Cup emergency route through existing beIN Sports 3 path"
   }
 }
