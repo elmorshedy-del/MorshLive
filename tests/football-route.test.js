@@ -55,7 +55,12 @@ describe("football routes", () => {
                 calendar: ["2026-08-21T07:00Z", "2026-08-23T07:00Z"],
               },
             ],
-            events: [{ id: `${slug}-${dates}`, date: `${dates.slice(0, 4)}-${dates.slice(4, 6)}-${dates.slice(6, 8)}T12:00:00Z` }],
+            events: [
+              {
+                id: `${slug}-${dates}`,
+                date: `${dates.slice(0, 4)}-${dates.slice(4, 6)}-${dates.slice(6, 8)}T12:00:00Z`,
+              },
+            ],
           }),
           { headers: { "Content-Type": "application/json" } },
         );
