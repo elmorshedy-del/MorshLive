@@ -2,6 +2,7 @@ import { fetchEspnScoreboard, fetchEspnSummary } from "../adapters/espn.js";
 
 const EMERGENCY_CARABAO_SLUG = "eng.league_cup";
 const EMERGENCY_CARABAO_EVENT_ID = "401914257";
+const EMERGENCY_CARABAO_DAY = "20260915";
 
 export const FOOTBALL_LEAGUES = Object.freeze([
   "eng.1",
@@ -35,11 +36,47 @@ function requireLeague(slug) {
   return slug;
 }
 
-function filterEmergencyCarabaoFixture(data) {
-  const events = Array.isArray(data?.events)
-    ? data.events.filter((event) => String(event?.id || "") === EMERGENCY_CARABAO_EVENT_ID)
-    : [];
-  return { ...data, events };
+function rangeIncludesDay(range, day) {
+  const [start, end] = String(range || "").split("-");
+  return Boolean(start && end && start <= day && day <= end);
+}
+
+function emergencyCarabaoRow() {
+  return {
+    slug: EMERGENCY_CARABAO_SLUG,
+    data: {
+      leagues: [{ name: "English Carabao Cup" }],
+      events: [
+        {
+          id: EMERGENCY_CARABAO_EVENT_ID,
+          date: "2026-09-15T19:00:00Z",
+          name: "Liverpool vs Tottenham Hotspur",
+          competitions: [
+            {
+              date: "2026-09-15T19:00:00Z",
+              altGameNote: "Carabao Cup - Third Round",
+              competitors: [
+                {
+                  homeAway: "home",
+                  score: "0",
+                  team: { displayName: "Liverpool", name: "Liverpool", abbreviation: "LIV" },
+                },
+                {
+                  homeAway: "away",
+                  score: "0",
+                  team: { displayName: "Tottenham Hotspur", name: "Tottenham Hotspur", abbreviation: "TOT" },
+                },
+              ],
+              venue: {
+                fullName: "Anfield",
+                address: { city: "Liverpool", country: "England" },
+              },
+            },
+          ],
+        },
+      ],
+    },
+  };
 }
 
 export async function getFootballScoreboards(params) {
@@ -54,13 +91,7 @@ export async function getFootballScoreboards(params) {
   );
   const leagues = settled.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
 
-  const emergencyCarabao = await fetchEspnScoreboard(EMERGENCY_CARABAO_SLUG, requested)
-    .then(filterEmergencyCarabaoFixture)
-    .catch(() => null);
-  if (emergencyCarabao?.events?.length) {
-    leagues.push({ slug: EMERGENCY_CARABAO_SLUG, data: emergencyCarabao });
-  }
-
+  if (rangeIncludesDay(requested, EMERGENCY_CARABAO_DAY)) leagues.push(emergencyCarabaoRow());
   if (!leagues.length) throw new Error("Football scoreboards unavailable");
 
   return {
