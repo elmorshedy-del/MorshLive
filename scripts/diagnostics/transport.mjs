@@ -47,7 +47,10 @@ export async function resolvePlayable({ origin, channel, portal, stream }) {
  * transport-level equivalent of a rebuffer.
  */
 export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 1500 }) {
-  const url = MEDIA_RE.test(tsUrl) ? origin + tsUrl : tsUrl;
+  // Pull straight from production. The harness exists so a *browser* can reach
+  // the site through a TLS-terminating sandbox proxy; Node has no such problem,
+  // and the extra hop would only add its own buffering to the measurement.
+  const url = MEDIA_RE.test(tsUrl) ? "https://korazero.com" + tsUrl : tsUrl;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), seconds * 1000);
 
@@ -73,6 +76,13 @@ export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 
     }
     for await (const chunk of res.body) {
       const now = Date.now();
+      // Belt and braces: abort signals on a stalled live stream have been known
+      // not to fire promptly, and a diagnostic must never outstay its welcome
+      // on a one-slot line.
+      if (now - started > (seconds + 5) * 1000) {
+        controller.abort();
+        break;
+      }
       if (firstByteAt === null) firstByteAt = now - started;
       const gap = now - lastChunkAt;
       if (gap > stallMs) {

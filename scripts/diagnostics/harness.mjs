@@ -92,13 +92,26 @@ export function startHarness({ allowMedia = false, port = 0 } = {}) {
         const upstream = await fetch(ORIGIN + req.url, {
           headers: { referer: `${ORIGIN}/watch.html`, "user-agent": req.headers["user-agent"] || "" },
         });
-        const body = Buffer.from(await upstream.arrayBuffer());
-        note("api", upstream.status, body.length);
         res.writeHead(upstream.status, {
           "content-type": upstream.headers.get("content-type") || "application/json",
           "cache-control": "no-store",
         });
-        return res.end(body);
+        // Stream rather than buffer. A live TS feed never ends, so reading it
+        // into memory first would hang here forever and look like the site
+        // failing to respond.
+        if (!upstream.body) {
+          note("api", upstream.status, 0);
+          return res.end();
+        }
+        let streamed = 0;
+        for await (const chunk of upstream.body) {
+          streamed += chunk.length;
+          if (!res.write(Buffer.from(chunk))) {
+            await new Promise((drain) => res.once("drain", drain));
+          }
+        }
+        note("api", upstream.status, streamed);
+        return res.end();
       } catch (error) {
         note("api-error", 502, 0);
         res.writeHead(502, { "content-type": "text/plain" });
