@@ -48,6 +48,7 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 | `assets/data/*.json` | Generated cache (do not hand-edit without reason) |
 | `tests/` | Vitest suite |
 | `docs/ARCHITECTURE.md` | Deeper architecture notes |
+| `docs/STREAMING-LINE-BLUEPRINT.md` | **Read first before touching playback.** The stream path end to end, every known drain mechanism, and what has already been ruled out |
 
 ## Git workflow
 
