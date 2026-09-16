@@ -131,6 +131,8 @@
   }
 
   function applyMeta() {
+    // See the note in arabic-editorial.js — pages with their own SEO opt out.
+    if (document.documentElement.dataset.pageSeo === "own") return;
     document.title = window.I18N.t("seo.title");
     setMeta('meta[name="description"]', window.I18N.t("seo.description"));
     setMeta('meta[property="og:title"]', window.I18N.t("seo.ogTitle"));

@@ -9,10 +9,26 @@
   let activeStage = "all";
   const TEAM_PAGE = document.body.classList.contains("wc-team-page");
   const MATCH_PAGE = document.body.classList.contains("wc-match-page");
-  const teamSlug = new URLSearchParams(location.search).get("team");
-  const matchSlugParam = new URLSearchParams(location.search).get("slug");
+  /** Slug from ?team= / ?slug=, falling back to /world-cup-2026/<slug> in the path. */
+  function slugFromLocation(param) {
+    const fromQuery = new URLSearchParams(location.search).get(param);
+    if (fromQuery) return fromQuery;
+    const fromPath = /^\/world-cup-2026\/([^/?#]+?)(?:\.html)?$/.exec(location.pathname);
+    return fromPath ? decodeURIComponent(fromPath[1]) : null;
+  }
+
+  const teamSlug = TEAM_PAGE ? slugFromLocation("team") : null;
+  const matchSlugParam = MATCH_PAGE ? slugFromLocation("slug") : null;
   let activeTeam = null;
   let activeMatch = null;
+
+  /**
+   * The pre-rendered block exists so crawlers (and anyone whose JS fails) can
+   * read the match. Once the live card is up it would just repeat it.
+   */
+  function dropPrerender() {
+    document.getElementById("wc-prerender")?.remove();
+  }
 
   function matchPageHref(m) {
     return window.TeamNames?.matchPageHref?.(m) || "";
@@ -613,6 +629,7 @@
       .filter((m) => !latest || m.key !== latest.key);
 
     grid.innerHTML = list.length ? list.map((m) => matchCard(m)).join("") : "";
+    if (list.length) dropPrerender();
     if (empty) empty.hidden = !!list.length;
     if (count) count.textContent = t("tournament.matchesCount", { n: list.length });
     bindVideoLaunch(grid);
@@ -688,6 +705,7 @@
     if (empty) empty.hidden = true;
     wrap.hidden = false;
     card.innerHTML = featuredHeroHtml(activeMatch);
+    dropPrerender();
     bindVideoLaunch(card);
     if (window.KZTweets) window.KZTweets.bindVideoPlayers(card);
   }

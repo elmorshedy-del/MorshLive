@@ -10,12 +10,26 @@ function read(relativePath) {
 }
 
 describe("sitemap inventory", () => {
-  it("keeps the root sitemap focused on core and current schedule surfaces", () => {
+  // These two were held out of the index while every /world-cup-2026/ URL
+  // served one shared shell — 152 duplicates with a canonical pointing at a
+  // 404 are not worth submitting. They are pre-rendered per slug now, so the
+  // hold no longer applies; the guard below is what keeps that honest.
+  it("submits the World Cup sitemaps only while their pages are pre-rendered", () => {
     const sitemap = read("sitemap.xml");
 
     expect(sitemap).toContain("https://korazero.com/sitemap-core.xml");
-    expect(sitemap).not.toContain("sitemap-wc-teams.xml");
-    expect(sitemap).not.toContain("sitemap-wc-matches.xml");
+    expect(sitemap).toContain("https://korazero.com/sitemap-wc-matches.xml");
+    expect(sitemap).toContain("https://korazero.com/sitemap-wc-teams.xml");
+
+    // `generated/` is built, not committed, so check the routing that points at
+    // it: every slug must have its own file rather than the shared shell.
+    const redirects = read("_redirects");
+    expect(redirects).not.toMatch(/^\/world-cup-2026\/\S+\s+\/world-cup-(match|team)\.html\?/m);
+
+    const { matches } = JSON.parse(read("assets/data/wc-matches-index.json"));
+    for (const slug of matches.map((match) => match.slug)) {
+      expect(redirects).toContain(`/world-cup-2026/${slug}  /generated/seo/wc/match-${slug}.html`);
+    }
   });
 
   it("does not submit utility search or playback pages as core landing pages", () => {

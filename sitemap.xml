@@ -9,4 +9,13 @@
   <sitemap>
     <loc>https://korazero.com/sitemap-core.xml</loc>
   </sitemap>
+  <sitemap>
+    <loc>https://korazero.com/sitemap-wc-matches.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://korazero.com/sitemap-wc-teams.xml</loc>
+  </sitemap>
+  <sitemap>
+    <loc>https://korazero.com/sitemap-schedule.xml</loc>
+  </sitemap>
 </sitemapindex>

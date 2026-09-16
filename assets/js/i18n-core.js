@@ -683,6 +683,9 @@
   }
 
   function applySeoMeta() {
+    // Pages that ship their own title and description (the World Cup match and
+    // team pages) opt out — otherwise the site-wide homepage copy overwrites it.
+    if (document.documentElement.dataset.pageSeo === "own") return;
     document.title = t("seo.title");
     const setMeta = (selector, content) => {
       const el = document.querySelector(selector);

@@ -163,6 +163,9 @@
   }
 
   function applyMeta() {
+    // This runs from a MutationObserver, so without the opt-out it re-stamps the
+    // homepage title over a page's own every time that page renders anything.
+    if (document.documentElement.dataset.pageSeo === "own") return;
     document.title = window.I18N.t("seo.title");
     setMeta('meta[name="description"]', window.I18N.t("seo.description"));
     setMeta('meta[property="og:title"]', window.I18N.t("seo.ogTitle"));

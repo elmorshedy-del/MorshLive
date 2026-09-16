@@ -379,6 +379,8 @@
   }
 
   function applyMeta() {
+    // See the note in i18n-core.js — pages with their own SEO opt out.
+    if (document.documentElement.dataset.pageSeo === "own") return;
     document.title = i18n.t("seo.title");
     setMeta('meta[name="description"]', i18n.t("seo.description"));
     setMeta('meta[name="keywords"]', i18n.t("seo.keywords"));

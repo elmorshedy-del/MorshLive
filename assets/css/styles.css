@@ -3646,3 +3646,14 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
    quiet convenience and becomes the thing to look at. */
 .channel-switch--warn { border-color: rgba(255,200,87,.4); background: rgba(255,200,87,.05); }
 .channel-switch--warn .channel-switch-hint { color: var(--gold); }
+
+/* Server-rendered match/team copy on the World Cup pages. It is what a crawler
+   reads and what shows if the JS never arrives; tournament.js removes it once
+   the live card is up. */
+.wc-prerender { margin: 0 0 24px; color: var(--muted); font-size: .92rem; line-height: 1.7; }
+.wc-prerender h2 { font-size: 1rem; margin: 18px 0 8px; color: var(--text); }
+.wc-prerender ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.wc-prerender-facts li { display: flex; gap: 10px; flex-wrap: wrap; }
+.wc-prerender-facts b { color: var(--text); font-weight: 700; min-width: 72px; }
+.wc-prerender-list a { color: var(--accent); font-weight: 700; text-decoration: none; }
+.wc-prerender-list a:hover { text-decoration: underline; }
