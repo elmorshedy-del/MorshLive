@@ -13,6 +13,7 @@ const {
   arabiaDayIso,
   arabiaTodayIso,
   ESPN_LEAGUES,
+  fetchEspnScoreboardWindow,
   filterDisplayMatches,
   isSupportedLeagueName,
   mergeMatches,
@@ -105,10 +106,7 @@ function espnDateRange(center) {
 }
 
 async function fetchEspnLeague(slug, dateRange) {
-  const url = `https://site.api.espn.com/apis/site/v2/sports/soccer/${slug}/scoreboard?dates=${dateRange}&limit=100`;
-  const json = await get(url);
-  const league = { ...(json.leagues && json.leagues[0] ? json.leagues[0] : {}), slug };
-  const events = Array.isArray(json.events) ? json.events : [];
+  const { league, events } = await fetchEspnScoreboardWindow(slug, dateRange, get);
   return events.map((event) => normalizeEspnEvent(event, league));
 }
 

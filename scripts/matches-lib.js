@@ -304,6 +304,72 @@ function sortMatches(matches) {
   });
 }
 
+/**
+ * ESPN 400s a `dates` range ("Failed to get events endpoint.") but still
+ * answers a single day and a whole month, so a range is served from the
+ * month(s) it spans and trimmed back to the days asked for. Node twin of
+ * lib/espn-scoreboard-dates.js — keep the two in sync.
+ */
+function espnScoreboardWindow(dates) {
+  const match = /^(\d{8})-(\d{8})$/.exec(String(dates || ""));
+  if (!match) return null;
+  const dayMs = (compact) =>
+    Date.parse(`${compact.slice(0, 4)}-${compact.slice(4, 6)}-${compact.slice(6, 8)}T00:00:00Z`);
+  const startMs = dayMs(match[1]);
+  const endMs = dayMs(match[2]);
+  if (isNaN(startMs) || isNaN(endMs) || endMs < startMs) return null;
+
+  const months = [];
+  const cursor = new Date(startMs);
+  cursor.setUTCDate(1);
+  while (cursor.getTime() <= endMs && months.length < 3) {
+    months.push(cursor.toISOString().slice(0, 7).replace("-", ""));
+    cursor.setUTCMonth(cursor.getUTCMonth() + 1);
+  }
+  if (!months.length || cursor.getTime() <= endMs) return null;
+  return { startMs, endMs: endMs + 24 * 60 * 60 * 1000, months };
+}
+
+/** Events with no readable date are kept — dropping them would lose fixtures. */
+function espnEventInWindow(event, window) {
+  if (!window) return true;
+  const competition = event && Array.isArray(event.competitions) ? event.competitions[0] : null;
+  const kickoff = Date.parse(event?.date || competition?.date || "");
+  if (isNaN(kickoff)) return true;
+  return kickoff >= window.startMs && kickoff < window.endMs;
+}
+
+/**
+ * Fetch one league's scoreboard for a `dates` range: the month(s) it spans,
+ * merged back into the single {league, events} the range used to return.
+ * `get` is the caller's own JSON fetcher so each script keeps its own
+ * user-agent, timeout and retry behaviour.
+ */
+async function fetchEspnScoreboardWindow(slug, dates, get, { limit = 100 } = {}) {
+  const base = "https://site.api.espn.com/apis/site/v2/sports/soccer";
+  const window = espnScoreboardWindow(dates);
+  const asked = window ? window.months : [dates];
+  const settled = await Promise.allSettled(
+    asked.map((value) => get(`${base}/${slug}/scoreboard?dates=${value}&limit=${limit}`)),
+  );
+  const payloads = settled.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
+  if (!payloads.length) throw settled[0].reason;
+
+  const league = { ...(payloads[0].leagues && payloads[0].leagues[0] ? payloads[0].leagues[0] : {}), slug };
+  const seen = new Set();
+  const events = [];
+  for (const json of payloads) {
+    for (const event of Array.isArray(json.events) ? json.events : []) {
+      const id = event && event.id != null ? String(event.id) : "";
+      if (id && seen.has(id)) continue;
+      if (!espnEventInWindow(event, window)) continue;
+      if (id) seen.add(id);
+      events.push(event);
+    }
+  }
+  return { league, events };
+}
+
 module.exports = {
   COMPETITIONS,
   ESPN_LEAGUES,
@@ -312,6 +378,9 @@ module.exports = {
   ARABIA_TZ_OFFSET_HOURS,
   competitionForEspnSlug,
   competitionForLeagueName,
+  espnEventInWindow,
+  espnScoreboardWindow,
+  fetchEspnScoreboardWindow,
   filterDisplayMatches,
   isSupportedLeagueName,
   mergeMatches,

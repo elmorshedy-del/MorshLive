@@ -14,7 +14,7 @@
  * ==========================================================================*/
 const fs = require("fs");
 const path = require("path");
-const { normalizeEspnEvent } = require("./matches-lib");
+const { fetchEspnScoreboardWindow, normalizeEspnEvent } = require("./matches-lib");
 const { attachCommentators, pairKey } = require("./commentators-lib");
 const { applySaudiTvGuide, parseSaudiTvGuide } = require("./saudi-tv-guide-lib");
 
@@ -62,12 +62,12 @@ async function fetchWithTimeout(url, { text = false, userAgent = BROWSER_UA } = 
 }
 
 async function fetchSaudiFixtures(centerDate) {
-  const url =
-    `https://site.api.espn.com/apis/site/v2/sports/soccer/${ESPN_SLUG}/scoreboard` +
-    `?dates=${espnDateRange(centerDate)}&limit=100`;
-  const json = await fetchWithTimeout(url, { userAgent: SERVER_UA });
-  const league = { ...(json.leagues?.[0] || {}), slug: ESPN_SLUG };
-  return (json.events || []).map((event) => normalizeEspnEvent(event, league));
+  const { league, events } = await fetchEspnScoreboardWindow(
+    ESPN_SLUG,
+    espnDateRange(centerDate),
+    (url) => fetchWithTimeout(url, { userAgent: SERVER_UA }),
+  );
+  return events.map((event) => normalizeEspnEvent(event, league));
 }
 
 function exactThmanyah(row) {
