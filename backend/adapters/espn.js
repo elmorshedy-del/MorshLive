@@ -1,3 +1,5 @@
+import { espnScoreboardWindow, mergeScoreboardPayloads } from "../../lib/espn-scoreboard-dates.js";
+
 const ESPN_BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer";
 
 /**
@@ -58,9 +60,28 @@ async function fetchEspnJson(path, { fetchImpl = fetch } = {}) {
   throw new Error(`ESPN upstream ${lastStatus}`);
 }
 
-export function fetchEspnScoreboard(slug, dates, options) {
+function scoreboardPath(slug, dates) {
   const params = new URLSearchParams({ dates, limit: "100" });
-  return fetchEspnJson(`${slug}/scoreboard?${params.toString()}`, options);
+  return `${slug}/scoreboard?${params.toString()}`;
+}
+
+/**
+ * ESPN answers a single day and a whole month but 400s a day range, so a range
+ * is served from the month(s) it spans and trimmed back to the days asked for.
+ * See lib/espn-scoreboard-dates.js for the measurements behind that.
+ */
+export async function fetchEspnScoreboard(slug, dates, options) {
+  const window = espnScoreboardWindow(dates);
+  if (!window) return fetchEspnJson(scoreboardPath(slug, dates), options);
+
+  const settled = await Promise.allSettled(
+    window.months.map((month) => fetchEspnJson(scoreboardPath(slug, month), options)),
+  );
+  const payloads = settled.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
+  // One month of a straddling window is still a usable scoreboard; none is not.
+  if (!payloads.length) throw settled[0].reason;
+
+  return mergeScoreboardPayloads(payloads, window);
 }
 
 export function fetchEspnSummary(slug, eventId, options) {

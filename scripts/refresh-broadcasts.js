@@ -21,7 +21,7 @@
  * ==========================================================================*/
 const fs = require("fs");
 const path = require("path");
-const { ESPN_LEAGUES, normalizeEspnEvent } = require("./matches-lib");
+const { ESPN_LEAGUES, fetchEspnScoreboardWindow, normalizeEspnEvent } = require("./matches-lib");
 const { attachCommentators, mergeCommentaryIndex } = require("./commentators-lib");
 const { isSaudiProLeagueMatch } = require("./broadcast-registry");
 
@@ -70,13 +70,13 @@ async function fetchWithTimeout(url, { text = false, userAgent = BROWSER_UA } = 
 }
 
 async function fetchLeagueFixtures(slug, centerDate) {
-  const url =
-    `https://site.api.espn.com/apis/site/v2/sports/soccer/${slug}/scoreboard` +
-    `?dates=${espnDateRange(centerDate)}&limit=100`;
   try {
-    const json = await fetchWithTimeout(url, { userAgent: SERVER_UA });
-    const league = { ...(json.leagues?.[0] || {}), slug };
-    return (json.events || []).map((event) => normalizeEspnEvent(event, league));
+    const { league, events } = await fetchEspnScoreboardWindow(
+      slug,
+      espnDateRange(centerDate),
+      (url) => fetchWithTimeout(url, { userAgent: SERVER_UA }),
+    );
+    return events.map((event) => normalizeEspnEvent(event, league));
   } catch (error) {
     console.log(`${slug} fixtures unavailable (${error.message}); continuing with remaining leagues`);
     return [];

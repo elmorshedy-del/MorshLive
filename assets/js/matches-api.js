@@ -188,6 +188,38 @@
     return `${shiftDate(today, -1).replace(/-/g, "")}-${shiftDate(today, SCHEDULE_DAYS_AHEAD).replace(/-/g, "")}`;
   }
 
+  // ESPN 400s a `dates` range ("Failed to get events endpoint.") but still
+  // answers a whole month, so ask for the month(s) the window spans and keep
+  // the days that were asked for. Mirrors lib/espn-scoreboard-dates.js, which
+  // does the same for the worker's /api/football/scoreboard.
+  function espnScoreboardWindow(dates) {
+    const match = /^(\d{8})-(\d{8})$/.exec(String(dates || ""));
+    if (!match) return null;
+    const dayMs = (compact) =>
+      Date.parse(`${compact.slice(0, 4)}-${compact.slice(4, 6)}-${compact.slice(6, 8)}T00:00:00Z`);
+    const startMs = dayMs(match[1]);
+    const endMs = dayMs(match[2]);
+    if (isNaN(startMs) || isNaN(endMs) || endMs < startMs) return null;
+
+    const months = [];
+    const cursor = new Date(startMs);
+    cursor.setUTCDate(1);
+    while (cursor.getTime() <= endMs && months.length < 3) {
+      months.push(cursor.toISOString().slice(0, 7).replace("-", ""));
+      cursor.setUTCMonth(cursor.getUTCMonth() + 1);
+    }
+    if (!months.length || cursor.getTime() <= endMs) return null;
+    return { startMs, endMs: endMs + 24 * 60 * 60 * 1000, months };
+  }
+
+  function espnEventInWindow(event, window) {
+    if (!window) return true;
+    const competition = event && Array.isArray(event.competitions) ? event.competitions[0] : null;
+    const kickoff = Date.parse(event?.date || competition?.date || "");
+    if (isNaN(kickoff)) return true;
+    return kickoff >= window.startMs && kickoff < window.endMs;
+  }
+
   async function fetchJson(url, label) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
@@ -259,10 +291,28 @@
   }
 
   async function fetchEspnLeague(slug, dateRange) {
-    const url = `${ESPN_BASE}/${slug}/scoreboard?dates=${dateRange}&limit=100`;
-    const json = await fetchJson(url, `ESPN (${slug})`);
-    const league = { ...(json.leagues && json.leagues[0] ? json.leagues[0] : {}), slug };
-    const events = Array.isArray(json.events) ? json.events : [];
+    const window = espnScoreboardWindow(dateRange);
+    const asked = window ? window.months : [dateRange];
+    const settled = await Promise.allSettled(
+      asked.map((dates) =>
+        fetchJson(`${ESPN_BASE}/${slug}/scoreboard?dates=${dates}&limit=100`, `ESPN (${slug} ${dates})`)
+      )
+    );
+    const payloads = settled.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));
+    if (!payloads.length) throw settled[0].reason;
+
+    const league = { ...(payloads[0].leagues && payloads[0].leagues[0] ? payloads[0].leagues[0] : {}), slug };
+    const seen = new Set();
+    const events = [];
+    for (const json of payloads) {
+      for (const event of Array.isArray(json.events) ? json.events : []) {
+        const id = event && event.id != null ? String(event.id) : "";
+        if (id && seen.has(id)) continue;
+        if (!espnEventInWindow(event, window)) continue;
+        if (id) seen.add(id);
+        events.push(event);
+      }
+    }
     return events.map((event) => normalizeEspnEvent(event, league));
   }
 

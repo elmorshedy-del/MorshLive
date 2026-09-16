@@ -66,12 +66,57 @@ describe("ESPN adapter user-agent rotation", () => {
     expect(impl).toHaveBeenCalledTimes(1);
   });
 
-  it("asks ESPN for the range and limit the service expects", async () => {
+  it("asks ESPN for the month the range falls in, at the limit the service expects", async () => {
+    // ESPN 400s a day range; the month it spans is what still answers.
     const { impl } = espnLikeFetch(["curl/8.5.0"]);
     await fetchEspnScoreboard("eng.1", "20260905-20260906", { fetchImpl: impl });
+    expect(impl).toHaveBeenCalledTimes(1);
     const url = String(impl.mock.calls[0][0]);
     expect(url).toContain("/soccer/eng.1/scoreboard?");
-    expect(url).toContain("dates=20260905-20260906");
+    expect(url).toContain("dates=202609");
+    expect(url).not.toContain("dates=20260905-20260906");
     expect(url).toContain("limit=100");
+  });
+});
+
+describe("ESPN scoreboard date windows", () => {
+  it("passes a single day straight through — that form was never broken", async () => {
+    const { impl } = espnLikeFetch(["curl/8.5.0"]);
+    await fetchEspnScoreboard("eng.1", "20260905", { fetchImpl: impl });
+    expect(String(impl.mock.calls[0][0])).toContain("dates=20260905");
+  });
+
+  it("asks for both months when the window straddles a boundary, and merges them", async () => {
+    const byMonth = {
+      202608: { leagues: [{ slug: "eng.1" }], events: [{ id: "1", date: "2026-08-30T14:00Z" }] },
+      202609: { leagues: [{ slug: "eng.1" }], events: [{ id: "2", date: "2026-09-02T19:00Z" }] },
+    };
+    const impl = vi.fn(async (url) => {
+      const month = new URL(String(url)).searchParams.get("dates");
+      return response(200, byMonth[month]);
+    });
+
+    const merged = await fetchEspnScoreboard("eng.1", "20260828-20260905", { fetchImpl: impl });
+    expect(impl).toHaveBeenCalledTimes(2);
+    expect(merged.events.map((e) => e.id)).toEqual(["1", "2"]);
+    expect(merged.leagues).toEqual([{ slug: "eng.1" }]);
+  });
+
+  it("still returns fixtures when only one month of a straddling window answers", async () => {
+    const impl = vi.fn(async (url) => {
+      const month = new URL(String(url)).searchParams.get("dates");
+      if (month === "202608") return response(500);
+      return response(200, { events: [{ id: "2", date: "2026-09-02T19:00Z" }] });
+    });
+
+    const merged = await fetchEspnScoreboard("eng.1", "20260828-20260905", { fetchImpl: impl });
+    expect(merged.events.map((e) => e.id)).toEqual(["2"]);
+  });
+
+  it("fails loudly when no month answers, so the service can say so", async () => {
+    const impl = vi.fn(async () => response(400));
+    await expect(fetchEspnScoreboard("eng.1", "20260905-20260906", { fetchImpl: impl })).rejects.toThrow(
+      "ESPN upstream 400",
+    );
   });
 });
