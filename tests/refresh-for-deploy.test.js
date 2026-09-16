@@ -28,6 +28,18 @@ describe("refreshStepsForDeploy", () => {
     expect(CI_DEPLOY_STEPS).not.toContain("scripts/fetch-matches.js");
   });
 
+  // Workers Builds runs `npm run refresh:matches`, which is CI_DEPLOY_STEPS.
+  // `generated/` is never committed, so a page build left out of that list is a
+  // page that 404s in production however well it works locally.
+  it("builds every page `_redirects` points into generated/ on both paths", () => {
+    for (const steps of [CI_DEPLOY_STEPS, FULL_CRAWL_STEPS]) {
+      expect(steps).toContain("scripts/build-wc-seo-pages.mjs");
+      expect(steps.indexOf("scripts/build-wc-seo-pages.mjs")).toBeGreaterThan(
+        steps.indexOf("scripts/build-seo-pages.mjs"),
+      );
+    }
+  });
+
   it("preserves match leaves around the full local crawl", () => {
     expect(refreshStepsForDeploy({})).toEqual(FULL_CRAWL_STEPS);
     expect(FULL_CRAWL_STEPS[0]).toBe("scripts/preserve-seo-matches.mjs");
