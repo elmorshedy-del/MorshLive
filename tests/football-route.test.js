@@ -34,7 +34,7 @@ describe("football routes", () => {
       "uefa.champions_qual",
       "caf.nations_qual",
       "uefa.nations",
-      "concacaf.nations.league",
+      "fifa.friendly",
     ]);
     expect(upstream).toHaveBeenCalledTimes(8);
   });
