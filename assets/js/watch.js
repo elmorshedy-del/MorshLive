@@ -1011,6 +1011,12 @@
   // destroy/recreate the video. This is watch-page lifecycle only: NO IPTV Lab
   // source, player config, fallback, quality, or recovery logic is modified.
   const labChannelCache = new Map();
+  // The cached answer carries a signed media token that dies after
+  // TOKEN_TTL_SECONDS (6h). Caching it for the life of the page meant a tab left
+  // open longer than that reconnected forever against an expired token and got
+  // 403 every time — the failure mode of a phone that suspends a background tab
+  // and resumes it hours later. An hour is comfortably inside the token life.
+  const LAB_CHANNEL_TTL_MS = 60 * 60 * 1000;
   let lastLabPlaybackKey = "";
 
   function labChannelAlreadyHealthy(channelId) {
@@ -1021,18 +1027,16 @@
 
   async function fetchLabChannel(channelId) {
     if (!channelId) return null;
-    if (!labChannelCache.has(channelId)) {
-      labChannelCache.set(
-        channelId,
-        fetch(`/api/iptv-lab/channel?id=${encodeURIComponent(channelId)}`, { cache: "no-store" })
-          .then(async (res) => {
-            const body = await res.json().catch(() => ({}));
-            return res.ok && body.ok ? body : null;
-          })
-          .catch(() => null),
-      );
-    }
-    return labChannelCache.get(channelId);
+    const cached = labChannelCache.get(channelId);
+    if (cached && Date.now() - cached.at < LAB_CHANNEL_TTL_MS) return cached.answer;
+    const answer = fetch(`/api/iptv-lab/channel?id=${encodeURIComponent(channelId)}`, { cache: "no-store" })
+      .then(async (res) => {
+        const body = await res.json().catch(() => ({}));
+        return res.ok && body.ok ? body : null;
+      })
+      .catch(() => null);
+    labChannelCache.set(channelId, { at: Date.now(), answer });
+    return answer;
   }
 
   async function mountLabChannel() {

@@ -36,7 +36,15 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
   "assets/js/watch-loader.js": "d40237ad871bb08164150881ff0f397d8786dafb",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
-  "assets/js/watch.js": "b2a9181ee1c801b6f5d33b732402215657ea31d3",
+  // CLAUDE-STAMP 2026-09-17 — LAB-TOKEN-TTL-1
+  // fetchLabChannel cached the /api/iptv-lab/channel answer — and the signed
+  // media token inside it — for the life of the page, with no expiry, while the
+  // token itself dies after TOKEN_TTL_SECONDS (6h). A tab open past that point
+  // reconnected forever against a dead token and got 403 every time. Measured:
+  // 50 of the 69 403s across all viewers over three days came from one such
+  // long-lived mobile session. The cache entry now expires after an hour.
+  // Only that cache changed; no source, config, fallback or recovery logic.
+  "assets/js/watch.js": "e40839ef41e1eeb1969d201592584239188868f0",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
