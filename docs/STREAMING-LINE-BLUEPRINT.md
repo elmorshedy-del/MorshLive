@@ -27,6 +27,61 @@ reasoning. Where they disagreed, that is stated rather than smoothed over.
 
 ---
 
+## 0.5 The symptom, in the owner's own terms
+
+**[REPORTED — the owner, over months of watching it]** This is the observation
+every hypothesis has to satisfy, and it is not one pattern but three:
+
+| Pattern | Frequency | What it rules out |
+|---|---|---|
+| **Lab and site drain together** | most common | Anything site-only. M1–M7 are all site-only. |
+| **Only the Lab drains; the site is fine** | rarer | Anything *shared*, and anything site-only. See below. |
+| **Only beIN drains; other channels play** | rarer | Anything channel-agnostic. |
+
+Treat these as the primary evidence. They are cheap to collect, they come from
+months of observation rather than a 60-second probe, and they discriminate
+between mechanisms more sharply than anything in Appendix A.
+
+**The second pattern is the strange one, and nothing in this document explains
+it.** The Lab is the *simpler* page: no remount `setInterval`, no continuity
+guard, no premium path, no match routing, no toolbar. A fault that takes down the
+simple page while sparing the complex one cannot be any of M1–M7, and cannot be
+anything shared either — a shared cause would take both. That leaves something
+the Lab does *differently*.
+
+**[FALSIFIED 2026-09-17] It is not a config divergence.** The obvious candidate
+was that `assets/js/iptv-lab.js:589-594` duplicates the mpegts config inline
+rather than importing `window.KZ_LIVE_TS_CONFIG`, and two copies of a config is
+where drift hides. `tests/mpegts-config.test.js:57` explicitly exempts the Lab
+from the shared-config assertion, so nothing would have caught a drift. The two
+were compared by hand:
+
+| Setting | Site (`lib/mpegts-config.js`) | Lab (inline) | mpegts.js 1.8.1 default |
+|---|---|---|---|
+| `enableWorker` | `false` | `false` | `false` |
+| `enableStashBuffer` | `false` | `false` | `true` |
+| `stashInitialSize` | `128` | `128` | `65536` |
+| `enableWorkerForMSE` | `false` | *omitted* | **`false`** |
+| `liveSync` | `false` | *omitted* | **`false`** |
+| `liveBufferLatencyChasing` | `false` | *omitted* | **`false`** |
+
+The Lab omits three keys the site sets explicitly, **and all three default to
+exactly the value the site sets**. The two configs are functionally identical;
+the duplication is a maintenance hazard, not a behavioural difference. Do not
+spend time here.
+
+So the second pattern remains **unexplained**, and the difference is somewhere
+other than the player config.
+
+**Beware of reasoning from a single session.** The same drain reported on two
+different evenings may have two different causes; these three patterns are strong
+evidence that more than one mechanism is in play. A fix that resolves one pattern
+will look like it failed when the next pattern appears, and a fix that coincides
+with a quiet evening will look like it worked (§1, Sep 13). Always ask **which
+pattern** before reasoning about a report.
+
+---
+
 ## 1. The constraint that explains most failures
 
 **The provider line permits ONE concurrent stream.**
