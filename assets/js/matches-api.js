@@ -38,6 +38,24 @@
       espnSlugs: ["uefa.champions", "uefa.champions_qual"],
       leagueNames: ["UEFA Champions League", "UEFA Champions League Qualifying"],
     },
+    {
+      key: "afconq",
+      nameAr: "تصفيات كأس أمم أفريقيا",
+      espnSlugs: ["caf.nations_qual"],
+      leagueNames: ["African Cup of Nations Qualifying", "Africa Cup of Nations Qualifying"],
+    },
+    {
+      key: "unl",
+      nameAr: "دوري الأمم الأوروبية",
+      espnSlugs: ["uefa.nations"],
+      leagueNames: ["UEFA Nations League"],
+    },
+    {
+      key: "cnl",
+      nameAr: "دوري أمم الكونكاكاف",
+      espnSlugs: ["concacaf.nations.league"],
+      leagueNames: ["CONCACAF Nations League"],
+    },
   ];
   const ESPN_LEAGUES = COMPETITIONS.flatMap((competition) => competition.espnSlugs);
   const SCHEDULE_DAYS_AHEAD = 7;
