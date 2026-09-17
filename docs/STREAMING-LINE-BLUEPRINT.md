@@ -635,6 +635,64 @@ the provider is never reached. Caveats found on 2026-09-16:
 
 ---
 
+## 7b. Fan-out — the structural fix, and what is known about it
+
+The ceiling in §1 (`max_connections: 1`) is the one constraint no front-end change
+can survive. Today the worker opens **one upstream connection per viewer**, so N
+viewers need N connections against a limit of 1. Fan-out means **one upstream
+connection per channel**, shared. The provider then sees exactly one client — us —
+regardless of audience size.
+
+Facts established 2026-09-17, so the next agent does not re-derive them:
+
+**[MEASURED]** The provider's HLS is genuinely segmented, not a wrapper around a
+continuous stream. `GET` the `playbackUrl` manifest:
+
+```
+#EXT-X-VERSION:3
+#EXT-X-MEDIA-SEQUENCE:1087
+#EXT-X-ALLOW-CACHE:YES        ← the provider explicitly permits caching
+#EXT-X-TARGETDURATION:10
+#EXTINF:10.000000             ← six discrete 10 s segments, rolling
+```
+
+**[MEASURED]** Two viewers resolving the same channel receive **zero segment URLs
+in common** — six unique signed tokens each, for the same six segments. So
+`caches.default` cannot dedupe them as they stand; a cache must key on the
+*decoded upstream URL*, not the token. Combined with `Cache-Control: no-store` on
+every media response, nothing is cached today.
+
+**[VERIFIED]** The site plays `tsPlaybackUrl` through mpegts.js
+(`watch.js:1052-1069`), not the HLS path — `playbackUrl` and `rewriteManifest`
+exist and hls.js is loaded, but TS is what mounts.
+
+The consequence for choosing an approach:
+
+| | Client change needed | Provider connections |
+|---|---|---|
+| **A** cache HLS segments at the edge | **Yes** — clients must move from TS to HLS, and both players are stream-locked | ~1 per segment, but N concurrent if viewers are out of sync, so it needs request coalescing |
+| **B** Durable Object tees one upstream | **None** — clients keep requesting `/api/xtream/media/<token>` and the worker serves them from the shared stream | Exactly 1, permanently |
+| **C** repackage to HLS in R2 | Yes | 1 — but this is building a CDN |
+
+**A is the smaller diff but touches locked client files; B is more infrastructure
+and is invisible to the client.** That reverses the naive reading of "cheapest".
+
+**What fan-out fixes regardless of root cause:** viewer contention, ghost
+connections from abandoned requests, the remount loop's amplification (a remount
+re-attaches instead of opening a new upstream), and a leech pulling through our
+own proxy. Every surviving suspect in §4 is in that family.
+
+**What it does not fix:** another device using the same credentials off-platform,
+a genuinely bad provider feed (M9: measured fine), and client-side rendering
+faults. Nor does it help a lone viewer with no ghosts.
+
+**Economics first.** Ask the provider what additional connections cost before
+building any of this. More connections raise the ceiling; fan-out lowers the
+demand. Fan-out is the better engineering, a subscription upgrade is usually the
+better value, and they are not exclusive.
+
+---
+
 ## 8. Open items
 
 | Item | State |
