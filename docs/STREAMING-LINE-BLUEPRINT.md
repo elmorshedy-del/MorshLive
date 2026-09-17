@@ -200,6 +200,29 @@ env.STREAM_SIGNING_SECRET` (`:33-34`).
 `decodeMediaToken` (`:424-442`) throws `Expired media token` once past `exp`,
 which the route turns into **403** (`backend/routes/xtream.js:48-52`).
 
+#### The expired-token drain — found and fixed 2026-09-17 (`LAB-TOKEN-TTL-1`)
+
+**[MEASURED]** `fetchLabChannel` in `watch.js` cached the
+`/api/iptv-lab/channel` answer — and the signed media token inside it — for the
+**life of the page**, with no expiry, against a token that dies after 6 hours.
+A tab left open past that point reconnected forever against a dead token and got
+403 every time. **50 of the 69 403s across all viewers over three days came from
+one such session**: a phone that suspends a background tab and resumes it hours
+later.
+
+**Fixed.** The cache entry now expires after an hour (`LAB_CHANNEL_TTL_MS`),
+comfortably inside the token's life. Lock re-baselined; only that cache changed,
+no source, config, fallback or recovery logic.
+
+`tests/lab-channel-cache.test.js` pins the *invariant* rather than the constant:
+it parses both values out of the source and asserts the cache TTL stays at or
+below half the token life, so changing `TOKEN_TTL_SECONDS` cannot silently
+re-open this. It also asserts the age check itself survives — `has()` alone,
+where present-but-stale counts as a hit, is the bug it replaced.
+
+**This is a 403 mechanism, not a slot mechanism.** It made a long-lived tab fail
+permanently; it does not explain a drain on a fresh session.
+
 ### Stage 6 — the media proxy
 
 **[VERIFIED]** `backend/routes/xtream.js:44-53` → `proxyXtreamMediaSafe`
