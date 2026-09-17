@@ -32,8 +32,11 @@ describe("football routes", () => {
       "ksa.1",
       "uefa.champions",
       "uefa.champions_qual",
+      "caf.nations_qual",
+      "uefa.nations",
+      "concacaf.nations.league",
     ]);
-    expect(upstream).toHaveBeenCalledTimes(5);
+    expect(upstream).toHaveBeenCalledTimes(8);
   });
 
   it("proxies an allowlisted ESPN match summary for live detail", async () => {
