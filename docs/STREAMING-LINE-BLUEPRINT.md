@@ -801,3 +801,230 @@ better value, and they are not exclusive.
 | `alternates` is read by nobody | `resolveXtreamChannel` computes and returns it, and **zero** client code consumes it. There is no failover today — a bad feed is simply played. |
 | `alternates` contains wrong channels | **[VERIFIED]** For `bein-sports-1` the list carries `669 [FR]_BeIN_SPORTS_1_HD` and `89778 BeIN Alkass 1 HD`. The language filter sets `fr` only on `/\bfrench\b\|\bfra\b/`, neither of which matches the token `fr`, so `[FR]` reads as Arabic — Turkish gets a `tokens.includes("tr")` check that French and English never got. Alkass is a different Qatari broadcaster that passes because its name contains "bein" and a `1`. Harmless only while nothing reads the list; **fix both before building any failover on it.** |
 | Other channels never health-checked | M9 was found on beIN because that is where the complaint was. No other channel's pick has been measured, and any of them could be sorted onto a bad feed the same way. |
+
+---
+
+## Appendix A — every measurement, 2026-09-17
+
+The complete record, including the runs that produced wrong conclusions. Kept in
+full because the conclusions changed three times and a future reader needs the
+raw numbers to check the reasoning rather than inherit it.
+
+All transport runs used `scripts/diagnostics/run.mjs transport --live`, which
+pulls bytes from production with **no browser and no decoder**, via Node.
+Measured from this agent environment (datacentre connectivity), **not** from a
+phone on a mobile network. The line was confirmed `activeConnections: 0/1` before
+each run.
+
+### A.1 Channel resolution, as the site does it
+
+`GET /api/iptv-lab/channel?id=…`, live:
+
+```
+bein-sports-1  PICKED 2449   beIN_1HD_1080p          1080 h264
+        alt          46028   beIN_SPORTS_1_1080FHD   1080 h264   ← ties with the pick
+        alt          3177    beIN_1_HD720            hd   h264
+        alt          89778   BeIN Alkass 1 HD        hd   h264   ← different broadcaster
+        alt          669     [FR]_BeIN_SPORTS_1_HD   hd   h264   ← French feed
+
+thmanyah-1     PICKED 241362 Thmanayah 1 1080        1080 h264   ← sole 1080, no tie
+        alt          241359 / 243323 / 241356 / 243326
+thmanyah-2     PICKED 241363 Thmanayah 2 1080        1080 h264   ← sole 1080, no tie
+thmanyah-3     PICKED 241364 Thmanayah 3 1080        1080 h264   ← sole 1080, no tie
+```
+
+`2449` and `46028` score identically (both 1080 h264) and `Array.sort` is stable,
+so catalogue order decided which one every viewer got.
+
+### A.2 The quality ladder — 7 rungs × 35 s, all beIN Sports 1
+
+Run to test "beIN drains because it is 1080". It falsified it.
+
+| Stream | Name / quality | Mean Mbps | Quiet windows |
+|---|---|---|---|
+| `4905` | 512K, lowest | 0.02 | **died at 0.5 s** |
+| `22` | Low | 0.68 | 9 |
+| `2463` | SD | 0.02 | **died at 0.5 s** |
+| `3177` | HD720 | 5.03 | **0** |
+| `2449` | 1080p ← *the site's pick* | 3.28 | 2 |
+| `46028` | 1080FHD | 4.97 | 1 |
+| `59331` | 4K | **8.55** | **0** |
+
+Health does not track resolution. The 4K rung was the healthiest of the nine and
+the two lowest rungs died inside half a second. **Falling back to a lower rung
+would have made things worse**, which is the opposite of the intuition.
+
+### A.3 Run A — `2449` vs `3177`, 75 s each, back to back
+
+| | `2449` beIN_1HD_1080p | `3177` beIN_1_HD720 |
+|---|---|---|
+| time to first byte | 891 ms | 920 ms |
+| delivered | 24.4 MB | 34 MB |
+| mean / median / min | 2.6 / 2.1 / 0.07 Mbps | 3.63 / 2.1 / 0.11 Mbps |
+| quiet windows >1.5 s | **5** | **0** |
+
+`2449` gaps: at 1.9 s (1999 ms), 7.9 s (1985), 24.9 s (2001), 40.9 s (2013),
+58.0 s (2027).
+
+**This is the run that produced the wrong conclusion.** Five gaps within 42 ms of
+2000 ms, against a sibling feed with none, read as "this feed drops segments".
+
+### A.4 Run B — `2449`, 150 s, separate connection ~15 min later
+
+```
+ttfb 636 ms   delivered 47.5 MB   mean 2.53 / median 2.1 / min 0.46 Mbps
+quiet windows: 5
+gaps: 27.7 s (1985 ms), 38.7 s (1987), 48.7 s (1993), 130.8 s (2010), 145.8 s (1989)
+```
+
+Confirmed the uniform ~2000 ms length across a second connection — and **refuted
+the periodicity**: spacing here is 11.0 / 10.0 / 82.1 / 15.0 s, against 6.0 /
+17.0 / 16.0 / 17.1 s in Run A. Only the *duration* is fixed, never the cadence.
+An earlier claim of a "~16-17 s period" was wrong and is withdrawn.
+
+### A.5 Run C — `46028` vs `3177`, 75 s each
+
+| | `46028` beIN_SPORTS_1_1080FHD | `3177` beIN_1_HD720 (control) |
+|---|---|---|
+| time to first byte | 827 ms | 828 ms |
+| delivered | 55.4 MB | 38.2 MB |
+| mean / median / min | 5.91 / 4.19 / 0.79 Mbps | 4.08 / 4.19 / 2.1 Mbps |
+| quiet windows | **0** | **0** |
+
+The control matched its three earlier runs, so conditions were normal.
+
+### A.6 Run D — all three Thmanyah picks, 60 s each
+
+| | `241362` Thm 1 | `241363` Thm 2 | `241364` Thm 3 |
+|---|---|---|---|
+| time to first byte | 829 ms | 675 ms | 1146 ms |
+| delivered | 36.4 MB | 24.4 MB | 20.3 MB |
+| mean Mbps | 4.86 | 3.25 | 2.71 |
+| quiet windows | 1 | **8** | 2 |
+
+Gap lengths — `241362`: 2001 ms. `241363`: 1997, 2001, 2011, 1982, 2013, 2042,
+1950, 2004. `241364`: 2019, 1954.
+
+**This is the run that broke the theory.** Thmanyah is a different broadcaster
+from beIN, its picks have no scoring tie, and it showed the same ~2000 ms figure.
+Twenty-one gaps across four feeds and two broadcasters, every one between 1950
+and 2042 ms. Identical across unrelated sources means shared path, not shared
+damage.
+
+### A.7 Run E — `241363`, 90 s, delayed-or-dropped test
+
+The decisive run. Per-second delivery, Mbps:
+
+```
+ 0.81 55.2  4.19  2.1   2.1   2.1  4.19  2.1   2.1 | 4.19  5.15  2.1   2.1  4.19
+|4.19  6.29  2.1   2.1   2.1  2.48  4.19  2.1  4.19| 2.1   2.1  6.29  4.19  2.8
+ 4.19| 2.1   2.1   2.1  4.19  2.1  4.19  6.29  0.66  6.29| 4.19  4.19| 2.1  8.38
+ 4.93| 2.1   2.1   2.1   2.1 | 4.19  4.19| 2.1  6.29  0.66  4.19  2.1  6.29  2.1
+ 6.29| 2.1  6.95  2.1   2.1   2.1  4.19| 2.1  4.19  2.1 | 2.1  4.19  4.87  2.1
+ 4.19  2.1   2.1   2.1  4.19  2.1
+```
+
+Every value is a multiple of ~2.096 Mbps = **256 KiB**. Delivery is batched.
+
+Recovery in the 3 s after each gap, as a multiple of the median second:
+
+```
+ 9.8s → 2.45x    14.8s → 3.00x    23.8s → 3.00x    29.8s → 2.00x
+38.8s → 3.99x    40.8s → 3.99x    43.8s → 1.00x    47.8s → 3.00x
+49.8s → 3.00x    57.8s → 3.31x    63.8s → 2.00x    66.8s → 2.32x
+
+mean peak/median after a gap: 2.75x
+```
+
+**A catch-up burst follows every gap.** If a 2-second segment had genuinely been
+dropped, there would be nothing to catch up on. The bytes were late, never
+missing — which falsifies the dropped-segment reading outright.
+
+### A.8 Run F — four feeds, 60 s each, with the corrected metric
+
+Re-run after replacing the stall count with `bufferFloorSeconds`.
+
+| | `2449` | `46028` | `241362` | `241363` |
+|---|---|---|---|---|
+| time to first byte | 725 ms | 960 ms | 997 ms | 940 ms |
+| delivered | 21.4 MB | 41 MB | 37.5 MB | 24.7 MB |
+| mean Mbps | 2.85 | 5.47 | 5.00 | 3.29 |
+| chunk size | ~16 KiB | ~16 KiB | ~16 KiB | ~16 KiB |
+| quiet >1.5 s | 4 | 0 | 0 | **10** |
+| **prebuffer needed** | **0.08 s** | 0.16 s | 0.15 s | 0.12 s |
+| worst shortfall | 27 KiB @ 0.2 s | 105 KiB @ 0.3 s | 90 KiB @ 0.3 s | 49 KiB @ 0.2 s |
+
+Gap rhythm — `2449`: every ~17 s, each ~2002 ms, spread 22 ms. `241363`: every
+~5 s, each ~1998 ms, spread 32 ms.
+
+**The conclusion that survived.** `241363` had ten quiet windows and never put a
+player more than 0.12 s behind; `2449`, the feed that had been demoted, needs the
+least buffer of the four. No feed measured is starving the player, and the number
+of quiet windows does not predict the prebuffer requirement at all.
+
+The 16 KiB chunk size against the 256 KiB per-second quantum means one burst is
+~16 network chunks.
+
+### A.9 Browser runs — both failed for an environmental reason
+
+`run.mjs compare --stream=2449 --stream=3177 --live --seconds=75`:
+
+```
+both streams:  startup NEVER STARTED   played 0s of 75s
+               <video> present: false  media requests: 0
+```
+
+Not a feed result. The bundled headless Chromium has no H.264/AAC decoder, so
+every browser-driven scenario reports this. **Nothing about what the player does
+with the bytes has been observed in this environment** — only what arrives. This
+run also cost 150 s of the single-slot line for nothing, because the README
+advertised `compare` as the feed-comparison scenario.
+
+### A.10 mpegts.js 1.8.1 source — read, not measured
+
+`IOController._onLoaderChunkArrival`, from the dist (no source is published):
+
+```js
+if (this._enableStash) { /* accumulate, dispatch when full */ }
+else if (this._stashUsed === 0) {
+    consumed = this._dispatchChunks(chunk, byteStart);   // immediately, on arrival
+    if (consumed < chunk.byteLength) { /* keep only the unconsumable remainder */ }
+}
+```
+
+Constructor: `this._stashInitialSize = 65536`, replaced directly by a configured
+value; `this._bufferSize = Math.max(this._stashSize, 3145728)`.
+
+Conclusions: with the stash disabled every chunk is dispatched on arrival with no
+wait or timer; `stashInitialSize` is **bytes** so `128` means 128 bytes; and it is
+inert while the stash is off. See M9.
+
+### A.11 HLS viability, for §7b
+
+Manifest fetched from `playbackUrl`:
+
+```
+#EXT-X-VERSION:3
+#EXT-X-MEDIA-SEQUENCE:1087
+#EXT-X-ALLOW-CACHE:YES
+#EXT-X-TARGETDURATION:10
+#EXTINF:10.000000,      × 6 discrete segments
+```
+
+Genuinely segmented, and the provider permits caching explicitly.
+
+Two viewers resolving the same channel independently:
+
+```
+manifest tokens equal : NO
+segments v1=6  v2=6  byte-identical URLs in common = 0
+```
+
+Every viewer receives unique signed URLs for the same six segments, so
+`caches.default` cannot dedupe them unkeyed.
+
+### A.12 What each run cost the line
+
+Nine live transport runs plus one wasted browser pair, roughly 19 minutes of the
+single slot in total. Every one was taken from a real viewer. The `--live` lock
+file and the 180 s cap held throughout; no two ran concurrently.
