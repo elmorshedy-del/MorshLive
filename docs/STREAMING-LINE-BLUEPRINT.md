@@ -58,6 +58,57 @@ Peak concurrency was 5. Of 810 stream drops in that window, 751 (93%) landed in
 a contended minute — 6.4 drops/min contended vs 1.8 solo. Over 24 h, 6,976 of
 18,742 API calls returned 504.
 
+**[MEASURED] The audience, 19:00–22:00 UTC.** Needed for any sizing decision:
+
+| Evening | Viewers | Peak concurrent | Minutes with >1 |
+|---|---|---|---|
+| Sep 9 | 14 | 7 | 90% |
+| Sep 10 | 5 | 3 | 65% |
+| Sep 11 | 5 | 3 | 43% |
+| Sep 12 | 18 | 5 | 82% |
+| Sep 13 — *reported working* | 14 | **2** | **19%** |
+| Sep 14 | 3 | 2 | 60% |
+| Sep 15 | 16 | 5 | 91% |
+| Sep 16 | 15 | 6 | 83% |
+
+Sep 13 was the quietest evening of the week by a wide margin, with a comparable
+audience arriving *spread out* rather than together. A fix shipped that evening
+was credited with the improvement; the quiet line is the better explanation.
+**Do not treat one good evening as verification** — check concurrency first.
+
+### One viewer already needs more than one connection
+
+**[MEASURED]** Failure rate by how many people were on the line:
+
+| On the line | Requests | Failure rate |
+|---|---|---|
+| **1 — alone** | 3,137 | **77%** |
+| 2 | 3,565 | 52% |
+| 3 | 2,645 | 52% |
+| 4 | 1,760 | 51% |
+| 5 | 973 | 54% |
+| 6+ | 790 | 53% |
+
+A viewer alone, with `max_connections: 1` satisfied and nobody to contend with,
+failed **77%** of media requests — worse than when six people were watching, and
+the curve from 2 to 6+ is flat. Contention would climb with load. It does not.
+
+The reading that fits: **a single viewer generates more than one upstream
+connection.** The player remounts, abandons an in-flight `/api/xtream/media`
+request, the proxy has no idle watchdog (§2 Stage 6) so the abandoned fetch
+lingers, and the viewer's next request collides with their own ghost. A long solo
+session accumulates the most ghosts, which is why being alone is worst.
+
+**Consequence for buying capacity:** the second connection is not for a second
+viewer — it is what lets one viewer's reconnect coexist with their own dying
+connection. It is the highest-value unit of slack available. Covering the peaks
+in the table above, ghosts included, needs roughly 6–8.
+
+**[CAVEAT]** The failure rate is Cloudflare-log-derived, and a 504 there cannot
+be distinguished between a real upstream refusal and an abandoned client request
+being recorded. The exact figure may overstate it; the direction holds, since
+either reading requires more than one connection per viewer.
+
 ---
 
 ## 2. The path a frame takes
@@ -177,8 +228,8 @@ documented in that file:
 |---|---|---|
 | `enableWorker` | `false` | worker transmuxing is unstable upstream |
 | `enableWorkerForMSE` | `false` | needs MSE-in-Workers; turning it on blacked out iOS |
-| `enableStashBuffer` | `false` | keeps live latency down — **but see M9** |
-| `stashInitialSize` | `128` | KB; *half of one 256 KiB upstream flush* — **see M9** |
+| `enableStashBuffer` | `false` | keeps live latency down; dispatches every chunk on arrival — **not a drain cause, see M9** |
+| `stashInitialSize` | `128` | **bytes**, not KB (default is `65536`), and inert while the stash is off — **see M9** |
 | `liveSync` | `false` | upstream #276 — live streams freeze within minutes |
 
 **Consequence [VERIFIED]:** all MPEG-TS demuxing and MSE appends happen on the
@@ -225,11 +276,15 @@ the 20 s tick always misses the cache and always makes a real
 
 Ordered by current suspicion, not by discovery order.
 
-**Read M9 first** — both for what it rules out and for the mistake it records.
-It is the only entry carrying runtime measurement, and the only candidate that
-can explain a drain reproducing in the Lab as well as the site. M1–M7 remain
-plausible for the *site*, but every one of them is inferred from reading code
-and none has been instrumented. Nothing here is confirmed as *the* cause.
+**Read M9 first** — for what it rules out and for the mistake it records. It is
+the only entry carrying runtime measurement, and it eliminates the transport, the
+feeds and the player's buffer config.
+
+**No mechanism in this section is confirmed, and none of M1-M7 can explain a
+drain that reaches the Lab as well as the site** — the Lab has none of them. Every
+one of M1-M7 is inferred from reading code and not one has been instrumented. If
+the symptom includes the Lab, the shared constraint in §1 and the fix in §7b are
+the honest place to look, not this list.
 
 ### M1 — The 20-second remount loop
 
@@ -414,7 +469,7 @@ explains why one card drains and another does not — but it shapes what a drain
 propagates a cancel, so every duplicated or abandoned mount costs more than it
 did while `XTREAM-IDLE-WATCHDOG-1` was in place.
 
-### M9 — Bursty delivery, and the shallow buffer that meets it  ← leading candidate
+### M9 — Bursty delivery is normal, and nothing here is the drain  ← read first
 
 **[RETRACTED 2026-09-17]** An earlier version of this entry claimed, as
 **[MEASURED]**, that the provider drops two-second segments and that beIN Sports
@@ -457,32 +512,46 @@ excellent connectivity. It establishes that the *origin and the Worker* deliver
 fine; it says nothing about a phone on a congested mobile network, which is what
 most viewers are on. Last-mile delivery remains unmeasured.
 
-**[THEORY] What is left, and why it fits.** Both players disable the input
-stash buffer and set it smaller than a single flush:
+**[FALSIFIED 2026-09-17] The stash buffer is not the cause either.** Both
+players disable it (`assets/js/mpegts-config.js:11` for the site via
+`window.KZ_LIVE_TS_CONFIG`; `assets/js/iptv-lab.js:593` for the Lab, duplicated
+inline), and since that is the one thing the Lab and the site share, it was the
+only candidate that could explain a drain hitting both at once. It does not,
+and this was settled by reading mpegts.js 1.8.1 rather than by measuring.
+
+`IOController._onLoaderChunkArrival` branches on `_enableStash`. With the stash
+disabled it takes the `_stashUsed === 0` path:
 
 ```js
-// assets/js/mpegts-config.js:11  (the site, via window.KZ_LIVE_TS_CONFIG)
-// assets/js/iptv-lab.js:593      (the Lab, duplicated inline)
-enableStashBuffer: false,
-stashInitialSize: 128,            // KB — half of one 256 KiB flush
+} else if (this._stashUsed === 0) {
+    consumed = this._dispatchChunks(chunk, byteStart);   // immediately, on arrival
 ```
 
-mpegts.js warns that disabling the stash "may stall if there's network
-jittering". `lib/mpegts-config.js` dismisses that warning on the stated premise
-that the feed "reaches us over one long-lived proxied connection rather than the
-open internet" — and the delivery measured above is exactly the bursty arrival
-the warning is about. The premise is false; whether the consequence follows is
-**not established**.
+Every chunk is handed to the demuxer the moment it lands. There is no
+accumulation, no wait and no timer anywhere on that path; only bytes the demuxer
+could not consume (a partial TS packet) are retained for the next call. So
+disabling the stash is the **lowest-latency** path, and it puts data into the
+playback buffer *sooner* than a stash would, because a stash holds bytes back.
+It cannot produce a drain from bursty delivery — it is the configuration best
+suited to it. The upstream warning it overrides ("may stall if there's network
+jittering") is about trickling connections where dispatching tiny fragments is
+wasteful, not about bursts that arrive in full.
 
-This is the only candidate that explains the owner's repeated report that the
-drain hits **the Lab and the site together**. The Lab has no `setInterval`, no
-continuity guard, no premium path — none of M1-M7. The mpegts config is the one
-thing the two share.
+Two corrections that came out of the same read, both of which this document
+previously got wrong:
 
-**To confirm or kill it**, a browser that can decode H.264/AAC is required, which
-the agent environment does not have (§6 Step 4). Until someone runs that, this
-stays a theory. Do not "fix" it on the strength of the argument alone — that is
-precisely the error this entry documents.
+- **`stashInitialSize` is in bytes in this build**, not KB. The constructor sets
+  `this._stashInitialSize = 65536` and a configured value replaces it directly,
+  so `128` means 128 *bytes*. An earlier revision of this file called it "128 KB,
+  half of one 256 KiB flush". That was wrong twice over.
+- **It is inert while the stash is off.** It only sizes the leftover-remainder
+  path, and the backing allocation is `Math.max(_stashSize, 3145728)` — 3 MB
+  regardless.
+
+**So nothing in §4 currently explains a drain that reaches the Lab as well as the
+site.** M1-M7 are site-only. That is an open question, not a solved one, and the
+honest place to look next is §1: the one-connection ceiling is shared by both,
+and §7b is the structural answer to it.
 
 **Method, for the next agent.** Counting quiet seconds is **not** a health metric
 on this transport; it measures burstiness. Use `bufferFloorSeconds` (prebuffer
@@ -702,7 +771,8 @@ better value, and they are not exclusive.
 | M3 accumulation | Predicted from code, never measured. |
 | Idle watchdog (M7) | Absent since `ae812e3` was reverted. Not scheduled. |
 | Reconnect cap (M6) | Uncapped after first play. Not scheduled. |
-| M9 stash-buffer theory | The bursty delivery is measured and the config premise is false. Whether the shallow stash actually stalls is **unconfirmed** and needs a browser that can decode H.264. |
+| What explains a Lab + site drain | **Nothing in §4 does.** The stash-buffer theory was the only candidate and is falsified (M9). M1-M7 are site-only. Open. |
+| Player-side behaviour under a real decoder | Every browser-driven scenario reports NEVER STARTED here — no H.264/AAC in the bundled Chromium. Nothing about what the *player* does with the bytes has been observed, only what arrives. |
 | Last-mile delivery | Every transport measurement so far is from a datacentre. Nothing is known about delivery to a phone on a mobile network, which is what most viewers use. |
 | A wrong `[MEASURED]` claim shipped | M9's first version asserted dropped segments and drove a change to a stream-locked file. Reverted. The metric that caused it (counting quiet seconds) is replaced by `bufferFloorSeconds`. |
 | `alternates` is read by nobody | `resolveXtreamChannel` computes and returns it, and **zero** client code consumes it. There is no failover today — a bad feed is simply played. |

@@ -9,7 +9,22 @@ node scripts/diagnostics/run.mjs page      --match=espn-esp.1-401882871
 node scripts/diagnostics/run.mjs channel   --channel=bein-sports-1 --live
 node scripts/diagnostics/run.mjs stream    --stream=74006 --live
 node scripts/diagnostics/run.mjs compare   --stream=74006 --stream=59331 --live
+node scripts/diagnostics/run.mjs transport --stream=74006 --stream=59331 --live
 ```
+
+## Which scenario — read before a live run
+
+`page`, `channel`, `stream` and `compare` drive a **real browser**, so they answer
+"what does the page do". They need a browser that can decode H.264/AAC, and the
+bundled headless Chromium usually cannot. When it cannot, every one of them
+reports `NEVER STARTED` with no media requests, which reads as a dead feed and is
+not.
+
+`transport` uses **no browser and no decoder**. It asks only whether bytes arrive
+and whether a player could keep up. To compare two feeds' health, that is the one
+you want. Both scenarios accept `--stream` twice, so reaching for the wrong one
+fails by returning empty results rather than an error — it has already cost one
+150-second run against a line that has exactly one slot.
 
 | Flag | Meaning |
 |---|---|
@@ -85,13 +100,37 @@ side of a drain, visible without guessing.
 
 ## Comparing two feeds
 
-`compare` runs each stream sequentially, never together, and prints them side by
-side. Use it to hold everything constant except the provider feed:
+Use `transport`. It runs each stream sequentially, never together, and prints
+them side by side, holding everything constant except the provider feed:
 
 ```
-node scripts/diagnostics/run.mjs compare --stream=74006 --stream=59331 --live --seconds=60
+node scripts/diagnostics/run.mjs transport --stream=74006 --stream=59331 --live --seconds=60
 ```
 
-`74006` and `59331` are both beIN Sports 1 from the same provider category —
-same content, different feed. If one is clean and the other is not, the problem
-is that feed, not our code.
+Both are beIN Sports 1 from the same provider category — same content, different
+feed. Running a sibling feed back-to-back is what separates "the stream is bad"
+from "this feed is bad", and it rules out the network, the Worker and this client
+in one go.
+
+### Read the prebuffer figure, not the stall count
+
+**`quiet >1.5s` is not a health metric on this transport.** The provider does not
+trickle bytes at the playback rate — it flushes roughly 256 KiB at a time, so a
+perfectly healthy feed spends whole seconds delivering nothing and then catches
+up in a burst. Counting those windows as stalls produced a confident, wrong
+diagnosis in September 2026: gaps identical at ~2000 ms across feeds from two
+unrelated broadcasters were read as dropped segments when they were the flush
+interval. See M9 in `docs/STREAMING-LINE-BLUEPRINT.md`.
+
+**`prebuffer needed`** is the number that means something. It models a leaky
+bucket over the real arrival times: draining at the feed's own bitrate, how far
+behind did the player ever fall? Every beIN and Thmanyah feed measured so far
+needs between 0.08 s and 0.16 s — nothing is starving the player.
+
+`gap rhythm` is reported when gaps are regular. Uniform *length* means a clock
+(a flush interval, a timeout, a retry); scattered lengths mean congestion.
+
+One limit to state whenever quoting these numbers: they are measured from this
+environment's network, not from a phone on a mobile connection. They establish
+that the origin and the Worker deliver fine, and say nothing about the last
+mile.
