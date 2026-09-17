@@ -177,8 +177,8 @@ documented in that file:
 |---|---|---|
 | `enableWorker` | `false` | worker transmuxing is unstable upstream |
 | `enableWorkerForMSE` | `false` | needs MSE-in-Workers; turning it on blacked out iOS |
-| `enableStashBuffer` | `false` | keeps live latency down |
-| `stashInitialSize` | `128` | measured good |
+| `enableStashBuffer` | `false` | keeps live latency down — **but see M9** |
+| `stashInitialSize` | `128` | KB; *half of one 256 KiB upstream flush* — **see M9** |
 | `liveSync` | `false` | upstream #276 — live streams freeze within minutes |
 
 **Consequence [VERIFIED]:** all MPEG-TS demuxing and MSE appends happen on the
@@ -225,11 +225,11 @@ the 20 s tick always misses the cache and always makes a real
 
 Ordered by current suspicion, not by discovery order.
 
-**Read M9 first.** It is the only entry confirmed by measurement, and it is the
-only one that can explain a drain that also reproduces in the Lab. M1–M7 remain
+**Read M9 first** — both for what it rules out and for the mistake it records.
+It is the only entry carrying runtime measurement, and the only candidate that
+can explain a drain reproducing in the Lab as well as the site. M1–M7 remain
 plausible for the *site*, but every one of them is inferred from reading code
-and none has been instrumented. Do not spend a session on M1 before checking
-whether the feed the viewer is actually on delivers its bytes.
+and none has been instrumented. Nothing here is confirmed as *the* cause.
 
 ### M1 — The 20-second remount loop
 
@@ -414,51 +414,81 @@ explains why one card drains and another does not — but it shapes what a drain
 propagates a cancel, so every duplicated or abandoned mount costs more than it
 did while `XTREAM-IDLE-WATCHDOG-1` was in place.
 
-### M9 — The provider feed itself drops segments  ← confirmed for beIN, fixed
+### M9 — Bursty delivery, and the shallow buffer that meets it  ← leading candidate
 
-**[MEASURED 2026-09-17]** The first drain mechanism on this list confirmed by
-measurement rather than inferred from code. It is also the only one that
-explains a drain reproducing **in the Lab**, since the Lab has no `setInterval`,
-no continuity guard and none of M1–M7.
+**[RETRACTED 2026-09-17]** An earlier version of this entry claimed, as
+**[MEASURED]**, that the provider drops two-second segments and that beIN Sports
+1 was pinned to a broken feed. **That was wrong**, the resolver change it
+justified has been reverted, and the reasoning is kept here because the mistake
+is instructive and cheap to repeat.
 
-Pulled with `scripts/diagnostics/run.mjs transport` — bytes only, no browser and
-no decoder, so nothing in the player can be responsible. All three feeds are
-beIN Sports 1, through the same path, within one hour:
+What was seen: total delivery gaps of 1985-2042 ms, twenty-one of them across
+feeds from two unrelated broadcasters. Uniform length looked like a dropped
+segment. What was actually happening: **this transport does not trickle bytes at
+the playback rate — it flushes roughly 256 KiB at a time** (in ~16 KiB network
+chunks), so a perfectly healthy feed spends whole seconds delivering nothing and
+then catches up. The gaps were the flush interval, which is why they were
+identical across unrelated broadcasters — that should have been the clue, and it
+was read as corroboration instead.
 
-| feed | measured | delivery gaps | rate |
+The tell that settled it: the seconds after each quiet window carry a **2.75x
+catch-up burst**. The bytes were late, never missing.
+
+**[MEASURED 2026-09-17]** Modelled as a leaky bucket over real arrival times —
+draining at the feed's own bitrate, how far behind did the player ever fall?
+
+| feed | mean | quiet windows >1.5s | prebuffer needed |
 |---|---|---|---|
-| `2449` `beIN_1HD_1080p` ← the site's pick | 260 s | **12** (1 per ~22 s) | 2.53–3.3 Mbps |
-| `46028` `beIN_SPORTS_1_1080FHD` | 110 s | 1 | 4.97–5.91 Mbps |
-| `3177` `beIN_1_HD720` | 220 s | **0** | 4.08–5.09 Mbps |
+| `2449` beIN_1HD_1080p | 2.85 Mbps | 4 | **0.08 s** |
+| `46028` beIN_SPORTS_1_1080FHD | 5.47 Mbps | 0 | 0.16 s |
+| `241362` Thmanayah 1 | 5.00 Mbps | 0 | 0.15 s |
+| `241363` Thmanayah 2 | 3.29 Mbps | 10 | 0.12 s |
 
-Every one of `2449`'s gaps measured between **1985 and 2027 ms** — a 42 ms
-spread across ten samples on two separate connections a quarter-hour apart.
-Congestion and loss produce gaps of whatever length recovery happens to take.
-A fixed duration is a dropped two-second segment at the source.
+`241363` had ten quiet windows and still never put a player more than 0.12 s
+behind. **No feed measured is starving the player**, and the feed with the most
+quiet windows needs the least buffer of the four.
 
-`3177` pulled back-to-back against it in the same run never gapped, which rules
-out the network, the Worker, the token and the measuring client together.
+**So the transport is not the drain.** Feed choice, resolution and provider
+health are all ruled out as causes — the earlier ladder test had already
+falsified resolution (§5), and this rules out the rest.
 
-**Why it hit beIN only.** `2449` and `46028` parse identically — both 1080
-h264 — so `score()` returned the same number for both and `Array.sort` is
-stable, leaving the provider's catalogue order to decide. The site got `2449` by
-accident. No other channel happened to have a broken feed sorted first.
+**[LIMIT — read before trusting the table]** Measured from a datacentre with
+excellent connectivity. It establishes that the *origin and the Worker* deliver
+fine; it says nothing about a phone on a congested mobile network, which is what
+most viewers are on. Last-mile delivery remains unmeasured.
 
-**Fixed** in `lib/xtream-channel-map.js` by `MEASURED_UNRELIABLE`, which demotes
-one stream id. Viewers keep 1080 and roughly double the throughput. Lock
-re-baselined as `BEIN-FEED-DEMOTE-1`.
+**[THEORY] What is left, and why it fits.** Both players disable the input
+stash buffer and set it smaller than a single flush:
 
-**[THEORY — not proven]** That these 2 s delivery gaps are what a viewer
-experiences as the drain. It fits: a live player holding ~2 s of buffer empties
-exactly when delivery pauses 2 s. It is **not** closed, because the headless
-Chromium in the agent environment has no H.264/AAC and cannot play a real TS
-feed to confirm it (§6 Step 4). Treat the link as strong but open.
+```js
+// assets/js/mpegts-config.js:11  (the site, via window.KZ_LIVE_TS_CONFIG)
+// assets/js/iptv-lab.js:593      (the Lab, duplicated inline)
+enableStashBuffer: false,
+stashInitialSize: 128,            // KB — half of one 256 KiB flush
+```
 
-**Generalisation for the next agent.** Before blaming any code path, measure
-whether the bytes arrive. `transport` does not touch the player, so a fault it
-finds cannot be in the player. Run it against the site's pick *and* its
-alternates — a healthy sibling feed is what turns "the stream is bad" into
-"this feed is bad and that one is not".
+mpegts.js warns that disabling the stash "may stall if there's network
+jittering". `lib/mpegts-config.js` dismisses that warning on the stated premise
+that the feed "reaches us over one long-lived proxied connection rather than the
+open internet" — and the delivery measured above is exactly the bursty arrival
+the warning is about. The premise is false; whether the consequence follows is
+**not established**.
+
+This is the only candidate that explains the owner's repeated report that the
+drain hits **the Lab and the site together**. The Lab has no `setInterval`, no
+continuity guard, no premium path — none of M1-M7. The mpegts config is the one
+thing the two share.
+
+**To confirm or kill it**, a browser that can decode H.264/AAC is required, which
+the agent environment does not have (§6 Step 4). Until someone runs that, this
+stays a theory. Do not "fix" it on the strength of the argument alone — that is
+precisely the error this entry documents.
+
+**Method, for the next agent.** Counting quiet seconds is **not** a health metric
+on this transport; it measures burstiness. Use `bufferFloorSeconds` (prebuffer
+required), which is what `run.mjs transport` now reports. Two readings that agree
+because they share a wrong assumption are not corroboration.
+
 
 ### M8 — External leech (historical, resolved)
 
@@ -486,6 +516,7 @@ counts — the leech was only 46 requests for 5.21 GB in one six-hour window.
 | `iptv-premium-card-click.js`, `psg-live-hotfix.js`, `railway-freeze-diagnostics.js`, `iptv-epg-auto.js` | **[VERIFIED]** Not in any live bootstrap (`i18n.js:66-78`), asserted by `tests/iptv-rollout-contract.test.js:169`. Note the same bootstrap gates `iptv-auto.js` behind `if (isWatchPage)` (`i18n.js:73`). |
 | A card resolving to a different channel than it displays | **[VERIFIED]** Resolution is deterministic (§2 Stage 4). Two cards with the same `channelId` get the same stream row. |
 | "The gold button is gone, so the premium code did not run" | **[MEASURED]** False — see M2. The normalizer eats the styling; the code ran. |
+| "The provider is under-delivering / dropping segments" | **[MEASURED 2026-09-17]** False for every feed measured. Modelled against real arrival times, no feed put a player more than **0.16 s** behind — see M9. Quiet windows are the upstream flush interval, followed by a 2.75x catch-up burst. Caveat: measured from a datacentre, so last-mile delivery to a phone is still unknown. |
 | "beIN drains because it runs at 1080 while the rest of the Lab is 720" | **[MEASURED 2026-09-17]** False, twice over. A nine-rung ladder across every beIN Sports 1 feed found health does not track resolution at all: the **4K** rung was the healthiest measured (8.55 Mbps, 0 stalls) while the two *lowest* rungs (512K, SD) died inside 0.5 s and the Low rung stalled 9 times. Then `46028`, a **1080** feed, measured 0 gaps at 5.91 Mbps — nearly twice the throughput of the 1080 feed that was failing. The fault is per-feed (M9), not per-resolution. Falling *back* to a lower rung would have made it worse. |
 | "The heavy feed collapses because many viewers hit one stream" | **[MEASURED]** False — the dose-response runs the wrong way: 1 viewer showed 77% failure, and 2–6+ viewers sat flat at ~52%. Contention would climb with load. See also the note on `max_connections: 1` in §1. |
 
@@ -613,7 +644,9 @@ the provider is never reached. Caveats found on 2026-09-16:
 | M3 accumulation | Predicted from code, never measured. |
 | Idle watchdog (M7) | Absent since `ae812e3` was reverted. Not scheduled. |
 | Reconnect cap (M6) | Uncapped after first play. Not scheduled. |
-| M9 → viewer link | The 2 s delivery gap is measured; that it *is* the visible drain is inference. Needs a browser that can decode H.264. |
+| M9 stash-buffer theory | The bursty delivery is measured and the config premise is false. Whether the shallow stash actually stalls is **unconfirmed** and needs a browser that can decode H.264. |
+| Last-mile delivery | Every transport measurement so far is from a datacentre. Nothing is known about delivery to a phone on a mobile network, which is what most viewers use. |
+| A wrong `[MEASURED]` claim shipped | M9's first version asserted dropped segments and drove a change to a stream-locked file. Reverted. The metric that caused it (counting quiet seconds) is replaced by `bufferFloorSeconds`. |
 | `alternates` is read by nobody | `resolveXtreamChannel` computes and returns it, and **zero** client code consumes it. There is no failover today — a bad feed is simply played. |
 | `alternates` contains wrong channels | **[VERIFIED]** For `bein-sports-1` the list carries `669 [FR]_BeIN_SPORTS_1_HD` and `89778 BeIN Alkass 1 HD`. The language filter sets `fr` only on `/\bfrench\b\|\bfra\b/`, neither of which matches the token `fr`, so `[FR]` reads as Arabic — Turkish gets a `tokens.includes("tr")` check that French and English never got. Alkass is a different Qatari broadcaster that passes because its name contains "bein" and a `1`. Harmless only while nothing reads the list; **fix both before building any failover on it.** |
 | Other channels never health-checked | M9 was found on beIN because that is where the complaint was. No other channel's pick has been measured, and any of them could be sorted onto a bad feed the same way. |

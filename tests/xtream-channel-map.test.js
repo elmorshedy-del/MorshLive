@@ -36,15 +36,9 @@ describe("against the real catalogue", () => {
     }
   });
 
-  it("picks an Arabic H.264 1080p feed for beIN Sports 1, not a decoy", () => {
-    // Was pinned to 2449 until 2026-09-17, when that feed was measured dropping
-    // a two-second segment every ~22s; it is demoted now. The claim this test
-    // exists to make is "a real Arabic 1080p H.264 feed rather than an English,
-    // French, Turkish or HEVC decoy" — which stream id satisfies it is a
-    // provider-health question, covered separately below.
+  it("picks the H.264 1080p feed for beIN Sports 1, not a decoy", () => {
     const hit = resolveXtreamChannel("bein-sports-1", CATALOG);
-    expect(hit).toMatchObject({ streamId: "46028", quality: "1080", codec: "h264" });
-    expect(parseXtreamChannelName(hit.name)).toMatchObject({ language: "ar", number: 1, tier: "sports" });
+    expect(hit).toMatchObject({ streamId: "2449", name: "beIN_1HD_1080p", codec: "h264" });
   });
 
   it("gives every channel a distinct stream — the mixup this replaces", () => {
@@ -247,54 +241,5 @@ describe("edge cases", () => {
       expect(resolveXtreamChannel("thmanyah-1", CATALOG)).toBeNull();
       expect(resolveXtreamChannel("bein-sports-1", THMANYAH_CATALOG)).toBeNull();
     });
-  });
-});
-
-describe("feeds measured to deliver badly are demoted", () => {
-  // The live beIN Sports 1 shortlist. 2449 and 46028 parse identically —
-  // both 1080 h264 — so before the penalty the winner was whichever the
-  // provider happened to list first, and that was the broken one.
-  const LIVE_BEIN_1 = [
-    { streamId: "2449", name: "beIN_1HD_1080p" },
-    { streamId: "46028", name: "beIN_SPORTS_1_1080FHD" },
-    { streamId: "3177", name: "beIN_1_HD720" },
-  ];
-
-  it("does not hand viewers the feed measured to drop segments", () => {
-    // 2449: 12 total-delivery gaps in 260s, every one 1985-2027 ms.
-    expect(resolveXtreamChannel("bein-sports-1", LIVE_BEIN_1).streamId).not.toBe("2449");
-  });
-
-  it("breaks the tie towards the healthy feed of the same quality", () => {
-    // 46028 measured 0 gaps and 5.91 Mbps against 2449's 2.53. Demoting must
-    // cost nothing in quality: the viewer still gets 1080 h264.
-    const hit = resolveXtreamChannel("bein-sports-1", LIVE_BEIN_1);
-    expect(hit.streamId).toBe("46028");
-    expect(hit.quality).toBe("1080");
-    expect(hit.codec).toBe("h264");
-  });
-
-  it("demotes rather than drops, so a lone bad feed still plays", () => {
-    // A gappy stream beats a black screen when it is all the provider has.
-    const only = resolveXtreamChannel("bein-sports-1", [{ streamId: "2449", name: "beIN_1HD_1080p" }]);
-    expect(only).not.toBeNull();
-    expect(only.streamId).toBe("2449");
-  });
-
-  it("keeps a demoted H.264 feed above any HEVC feed", () => {
-    // HEVC does not decode in Chrome's MediaSource, so it is not a fallback —
-    // the penalty must never be large enough to promote one.
-    const ranked = rankXtreamCandidates("bein-sports-1", [
-      { streamId: "2449", name: "beIN_1HD_1080p" },
-      { streamId: "7053", name: "beIN_Sport_1_H265" },
-    ]);
-    expect(ranked.map((r) => r.streamId)).toEqual(["2449", "7053"]);
-  });
-
-  it("leaves every other channel's ranking untouched", () => {
-    // The penalty is keyed to one stream id, not to a quality or a name shape.
-    for (const id of EURO_CHANNELS) {
-      expect(resolveXtreamChannel(id, CATALOG), `${id} must still resolve`).not.toBeNull();
-    }
   });
 });

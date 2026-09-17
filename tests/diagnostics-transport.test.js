@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { gapRhythm } from "../scripts/diagnostics/transport.mjs";
+import { bufferFloorSeconds, gapRhythm } from "../scripts/diagnostics/transport.mjs";
 
 /**
  * These pin the two things the transport probe got wrong in the field, both of
@@ -60,5 +60,66 @@ describe("gapRhythm", () => {
     ).toBeNull();
     expect(gapRhythm([])).toBeNull();
     expect(gapRhythm(null)).toBeNull();
+  });
+});
+
+describe("bufferFloorSeconds", () => {
+  const RATE = 131072; // bytes/sec — 1 Mbit/s, a round number to reason in
+
+  /**
+   * Delivery that keeps exact pace with RATE in `chunk`-sized flushes, with one
+   * silence of `silenceSec` starting at `atSec`. The first flush after the
+   * silence carries the whole backlog, so the feed is never short overall —
+   * only late. That is the real phenomenon: bytes delayed, not lost.
+   */
+  const withSilence = ({ chunk = 262144, totalSec = 60, atSec = null, silenceSec = 0 }) => {
+    const everyMs = (chunk / RATE) * 1000;
+    const arrivals = [];
+    for (let ms = 0; ms <= totalSec * 1000; ms += everyMs) {
+      const sec = ms / 1000;
+      if (atSec !== null && sec > atSec && sec <= atSec + silenceSec) continue;
+      // Cumulative is always what *should* have arrived by now.
+      arrivals.push([ms, (ms / everyMs + 1) * chunk]);
+    }
+    return arrivals;
+  };
+
+  it("asks nothing of delivery that keeps pace, however batched", () => {
+    // 256 KiB flushes arriving exactly when needed. Chunky, but never late —
+    // and "chunky" was precisely what the old stall count punished.
+    const floor = bufferFloorSeconds(withSilence({}), RATE);
+    expect(floor.seconds).toBeLessThan(0.1);
+  });
+
+  it("charges a silence its full length in buffer", () => {
+    // Four seconds of nothing means a player draining continuously is four
+    // seconds short by the time delivery resumes.
+    const floor = bufferFloorSeconds(withSilence({ atSec: 20, silenceSec: 4 }), RATE);
+    expect(floor.seconds).toBeGreaterThan(3.5);
+    expect(floor.seconds).toBeLessThan(4.6);
+  });
+
+  it("scales with the silence, which counting quiet seconds did not", () => {
+    // The bug this replaces: a fixed 1.5s threshold counted both of these as
+    // exactly one stall and could not tell that one is twice as demanding.
+    const short = bufferFloorSeconds(withSilence({ atSec: 20, silenceSec: 2 }), RATE);
+    const long = bufferFloorSeconds(withSilence({ atSec: 20, silenceSec: 6 }), RATE);
+    expect(long.seconds).toBeGreaterThan(short.seconds * 2);
+  });
+
+  it("points at when the buffer was emptiest", () => {
+    const floor = bufferFloorSeconds(withSilence({ atSec: 20, silenceSec: 4 }), RATE);
+    // The worst instant is the resumption — the first flush after the silence,
+    // which here is 26s: the 22s and 24s flushes never happened.
+    expect(floor.atSec).toBeGreaterThanOrEqual(20);
+    expect(floor.atSec).toBeLessThanOrEqual(26);
+    expect(floor.bytes).toBeGreaterThan(0);
+  });
+
+  it("declines to model what it cannot", () => {
+    expect(bufferFloorSeconds([], RATE)).toBeNull();
+    expect(bufferFloorSeconds(null, RATE)).toBeNull();
+    // A rate of zero makes the model meaningless rather than infinite.
+    expect(bufferFloorSeconds(withSilence({}), 0)).toBeNull();
   });
 });

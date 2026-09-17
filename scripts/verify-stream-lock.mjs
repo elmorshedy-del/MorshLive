@@ -64,16 +64,7 @@ const LOCKED_FILES = Object.freeze({
   // Advanced past 8fe04a34 on 2026-09-08: taught the Thmanyah channels so
   // /api/iptv-lab/channel can resolve thmanyah-1/2/3. Every other entry below
   // is still the 8fe04a34 byte state.
-  // CLAUDE-STAMP 2026-09-17 — BEIN-FEED-DEMOTE-1
-  // beIN Sports 1 had two identically-scoring candidates, 2449 and 46028, both
-  // 1080 h264, so which one viewers got was decided by catalogue order. 2449 is
-  // the broken one: measured over 260s it dropped 12 total-delivery gaps, every
-  // one between 1985 and 2027 ms — the shape of a dropped two-second segment,
-  // not congestion. 46028 measured 0 gaps at 5.91 Mbps against 2449's 2.53, and
-  // 3177 run back-to-back never gapped, which rules out the network, the Worker
-  // and the measuring client. Only the ranking changed: one stream id is
-  // penalised by name, no source, token, proxy, fallback or recovery logic.
-  "lib/xtream-channel-map.js": "7ffbe5995b2168d099ba7f9a033c580384278f38",
+  "lib/xtream-channel-map.js": "3e27c8855765a389faeee9dd2ec038a589261f65",
   "lib/xtream-client.js": "f86e5b6a538ec08d7ba226f7686fdfdc9dbcfd10",
   "worker.js": "637314e36ca4fa881fe5d0cfd1f5504e9d985655",
   "wrangler.toml": "663088846e92661a19241e1c0c7133ec5873eeaa",

@@ -213,7 +213,8 @@ async function main() {
       const r = t.result;
       console.log(
         `  ${t.label.padEnd(18)} ${String(r.megabytes ?? "-").padStart(7)} MB  ` +
-          `mean ${String(r.meanMbps ?? "-").padStart(6)} Mbps  stalls ${String(r.stallCount ?? "-").padStart(3)}` +
+          `mean ${String(r.meanMbps ?? "-").padStart(6)} Mbps  ` +
+          `needs ${String(r.bufferFloor?.seconds ?? "-").padStart(5)}s prebuffer` +
           (r.error ? `  ${r.error}` : ""),
       );
     }

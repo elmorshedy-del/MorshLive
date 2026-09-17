@@ -16,6 +16,56 @@
 
 const MEDIA_RE = /\/api\/xtream\/media\//;
 
+/**
+ * How much prebuffer would a player have needed to never run dry?
+ *
+ * This replaces counting quiet seconds, which was actively misleading. This
+ * transport does not trickle bytes at the playback rate — it flushes roughly
+ * 256 KiB chunks on a ~2 s cycle, so a perfectly healthy feed spends whole
+ * seconds delivering nothing and then catches up in a burst. Counting those
+ * quiet windows as "stalls" rated bursty-but-fine feeds as broken and produced
+ * a confident, wrong diagnosis (gaps identical at ~2000 ms across unrelated
+ * broadcasters were the flush interval, not dropped segments).
+ *
+ * The honest question is the one the player faces: draining the buffer at the
+ * stream's own bitrate, did what arrived ever fall behind what was consumed?
+ * Model a leaky bucket over the real arrival times and find the deepest
+ * shortfall. That shortfall, in seconds of video, is the prebuffer required to
+ * play without a visible stall — directly comparable between feeds, and
+ * directly comparable to what the player is configured to hold.
+ *
+ * Returns null when there is too little data to model.
+ */
+export function bufferFloorSeconds(arrivals, meanBytesPerSec) {
+  if (!Array.isArray(arrivals) || arrivals.length < 8 || !(meanBytesPerSec > 0)) return null;
+
+  // Consume at the feed's own average rate: over a long pull that is by
+  // definition the rate the content plays at.
+  //
+  // Each arrival is scored against what was in hand *before* it landed. That
+  // instant — the tick before a delayed chunk arrives — is when the buffer is
+  // emptiest, and scoring against the post-arrival total instead reported zero
+  // shortfall for a feed that had just been silent for four seconds.
+  let deepest = 0;
+  let deepestAtMs = 0;
+  let held = 0;
+  for (const [ms, cumulative] of arrivals) {
+    const consumed = (ms / 1000) * meanBytesPerSec;
+    const shortfall = consumed - held;
+    if (shortfall > deepest) {
+      deepest = shortfall;
+      deepestAtMs = ms;
+    }
+    held = cumulative;
+  }
+
+  return {
+    seconds: +(deepest / meanBytesPerSec).toFixed(2),
+    bytes: Math.round(deepest),
+    atSec: +(deepestAtMs / 1000).toFixed(1),
+  };
+}
+
 /** Ask the site to resolve and sign a playable URL. Minting is not playback. */
 export async function resolvePlayable({ origin, channel, portal, stream }) {
   const url = channel
@@ -61,6 +111,8 @@ export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 
   let longestGapMs = 0;
   const gaps = [];
   const perSecond = new Map();
+  /** (ms since first byte, cumulative bytes) — the input to the buffer model. */
+  const arrivals = [];
   let status = null;
   let error = null;
 
@@ -91,6 +143,7 @@ export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 
       }
       lastChunkAt = now;
       total += chunk.length;
+      arrivals.push([now - started - firstByteAt, total]);
       const sec = Math.floor((now - started) / 1000);
       perSecond.set(sec, (perSecond.get(sec) || 0) + chunk.length);
     }
@@ -127,7 +180,24 @@ export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 
     longestGapMs,
     gaps: gaps.slice(0, 12),
     perSecondMbps: rates.map(mbps),
+    // The metric that matters. `stallCount` above is retained only because it
+    // describes the delivery shape; it is NOT a health measure on this
+    // transport — see bufferFloorSeconds.
+    bufferFloor: bufferFloorSeconds(arrivals, elapsed ? total / elapsed : 0),
+    chunkBytes: medianChunkSize(arrivals),
   };
+}
+
+/**
+ * Typical chunk size. Worth printing because it is what identifies the delivery
+ * as flushed rather than streamed: a tight cluster around a round number (256
+ * KiB here) means the upstream is batching, and quiet gaps are expected.
+ */
+function medianChunkSize(arrivals) {
+  if (!Array.isArray(arrivals) || arrivals.length < 4) return null;
+  const sizes = arrivals.slice(1).map(([, cumulative], i) => cumulative - arrivals[i][1]);
+  sizes.sort((a, b) => a - b);
+  return sizes[sizes.length >> 1];
 }
 
 /**
@@ -184,11 +254,25 @@ export function formatTransport(label, r, meta) {
   lines.push(`  time to first byte : ${r.ttfbMs} ms`);
   lines.push(`  delivered          : ${r.megabytes} MB in ${r.seconds}s`);
   lines.push(`  rate               : mean ${r.meanMbps} Mbps   median ${r.medianMbps}   min ${r.minMbps}`);
-  lines.push(`  stalls (>1.5s idle): ${r.stallCount}${r.stallCount ? `   longest ${r.longestGapMs} ms` : ""}`);
-  if (r.gaps.length) lines.push(`  gap detail         : ${JSON.stringify(r.gaps)}`);
+  if (r.chunkBytes) {
+    lines.push(`  delivered in       : ~${(r.chunkBytes / 1024).toFixed(0)} KiB chunks (batched, so quiet gaps are normal)`);
+  }
+  lines.push(`  quiet >1.5s        : ${r.stallCount}${r.stallCount ? `   longest ${r.longestGapMs} ms` : ""}  (delivery shape, NOT health)`);
   const rhythm = gapRhythm(r.gaps);
   if (rhythm) lines.push(`  gap rhythm         : ${rhythm}`);
-  const verdict = r.stallCount === 0 && r.minMbps > 0.5 ? "STEADY" : r.stallCount ? "GAPPY — this feed stalls" : "THIN";
+
+  // The verdict rests on the buffer model alone.
+  if (!r.bufferFloor) {
+    lines.push(`  verdict            : TOO LITTLE DATA to model the buffer`);
+    return lines.join("\n");
+  }
+  const need = r.bufferFloor.seconds;
+  lines.push(
+    `  prebuffer needed   : ${need}s to never run dry ` +
+      `(worst shortfall ${(r.bufferFloor.bytes / 1024).toFixed(0)} KiB at ${r.bufferFloor.atSec}s)`,
+  );
+  const verdict =
+    need <= 2 ? "EASY — any sane buffer rides this out" : need <= 5 ? "NEEDS A REAL BUFFER" : "DEMANDING — a shallow buffer will drain here";
   lines.push(`  verdict            : ${verdict}`);
   return lines.join("\n");
 }
