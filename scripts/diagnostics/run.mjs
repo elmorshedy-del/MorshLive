@@ -6,8 +6,19 @@
  *   node scripts/diagnostics/run.mjs channel   --channel=bein-sports-1 --live
  *   node scripts/diagnostics/run.mjs stream    --stream=74006 --live
  *   node scripts/diagnostics/run.mjs compare   --stream=74006 --stream=59331 --live
+ *   node scripts/diagnostics/run.mjs transport --stream=74006 --stream=59331 --live
  *
  * Flags: --live --seconds=N --device="iPhone 13" --net=3g|4g|wifi --json=<file>
+ *
+ * WHICH SCENARIO. `page`, `channel`, `stream` and `compare` all drive a real
+ * browser, so they answer "what does the page do" — but they need a browser that
+ * can decode H.264/AAC, and the bundled headless Chromium usually cannot. When
+ * it cannot, every one of them reports NEVER STARTED and no media requests,
+ * which looks like a dead feed and is not. `transport` takes no browser and no
+ * decoder: it asks only whether bytes arrive and whether they arrive steadily.
+ * To compare two feeds' health, that is the one you want — `compare` is for
+ * comparing two *page behaviours*, and both scenarios accept --stream twice,
+ * so the wrong one fails by producing empty results rather than an error.
  *
  * SAFETY. The provider line permits one concurrent stream. Without --live the
  * harness refuses every request that could reach it, so `page` and any dry run

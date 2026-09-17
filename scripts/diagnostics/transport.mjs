@@ -105,6 +105,14 @@ export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 
   const mbps = (bytes) => +((bytes * 8) / 1e6).toFixed(2);
   const sorted = rates.slice().sort((a, b) => a - b);
 
+  // The first and last per-second buckets are partial by construction: bucket 0
+  // begins whenever the first byte lands, and the final one is cut short by the
+  // abort. They are not measurements of a rate, and taking the minimum over them
+  // labelled the healthiest feed measured so far (34 MB in 75s, not one gap)
+  // "THIN" on a 0.11 Mbps edge bucket. Judge the sustained rate on whole seconds.
+  const interior = rates.length > 2 ? rates.slice(1, -1) : rates;
+  const interiorSorted = interior.slice().sort((a, b) => a - b);
+
   return {
     status,
     error,
@@ -114,12 +122,56 @@ export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 
     megabytes: +(total / 1e6).toFixed(1),
     meanMbps: elapsed ? mbps(total / elapsed) : 0,
     medianMbps: sorted.length ? mbps(sorted[sorted.length >> 1]) : 0,
-    minMbps: sorted.length ? mbps(sorted[0]) : 0,
+    minMbps: interiorSorted.length ? mbps(interiorSorted[0]) : 0,
     stallCount: gaps.length,
     longestGapMs,
     gaps: gaps.slice(0, 12),
     perSecondMbps: rates.map(mbps),
   };
+}
+
+/**
+ * Describe the *shape* of a gap train, keeping two questions apart:
+ *
+ *   how LONG each gap is — uniform length is the tell. Congestion and loss
+ *     produce gaps of whatever length the recovery takes; something that
+ *     interrupts for the same duration every time is running to a clock.
+ *   how OFTEN they come — this gives the period, but it is the weaker signal,
+ *     because a feed can settle into a cadence only after startup.
+ *
+ * Measured on beIN stream 2449: five gaps every one within 42 ms of 2000 ms —
+ * strongly uniform — but spaced 6.0/17.0/16.0/17.1 s, so the cadence only
+ * settles after the first pair. An earlier version of this function demanded
+ * both at once and therefore reported nothing at all for that train, which is
+ * the opposite of useful: the uniform 2000 ms is exactly the finding.
+ */
+export function gapRhythm(gaps) {
+  if (!Array.isArray(gaps) || gaps.length < 3) return null;
+
+  const spreadOf = (xs) => Math.max(...xs) - Math.min(...xs);
+  const meanOf = (xs) => xs.reduce((sum, x) => sum + x, 0) / xs.length;
+  const medianOf = (xs) => xs.slice().sort((a, b) => a - b)[xs.length >> 1];
+
+  const lengths = gaps.map((g) => g.gapMs);
+  const periods = gaps.slice(1).map((g, i) => +(g.atSec - gaps[i].atSec).toFixed(1));
+
+  const meanLength = Math.round(meanOf(lengths));
+  // Median, not mean: one short interval at startup should move the reported
+  // period a little, not halve it.
+  const typicalPeriod = +medianOf(periods).toFixed(1);
+
+  // Deliberately loose: the claim is "regular", not "identical".
+  const evenLength = spreadOf(lengths) <= Math.max(150, meanLength * 0.15);
+  const evenPeriod = spreadOf(periods) <= Math.max(2, typicalPeriod * 0.25);
+  if (!evenLength && !evenPeriod) return null;
+
+  const cadence = evenPeriod ? `every ~${typicalPeriod}s` : `every ~${typicalPeriod}s apart from startup`;
+  if (!evenLength) return `${cadence}, length varies — periodic, but not a fixed-length interruption`;
+
+  return (
+    `${cadence}, each ~${meanLength} ms (spread ${Math.round(spreadOf(lengths))} ms) — ` +
+    `UNIFORM LENGTH, so a timer rather than congestion`
+  );
 }
 
 export function formatTransport(label, r, meta) {
@@ -134,6 +186,8 @@ export function formatTransport(label, r, meta) {
   lines.push(`  rate               : mean ${r.meanMbps} Mbps   median ${r.medianMbps}   min ${r.minMbps}`);
   lines.push(`  stalls (>1.5s idle): ${r.stallCount}${r.stallCount ? `   longest ${r.longestGapMs} ms` : ""}`);
   if (r.gaps.length) lines.push(`  gap detail         : ${JSON.stringify(r.gaps)}`);
+  const rhythm = gapRhythm(r.gaps);
+  if (rhythm) lines.push(`  gap rhythm         : ${rhythm}`);
   const verdict = r.stallCount === 0 && r.minMbps > 0.5 ? "STEADY" : r.stallCount ? "GAPPY — this feed stalls" : "THIN";
   lines.push(`  verdict            : ${verdict}`);
   return lines.join("\n");
