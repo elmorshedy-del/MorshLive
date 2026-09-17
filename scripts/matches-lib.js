@@ -38,6 +38,27 @@ const COMPETITIONS = Object.freeze([
     espnSlugs: ["uefa.champions", "uefa.champions_qual"],
     leagueNames: ["UEFA Champions League", "UEFA Champions League Qualifying"],
   },
+  {
+    key: "afconq",
+    name: "Africa Cup of Nations Qualifying",
+    nameAr: "تصفيات كأس أمم أفريقيا",
+    espnSlugs: ["caf.nations_qual"],
+    leagueNames: ["African Cup of Nations Qualifying", "Africa Cup of Nations Qualifying"],
+  },
+  {
+    key: "unl",
+    name: "UEFA Nations League",
+    nameAr: "دوري الأمم الأوروبية",
+    espnSlugs: ["uefa.nations"],
+    leagueNames: ["UEFA Nations League"],
+  },
+  {
+    key: "cnl",
+    name: "CONCACAF Nations League",
+    nameAr: "دوري أمم الكونكاكاف",
+    espnSlugs: ["concacaf.nations.league"],
+    leagueNames: ["CONCACAF Nations League"],
+  },
 ]);
 const ESPN_LEAGUES = Object.freeze(COMPETITIONS.flatMap((competition) => competition.espnSlugs));
 
