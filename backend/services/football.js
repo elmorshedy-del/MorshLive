@@ -6,6 +6,9 @@ export const FOOTBALL_LEAGUES = Object.freeze([
   "ksa.1",
   "uefa.champions",
   "uefa.champions_qual",
+  "caf.nations_qual",
+  "uefa.nations",
+  "concacaf.nations.league",
 ]);
 
 function defaultDateRange(now = Date.now()) {
