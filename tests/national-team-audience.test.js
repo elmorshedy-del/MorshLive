@@ -19,6 +19,14 @@ describe("national-team registry", () => {
     expect(TeamNames.arabicFor("Albania")).toBe("ألبانيا");
     expect(TeamNames.arabicFor("Libya")).toBe("ليبيا");
   });
+
+  it("localizes international opponent countries even when they are not audience-filter teams", () => {
+    expect(TeamNames.arabicFor("Uganda")).toBe("أوغندا");
+    expect(TeamNames.arabicFor("Botswana")).toBe("بوتسوانا");
+    expect(TeamNames.arabicFor("Angola")).toBe("أنغولا");
+    expect(TeamNames.arabicFor("Gabon")).toBe("الغابون");
+    expect(TeamNames.arabicFor("UAE")).toBe("الإمارات");
+  });
 });
 
 describe("international audience filtering", () => {

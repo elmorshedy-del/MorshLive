@@ -272,8 +272,28 @@
     return !!team && team.groups.includes(group);
   }
 
+  function buildRegionArabicLookup() {
+    if (typeof Intl === "undefined" || typeof Intl.DisplayNames !== "function") return {};
+    const english = new Intl.DisplayNames(["en"], { type: "region" });
+    const arabic = new Intl.DisplayNames(["ar"], { type: "region" });
+    const lookup = {};
+    for (let first = 65; first <= 90; first++) {
+      for (let second = 65; second <= 90; second++) {
+        const code = String.fromCharCode(first, second);
+        const en = english.of(code);
+        const ar = arabic.of(code);
+        if (!en || !ar || en === code || ar === code || en === "Unknown Region") continue;
+        lookup[norm(en)] = ar;
+      }
+    }
+    return lookup;
+  }
+
+  const REGION_AR = buildRegionArabicLookup();
+
   function arabicFor(name) {
-    return NORM_AR[norm(name)] || null;
+    const key = norm(name);
+    return NORM_AR[key] || REGION_AR[key] || null;
   }
 
   function localize(name) {
