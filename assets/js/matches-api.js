@@ -40,9 +40,10 @@
     },
     {
       key: "afconq",
-      nameAr: "تصفيات كأس أمم أفريقيا",
+      nameAr: "تصفيات كأس أمم إفريقيا",
       espnSlugs: ["caf.nations_qual"],
       leagueNames: ["African Cup of Nations Qualifying", "Africa Cup of Nations Qualifying"],
+      audienceGroups: ["north_africa"],
     },
     {
       key: "unl",
@@ -51,10 +52,11 @@
       leagueNames: ["UEFA Nations League"],
     },
     {
-      key: "cnl",
-      nameAr: "دوري أمم الكونكاكاف",
-      espnSlugs: ["concacaf.nations.league"],
-      leagueNames: ["CONCACAF Nations League"],
+      key: "friendly",
+      nameAr: "مباريات دولية ودية",
+      espnSlugs: ["fifa.friendly"],
+      leagueNames: ["International Friendly", "International Friendlies"],
+      audienceGroups: ["north_africa", "gcc", "priority_latam"],
     },
   ];
   const ESPN_LEAGUES = COMPETITIONS.flatMap((competition) => competition.espnSlugs);
@@ -80,6 +82,16 @@
     return COMPETITIONS.find((competition) =>
       competition.leagueNames.some((leagueName) => leagueName.toLowerCase() === wanted)
     ) || null;
+  }
+
+  function shouldIncludeAudienceMatch(match) {
+    const competition = COMPETITIONS.find((item) => item.key === match?.competition);
+    const groups = competition?.audienceGroups || [];
+    if (!groups.length) return true;
+    if (!global.TeamNames?.isInAudienceGroup) return true;
+    return [match?.home, match?.away].some((team) =>
+      groups.some((group) => global.TeamNames.isInAudienceGroup(team, group))
+    );
   }
 
   function abbr(name) {
@@ -420,6 +432,7 @@
       return { ...m, status, minute: status === "live" ? m.minute : "" };
     });
     return normalized.filter((m) => {
+      if (!shouldIncludeAudienceMatch(m)) return false;
       if (m.status !== "ended") return true;
       const kickoff = parseKickoffMs(m.kickoffUtc);
       if (isNaN(kickoff)) return true;

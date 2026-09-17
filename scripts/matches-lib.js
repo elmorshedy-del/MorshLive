@@ -1,4 +1,6 @@
 /* Shared normalization for Node (fetch-matches.js) — keep in sync with matches-api.js */
+const { TeamNames } = require("../assets/js/team-names.js");
+
 const LIVE = new Set(["1H", "2H", "HT", "ET", "BT", "P", "LIVE", "IN PLAY", "INT"]);
 const ENDED = new Set(["FT", "AET", "PEN", "Match Finished", "AWD", "WO", "CANC", "ABD", "PST"]);
 const MATCH_WINDOW_MS = 135 * 60 * 1000;
@@ -41,9 +43,10 @@ const COMPETITIONS = Object.freeze([
   {
     key: "afconq",
     name: "Africa Cup of Nations Qualifying",
-    nameAr: "تصفيات كأس أمم أفريقيا",
+    nameAr: "تصفيات كأس أمم إفريقيا",
     espnSlugs: ["caf.nations_qual"],
     leagueNames: ["African Cup of Nations Qualifying", "Africa Cup of Nations Qualifying"],
+    audienceGroups: ["north_africa"],
   },
   {
     key: "unl",
@@ -53,11 +56,12 @@ const COMPETITIONS = Object.freeze([
     leagueNames: ["UEFA Nations League"],
   },
   {
-    key: "cnl",
-    name: "CONCACAF Nations League",
-    nameAr: "دوري أمم الكونكاكاف",
-    espnSlugs: ["concacaf.nations.league"],
-    leagueNames: ["CONCACAF Nations League"],
+    key: "friendly",
+    name: "International Friendly",
+    nameAr: "مباريات دولية ودية",
+    espnSlugs: ["fifa.friendly"],
+    leagueNames: ["International Friendly", "International Friendlies"],
+    audienceGroups: ["north_africa", "gcc", "priority_latam"],
   },
 ]);
 const ESPN_LEAGUES = Object.freeze(COMPETITIONS.flatMap((competition) => competition.espnSlugs));
@@ -77,6 +81,15 @@ function competitionForLeagueName(name) {
 
 function isSupportedLeagueName(name) {
   return competitionForLeagueName(name) != null;
+}
+
+function shouldIncludeAudienceMatch(match) {
+  const competition = COMPETITIONS.find((item) => item.key === match?.competition);
+  const groups = competition?.audienceGroups || [];
+  if (!groups.length) return true;
+  return [match?.home, match?.away].some((team) =>
+    groups.some((group) => TeamNames.isInAudienceGroup(team, group))
+  );
 }
 
 function abbr(name) {
@@ -304,6 +317,7 @@ function filterDisplayMatches(matches, now = Date.now()) {
     return { ...m, status, minute: status === "live" ? m.minute : "" };
   });
   return normalized.filter((m) => {
+    if (!shouldIncludeAudienceMatch(m)) return false;
     if (m.status !== "ended") return true;
     const kickoff = parseKickoffMs(m.kickoffUtc);
     if (isNaN(kickoff)) return true;
@@ -408,6 +422,7 @@ module.exports = {
   normalizeEspnEvent,
   normalizeEvent,
   parseKickoffMs,
+  shouldIncludeAudienceMatch,
   sortMatches,
   statusOf,
 };

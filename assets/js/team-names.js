@@ -6,53 +6,56 @@
  * Exposes:
  *   window.TeamNames.localize(name)  -> Arabic name when I18N.lang === "ar"
  *                                       and a mapping exists, else the input.
- *   window.TeamNames.aliases(name)   -> [english, arabic, ...] for search.
- *
- * Coverage: FIFA national teams plus the active Premier League, La Liga,
- * Saudi Pro League, and Champions League clubs shown by the 2026/27 schedule.
+ *   window.TeamNames.aliases(name)   -> [english, aliases, arabic] for search.
+ *   window.TeamNames.resolveNationalTeam(name) -> canonical audience metadata.
  * ==========================================================================*/
 (function (global) {
   "use strict";
 
-  // English (canonical, as stored in the feed) -> Arabic.
+  // English feed names -> Arabic display names. Aliases can also be listed here
+  // when a provider has historically used more than one spelling.
   const EN_AR = {
-    "Argentina": "الأرجنتين",
-    "Brazil": "البرازيل",
-    "France": "فرنسا",
-    "Spain": "إسبانيا",
-    "Portugal": "البرتغال",
-    "England": "إنجلترا",
-    "Belgium": "بلجيكا",
-    "Netherlands": "هولندا",
-    "Germany": "ألمانيا",
-    "Italy": "إيطاليا",
-    "Croatia": "كرواتيا",
-    "Uruguay": "أوروغواي",
-    "Colombia": "كولومبيا",
-    "Mexico": "المكسيك",
+    Argentina: "الأرجنتين",
+    Brazil: "البرازيل",
+    France: "فرنسا",
+    Spain: "إسبانيا",
+    Portugal: "البرتغال",
+    England: "إنجلترا",
+    Belgium: "بلجيكا",
+    Netherlands: "هولندا",
+    Germany: "ألمانيا",
+    Italy: "إيطاليا",
+    Croatia: "كرواتيا",
+    Uruguay: "أوروغواي",
+    Colombia: "كولومبيا",
+    Mexico: "المكسيك",
     "United States": "الولايات المتحدة",
-    "USA": "الولايات المتحدة",
-    "Canada": "كندا",
-    "Japan": "اليابان",
+    USA: "الولايات المتحدة",
+    Canada: "كندا",
+    Japan: "اليابان",
     "South Korea": "كوريا الجنوبية",
     "Korea Republic": "كوريا الجنوبية",
-    "Australia": "أستراليا",
+    Australia: "أستراليا",
     "Saudi Arabia": "السعودية",
-    "Iran": "إيران",
-    "Iraq": "العراق",
-    "Jordan": "الأردن",
-    "Qatar": "قطر",
+    Iran: "إيران",
+    Iraq: "العراق",
+    Jordan: "الأردن",
+    Qatar: "قطر",
     "United Arab Emirates": "الإمارات",
-    "UAE": "الإمارات",
-    "Uzbekistan": "أوزبكستان",
-    "Morocco": "المغرب",
-    "Algeria": "الجزائر",
-    "Tunisia": "تونس",
-    "Egypt": "مصر",
-    "Senegal": "السنغال",
-    "Ghana": "غانا",
-    "Nigeria": "نيجيريا",
-    "Cameroon": "الكاميرون",
+    UAE: "الإمارات",
+    Kuwait: "الكويت",
+    Bahrain: "البحرين",
+    Oman: "عُمان",
+    Uzbekistan: "أوزبكستان",
+    Morocco: "المغرب",
+    Algeria: "الجزائر",
+    Tunisia: "تونس",
+    Egypt: "مصر",
+    Libya: "ليبيا",
+    Senegal: "السنغال",
+    Ghana: "غانا",
+    Nigeria: "نيجيريا",
+    Cameroon: "الكاميرون",
     "Ivory Coast": "ساحل العاج",
     "Cote d'Ivoire": "ساحل العاج",
     "Cape Verde": "الرأس الأخضر",
@@ -60,80 +63,114 @@
     "DR Congo": "الكونغو الديمقراطية",
     "South Africa": "جنوب أفريقيا",
     "New Zealand": "نيوزيلندا",
-    "Panama": "بنما",
+    Panama: "بنما",
     "Costa Rica": "كوستاريكا",
-    "Ecuador": "الإكوادور",
-    "Paraguay": "باراغواي",
-    "Peru": "بيرو",
-    "Chile": "تشيلي",
-    "Norway": "النرويج",
-    "Austria": "النمسا",
-    "Switzerland": "سويسرا",
-    "Denmark": "الدنمارك",
-    "Sweden": "السويد",
-    "Poland": "بولندا",
-    "Serbia": "صربيا",
-    "Turkey": "تركيا",
-    "Türkiye": "تركيا",
-    "Scotland": "اسكتلندا",
-    "Wales": "ويلز",
-    "Ukraine": "أوكرانيا",
-    "Greece": "اليونان",
-    "Czechia": "التشيك",
+    Ecuador: "الإكوادور",
+    Paraguay: "باراغواي",
+    Peru: "بيرو",
+    Chile: "تشيلي",
+    Norway: "النرويج",
+    Austria: "النمسا",
+    Switzerland: "سويسرا",
+    Denmark: "الدنمارك",
+    Sweden: "السويد",
+    Poland: "بولندا",
+    Serbia: "صربيا",
+    Turkey: "تركيا",
+    Türkiye: "تركيا",
+    Scotland: "اسكتلندا",
+    Wales: "ويلز",
+    Ukraine: "أوكرانيا",
+    Greece: "اليونان",
+    Czechia: "التشيك",
     "Czech Republic": "التشيك",
     "Bosnia-Herzegovina": "البوسنة والهرسك",
-    "Curaçao": "كوراساو",
-    "Curacao": "كوراساو",
-    "Haiti": "هايتي",
+    "Bosnia and Herzegovina": "البوسنة والهرسك",
+    Albania: "ألبانيا",
+    Andorra: "أندورا",
+    Armenia: "أرمينيا",
+    Azerbaijan: "أذربيجان",
+    Belarus: "بيلاروسيا",
+    Bulgaria: "بلغاريا",
+    Cyprus: "قبرص",
+    Estonia: "إستونيا",
+    "Faroe Islands": "جزر فارو",
+    Finland: "فنلندا",
+    Georgia: "جورجيا",
+    Gibraltar: "جبل طارق",
+    Hungary: "المجر",
+    Iceland: "آيسلندا",
+    Israel: "إسرائيل",
+    Kazakhstan: "كازاخستان",
+    Kosovo: "كوسوفو",
+    Latvia: "لاتفيا",
+    Liechtenstein: "ليختنشتاين",
+    Lithuania: "ليتوانيا",
+    Luxembourg: "لوكسمبورغ",
+    Malta: "مالطا",
+    Moldova: "مولدوفا",
+    Montenegro: "الجبل الأسود",
+    "North Macedonia": "مقدونيا الشمالية",
+    "Northern Ireland": "أيرلندا الشمالية",
+    "Republic of Ireland": "جمهورية أيرلندا",
+    Ireland: "جمهورية أيرلندا",
+    Romania: "رومانيا",
+    Russia: "روسيا",
+    "San Marino": "سان مارينو",
+    Slovakia: "سلوفاكيا",
+    Slovenia: "سلوفينيا",
+    Curaçao: "كوراساو",
+    Curacao: "كوراساو",
+    Haiti: "هايتي",
     "AFC Bournemouth": "بورنموث",
-    "Arsenal": "أرسنال",
+    Arsenal: "أرسنال",
     "Aston Villa": "أستون فيلا",
-    "Brentford": "برينتفورد",
+    Brentford: "برينتفورد",
     "Brighton & Hove Albion": "برايتون",
-    "Chelsea": "تشيلسي",
+    Chelsea: "تشيلسي",
     "Coventry City": "كوفنتري سيتي",
     "Crystal Palace": "كريستال بالاس",
-    "Everton": "إيفرتون",
-    "Fulham": "فولهام",
+    Everton: "إيفرتون",
+    Fulham: "فولهام",
     "Hull City": "هال سيتي",
     "Ipswich Town": "إيبسويتش تاون",
     "Leeds United": "ليدز يونايتد",
-    "Liverpool": "ليفربول",
+    Liverpool: "ليفربول",
     "Manchester City": "مانشستر سيتي",
     "Manchester United": "مانشستر يونايتد",
     "Newcastle United": "نيوكاسل يونايتد",
     "Nottingham Forest": "نوتنغهام فورست",
-    "Sunderland": "سندرلاند",
+    Sunderland: "سندرلاند",
     "Tottenham Hotspur": "توتنهام هوتسبير",
-    "Alavés": "ألافيس",
+    Alavés: "ألافيس",
     "Athletic Club": "أتلتيك بيلباو",
     "Atlético Madrid": "أتلتيكو مدريد",
-    "Barcelona": "برشلونة",
+    Barcelona: "برشلونة",
     "Celta Vigo": "سيلتا فيغو",
-    "Deportivo": "ديبورتيفو لا كورونيا",
-    "Elche": "إلتشي",
-    "Espanyol": "إسبانيول",
-    "Getafe": "خيتافي",
-    "Levante": "ليفانتي",
-    "Málaga": "مالقة",
-    "Osasuna": "أوساسونا",
+    Deportivo: "ديبورتيفو لا كورونيا",
+    Elche: "إلتشي",
+    Espanyol: "إسبانيول",
+    Getafe: "خيتافي",
+    Levante: "ليفانتي",
+    Málaga: "مالقة",
+    Osasuna: "أوساسونا",
     "Racing Santander": "راسينغ سانتاندير",
     "Rayo Vallecano": "رايو فاييكانو",
     "Real Betis": "ريال بيتيس",
     "Real Madrid": "ريال مدريد",
     "Real Sociedad": "ريال سوسيداد",
-    "Sevilla": "إشبيلية",
-    "Valencia": "فالنسيا",
-    "Villarreal": "فياريال",
+    Sevilla: "إشبيلية",
+    Valencia: "فالنسيا",
+    Villarreal: "فياريال",
     "AEK Athens": "آيك أثينا",
     "Bodo/Glimt": "بودو غليمت",
-    "Celtic": "سلتيك",
+    Celtic: "سلتيك",
     "Dinamo Zagreb": "دينامو زغرب",
-    "Fenerbahce": "فنربخشة",
+    Fenerbahce: "فنربخشة",
     "Hapoel Be'er": "هابوعيل بئر السبع",
     "LASK Linz": "لاسك لينتس",
     "Levski Sofia": "ليفسكي صوفيا",
-    "Lyon": "ليون",
+    Lyon: "ليون",
     "NEC Nijmegen": "إن إي سي نيميغن",
     "NK Celje": "تسيله",
     "Sabah FK": "صباح",
@@ -144,17 +181,17 @@
     "Borussia Dortmund": "بوروسيا دورتموند",
     "Inter Milan": "إنتر ميلان",
     "AC Milan": "ميلان",
-    "Juventus": "يوفنتوس",
-    "Napoli": "نابولي",
-    "Atalanta": "أتالانتا",
-    "Marseille": "مارسيليا",
-    "Monaco": "موناكو",
-    "Benfica": "بنفيكا",
+    Juventus: "يوفنتوس",
+    Napoli: "نابولي",
+    Atalanta: "أتالانتا",
+    Marseille: "مارسيليا",
+    Monaco: "موناكو",
+    Benfica: "بنفيكا",
     "Sporting CP": "سبورتينغ لشبونة",
     "FC Porto": "بورتو",
     "Ajax Amsterdam": "أياكس",
     "PSV Eindhoven": "آيندهوفن",
-    "Galatasaray": "غلطة سراي",
+    Galatasaray: "غلطة سراي",
     "Club Brugge": "كلوب بروج",
     "Al Ahli": "الأهلي",
     "Al Diriyah": "الدرعية",
@@ -176,10 +213,34 @@
     "Al Shabab": "الشباب",
     "Al Taawoun": "التعاون",
     "Al Wehda": "الوحدة",
-    "Damac": "ضمك",
-    "NEOM": "نيوم",
-    "Neom": "نيوم",
+    Damac: "ضمك",
+    NEOM: "نيوم",
+    Neom: "نيوم",
   };
+
+  // Audience policy is data, not match logic. A canonical country can expose
+  // feed aliases without forcing the rest of the app to care which spelling
+  // ESPN/TheSportsDB used on a particular day.
+  const NATIONAL_TEAM_REGISTRY = Object.freeze([
+    { name: "Egypt", ar: "مصر", aliases: [], groups: ["north_africa"] },
+    { name: "Morocco", ar: "المغرب", aliases: [], groups: ["north_africa"] },
+    { name: "Algeria", ar: "الجزائر", aliases: [], groups: ["north_africa"] },
+    { name: "Tunisia", ar: "تونس", aliases: [], groups: ["north_africa"] },
+    { name: "Libya", ar: "ليبيا", aliases: [], groups: ["north_africa"] },
+    { name: "Saudi Arabia", ar: "السعودية", aliases: ["Saudi", "KSA"], groups: ["gcc"] },
+    {
+      name: "United Arab Emirates",
+      ar: "الإمارات",
+      aliases: ["UAE", "U.A.E."],
+      groups: ["gcc"],
+    },
+    { name: "Qatar", ar: "قطر", aliases: [], groups: ["gcc"] },
+    { name: "Kuwait", ar: "الكويت", aliases: [], groups: ["gcc"] },
+    { name: "Bahrain", ar: "البحرين", aliases: [], groups: ["gcc"] },
+    { name: "Oman", ar: "عُمان", aliases: [], groups: ["gcc"] },
+    { name: "Brazil", ar: "البرازيل", aliases: ["Brasil"], groups: ["priority_latam"] },
+    { name: "Argentina", ar: "الأرجنتين", aliases: [], groups: ["priority_latam"] },
+  ]);
 
   const norm = (s) => (s || "")
     .toString()
@@ -189,9 +250,27 @@
     .replace(/[^a-z0-9]/g, "")
     .trim();
 
-  // Build a normalized lookup so "south korea", "South-Korea" etc. all resolve.
   const NORM_AR = {};
-  Object.keys(EN_AR).forEach((en) => { NORM_AR[norm(en)] = EN_AR[en]; });
+  Object.keys(EN_AR).forEach((en) => {
+    NORM_AR[norm(en)] = EN_AR[en];
+  });
+
+  const NATIONAL_BY_ALIAS = {};
+  for (const team of NATIONAL_TEAM_REGISTRY) {
+    for (const label of [team.name, ...(team.aliases || [])]) {
+      NATIONAL_BY_ALIAS[norm(label)] = team;
+      NORM_AR[norm(label)] = team.ar;
+    }
+  }
+
+  function resolveNationalTeam(name) {
+    return NATIONAL_BY_ALIAS[norm(name)] || null;
+  }
+
+  function isInAudienceGroup(name, group) {
+    const team = resolveNationalTeam(name);
+    return !!team && team.groups.includes(group);
+  }
 
   function arabicFor(name) {
     return NORM_AR[norm(name)] || null;
@@ -204,29 +283,24 @@
   }
 
   function aliases(name) {
+    const team = resolveNationalTeam(name);
+    if (team) return [...new Set([team.name, ...(team.aliases || []), team.ar])];
     const out = [name];
     const ar = arabicFor(name);
     if (ar) out.push(ar);
     return out;
   }
 
-  // Canonical identity token for a team name. Anchored on the Arabic name because
-  // the alias table collapses every English variant of a team to one Arabic
-  // string ("USA" and "United States" both -> "الولايات المتحدة"), so variant
-  // English feeds and Arabic-sourced clips resolve to the SAME token. Unknown
-  // teams fall back to their normalized English name (identity — no regression).
-  // Accepts a raw name OR an already-normalized token (arabicFor normalizes).
   function canonicalToken(name) {
+    const team = resolveNationalTeam(name);
+    if (team) return team.ar;
     return arabicFor(name) || norm(name);
   }
 
-  // Stable pair key for matching a fixture to its memes/highlights/clips.
   function canonicalKey(home, away) {
     return [canonicalToken(home), canonicalToken(away)].sort().join("~");
   }
 
-  // Re-key a stored "home~away" key through the canonical tokens, so a key built
-  // from one name variant still matches a lookup built from another.
   function canonicalizeKey(rawKey) {
     return String(rawKey || "")
       .split("~")
@@ -273,6 +347,8 @@
     localize,
     aliases,
     arabicFor,
+    resolveNationalTeam,
+    isInAudienceGroup,
     canonicalToken,
     canonicalKey,
     canonicalizeKey,
