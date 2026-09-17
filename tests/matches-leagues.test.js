@@ -10,7 +10,7 @@ const {
 } = require("../scripts/matches-lib.js");
 
 describe("major competition configuration", () => {
-  it("covers Premier League, La Liga, Saudi Pro League, Champions League, and the international-break competitions", () => {
+  it("covers the club competitions plus the selected international-break feeds", () => {
     expect(ESPN_LEAGUES).toEqual([
       "eng.1",
       "esp.1",
@@ -19,7 +19,7 @@ describe("major competition configuration", () => {
       "uefa.champions_qual",
       "caf.nations_qual",
       "uefa.nations",
-      "concacaf.nations.league",
+      "fifa.friendly",
     ]);
     expect(competitionForLeagueName("English Premier League")?.key).toBe("epl");
     expect(competitionForLeagueName("Spanish LALIGA")?.key).toBe("laliga");
@@ -29,7 +29,8 @@ describe("major competition configuration", () => {
     expect(competitionForLeagueName("African Cup of Nations Qualifying")?.key).toBe("afconq");
     expect(competitionForLeagueName("Africa Cup of Nations Qualifying")?.key).toBe("afconq");
     expect(competitionForLeagueName("UEFA Nations League")?.key).toBe("unl");
-    expect(competitionForLeagueName("CONCACAF Nations League")?.key).toBe("cnl");
+    expect(competitionForLeagueName("International Friendly")?.key).toBe("friendly");
+    expect(competitionForLeagueName("CONCACAF Nations League")).toBeNull();
   });
 
   it("keeps the ESPN event identity required for lineups and stats", () => {
