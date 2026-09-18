@@ -22,6 +22,14 @@ const COMPETITIONS = Object.freeze([
     leagueNames: ["Spanish La Liga", "Spanish LALIGA", "LaLiga"],
   },
   {
+    key: "ligue1",
+    name: "French Ligue 1",
+    nameAr: "الدوري الفرنسي",
+    espnSlugs: ["fra.1"],
+    leagueNames: ["French Ligue 1", "Ligue 1"],
+    teamWhitelist: ["Paris Saint-Germain", "Paris Saint Germain", "Paris SG", "PSG"],
+  },
+  {
     key: "spl",
     name: "Saudi Pro League",
     nameAr: "الدوري السعودي",
@@ -85,9 +93,17 @@ function isSupportedLeagueName(name) {
 
 function shouldIncludeAudienceMatch(match) {
   const competition = COMPETITIONS.find((item) => item.key === match?.competition);
+  const teams = [match?.home, match?.away];
+
+  const whitelist = competition?.teamWhitelist || [];
+  if (whitelist.length) {
+    const allowed = new Set(whitelist.map(canonical));
+    if (!teams.some((team) => allowed.has(canonical(team)))) return false;
+  }
+
   const groups = competition?.audienceGroups || [];
   if (!groups.length) return true;
-  return [match?.home, match?.away].some((team) =>
+  return teams.some((team) =>
     groups.some((group) => TeamNames.isInAudienceGroup(team, group))
   );
 }
@@ -182,7 +198,9 @@ function normalizeEvent(e) {
     competition: competition ? competition.key : "",
     venue: [e.strVenue, e.strCity].filter(Boolean).join(" · "),
     channel: null,
-    channelId: "bein-sports-1",
+    // PSG/Ligue 1 is display-only until existing broadcast hydration resolves
+    // an actual channel. Keep the fallback source from inventing beIN 1 too.
+    channelId: competition?.key === "ligue1" ? null : "bein-sports-1",
     commentator: null,
     source: "thesportsdb",
   };
@@ -232,7 +250,9 @@ function normalizeEspnEvent(e, league) {
       competition.venue && competition.venue.address && competition.venue.address.country,
     ].filter(Boolean).join(" · "),
     channel: null,
-    channelId: "bein-sports-1",
+    // Ligue 1 is display-only until existing broadcast hydration resolves a
+    // real channel. Do not invent a beIN route merely because PSG is shown.
+    channelId: competitionMeta?.key === "ligue1" ? null : "bein-sports-1",
     commentator: null,
     source: "espn",
   };

@@ -3,6 +3,7 @@ import { fetchEspnScoreboard, fetchEspnSummary } from "../adapters/espn.js";
 export const FOOTBALL_LEAGUES = Object.freeze([
   "eng.1",
   "esp.1",
+  "fra.1",
   "ksa.1",
   "uefa.champions",
   "uefa.champions_qual",

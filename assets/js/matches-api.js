@@ -22,6 +22,13 @@
       leagueNames: ["Spanish La Liga", "Spanish LALIGA", "LaLiga"],
     },
     {
+      key: "ligue1",
+      nameAr: "الدوري الفرنسي",
+      espnSlugs: ["fra.1"],
+      leagueNames: ["French Ligue 1", "Ligue 1"],
+      teamWhitelist: ["Paris Saint-Germain", "Paris Saint Germain", "Paris SG", "PSG"],
+    },
+    {
       key: "spl",
       nameAr: "الدوري السعودي",
       espnSlugs: ["ksa.1"],
@@ -86,10 +93,18 @@
 
   function shouldIncludeAudienceMatch(match) {
     const competition = COMPETITIONS.find((item) => item.key === match?.competition);
+    const teams = [match?.home, match?.away];
+
+    const whitelist = competition?.teamWhitelist || [];
+    if (whitelist.length) {
+      const allowed = new Set(whitelist.map(canonical));
+      if (!teams.some((team) => allowed.has(canonical(team)))) return false;
+    }
+
     const groups = competition?.audienceGroups || [];
     if (!groups.length) return true;
     if (!global.TeamNames?.isInAudienceGroup) return true;
-    return [match?.home, match?.away].some((team) =>
+    return teams.some((team) =>
       groups.some((group) => global.TeamNames.isInAudienceGroup(team, group))
     );
   }
