@@ -29,56 +29,59 @@ reasoning. Where they disagreed, that is stated rather than smoothed over.
 
 ## 0.5 The symptom, in the owner's own terms
 
-**[REPORTED — the owner, over months of watching it]** This is the observation
-every hypothesis has to satisfy, and it is not one pattern but three:
+**[REPORTED — the owner, corrected 2026-09-17]** The observation every hypothesis
+has to satisfy. It is not one pattern but three:
 
-| Pattern | Frequency | What it rules out |
+| Pattern | Frequency | What it points at |
 |---|---|---|
-| **Lab and site drain together** | most common | Anything site-only. M1–M7 are all site-only. |
-| **Only the Lab drains; the site is fine** | rarer | Anything *shared*, and anything site-only. See below. |
-| **Only beIN drains; other channels play** | rarer | Anything channel-agnostic. |
+| **Site and Lab drain together** | most common | Something shared: the provider, the Worker, the line itself |
+| **The site drains; the Lab is fine** | rarer | Something **site-only** — M1-M5 |
+| **Within a Lab drain, only beIN and some channels; others play fine** | noticed recently | Something **per-channel** |
 
-Treat these as the primary evidence. They are cheap to collect, they come from
-months of observation rather than a 60-second probe, and they discriminate
-between mechanisms more sharply than anything in Appendix A.
+**The reverse of pattern 2 does not happen.** The owner is explicit: it is never
+the Lab draining while the site plays. An earlier revision of this document
+recorded the opposite, on an ambiguous reading of "rarely ever it's only website
+and just lab", and an independent evaluation then built its headline finding on
+explaining a symptom that does not exist. **Do not reintroduce it.** If the Lab is
+draining, the site is draining too.
 
-**The second pattern is the strange one, and nothing in this document explains
-it.** The Lab is the *simpler* page: no remount `setInterval`, no continuity
-guard, no premium path, no match routing, no toolbar. A fault that takes down the
-simple page while sparing the complex one cannot be any of M1–M7, and cannot be
-anything shared either — a shared cause would take both. That leaves something
-the Lab does *differently*.
+That direction matters because it points the opposite way. A fault that takes the
+*complex* page while sparing the *simple* one is the ordinary shape: the site has
+the 20 s remount tick, the continuity guard, the premium toggle, the toolbar and
+the match machinery, and the Lab has none of them. **Pattern 2 is direct evidence
+for the site-only mechanisms M1-M5**, which this document had started to treat as
+unlikely.
 
-**[FALSIFIED 2026-09-17] It is not a config divergence.** The obvious candidate
-was that `assets/js/iptv-lab.js:589-594` duplicates the mpegts config inline
-rather than importing `window.KZ_LIVE_TS_CONFIG`, and two copies of a config is
-where drift hides. `tests/mpegts-config.test.js:57` explicitly exempts the Lab
-from the shared-config assertion, so nothing would have caught a drift. The two
-were compared by hand:
+Pattern 3 is the newest and the least explored: during a Lab drain, some channels
+fail while others play normally, in the same session, at the same moment. That is
+a strong discriminator — it rules out anything that would affect the line as a
+whole, and points at something specific to the feed or to how a particular
+channel is resolved and fetched.
 
-| Setting | Site (`lib/mpegts-config.js`) | Lab (inline) | mpegts.js 1.8.1 default |
-|---|---|---|---|
-| `enableWorker` | `false` | `false` | `false` |
-| `enableStashBuffer` | `false` | `false` | `true` |
-| `stashInitialSize` | `128` | `128` | `65536` |
-| `enableWorkerForMSE` | `false` | *omitted* | **`false`** |
-| `liveSync` | `false` | *omitted* | **`false`** |
-| `liveBufferLatencyChasing` | `false` | *omitted* | **`false`** |
+**Beware of reasoning from a single session.** Three distinct patterns is good
+evidence that more than one mechanism is in play. A fix that resolves one will
+look like it failed when the next appears, and one that lands on a quiet evening
+will look like it worked (§1, Sep 13). Always establish **which pattern** before
+reasoning about a report — `scripts/diagnostics/capture.mjs` exists to record
+exactly that at the moment it happens.
 
-The Lab omits three keys the site sets explicitly, **and all three default to
-exactly the value the site sets**. The two configs are functionally identical;
-the duplication is a maintenance hazard, not a behavioural difference. Do not
-spend time here.
+### A note on the Lab's HLS excursion
 
-So the second pattern remains **unexplained**, and the difference is somewhere
-other than the player config.
+`assets/js/iptv-lab.js:563-572` makes the Lab, on the first mid-stream TS error
+after playback has started, release the TS connection and switch to HLS — a path
+the same file documents at `:64-71` as measured-broken through the proxy (manifest
+200, **every segment 403**, because the panel binds segments to the IP that
+fetched the manifest and a Worker egresses each subrequest from a different edge
+IP).
 
-**Beware of reasoning from a single session.** The same drain reported on two
-different evenings may have two different causes; these three patterns are strong
-evidence that more than one mechanism is in play. A fix that resolves one pattern
-will look like it failed when the next pattern appears, and a fix that coincides
-with a quiet evening will look like it worked (§1, Sep 13). Always ask **which
-pattern** before reasoning about a report.
+**This is a real defect** and it is worth fixing on its own merits: it surrenders
+the only connection to a path known to fail, then retries hard before returning.
+
+**But it is not the explanation for pattern 2**, because pattern 2 runs the other
+way. It was proposed as such while this document had the direction inverted. It
+may contribute to pattern 1 — both pages draining together — since a Lab
+surrendering the slot mid-incident makes the site's recovery harder, and vice
+versa. Unproven.
 
 ---
 
@@ -156,8 +159,16 @@ session accumulates the most ghosts, which is why being alone is worst.
 
 **Consequence for buying capacity:** the second connection is not for a second
 viewer — it is what lets one viewer's reconnect coexist with their own dying
-connection. It is the highest-value unit of slack available. Covering the peaks
-in the table above, ghosts included, needs roughly 6–8.
+connection. It is the highest-value unit of slack available.
+
+**[DISPUTED — see B.4]** This section originally concluded "roughly 6-8
+connections, ghosts included". The independent evaluation rejects that sizing:
+this table counts **requests**, which breaks this document's own rule that byte
+counts answer "who is using the line". A working session is one long request; a
+failing session is thousands. So every bucket is dominated by sessions already in
+a retry storm, and the solo bucket is special only because a solo storm has no
+other traffic to dilute it. **Buy 2 and observe** rather than sizing from this
+table.
 
 **[CAVEAT]** The failure rate is Cloudflare-log-derived, and a 504 there cannot
 be distinguished between a real upstream refusal and an abandoned client request
@@ -354,15 +365,25 @@ the 20 s tick always misses the cache and always makes a real
 
 Ordered by current suspicion, not by discovery order.
 
-**Read M9 first** — for what it rules out and for the mistake it records. It is
-the only entry carrying runtime measurement, and it eliminates the transport, the
-feeds and the player's buffer config.
+**Read M9 first** — for what it rules out and for the mistake it records. Note
+that its own headline conclusion was later found unsupported; see Appendix B.
 
-**No mechanism in this section is confirmed, and none of M1-M7 can explain a
-drain that reaches the Lab as well as the site** — the Lab has none of them. Every
-one of M1-M7 is inferred from reading code and not one has been instrumented. If
-the symptom includes the Lab, the shared constraint in §1 and the fix in §7b are
-the honest place to look, not this list.
+**No mechanism in this section is confirmed.** Every one is inferred from reading
+code and not one has been instrumented.
+
+**[CORRECTED 2026-09-17]** An earlier revision claimed "none of M1-M7 can explain
+a drain that reaches the Lab as well as the site — the Lab has none of them",
+and turned that into an open question. **That was a code-reading error**, caught
+by the independent evaluation:
+
+- **M6 is duplicated verbatim in the Lab** — `iptv-lab.js:574` carries the same
+  uncapped 700 ms-after-first-play reconnect as `watch-lab-continuity-guard.js:168`.
+- **M7 is server-side.** The proxy has no idle watchdog for *either* page.
+- **M8 is server-side.** A leech pulls through `/api/xtream/media`, which both use.
+
+So three of these mechanisms reach both pages and the question was never open.
+M1-M5 *are* site-only, and per §0.5 pattern 2 — the site draining while the Lab
+plays — that makes them **more** relevant, not less.
 
 ### M1 — The 20-second remount loop
 
@@ -534,6 +555,12 @@ button was clicked** — it changes the answer completely.
 only when `!everPlayed`. After first play, `:168` reconnects at a flat 700 ms
 indefinitely. Each reconnect is a teardown plus a **new** media request.
 
+**[VERIFIED 2026-09-17] The Lab carries the same loop**, written separately:
+`iptv-lab.js:574` — `const delay = tsEverPlayed ? 700 : Math.min(800 * tsStartupFailures, 2400)`.
+Same flat 700 ms, same uncapped-after-first-play shape. **M6 is therefore not
+site-only**, and a flat 700 ms retry forever is a denial of service against a
+one-connection line.
+
 **Symmetric across all cards.** It does not differ between fixtures, so it never
 explains why one card drains and another does not — but it shapes what a drain
 *looks like* once started.
@@ -547,7 +574,7 @@ explains why one card drains and another does not — but it shapes what a drain
 propagates a cancel, so every duplicated or abandoned mount costs more than it
 did while `XTREAM-IDLE-WATCHDOG-1` was in place.
 
-### M9 — Bursty delivery is normal, and nothing here is the drain  ← read first
+### M9 — Bursty delivery is normal; the rest of this entry is UNSUPPORTED  ← read Appendix B with it
 
 **[RETRACTED 2026-09-17]** An earlier version of this entry claimed, as
 **[MEASURED]**, that the provider drops two-second segments and that beIN Sports
@@ -833,6 +860,27 @@ own proxy. Every surviving suspect in §4 is in that family.
 a genuinely bad provider feed (M9: measured fine), and client-side rendering
 faults. Nor does it help a lone viewer with no ghosts.
 
+### Option D — fix the recovery logic instead (added from B.6)
+
+Proposed by the independent evaluation and **not** among the original three. It
+builds nothing: delete the Lab's TS→HLS excursion, back off and cap both 700 ms
+reconnect loops, and relax `labChannelAlreadyHealthy`. Hours of work, no
+infrastructure, no recurring cost.
+
+Its argument is that the drain is manufactured by a *handover* — on a line with
+one connection and no queue, every recovery path drops the connection and
+re-asks, and whoever asks first wins. **D is required regardless of whether B is
+built**, because fan-out without it merely moves the retry storms onto the
+Durable Object.
+
+**Caveat on option A that §7b originally missed:** `iptv-lab.js:64-71` records
+that provider HLS *segments* return 403 through the proxy, because the panel
+binds them to the IP that fetched the manifest and a Worker egresses each
+subrequest from a different edge IP. If that still holds, **A is impossible, not
+merely awkward** — the token-keying problem is solvable, this is not. It is a
+code comment that has never been re-verified and is worth ~1 s of line to check
+before any work on A. See B.6.
+
 **Economics first.** Ask the provider what additional connections cost before
 building any of this. More connections raise the ceiling; fan-out lowers the
 demand. Fan-out is the better engineering, a subscription upgrade is usually the
@@ -1083,3 +1131,219 @@ Every viewer receives unique signed URLs for the same six segments, so
 Nine live transport runs plus one wasted browser pair, roughly 19 minutes of the
 single slot in total. Every one was taken from a real viewer. The `--live` lock
 file and the 180 s cap held throughout; no two ran concurrently.
+
+---
+
+## Appendix B — independent evaluation, 2026-09-17
+
+A second agent was given this document, its raw appendix, the three fan-out
+options and an explicit brief: treat the author as fallible, re-derive from the
+numbers, and audit the *instruments* rather than only the reasoning. It was told
+the author had reached confident wrong conclusions three times that day.
+
+Its findings are recorded here because several of them **overturn claims still
+made elsewhere in this document**. Where its claims were verified against the
+code they are marked; where the author disputes them, that is stated too.
+
+### B.1 The headline: `bufferFloorSeconds` measures the startup transient
+
+**[VERIFIED — this voids M9's conclusion]**
+
+Every feed in A.8 reports its worst shortfall at **0.2–0.3 s**. That is not four
+independent results; it is the metric measuring the opening ramp before enough
+bytes had landed to satisfy a line drawn from t=0.
+
+The arithmetic checks exactly. `2449` at 2.85 Mbps = 356 KB/s; the reported
+27 KiB shortfall ÷ 356 KB/s = **0.078 s** → the "0.08 s" in the table. Meanwhile
+A.7 shows second 2 of Run E delivering **55.2 Mbps** — roughly 17 seconds of
+content banked at once. Once a surplus that size exists, **no later gap can ever
+register**, because the model takes the maximum of `consumed(t) − held(t⁻)` and
+that maximum is fixed in the first half-second.
+
+So the document's proudest line — *"`241363` had ten quiet windows and still
+never put a player more than 0.12 s behind... the number of quiet windows does
+not predict the prebuffer requirement at all"* — is an instrument artifact read
+as a fact about feeds. **M9's conclusion that the transport is fine is
+unsupported.** It may still be true. It is not shown.
+
+**Also circular, as the author suspected.** Consuming at the feed's own mean
+delivered rate pins both ends of the curve together, making the metric
+scale-invariant: it measures deviation from the feed's own trend and never the
+*level* of that trend. **It is structurally blind to sustained under-delivery** —
+a feed running at 60% of its encode rate for the whole window scores ≈0. That is
+exactly the shape contention or upstream shaping would take.
+
+**The non-circular replacement** is to parse PCR out of the transport stream and
+compare media-seconds delivered against wall-clock seconds elapsed. That has an
+absolute reference. Nothing in the toolchain looked at a single TS byte.
+
+**Author's correction to the evaluator:** it proposed re-running the model
+offline over "arrival arrays already captured with `--json`". No run ever passed
+`--json`, so those arrays were never written. That test needs a fresh capture and
+is **not** free.
+
+### B.2 Further instrument defects
+
+- **[VERIFIED] `stallMs = 1500` makes quiet-window counts a function of bitrate,
+  not health.** With a fixed ~256 KiB delivery quantum, inter-flush spacing
+  scales inversely with rate. In A.8 the two fastest feeds (5.47, 5.00 Mbps) have
+  **zero** quiet windows and the two slowest (3.29, 2.85) have **all fourteen**.
+  A fixed-time threshold against a fixed-byte quantum produces that mechanically.
+  §6 Step 0's advice to "read the gap rhythm" rests on a metric whose sensitivity
+  varies with the feed being measured.
+- **[VERIFIED] `gapRhythm`'s period verdict is near-unfalsifiable.** The length
+  tolerance is earned — observed spread 22–92 ms against a 300 ms allowance. But
+  the period tolerance `max(2, typicalPeriod * 0.25)` is in **seconds**, so for
+  any period under 8 s the 2 s floor dominates: for `241363` (gaps every ~5 s)
+  that is ±40%. And `measureTransport` returns `gaps.slice(0, 12)`, so
+  `gapRhythm` only ever sees the **first twelve** — the cadence of a long run is
+  judged on its opening, while `stallCount` uses the full array. The two disagree
+  by construction on long runs.
+- **[VERIFIED] A stream that dies mid-run reports as healthy.** If upstream
+  closes at 20 s of a 60 s run the loop simply ends, `elapsed ≈ 20`, the mean is
+  computed over 20 s, no `error` is set, and the verdict prints **"EASY — any
+  sane buffer rides this out."** The only tell is the printed duration. Given
+  that "the stream dies" is the actual symptom under investigation, the
+  instrument has no signal for it. A.2 caught it by eye, not by the tool.
+- **`Number(args.seconds)` → NaN** makes `setTimeout(abort, NaN)` fire
+  immediately and the belt-and-braces guard `now - started > (NaN+5)*1000` never
+  fire. A mistyped `--seconds` yields a ~0-length run that still costs a
+  connection setup.
+- **`takeLock()`** tests a possibly-recycled PID with `process.kill(pid, 0)`, and
+  the `catch` path drops a lock this process may not own.
+
+### B.3 The safety interlock has a hole
+
+**[VERIFIED]** `harness.mjs:25` blocks `/api/xtream/media`, `/api/xtream/direct`
+and `/wk/hls`. It does **not** block `/api/iptv-lab/probe`, which is a real route
+(`backend/routes/iptv-lab.js:12,44`) reaching `probeMediaUrl`
+(`backend/adapters/xtream.js:328`) — and that fetches a real manifest, a real
+segment and a real TS body. **A run without `--live` can still take the slot** if
+anything on the page triggers a probe, and on the Lab both `iptv-quality.js:131`
+and `iptv-lab-compat-fallback.js` fire probes on `kz:iptv-playback-failed`.
+
+Confirmed safe by contrast: `/api/iptv-lab/status` only probes channels when
+`media=1` is passed. §6 Step 2's curl is fine; `?media=1` is a footgun.
+
+### B.4 Where it disputes §1's ghost reading
+
+**[UNRESOLVED — the author finds this persuasive but it is not settled]**
+
+§1's failure-rate table counts **requests**, which breaks this document's own
+rule that byte counts, not request counts, answer "who is using the line".
+
+The mechanism it proposes instead: a *working* session is one long-lived
+`/api/xtream/media` request lasting minutes — one log line. A *failing* session
+is the flat 700 ms reconnect loop — thousands of log lines an hour. So
+per-request failure rate is dominated by sessions already in a retry storm, in
+every bucket. What makes the "1 viewer" bucket special is that a solo retry storm
+has no other traffic to dilute it — **the storm is the bucket**. 3,137 requests
+attributed to one viewer is itself the signature of a loop; a healthy solo hour
+should produce single-digit requests.
+
+Causality may also run backwards: when a drain clears the room, the last person
+left is alone. "Alone" is partly an *effect*.
+
+**Consequence: the "roughly 6–8 connections" sizing in §1 is not supported by
+that evidence.** More connections may still be right, for the different reason in
+B.6.
+
+On genuine slot-holding it judges M7 real but small: the Worker's
+`cancel(reason) { return reader.cancel(reason); }` does propagate to the upstream
+subrequest, and the genuinely unreleased cases are narrow —
+`xtream-media-safe.js:180-186` returns an error without cancelling
+`response.body`, and `fetchXtreamMedia:40-51`'s no-Range retry abandons the first
+response body. Both small-body cases. **Do not size a subscription on M7.**
+
+### B.5 Two theories it ruled out from the library source
+
+Recorded so nobody spends a day on either:
+
+- **lazy-load suspend/resume cannot fire.** `notifyBufferedPositionChanged` is
+  gated on `!this._config.isLive && this._config.lazyLoad`. Both pages set
+  `isLive: true`, so the 180 s→30 s suspend/resume cycle — which *would* close
+  and reopen the upstream connection periodically, on both pages — never runs.
+- **MSE quota exhaustion cannot occur.** `MSEController`'s constructor forces
+  `autoCleanupSourceBuffer = true` when `isLive` and it is unset, with 180 s/120 s
+  backward trimming. Both pages qualify.
+
+It also independently re-derived and **confirmed every claim in A.10** about the
+stash buffer, including that `stashInitialSize` is bytes and that the 3 MB
+allocation is unconditional.
+
+### B.6 Its recommendation, and where it differs
+
+**A fourth option — D: fix the recovery logic. No infrastructure.**
+
+Its argument is that the drain is manufactured by a *handover*: on a line with
+one connection and no queue, every recovery path here responds by dropping the
+connection and re-asking, and whoever asks first wins. Three changes:
+
+1. **Delete the Lab's TS→HLS excursion** (`iptv-lab.js:563-572`) — it surrenders
+   the connection to a path the same file documents as 403ing on every segment.
+2. **Back off and cap both 700 ms reconnect loops**
+   (`watch-lab-continuity-guard.js:168`, `iptv-lab.js:574`) — 700 ms → 1.4 → 2.8,
+   cap ~10 s. A flat 700 ms forever is a denial of service against your own line.
+3. **Relax `labChannelAlreadyHealthy`** so a rebuffering player is left alone —
+   the M1 fix already designed in §4 and never applied.
+
+It argues D is **required regardless**: fan-out without it just moves the retry
+storms onto the Durable Object.
+
+**On buying connections: buy 2, not 6-8.** Its framing is that the second
+connection's value is not a second viewer — it is that **a handover stops being a
+race**, because the new connection can be established before the old one dies.
+If that is the mechanism, 2 produces an obvious improvement immediately; if it
+produces nothing, the cause is not slot contention, learned for one month's fee.
+
+**On the fan-out options it adds three things §7b missed:**
+
+- **Option A may be impossible, not merely awkward.** `iptv-lab.js:64-71` records
+  that provider HLS **segments return 403** through the proxy because the panel
+  binds them to the IP that fetched the manifest. A.11's "zero URLs in common" is
+  a *token* problem and solvable; this is a *provider* problem and is not. §7b
+  never mentions it. **This is the largest gap in §7b.** The claim is a code
+  comment and has never been re-verified — worth ~1 s of line to check.
+- **A converges on B anyway.** Request coalescing needs a lock, and in Workers a
+  lock means a Durable Object.
+- **§7b's table overstates B.** "Exactly 1, permanently" is per *channel*. With
+  `max_connections: 1`, B still only serves **one channel at a time**. It also
+  omits B's failure modes: a DO is a single point of eviction (a restart drops
+  every viewer at once, which would look exactly like pattern 1), per-viewer
+  backpressure is required so one slow phone cannot stall the tee, and a naive
+  byte-tee gives new viewers garbage until the next keyframe — meaning the DO
+  must parse MPEG-TS, which is why "no client change, therefore cheap"
+  understates it.
+
+**On the stream lock:** it notes the argument for B treats the lock as a law of
+physics when it is a process control the owner holds, with a documented approval
+path this document passed through twice on 2026-09-17. Choosing a materially
+larger infrastructure project to avoid a process step you control is the wrong
+trade. It still prefers B over A on engineering merit — but because B removes the
+handover race, not because the client is untouchable.
+
+### B.7 What it could not determine
+
+- **Whether the ~2000 ms gaps originate at the provider or in the Worker.** Every
+  measurement in Appendix A includes the Worker hop (`transport.mjs` routes
+  through `korazero.com`). Untested.
+- **Whether provider HLS segments still 403 through the proxy.** Load-bearing for
+  option A, and currently only a code comment.
+- **Last-mile behaviour.** Unknown, as this document already says.
+- **Whether `activeConnections` is ever 1 with no player of ours running.** That
+  is the direct ghost test, it is free, and nobody has run it.
+
+### B.8 The one finding invalidated by a later correction
+
+Its headline mechanism for "the Lab drains while the site is fine" — the HLS
+excursion surrendering the slot — was built on a symptom that **does not exist**.
+The author had recorded the pattern backwards; see §0.5. The owner is explicit
+that it is always the reverse: the site drains while the Lab plays.
+
+The underlying code defect is real and independently verified, and it may
+contribute to pattern 1. But it does not explain pattern 2, and pattern 2 points
+at the **site-only** mechanisms M1-M5 instead.
+
+This is worth noting as a process point: the evaluation was rigorous and still
+produced a wrong headline, because one input was wrong. **Check the symptom
+before building on it.**
