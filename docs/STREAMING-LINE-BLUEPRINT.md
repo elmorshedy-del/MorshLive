@@ -35,9 +35,11 @@ this order:
 1. **§0.5** — the symptom, in the owner's words. Everything must explain this.
 2. **Appendix D** — the 2026-09-18 chain, and the current state of knowledge.
    **D.0 is a map of what each step overturned; D.10 is what stands today.**
-3. **§1–§8** — the architecture and the mechanism catalogue. Accurate on the code,
-   but §1's central premise is falsified (see D.6) and several mechanisms are
-   assessed against assumptions that no longer hold.
+3. **§1–§8** — the architecture and the mechanism catalogue. Accurate on the code.
+   §1's central premise was retracted mid-investigation and then **re-confirmed by
+   measurement (D.13)** — with its mechanism corrected from "viewers degrade each
+   other" to "the second viewer evicts the first". Some mechanisms are still
+   assessed against assumptions that no longer hold; the tags say which.
 4. **Appendices A–C** — the raw record of earlier measurement, including runs that
    produced wrong conclusions.
 
@@ -76,6 +78,16 @@ a strong discriminator — it rules out anything that would affect the line as a
 whole, and points at something specific to the feed or to how a particular
 channel is resolved and fetched.
 
+**[ADDED 2026-09-18 — the timing, and what now explains it]** The owner also
+reports that a drain typically appears **after a minute or a minute and a half of
+successful watching**, not at startup. That detail was decisive: it falsified this
+document's own falsification of §1, because every concurrency test in D.6 was
+shorter than the delay being described. **D.13 reproduced it** — an established
+stream is evicted ~2 s after a second connection opens, so the minute-or-so a
+viewer experiences is not the stream decaying, it is **how long it takes for
+somebody else to arrive**. Pattern 1 follows directly: an eviction hits whichever
+surface is watching, so site and Lab go together.
+
 **Beware of reasoning from a single session.** Three distinct patterns is good
 evidence that more than one mechanism is in play. A fix that resolves one will
 look like it failed when the next appears, and one that lands on a quiet evening
@@ -103,20 +115,22 @@ versa. Unproven.
 
 ---
 
-## 1. The constraint that explains most failures — **[FALSIFIED 2026-09-18]**
+## 1. The constraint that explains most failures — **[CONFIRMED 2026-09-18, mechanism corrected]**
 
-> **STOP. Read D.6 before this section.** Its central claim was tested on
-> 2026-09-18 and is false: the line served **five concurrent streams**, same
-> channel and different channels alike, and `activeConnections` reported `0/1`
-> throughout. `max_connections: 1` is what the panel *claims*, not what the line
-> *enforces*. Everything below was believed on the strength of that field and
-> never tested; the contention reasoning built on it does not hold, and the
-> capacity advice derived from it is void. The section is kept intact because a
-> great deal of this document reasons from it and the reader needs to see what
-> was assumed.
+> **This section was declared FALSIFIED on 2026-09-18 and then re-confirmed the
+> same day. Read D.13.** D.6 ran 15–20 s concurrency pulls, saw five streams
+> return 200 with bytes flowing, and retracted this section. That test was wrong:
+> it scored on `bytes > 0`, which an *evicted* stream also satisfies. At 150 s,
+> exactly one connection survives out of three, and out of five.
+>
+> **The claim below is correct. The mechanism is not.** The line does not refuse a
+> second viewer — it **evicts the first**, about two seconds after the second one
+> connects. Wherever this section says two viewers "degrade each other", the
+> reality is that the established viewer is killed outright. The sizing table
+> further down remains withdrawn for the separate reason B.4 gives.
 
 **The provider line permits ONE concurrent stream.** *(claimed by the panel;
-falsified in practice — see D.6)*
+**confirmed by measurement** — see D.13)*
 
 ```
 GET /api/iptv-lab/status  →  account.maxConnections: "1"
@@ -126,13 +140,17 @@ GET /api/iptv-lab/status  →  account.maxConnections: "1"
 `activeConnections: "1"`, `status: "Active"`, `expDate: 1796322120`
 (2026-12-03), `allowedOutputFormats: ["m3u8","ts"]`.
 
-Consequences that are not bugs and cannot be coded around:
+Consequences that are not bugs and cannot be coded around, **as corrected by
+D.13**:
 
-- Two honest viewers at once degrade each other.
+- Two honest viewers at once do not share the line. The **second one evicts the
+  first**, ~2 s after connecting.
 - **Any second connection opened by our own code — a remount, a reconnect, a
-  probe, a second tab — competes with the viewer we already have.**
+  probe, a second tab — kills the stream the viewer is currently watching**,
+  including their own.
 - A drain is therefore usually not "the stream is broken". It is "something
-  asked for a second connection".
+  opened a second connection", and the viewer who was already watching is the one
+  who loses.
 
 **Never open a live stream to test.** A probe takes the only slot from a real
 viewer and reproduces the exact failure being investigated.
@@ -186,12 +204,17 @@ request, the proxy has no idle watchdog (§2 Stage 6) so the abandoned fetch
 lingers, and the viewer's next request collides with their own ghost. A long solo
 session accumulates the most ghosts, which is why being alone is worst.
 
-**Consequence for buying capacity:** **[WITHDRAWN — see D.4 and D.6]** This section's
-sizing advice is superseded by measurement. In a real three-hour incident the
-failure rate was flat at ~48-55% whether one client or five were active, and a
-client alone still failed 52%. Buying connections cannot fix a failure rate that
-does not depend on concurrency, and D.6 shows the ceiling itself is not real.
-Read both before acting on anything in §1.
+**Consequence for buying capacity:** **[SIZING WITHDRAWN — see B.4. The lever
+itself is real again — see D.13.]** The *number* in this section (6–8) does not
+survive B.4's objection: the table counts requests, so every bucket is dominated
+by sessions already in a retry storm. But the ceiling it was sizing **does**
+exist (D.13), so buying connections is a genuine lever — it was wrongly written
+off when D.6 claimed there was no ceiling at all.
+
+D.4's flat failure curve is not an argument against it either, once eviction is
+understood: eviction serialises the line rather than sharing it, so the failure
+rate saturates at one viewer instead of scaling with N. **Buy 2 and observe** —
+the first extra connection is the cheapest test of this entire document.
 
 **[DISPUTED — see B.4]** This section originally concluded "roughly 6-8
 connections, ghosts included". The independent evaluation rejects that sizing:
@@ -730,7 +753,7 @@ counts — the leech was only 46 requests for 5.21 GB in one six-hour window.
 | "The gold button is gone, so the premium code did not run" | **[MEASURED]** False — see M2. The normalizer eats the styling; the code ran. |
 | "The provider is under-delivering / dropping segments" | **[MEASURED 2026-09-17]** False for every feed measured. Modelled against real arrival times, no feed put a player more than **0.16 s** behind — see M9. Quiet windows are the upstream flush interval, followed by a 2.75x catch-up burst. Caveat: measured from a datacentre, so last-mile delivery to a phone is still unknown. |
 | "beIN drains because it runs at 1080 while the rest of the Lab is 720" | **[MEASURED 2026-09-17]** False, twice over. A nine-rung ladder across every beIN Sports 1 feed found health does not track resolution at all: the **4K** rung was the healthiest measured (8.55 Mbps, 0 stalls) while the two *lowest* rungs (512K, SD) died inside 0.5 s and the Low rung stalled 9 times. Then `46028`, a **1080** feed, measured 0 gaps at 5.91 Mbps — nearly twice the throughput of the 1080 feed that was failing. The fault is per-feed (M9), not per-resolution. Falling *back* to a lower rung would have made it worse. |
-| "The heavy feed collapses because many viewers hit one stream" | **[MEASURED]** False — the dose-response runs the wrong way: 1 viewer showed 77% failure, and 2–6+ viewers sat flat at ~52%. Contention would climb with load. See also the note on `max_connections: 1` in §1. |
+| "The heavy feed collapses because many viewers hit one stream" | **[MEASURED]** False *as stated* — the dose-response runs the wrong way: 1 viewer showed 77% failure, and 2–6+ viewers sat flat at ~52%. Proportional contention would climb with load. **[REINTERPRETED 2026-09-18 — D.13]** The flat curve is what *eviction* predicts: the line serialises rather than shares, so failure saturates at one viewer instead of scaling with N. Viewers do interfere — catastrophically, one at a time — just not in the dose-response shape this row tested for. |
 
 ---
 
@@ -855,6 +878,13 @@ viewers need N connections against a limit of 1. Fan-out means **one upstream
 connection per channel**, shared. The provider then sees exactly one client — us —
 regardless of audience size.
 
+> **[CONFIRMED 2026-09-18 — D.13]** This ceiling was briefly retracted (D.6) and
+> is re-confirmed by measurement: one connection survives out of five at 150 s,
+> and a second viewer **evicts** the first rather than queueing behind it. Fan-out
+> is therefore justified on evidence, not on a provider API field. The eviction
+> behaviour makes the case stronger than this section originally argued — without
+> fan-out, every reconnect by any viewer kills whoever is currently watching.
+
 Facts established 2026-09-17, so the next agent does not re-derive them:
 
 **[MEASURED]** The provider's HLS is genuinely segmented, not a wrapper around a
@@ -907,9 +937,10 @@ infrastructure, no recurring cost.
 
 Its argument is that the drain is manufactured by a *handover* — on a line with
 one connection and no queue, every recovery path drops the connection and
-re-asks, and whoever asks first wins. **D is required regardless of whether B is
-built**, because fan-out without it merely moves the retry storms onto the
-Durable Object.
+re-asks, and whoever asks first wins. **[CONFIRMED by D.13**, which measured
+exactly that line; the rule is actually *whoever asks last wins*, and the
+incumbent is evicted.**]** **D is required regardless of whether B is built**,
+because fan-out without it merely moves the retry storms onto the Durable Object.
 
 **[MEASURED 2026-09-18] Option A is not viable.** The claim at
 `iptv-lab.js:64-71` was re-verified against production: the manifest returns
@@ -933,12 +964,13 @@ better value, and they are not exclusive.
 | M1 confirmation (remount period) | Snippet in §6 Step 1. Not yet run. |
 | M1 fix | Designed, **not applied** — `watch.js` is locked, needs approval. |
 | M3 accumulation | Predicted from code, never measured. |
-| Idle watchdog (M7) | Absent since `ae812e3` was reverted. Not scheduled. |
-| Reconnect cap (M6) | Uncapped after first play. Not scheduled. |
+| Idle watchdog (M7) | Absent since `ae812e3` was reverted. Not scheduled. **Priority raised by D.13** — an abandoned upstream fetch holds the single slot, and the next request evicts whoever is watching. |
+| Reconnect cap (M6) | Uncapped after first play. Not scheduled. **Priority raised by D.13** — each retry evicts a live stream, possibly the viewer's own. Cap and jitter; do not back off indefinitely. |
+| **Buy a second provider connection** | **Not asked.** The cheapest decisive test in this document (D.13): if a second viewer stops evicting the first, the diagnosis is confirmed and the fix is a subscription line item. |
 | What explains a Lab + site drain | **Answered — see D.7.** A transient per-feed provider failure hits both surfaces when they share the failing feed, and all 40 of today's matches route to one channel. The earlier claim that "M1-M7 are site-only" was a code-reading error (M6 is duplicated in the Lab; M7 and M8 are server-side). |
 | Player-side behaviour under a real decoder | **Partly resolved.** Branded Chrome 153 is installed and H.264 decode is proven (C.2), so the H.264 feeds can now be driven in a real browser — that experiment has not yet been run. HEVC remains impossible here, so nothing about the `7053` path or iPhone Safari can be tested. |
 | Last-mile delivery | Every transport measurement so far is from a datacentre. Nothing is known about delivery to a phone on a mobile network, which is what most viewers use. |
-| Wrong `[MEASURED]` claims shipped — **four now** | M9 asserted dropped segments and drove a change to a stream-locked file (reverted). `bufferFloorSeconds` then replaced it and was itself void (B.1). §1's one-connection ceiling was believed untested for the whole investigation (D.6). A live "incident" was the owner browsing (D.9). **See D.11 for the single root cause they share.** |
+| Wrong `[MEASURED]` claims shipped — **five now** | M9 asserted dropped segments and drove a change to a stream-locked file (reverted). `bufferFloorSeconds` then replaced it and was itself void (B.1). §1's one-connection ceiling was believed untested for the whole investigation (D.6). A live "incident" was the owner browsing (D.9). **And D.6's own `[FALSIFIED]` was wrong** — a 20 s test that could not detect the effect it was looking for (D.13). **See D.11 and D.14.** |
 | `alternates` is read by nobody | `resolveXtreamChannel` computes and returns it, and **zero** client code consumes it. There is no failover today — a bad feed is simply played. |
 | `alternates` contains wrong channels — **now worse** | **[VERIFIED]** Of 23 candidates for `bein-sports-1`, **seven are wrong-language** and three are a different broadcaster (Alkass). The provider's 2026-09-18 rename put English and French at positions **3 and 4**, because the filter tests for `english`/`fra` and the names now say `EN`/`FR`. Turkish has a token check; English and French never got one. See D.8. Harmless only while nothing reads the list; **fix before any failover work.** |
 | Other channels never health-checked | No channel other than beIN 1 and Thmanyah has had its pick measured. Less urgent than it was: **all 40 of today's matches route to `bein-sports-1`** (D.7), so one feed carries the whole site. |
@@ -1650,7 +1682,7 @@ reverse — Lab draining while the site plays — does **not** happen.
 | Client races itself: replacement before release | ✓ | ✓ | ✓ | **WEAKENED** (**D.9**) — the same-second 200/504 pairing is also produced by a viewer opening and closing the site, so it is not evidence on its own. What survives is D.9's token-reuse split: 77% of the Sep 16 window sits on tokens re-requested 10+ times, which browsing cannot produce. | Ground truth during a confirmed incident showing no repeated re-requests |
 | Recovery logic surrenders the slot | ✓ | — | — | **SUPPORTED, code only** — Lab TS→HLS excursion (`iptv-lab.js:563-572`) into a path now re-confirmed to 403 (C.3); uncapped 700 ms loops in **both** pages | Instrumented session showing no HLS excursion before a drain |
 | Site-only mechanisms M1-M5 | ✗ | ✓ | — | **M1 now observed at runtime** (**D.5**) — one client used 62 tokens across 163 requests, re-resolving the channel per attempt, which is the remount path. M2-M5 remain uninstrumented. | A site-only drain with no remount and no toolbar churn |
-| Two honest viewers exceed the line | ✓ | ✗ | ✗ | **FALSIFIED** (**D.4**, **D.6**) — success is flat across a fivefold change in concurrency, and the one-connection ceiling it assumed does not exist: the line served 5 concurrent streams | A drain whose failure rate tracks 1/N concurrency |
+| Two honest viewers exceed the line | ✓ | ✗ | ✗ | **[CONFIRMED 2026-09-18 — D.13]**, after being wrongly falsified. The ceiling is real: 1 of 5 concurrent streams survives 150 s, and a second viewer **evicts** the first ~2 s after connecting. D.4's flat curve was the wrong falsifier — it tests proportional sharing, and eviction serialises instead, so failure saturates at one viewer rather than tracking 1/N. | A staggered join where the incumbent survives, with a solo control |
 
 ### C.7 The question the campaign was built to answer
 
@@ -1681,14 +1713,16 @@ capability, Cloudflare analysis, ghost polling — was free.
 
 # Appendix D — The 2026-09-18 chain
 
-**From a Google Analytics screenshot to three falsifications.**
+**From a Google Analytics screenshot to three falsifications — one of which was
+itself false.**
 
 ## D.0 How to read this chapter
 
 This is one continuous investigation, not four independent findings. Each step
-was prompted by the one before it, and **three of them overturned conclusions
-reached earlier in the same chain.** Reading them out of order gives the wrong
-picture, so the arc is stated first.
+was prompted by the one before it, and **four of them overturned conclusions
+reached earlier in the same chain — including one that overturned another step of
+the chain.** Reading them out of order gives the wrong picture, so the arc is
+stated first.
 
 | # | Question | Answer | What it cost |
 |---|---|---|---|
@@ -1696,14 +1730,24 @@ picture, so the arc is stated first.
 | 2 | Why did GA session duration collapse when traffic peaked? | Found a **real incident**, Sep 16 19:00–22:00 | — |
 | 3 | Is the drain caused by viewers contending for the line? | **No** — failure flat at ~50% from 1 client to 5 | Killed the contention model |
 | 4 | Is the 50% a structural artifact (HLS+TS both fetched)? | **No** — one token was re-requested 190 times | Killed the mundane explanation |
-| 5 | Is the line really limited to one connection? | **No** — it served **5 concurrent** | **Killed §1**, the premise under steps 3–4 |
+| 5 | Is the line really limited to one connection? | ~~**No** — it served **5 concurrent**~~ **WRONG, see step 9** | Killed §1 — **mistakenly** |
 | 6 | What actually fails, then? | Caught a **per-feed transient 503** live | Gave a mechanism that fits all 3 symptoms |
 | 7 | Which stream does the site even play? | It **changed overnight**, no deploy | Made every "the site plays X" claim dated |
 | 8 | Was the session I captured really a drain? | **No** — the owner was opening and closing | Killed my own live-incident claim |
+| **9** | **Does the line enforce one connection after all?** | **YES — and it EVICTS the viewer already watching, ~2 s after a second one connects** | **Reversed step 5. Restored §1, fan-out, and the capacity option** |
 
-**The single most important line in this chapter is step 8.** It showed that the
-signature used to identify a drain in steps 3–5 is also produced by a viewer
-browsing normally. What survives that, and what does not, is set out in D.9.
+**The two most important lines in this chapter are steps 8 and 9.**
+
+Step 8 showed that the signature used to identify a drain in steps 3–5 is also
+produced by a viewer browsing normally. What survives that is set out in D.9.
+
+Step 9 is the one that matters for fixing anything. Step 5's tests ran 15–20 s
+and scored a stream as served if any bytes arrived — but an *evicted* stream also
+returns 200 and also delivers a couple of seconds of video. At 150 s, one
+connection survives out of five, and a solo control proves the survivor is
+decided by **arrival order**, not by the feed. **The owner said the drain takes a
+minute to appear; every test in step 5 was shorter than that.** See D.13, and
+D.14 for why this error was more expensive than the one it corrected.
 
 Tags used below: **MEASURED** · **VERIFIED CODE** · **SUPPORTED** · **FALSIFIED** · **UNKNOWN**
 
@@ -1878,7 +1922,15 @@ requests — video arriving in bursts between failures.
 
 ---
 
-## D.6 Step 5 — §1 itself falsified: there is no one-connection limit
+## D.6 Step 5 — §1 "falsified" — **[THIS STEP IS WRONG. See D.13.]**
+
+> **Do not cite this section.** Its conclusion is reversed. The tests below ran
+> 15–20 s and scored a stream as served on `status 200 && bytes > 0` — a criterion
+> an **evicted** stream also satisfies, because eviction lets a couple of seconds
+> of video through before closing. At 150 s, one connection survives out of five.
+> The limit is real; it evicts the incumbent rather than refusing the newcomer.
+> The section is kept because steps D.7–D.12 were written on top of it and a
+> reader needs to see what they inherited.
 
 **2026-09-18 02:05–02:25 UTC. Line reporting idle, zero media requests in the
 preceding 45 minutes, no viewers present.**
@@ -1899,30 +1951,41 @@ this plan — so it was tested directly.
 
 Five simultaneous pulls delivered 8.3, 11.3, 28.4, 9.3 and 3.7 MB in 15 seconds.
 
-**[FALSIFIED] `max_connections: 1` is not enforced as reported.** Neither the
-per-account reading nor the owner's per-stream reading survives.
+> **[RETRACTED]** These byte counts are the evidence *against* this section's
+> conclusion, not for it. At their sustained rates those feeds owed ~17 MB in
+> 15 s. Four of the five fell far short — the signature of a stream evicted after
+> ~2 s. Only the 28.4 MB pull was a live stream. See D.13.
+
+**[FALSIFIED — and this falsification is itself false; see D.13]**
+`max_connections: 1` **is** enforced. The owner's per-stream reading does not
+survive (same channel behaves identically), but the per-account limit is real.
 
 **[MEASURED] `activeConnections` does not track reality.** It reported `0/1`
 *while five streams were being pulled*, and `1/1` at moments when nothing ran.
 
-### What this invalidated
+### What this was believed to invalidate — **all but one item restored by D.13**
 
-- **§1's central claim** — "two honest viewers at once degrade each other" — and
-  with it the framing that a drain is "something asked for a second connection".
-- **The ghost test (C.5).** Thirty polls of `activeConnections` measured a
-  counter that does not reflect connections. Its clean result says nothing.
-- **Every capacity recommendation in this document.**
-- **The fan-out case in §7b**, whose value was collapsing N connections against a
-  hard ceiling that does not exist.
-- It also **explains D.4 rather than contradicting it**: the failure rate was flat
-  across concurrency because there is no contention to escalate.
+- ~~**§1's central claim**~~ — restored, with the mechanism corrected from
+  degradation to eviction.
+- **The ghost test (C.5).** **Still dead.** `activeConnections` does not track
+  connections, and that holds whether or not the limit exists.
+- ~~**Every capacity recommendation**~~ — the *lever* is restored; the 6–8 sizing
+  stays withdrawn on B.4's separate objection.
+- ~~**The fan-out case in §7b**~~ — restored. The hard ceiling it collapses
+  connections against is real.
+- ~~**It explains D.4**~~ — the better explanation is D.13's: eviction serialises
+  the line instead of sharing it, so the failure rate saturates at one viewer
+  rather than declining as 1/N. D.4 falsified proportional sharing, not the limit.
 
-### Limits
+### Limits — the one that mattered
 
-Tested at 02:0x UTC with no other viewers; enforcement could differ under load or
-may have changed over time. Each pull was 15–20 s. **Instrument caveat found
-here:** `mediaPerWall` on 15–20 s pulls is dominated by the opening burst and
-read 13× and 19× in these runs — it is meaningful only at 45 s or more.
+Tested at 02:0x UTC with no other viewers. **Each pull was 15–20 s, and that is
+what broke this step**: the effect only appears once a second connection has been
+open long enough to evict the first, which no 20-second window reliably contains.
+
+**Instrument caveat found here:** `mediaPerWall` on 15–20 s pulls is dominated by
+the opening burst and read 13× and 19× in these runs — it is meaningful only at
+45 s or more. That same short-window distortion is what hid the eviction.
 
 ---
 
@@ -2132,10 +2195,11 @@ observed 826, and "expired" and "invalid" produce identical 31-byte bodies.
 |---|---|
 | The GA spikes were real viewers, not our probing | D.2, three independent reasons |
 | Sep 16 19:00–22:00 carried genuine retry churn | D.9 — 77% of traffic on tokens reused 10+ times |
-| Viewer contention is not the primary driver | D.4 — flat across 1→5 clients |
+| Viewer contention does not scale as 1/N | D.4 — flat across 1→5 clients. **Reinterpreted by D.13**: eviction serialises rather than shares, so the rate saturates at one viewer. |
 | The failure is not a structural two-URL artifact | D.5 — one token requested 190× |
-| **The line is not limited to one connection** | D.6 — 5 concurrent served |
-| `activeConnections` is not a measurement | D.6 — read `0/1` during 5 live pulls |
+| ~~**The line is not limited to one connection**~~ | **REVERSED — D.13.** The limit is real and evicts the incumbent. D.6's test could not detect it. |
+| **The line evicts an established viewer when a second connects** | **D.13** — 1 of 3 and 1 of 5 survive 150 s; solo control survives, joined incumbent dies at 62 s |
+| `activeConnections` is not a measurement | D.6 — read `0/1` during 5 live pulls; unchanged by D.13 |
 | The provider transiently fails individual streams | D.7 — `2449` 503 for ~2 min while `3177` served |
 | M1 and M6 both occur at runtime | D.5 — two client behaviours in one incident |
 | `EN`/`FR` feeds now pass the Arabic filter | D.8, verified against the live parser |
@@ -2144,10 +2208,12 @@ observed 826, and "expired" and "invalid" produce identical 31-byte bodies.
 
 ### Dead
 
-- §1's one-connection constraint, and every capacity recommendation from it
-- The ghost test as designed (C.5)
+- ~~§1's one-connection constraint~~ — **restored by D.13.** Only its *sizing*
+  number stays withdrawn, on B.4's separate objection.
+- The ghost test as designed (C.5) — `activeConnections` measures nothing
 - "Same-second 200/504 pairing proves a fault" (D.9)
 - The expired-cached-token explanation for the 403s (D.9)
+- Fan-out option A — the HLS 403 (C.3) is untouched by any of this
 
 ### Open
 
@@ -2155,8 +2221,10 @@ observed 826, and "expired" and "invalid" produce identical 31-byte bodies.
 |---|---|
 | What produces the 403s | Two code paths, not separable by response size |
 | How often and how long per-feed 503s last | Caught once, for ~2 minutes |
-| Whether the drain is the provider fault or the retry amplifier | Needs ground truth during a confirmed incident |
-| Whether concurrency behaves differently under real load | Tested at 2 a.m. with nobody watching |
+| Whether the drain is the provider fault or the retry amplifier | **Narrowed by D.13** — eviction supplies the amplifier a mechanism, but ground truth during a confirmed incident is still needed |
+| Whether eviction is the provider's or something in our path | D.13 infers upstream from our code holding no cross-request state; not confirmed against the provider directly |
+| Whether the rule is "oldest dies" or "all but newest die" | Clean only in the staggered case; simultaneous starts race |
+| Whether eviction behaves the same under real load | Tested at 3 a.m. with nobody watching — though this caveat now runs toward *understating* the fault |
 
 ---
 
@@ -2169,6 +2237,7 @@ root cause:
 |---|---|---|
 | The ~2000 ms gaps (M9) | identical gap lengths = dropped segments | checking whether the bytes later arrived |
 | The one-connection limit (D.6) | the provider's own API field was true | testing it, once, in twenty minutes |
+| **D.6's own falsification** (D.13) | a 20-second test that found nothing meant there was nothing | asking whether the test could detect the effect at all |
 | The live "incident" (D.9) | the request pattern meant a fault | asking the owner what he was doing |
 
 **In each case a number was read as a symptom without establishing what was
@@ -2185,6 +2254,11 @@ And its corollary for instruments: **a number reported by a system is a claim
 about that system, not a measurement of it.** `max_connections: 1` was believed
 for the entire investigation because a provider API said so.
 
+**And the mirror of it, added after D.13:** a *falsification* is a claim too. The
+one-connection limit was first believed without test and then disbelieved on a
+test too short to see it. See D.14 — the second error cost more than the first,
+because it wore the authority of a measurement.
+
 ---
 
 ## D.12 Audit of every recommendation this document has made
@@ -2197,10 +2271,10 @@ Each is re-judged below against current evidence rather than left standing.
 
 | Recommendation | Where it came from | Why it is dead |
 |---|---|---|
-| **Buy more provider connections** (§1 said 6–8; later revised to "buy 2") | §1's `max_connections: 1` | **D.6** — the line served 5 concurrent. There is no ceiling at 1 to raise. This would have been money spent on nothing. |
-| **Fan-out option A** — edge-cache HLS segments | §7b | **C.3 / D.7** — provider HLS segments return 403 through the proxy, re-verified. Not awkward; impossible. |
-| **Fan-out option B** — Durable Object teeing one upstream | §7b, endorsed by the evaluator | **D.6** — its entire value was collapsing N connections against a hard ceiling. There is no hard ceiling. |
-| **Fan-out option C** — repackage into R2 | §7b | Was always disproportionate; now has no capacity problem to solve either. |
+| ~~**Buy more provider connections**~~ | §1's `max_connections: 1` | **[RESTORED BY D.13]** — the ceiling is real. **Buy 2 and observe** is now the cheapest decisive test available. Only the 6–8 *number* stays withdrawn (B.4: request-counted). |
+| **Fan-out option A** — edge-cache HLS segments | §7b | **Still dead. C.3 / D.7** — provider HLS segments return 403 through the proxy, re-verified. Not awkward; impossible. Untouched by D.13. |
+| ~~**Fan-out option B**~~ — Durable Object teeing one upstream | §7b, endorsed by the evaluator | **[RESTORED BY D.13]** — its value was always collapsing N connections against a hard ceiling, and the ceiling exists. **This is the structural fix.** |
+| **Fan-out option C** — repackage into R2 | §7b | Disproportionate — but on cost, not on premise. It solves a real problem expensively. Prefer B. |
 | **`curl /api/iptv-lab/status` during a drain** (§6 Step 2, C.5) | the ghost hypothesis | **D.6** — `activeConnections` read `0/1` while five streams were being pulled. The counter measures nothing. |
 | **Re-run `bufferFloorSeconds` offline** | Appendix B.1 | Superseded — the metric is retired (C.0). The media clock replaced it. |
 
@@ -2208,9 +2282,9 @@ Each is re-judged below against current evidence rather than left standing.
 
 | Recommendation | Original rationale | Status now |
 |---|---|---|
-| **Delete the Lab's TS→HLS excursion** (`iptv-lab.js:563-572`) | It surrenders the only connection to a path that 403s | **Real defect, near-zero product value.** Surrendering the connection costs nothing — there is no slot to lose (D.6). It still abandons a *working* TS stream, waits 180 ms, retries a path re-confirmed to 403 on every segment (D.7), and only then returns — a self-inflicted multi-second blackout for no gain. **But [VERIFIED] it is Lab-only:** `tsRuntimeHlsAttempted` appears in `assets/js/iptv-lab.js` and nowhere else, and `watch-lab-continuity-guard.js` reconnects TS→TS with no HLS path. The Lab is a diagnostic page. **Fixing this helps no viewer.** |
-| **Back off / cap the 700 ms reconnect loops** (`iptv-lab.js:574`, `watch-lab-continuity-guard.js:168`) | The immediate retry collides with the client's own unreleased connection on a one-slot line | **Justification collapsed.** There is no one-slot line, so there is nothing to collide with. What remains is noise: during the ~2-minute per-feed 503 seen in D.7, a 700 ms loop issues roughly 170 futile requests. **And backoff could make things worse** — if the feed recovers after 30 s and the client has backed off to 10 s, the viewer waits longer than they do today. **Genuinely unclear whether this helps. Do not ship it on the old reasoning.** |
-| **Relax `labChannelAlreadyHealthy`** — the M1 fix designed in §4 | A remount opens a second connection on a one-slot line | **Weakened but not dead.** The slot argument is gone. M1 *is* now observed at runtime (D.5 — one client used 62 tokens for 163 requests), and remounting a healthy player causes a visible glitch for nothing. But **it has never been shown to cause a drain**, and it touches a stream-locked file. |
+| **Delete the Lab's TS→HLS excursion** (`iptv-lab.js:563-572`) | It surrenders the only connection to a path that 403s | **[PARTLY RESTORED BY D.13]** The original rationale is live again — there *is* a slot to lose, and abandoning the TS stream to chase a path that 403s on every segment (D.7) means re-connecting afterwards, which under eviction is a fresh chance to be culled. It still abandons a *working* TS stream for a multi-second blackout. **But [VERIFIED] it is Lab-only:** `tsRuntimeHlsAttempted` appears in `assets/js/iptv-lab.js` and nowhere else, and `watch-lab-continuity-guard.js` reconnects TS→TS with no HLS path. The Lab is a diagnostic page, so **fixing this still helps no viewer** — the reasoning recovered, the product value did not. |
+| **Back off / cap the 700 ms reconnect loops** (`iptv-lab.js:574`, `watch-lab-continuity-guard.js:168`) | The immediate retry collides with the client's own unreleased connection on a one-slot line | **[RESTORED AND SHARPENED BY D.13]** — and the original rationale understated it. A retry does not merely *collide* with the client's own connection; on an evicting line **it kills whatever stream is currently alive, including the viewer's own**. This is the mechanism behind §1's 77%-when-alone and D.4's flat curve. The earlier worry still stands as a design constraint — backing off to 10 s makes a viewer wait through a 30 s outage — so **cap and jitter rather than exponential-backoff-to-infinity**. No longer "unclear whether this helps". |
+| **Relax `labChannelAlreadyHealthy`** — the M1 fix designed in §4 | A remount opens a second connection on a one-slot line | **[RESTORED BY D.13]** The slot argument is back, and worse than stated: a remount does not queue behind the existing connection, it **evicts it**. M1 is observed at runtime (D.5 — one client used 62 tokens for 163 requests). It still touches a stream-locked file and has still never been caught causing a drain *directly*, but it now has a plausible mechanism for doing so. |
 
 ### Strengthened — the one case that got better
 
@@ -2237,25 +2311,36 @@ The evaluator's plan rested on one argument:
 > connection and no queue, every recovery path drops the connection and re-asks,
 > and whoever asks first wins
 
-**That thesis is dead.** It requires a scarce connection, and D.6 showed the line
-served five concurrent streams. With no scarcity there is no handover race, and
-the three items lose their common justification — which is why each is re-judged
-above on its own merits rather than as a package.
+**[RESTORED BY D.13] That thesis is correct.** It was declared dead here because
+D.6 said the line served five concurrent streams. D.6 was wrong. The thesis
+requires a line with exactly one connection and no queue, where every recovery
+path drops the connection and re-asks — which is precisely what D.13 measured,
+and the evaluator's "whoever asks first wins" is, if anything, too gentle. The
+real rule is **whoever asks *last* wins**, and the viewer already watching is
+evicted.
 
-**Why a rigorous evaluation landed wrong.** Its reasoning was sound; two of its
-inputs were not, and both came from this document:
+The three items therefore do recover their common justification, and are each
+restored above.
+
+**Why a rigorous evaluation appeared to land wrong.** One of its two disputed
+inputs was in fact sound:
 
 - It was handed §1 — "the line permits ONE concurrent stream" — as established
-  fact. Untested (D.6).
+  fact. **It was right to rely on it** (D.13). This document's own retraction of
+  §1 was the error.
 - It was handed §0.5 with the second symptom pattern **inverted**, so its headline
   mechanism explained "the Lab drains while the site plays", which does not
-  happen.
+  happen. **That defect is real** and is not repaired by D.13.
 
-**An independent review inherits the errors in what it is given.** That is not a
-criticism of the review; it is an argument for testing premises before handing
-them to anyone, including a reviewer.
+**An independent review inherits the errors in what it is given** — and also gets
+blamed for the ones that turn out not to be errors. The argument stands, with a
+sharper point: test premises before handing them to a reviewer, and before
+retracting them under a reviewer's nose.
 
-### What this leaves
+### What this leaves — **[SUPERSEDED BY D.13]**
+
+*Written when the premise was believed falsified. Kept to show what the retraction
+cost. The current position is below it.*
 
 Nothing large is justified by current evidence. The honest position:
 
@@ -2268,7 +2353,213 @@ Nothing large is justified by current evidence. The honest position:
 3. **Everything else waits for ground truth** — a drain, confirmed by the owner as
    it happens, with the `video.buffered` reading taken during it.
 
+### What this leaves, after D.13
+
+The ceiling is real and the line evicts, so there *is* a large thing justified
+again — and a cheap test that precedes it.
+
+1. **Ask the provider what a second connection costs, and buy it.** One extra
+   connection is the cheapest decisive experiment in this document: if a second
+   concurrent viewer stops evicting the first, the diagnosis is confirmed and the
+   fix is a subscription line item. Do this before building anything.
+2. **Fan-out option B** (Durable Object teeing one upstream) is the structural
+   fix, and is now justified on measured evidence rather than on §1's untested
+   field. It is not exclusive with (1): more connections raise the ceiling,
+   fan-out lowers the demand.
+3. **Cap and jitter the reconnect loops.** Restored and sharpened — each retry
+   evicts a live stream. Cap, do not back off indefinitely.
+4. **The two small fixes still stand** unchanged and independent of all of this:
+   the `EN`/`FR` language filter and `FHD` quality parsing.
+5. **The `video.buffered` reading during a confirmed drain** remains the best
+   outstanding test, now with a specific prediction to check: the drain should
+   coincide with *another viewer arriving*, not with the stream degrading.
+
 **The pattern worth noticing:** every large recommendation this document produced
 — capacity, fan-out, recovery rewrites — traced back to a single untested number
 in §1. The small fixes, which came from reading code and checking it against the
 live catalogue, all survived.
+
+> **This audit was written on a premise that D.13 then reversed.** D.6 was wrong;
+> the line does enforce one connection. Rows below marked **[RESTORED BY D.13]**
+> have been corrected in place. Read D.13 before acting on anything here.
+
+---
+
+## D.13 Step 9 — The limit is real, and it evicts the incumbent
+
+**2026-09-18 03:20–04:05 UTC. Idle line, no viewers present.**
+
+**Prompted by the owner**, who rejected the D.6 result on the strength of his own
+experience of the fault:
+
+> *"The thing is u didn't wait enough. The drain sometimes only happens after a
+> minute or minute and a half."*
+
+That is the whole finding. D.6's pulls were 15–20 s. The effect it was looking
+for lands after a *second viewer arrives*, which in a 20-second window usually
+never happens.
+
+### The test D.6 should have been
+
+**Method.** The same concurrency scenarios, but 150 s instead of 20 s, and scored
+on **survival to the full duration** rather than on bytes arriving. Heavy feeds
+(~7–9 Mbps) and light ones (~2–4 Mbps), same channel and different channels.
+
+| Scenario | Streams | Survived 150 s |
+|---|---|---|
+| A — three heavy, **different** channels | `74006` `7053` `46028` | **1 of 3** |
+| B — three viewers, **same** heavy channel | `74006` × 3 | **1 of 3** |
+| C — three light, **different** channels | `3177` `2449` `3974` | **1 of 3** |
+| D — five concurrent, mixed | `74006` `7053` `46028` `3177` `3974` | **1 of 5** |
+
+**Exactly one connection survives, in every configuration.** Same channel or
+different channels makes no difference — which also settles the owner's
+per-stream hypothesis from D.6 in the negative, this time on evidence that could
+have shown otherwise.
+
+The losers delivered 2–17 MB and closed. Recovering their live seconds from
+`bytes ÷ mean rate` puts every death at **~2–3 seconds** after the start.
+
+### Which one dies — the staggered test, with its control
+
+Simultaneous starts race, so they cannot say *who* loses. Real viewers do not
+arrive simultaneously anyway. So: one incumbent streaming alone, one newcomer
+joining 60 s in.
+
+The first run of this showed the incumbent dying at 62 s. Read alone that proves
+nothing — **a feed that dies at ~60 s on its own produces the identical trace**.
+So the experiment was re-run with the control it was missing, and with the roles
+reversed to rule out a property of one feed:
+
+| Run | Incumbent | Joined at t=60 | Incumbent outcome |
+|---|---|---|---|
+| **Control** | `74006` alone | *nobody* | **survived all 150 s**, 131.7 MB |
+| Join | `74006` | `3177` | **died at 62 s**, 59.1 MB |
+| Reversed | `3177` | `74006` | **died at 62 s**, 36.7 MB |
+| *(first run)* | `74006` | `3177` | died at 62 s, 60.6 MB |
+
+**The control is what makes this a result.** `74006` alone runs the full 150 s and
+delivers 131.7 MB. The same feed, same duration, with someone joining at t=60,
+stops at t=62. Reversing the roles moves the death to the other feed. **Role
+decides the outcome, not the feed.**
+
+**[MEASURED] `max_connections: 1` is enforced. The enforcement is eviction, not
+refusal.** The established connection is killed roughly **two seconds after a new
+one opens**, and the newcomer proceeds normally. Every documented limit-checking
+assumption in this document had it backwards: nobody is turned away at the door,
+the person already inside is thrown out.
+
+### Why D.6 got the opposite answer
+
+Two failures, both in the test rather than the line:
+
+1. **The pass criterion could not fail.** D.6 scored a stream as served when
+   `status === 200 && bytes > 0`. **An evicted connection satisfies both** — it
+   returns 200, delivers a couple of seconds of video, then closes. The test
+   asked "did any bytes arrive", which does not distinguish a served stream from
+   an evicted one.
+2. **The evidence was already in D.6's own numbers.** It recorded "8.3, 11.3,
+   28.4, 9.3 and 3.7 MB in 15 seconds" and read it as five successes. At their
+   sustained rates those feeds owed ~17 MB in 15 s. Four of the five are far
+   short, in the precise proportion of a stream that ran two seconds and stopped.
+   Only the 28.4 MB pull was a real stream. **The cull was in the table and was
+   read past.**
+
+So D.6's tests did not fail to reproduce the limit. They reproduced it and scored
+it as a pass.
+
+### Where the eviction happens
+
+**[INFERRED — code, not measured at the provider]** Not at our edge. The media
+proxy is stateless per request: `backend/adapters/xtream-media-safe.js` decodes a
+token, fetches upstream and streams the body back, and `wrangler.toml` declares
+**no Durable Object bindings**. The Worker therefore holds no registry of
+in-flight streams and has no mechanism to close a connection opened by a
+*different* request. The kill comes from upstream.
+
+This has not been confirmed against the provider directly, which would require
+bypassing our own proxy.
+
+### What this explains
+
+- **[MEASURED] The owner's timing.** "After a minute or a minute and a half" is
+  not a property of the stream decaying. It is **when the next viewer arrives**.
+  The eviction itself takes ~2 s; the delay a viewer perceives is somebody else's
+  arrival.
+- **[INFERRED] Why a lone viewer still failed ~50% (D.4, §1's 77%).** A viewer's
+  own reconnect opens a second connection, which evicts their own live stream.
+  §1 guessed at this ("a single viewer generates more than one upstream
+  connection") without a mechanism; eviction supplies one. **M6** (uncapped
+  reconnect) and **M7** (no idle watchdog) stop being noise and become the
+  amplifier: every retry kills a working stream, possibly your own.
+- **[INFERRED] Why D.4's curve was flat instead of 1/N.** Eviction does not share
+  a slot, it serialises it. At any concurrency above one, exactly one stream is
+  alive, so the failure rate saturates immediately rather than scaling with
+  viewers. D.4 falsified *proportional sharing*; it never falsified the limit —
+  and this document read the one as the other.
+
+### Limits
+
+- Measured at ~03:30 UTC with nobody watching. The caveat now runs the other way:
+  real viewers would add evictions, not fewer.
+- The newcomer was observed for 60 s only. Scenarios A–D show a survivor lasting
+  the full 150 s, so a connection does appear to hold until the next arrival, but
+  "survives indefinitely" was not tested.
+- Whether the rule is strictly "oldest dies" or "all but newest die" is clean only
+  in the staggered case. With simultaneous starts the ordering races.
+- Upstream origin of the eviction is inferred from our own code, not observed at
+  the provider.
+
+### What this restores
+
+| Restored | Why it is live again |
+|---|---|
+| **§1's central claim** | Two viewers at once do interfere — and worse than §1 said. Not degradation: eviction. |
+| **Buying provider connections** | A real lever again. The ceiling exists; raising it raises capacity directly. |
+| **Fan-out option B** (Durable Object teeing one upstream) | Its entire value was collapsing N connections against a hard ceiling. The ceiling is real, so this is the structural fix. |
+| **Option D's handover thesis** | The evaluator argued the drain is manufactured by a handover on a line with one connection and no queue. That is exactly what the line is. Its reasoning was right; only D.6 had knocked it down. |
+| **Capping the reconnect loops** | Sharper than the original rationale: a retry does not merely collide with a ghost, it *evicts a live stream*. |
+
+### What stays dead
+
+- **`activeConnections` as an instrument.** It read `0/1` during five live pulls
+  (D.6) and `1/1` with nothing running, and it read `1/1` again throughout these
+  runs regardless of state. The counter is unreliable independently of whether
+  the limit exists.
+- **Fan-out option A.** Killed by the HLS 403 (C.3), which this does not touch.
+- **§1's 6–8 connection sizing.** Still request-counted; B.4's objection is
+  untouched by this. The ceiling is real, but that table still cannot size it.
+
+---
+
+## D.14 The same mistake, twice, in opposite directions
+
+D.11 named the failure mode as *reading a number as a symptom without
+establishing what was happening when it was recorded*. D.13 is the same mistake
+run backwards, and it is worth stating separately because it is the more
+seductive form:
+
+| | Error | Cost |
+|---|---|---|
+| Original §1 | Believed `max_connections: 1` because the provider's API said so, and never tested it | Months of reasoning on an unverified premise |
+| D.6 | **Disbelieved** it on a test that could not detect it, and declared it falsified | Retracted §1, killed fan-out, killed the capacity option, and told the owner his own experience of the fault was wrong |
+
+The second is worse. The first was an untested assumption, and the document
+labelled it as such once challenged. The second **carried the authority of a
+measurement** — `[FALSIFIED]`, a results table, five concurrent streams — and on
+that authority overturned a dozen correct conclusions and dismissed the owner's
+direct report of what he sees.
+
+### The rule that follows
+
+> **A test that cannot detect the effect is not evidence of its absence.** Before
+> recording a falsification, state the pass criterion and ask what a positive
+> result would have looked like. If the criterion is one the effect would also
+> satisfy — as `bytes > 0` is for an evicted stream — the test has not run.
+
+And a second, which the owner supplied and the document twice needed:
+
+> **When the operator's lived experience contradicts a measurement, suspect the
+> measurement first.** He said the drain takes a minute to appear. Every
+> concurrency test in D.6 was shorter than that, and the one that finally matched
+> his description reproduced the fault on the first attempt.
