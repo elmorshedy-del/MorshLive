@@ -359,6 +359,10 @@ export function formatTransport(label, r, meta) {
   lines.push(`  repaid the debt    : ${c.recovered ? "yes" : "NO"}`);
   if (c.discontinuities) lines.push(`  PCR discontinuities: ${c.discontinuities}  ${JSON.stringify(c.discontinuityDetail.slice(0, 4))}`);
   if (c.continuityErrors) lines.push(`  continuity errors  : ${c.continuityErrors} (packet loss)`);
+  if (c.pidInventory?.length) {
+    lines.push(`  PID layout         : ${c.pidInventory.slice(0, 8).map((x) => `${x.hex}:${x.count}`).join(" ")}`);
+    lines.push(`                       (encoder fingerprint — the only origin signal the proxy leaves visible)`);
+  }
 
   const verdict = r.earlyClose ? `${r.delivery.verdict} + EARLY CLOSE` : r.delivery.verdict;
   lines.push(`  verdict            : ${verdict}`);

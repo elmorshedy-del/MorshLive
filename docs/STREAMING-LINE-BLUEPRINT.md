@@ -873,13 +873,13 @@ re-asks, and whoever asks first wins. **D is required regardless of whether B is
 built**, because fan-out without it merely moves the retry storms onto the
 Durable Object.
 
-**Caveat on option A that §7b originally missed:** `iptv-lab.js:64-71` records
-that provider HLS *segments* return 403 through the proxy, because the panel
-binds them to the IP that fetched the manifest and a Worker egresses each
-subrequest from a different edge IP. If that still holds, **A is impossible, not
-merely awkward** — the token-keying problem is solvable, this is not. It is a
-code comment that has never been re-verified and is worth ~1 s of line to check
-before any work on A. See B.6.
+**[MEASURED 2026-09-18] Option A is not viable.** The claim at
+`iptv-lab.js:64-71` was re-verified against production: the manifest returns
+**200**, one referenced segment returns **403**. The panel binds segments to the
+IP that fetched the manifest and a Worker egresses each subrequest from a
+different edge IP. A.11's "zero URLs in common" is a token-keying problem and is
+solvable; this is a provider binding and is not. **Do not plan work on A without
+first changing that constraint.** See C.3.
 
 **Economics first.** Ask the provider what additional connections cost before
 building any of this. More connections raise the ceiling; fan-out lowers the
@@ -1347,3 +1347,282 @@ at the **site-only** mechanisms M1-M5 instead.
 This is worth noting as a process point: the evaluation was rigorous and still
 produced a wrong headline, because one input was wrong. **Check the symptom
 before building on it.**
+
+---
+
+## Appendix C — measurement campaign, 2026-09-18
+
+Run under an explicit brief: measure, do not redesign, do not implement
+speculative fixes. Every result below states the hypothesis, why the test
+discriminates, the method, the raw figure, the interpretation, the alternatives
+still open, and a confidence tag.
+
+Tags: **MEASURED** · **VERIFIED CODE** · **SUPPORTED THEORY** · **FALSIFIED** ·
+**UNKNOWN**
+
+### C.0 The instrument was rebuilt first
+
+Appendix B showed the previous metric measured its own startup transient and was
+circular. Before any live time was spent, the probe was replaced.
+
+`scripts/diagnostics/ts-analysis.mjs` parses the **Program Clock Reference** — the
+encoder's own 33-bit 90 kHz counter, carried in the TS adaptation field — and
+compares **media seconds delivered against wall-clock seconds elapsed**. That is
+an absolute reference and owes nothing to the feed's byte rate, so it can see
+sustained under-delivery, which the old metric was structurally blind to.
+
+Also fixed, all verified by test: early close is now a failure rather than a mean
+over a shorter window; arrivals, chunk sizes and gaps are kept in full;
+`--seconds` is validated (NaN previously produced a zero-length run that still
+cost a connection); the lock records pid *and* start time and is released only by
+its owner; `--raw` writes the bytes so any figure can be recomputed offline; and
+the harness now refuses `/api/iptv-lab/probe`, which fetches real media and could
+previously take the slot during a run *without* `--live`.
+
+Writing the tests caught the same bug the old metric had: the deficit was
+evaluated only *at* PCR arrivals, so a silence between them was invisible. It is
+now scored against the media held *before* each arrival.
+
+### C.1 Feed / source matrix
+
+**Hypothesis tested.** That the feeds the owner sees draining — beIN, and the
+H265 family in particular — are under-delivering at the transport level.
+
+**Why it discriminates.** The media clock separates batching (silence, then a
+burst that repays the debt) from starvation (media time falls behind real time
+and stays behind). Those are indistinguishable in a byte-rate graph and were
+exactly what the previous investigation confused.
+
+**Method.** `run.mjs transport --live --seconds=45`, five feeds sequentially,
+never concurrently, line confirmed idle at `0/1` beforehand. No browser, no
+decoder. Raw bytes written to disk.
+
+| Stream | Codec / family | Origin | Media / wall | Early close? | Sustained deficit? | Result |
+|---|---|---|---|---|---|---|
+| `7053` beIN Sport 1 H265 | HEVC, cat 560 "beIN Sports H265" | origin-A | **1.3552x** | no | no — worst 0.315 s | **KEEPS REAL TIME** |
+| `2449` beIN Sport 1 HD Q | H.264 1080, cat 6 | origin-A | 1.2566x | no | no — worst 0.192 s | KEEPS REAL TIME |
+| `46028` beIN Sport 1 FHD Q | H.264 1080, cat 532 "4K" | origin-A | 1.3629x | no | no — worst 0.258 s | KEEPS REAL TIME |
+| `3177` beIN Sport 1 HD | H.264 720, cat 6 | origin-A | 1.2592x | no | no — worst 0.196 s | KEEPS REAL TIME |
+| `3974` ON E **[EG] control** | H.264, cat 21 Egypt | origin-A | 1.2760x | no | no — worst 0.183 s | KEEPS REAL TIME |
+
+Supporting figures:
+
+| Stream | TTFB | Requested/survived | MB | Mean Mbps | Quiet >1.5 s | Continuity errors | PCR discontinuities | Final deficit |
+|---|---|---|---|---|---|---|---|---|
+| `7053` | 756 ms | 45 s / 45 s | 49.7 | 8.84 | **0** | 0 | 0 | −15.68 s |
+| `2449` | 777 ms | 45 s / 45 s | 16.0 | 2.84 | 6 | 0 | 0 | −11.30 s |
+| `46028` | 918 ms | 45 s / 45 s | 36.4 | 6.48 | 0 | 0 | 0 | −15.66 s |
+| `3177` | 865 ms | 45 s / 45 s | 23.0 | 4.09 | 0 | 0 | 0 | −11.43 s |
+| `3974` EG | 1145 ms | 45 s / 45 s | 11.2 | 2.00 | **7** (longest 6002 ms) | 0 | 0 | −11.33 s |
+
+**[MEASURED] Interpretation.** Every feed delivers media *faster* than real time
+— 1.26x to 1.36x — and ends **11 to 16 seconds ahead**. Nothing measured is
+starving a player. `7053`, the H265 feed the owner has observed draining, was the
+*cleanest* of the five: zero quiet windows, zero continuity errors, zero PCR
+discontinuities, 15.7 s of surplus banked.
+
+**[MEASURED] The quiet-window count is confirmed worthless as a health signal.**
+The EG control had **seven** quiet windows, one of 6002 ms — more and longer than
+any beIN feed — while keeping perfect media time. Had this campaign used the old
+metric it would have reported the EG control as the sick one.
+
+**[MEASURED] Origin: one infrastructure, not several.** The proxy forwards no
+upstream identifying headers (`xtream-media-safe.js:12-23` passes only
+`Content-Range`, `Accept-Ranges`, `Content-Type`), so the upstream host and any
+redirect chain are **UNKNOWN** from this vantage point and no amount of API
+inspection reveals them. The available substitute is the **PID layout**, which is
+an encoder/muxer fingerprint. All five feeds are identical:
+
+```
+0x0100 video   0x0101 audio   0x0000 PAT   0x1000 PMT   0x0011 SDT
+```
+
+Same numbering on the EG control as on every beIN variant, including H265. **This
+does not support a "beIN sits on different upstream infrastructure from EG"
+hypothesis.** Labelled origin-A throughout on that basis.
+
+**Alternatives still open.** Identical PID numbering is consistent with one
+origin, and also with several origins running identically configured muxers — it
+is a fingerprint, not an identifier. And the decisive caveat below.
+
+**[UNKNOWN] — the caveat that governs this whole table.** These five runs were
+taken while **nothing was draining**. They are a *baseline*, not an observation of
+the fault. They establish what healthy looks like on this line and they rule out
+"these feeds are permanently broken"; they cannot rule out that the same feeds
+starve during an incident. Confidence: high for the baseline, none for the
+incident.
+
+### C.2 Codec capability — the previous browser evidence is void, and now replaced
+
+**Hypothesis tested.** That the 2026-09-17 browser runs said anything about the
+feeds.
+
+**[FALSIFIED]** They did not. Playwright's bundled Chromium is the open-source
+build without proprietary decoders. Every codec-dependent result from it is void.
+
+**Method.** Branded **Google Chrome 153.0.8010.47** installed via
+`npx playwright install chrome`, driven with `channel: "chrome"`. Capability is
+claimed in three escalating steps because each can pass while the next fails, and
+only the third is evidence. `scripts/diagnostics/codec-check.mjs`.
+
+```
+user agent : Mozilla/5.0 (X11; Linux x86_64) … HeadlessChrome/153.0.0.0 Safari/537.36
+
+                         canPlayType     MediaSource.isTypeSupported
+H.264 baseline + AAC     probably        true
+H.264 high + AAC         probably        true
+HEVC / H.265 main        (empty = no)    false
+HEVC / H.265 (hev1)      (empty = no)    false
+MPEG-TS H.264 + AAC      (empty = no)    true
+```
+
+Decode proof, a generated H.264/AAC sample actually played:
+
+```
+outcome playing · currentTime 1.16 · readyState 4 · videoWidth 320
+decodedFrames 33 · droppedFrames 0 · mediaError null
+```
+
+**[MEASURED] H264 BROWSER TEST AVAILABLE** — decode proven, not merely claimed.
+Valid for `2449`, `46028`, `3177`.
+
+**[MEASURED] HEVC BROWSER TEST NOT AVAILABLE IN THIS ENVIRONMENT.** Branded
+Chrome on this Linux host reports no HEVC at all. Nothing about the `7053` path
+may be inferred from a browser here, and **nothing about iPhone or Safari** — a
+UA string or a phone viewport is not iPhone Safari and must never be treated as
+one.
+
+### C.3 The HLS 403 claim — re-verified
+
+**Hypothesis tested.** That provider HLS segments still 403 through the proxy.
+This is load-bearing: it decides whether fan-out option A is possible at all, and
+it had never been re-checked since it was written as a code comment.
+
+**Why it discriminates.** One manifest fetch plus one segment fetch through the
+production path is the whole question, and costs about a second of line.
+
+**Method.** Resolve `bein-sports-1`, `GET` the manifest, `GET` exactly one
+referenced segment, stop.
+
+```
+manifest  status=200  bytes=1336
+segment   status=403  bytes=18   type=text/plain
+```
+
+**[MEASURED — CONFIRMED, unchanged]** The claim at `iptv-lab.js:64-71` holds as
+of 2026-09-18. The panel binds segments to the IP that fetched the manifest and a
+Worker egresses each subrequest from a different edge IP.
+
+**Consequence: fan-out option A is not viable as things stand.** A.11's "zero
+URLs in common" is a token-keying problem and solvable; this is a provider
+binding and is not. §7b is corrected accordingly.
+
+### C.4 Cloudflare — what a real incident looks like
+
+**Hypothesis tested.** That during a drain a replacement media request begins
+before the previous one has terminated.
+
+**Why it discriminates.** On a line permitting one connection, overlap is the
+difference between "two viewers exceeded capacity" and "one client raced itself".
+Request *counts* cannot show it; request *timing* can.
+
+**Method.** GraphQL `httpRequestsAdaptive` (individually sampled requests, not
+aggregates) on `/api/xtream/media`, 23 h window. `edgeTimeToFirstByteMs` and
+`edgeResponseBytes` are not available on this plan, so sequence and status were
+used. 207 sampled requests.
+
+**[MEASURED] All three heavy clients are iPhone Safari** (`iPhone; CPU iPhone OS
+18_7`), and every one shows the same signature:
+
+| Client | Sampled | Statuses | Starts ≤2 s apart | Median gap |
+|---|---|---|---|---|
+| `2607:…:4e36` | 63 | 200×28, 504×30, 403×5 | **36/62** | **0 s** |
+| `2607:…:311a` | 50 | 200×24, 504×22, 403×4 | 32/49 | 0 s |
+| `2607:…:1151` | 36 | 200×14, 504×12, 405×10 | 30/35 | 0 s |
+
+A 200 and a 504 are logged **in the same second, from the same client,
+repeatedly**:
+
+```
+14:15:45  200      11:07:58  200      03:23:11  200
+14:15:45  504      11:07:58  504      03:23:11  504
+```
+
+and one client produced 18 requests in 17 seconds mixing 200 / 504 / 405.
+
+**[MEASURED] Answer: yes. The replacement begins before the old one terminates.**
+A request that delivered bytes and a request that timed out are open in the same
+second from one client. On a one-connection line only one can win.
+
+**[MEASURED] 504 carries zero bytes, always.** In the aggregate query every 504
+group summed to 0.0 MB across 23 h. A 504 here is a request that never delivered,
+not a truncated delivery.
+
+**[MEASURED] Bytes and requests tell opposite stories, confirming Appendix B.**
+Several cloud clients pulled 20–134 MB in **one to five** requests — the healthy
+shape, one long-lived request. The three iPhones pulled comparable bytes across
+**36–64** requests with roughly half failing. Counting requests would rate the
+iPhones as the heaviest users of the line; counting bytes shows they are not.
+
+**Alternatives still open.** Sampling is not exhaustive, so absolute counts are
+not reliable — only the *shape* is. `datetime` records request start, and without
+duration the overlap is inferred from same-second start plus the 504-with-no-bytes
+pattern rather than measured directly. And these clients cannot be attributed: an
+iPhone UA is consistent with the owner's own phone and with any viewer.
+
+### C.5 Ghost connections
+
+**Hypothesis tested.** That `activeConnections` stays at 1 with no legitimate
+player running, which would be direct evidence of a provider-side lingering
+session.
+
+**Method.** Poll `/api/iptv-lab/status` — verified free, it only probes channels
+when `media=1` is passed — with no KoraZero player running. No stream opened.
+
+**[MEASURED]** Immediately before the campaign, three polls 4–5 s apart, all
+`active 0 / 1`. A longer poll was run after the campaign.
+
+**[UNKNOWN] This does not settle the question.** It shows there was no ghost *at
+that moment*, which is the weaker half. The test only pays out when polled during
+a reported drain, and it has still never been run then. It costs nothing and
+remains the single cheapest outstanding measurement.
+
+### C.6 Hypothesis matrix
+
+Read with §0.5: the owner reports site+Lab together (most common), site-only
+(rarer), and beIN-plus-some-channels within a Lab drain (noticed recently). The
+reverse — Lab draining while the site plays — does **not** happen.
+
+| Hypothesis | Site+Lab together | Site-only | beIN-only | Evidence now | Falsifier |
+|---|---|---|---|---|---|
+| Feed under-delivers at transport | ✓ would | ✗ | ✓ would | **FALSIFIED at baseline** (C.1) — all five feeds ≥1.25x real time, H265 cleanest. Not tested during an incident. | A during-incident capture showing media/wall <1 |
+| Different upstream origin for beIN vs EG | ✓ | ✗ | ✓ | **Not supported** (C.1) — identical PID layout across beIN and EG | Differing PID layout, or upstream host exposed |
+| High-bitrate variants fail, low ones don't | ✓ | ✗ | ✓ | **FALSIFIED** — 8.84 Mbps H265 was cleanest; 2.84 Mbps `2449` gappiest; ladder already showed 4K healthiest (§5) | A capture where deficit tracks bitrate |
+| HEVC-specific player/transport path | ✗ | ✓ | ✓ | **UNKNOWN** — transport is clean (C.1); browser cannot test HEVC here (C.2) | An HEVC-capable browser, or an iPhone Safari session |
+| Client races itself: replacement before release | ✓ | ✓ | ✓ | **SUPPORTED** (C.4) — 200 and 504 in the same second, same client, median start gap 0 s, 504 always zero bytes | Incident traffic showing no overlapping starts |
+| Recovery logic surrenders the slot | ✓ | — | — | **SUPPORTED, code only** — Lab TS→HLS excursion (`iptv-lab.js:563-572`) into a path now re-confirmed to 403 (C.3); uncapped 700 ms loops in **both** pages | Instrumented session showing no HLS excursion before a drain |
+| Site-only mechanisms M1-M5 | ✗ | ✓ | — | **UNKNOWN, never instrumented** — but §0.5 pattern 2 is direct evidence for this family, and it is the least examined | A site-only drain with no remount and no toolbar churn |
+| Two honest viewers exceed the line | ✓ | ✗ | ✗ | **Weakened** (C.4) — the heavy clients race themselves; byte counts show few real concurrent pullers | Incident with multiple distinct high-byte clients |
+
+### C.7 The question the campaign was built to answer
+
+> When beIN begins draining while an EG control stays healthy, what is the first
+> measurable difference before any KoraZero recovery code runs?
+
+**Not answered, and the reason matters.** Every feed measured was healthy, so
+there was no divergence to catch. What the campaign did establish is that the
+apparatus to answer it now exists and is trustworthy: an absolute media clock, an
+early-close detector, raw capture for offline re-analysis, a PID fingerprint, and
+a browser proven to decode H.264.
+
+**The measurement must be taken during an incident.** At baseline the answer is
+"no difference" — which is itself worth knowing, because it means whatever
+distinguishes beIN from EG during a drain is **not** a standing property of the
+feeds.
+
+### C.8 What this campaign cost
+
+Five live pulls of 45 s, about 3.75 minutes of the single slot, plus roughly one
+second for the HLS check. No concurrent runs; lock held throughout; line verified
+idle at `0/1` before starting. Everything else — catalogue topology, codec
+capability, Cloudflare analysis, ghost polling — was free.

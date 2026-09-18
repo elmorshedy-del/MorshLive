@@ -76,6 +76,14 @@ export class MediaClock {
     /** pid -> last continuity counter seen, for loss detection. */
     this.continuity = new Map();
     this.continuityErrors = [];
+    /**
+     * pid -> packet count. The PID layout is an encoder/muxer fingerprint:
+     * two feeds numbered identically very likely came off the same origin
+     * infrastructure, and two numbered differently very likely did not. It is
+     * the only origin signal available from outside, because the media proxy
+     * forwards no upstream identifying headers.
+     */
+    this.pidCounts = new Map();
     this.packets = 0;
     this.resyncs = 0;
     this.bytesSeen = 0;
@@ -107,6 +115,7 @@ export class MediaClock {
 
       this.packets += 1;
       const pid = readPid(buf, offset);
+      this.pidCounts.set(pid, (this.pidCounts.get(pid) || 0) + 1);
 
       // Continuity counter increments per packet carrying payload on a PID.
       const adaptationFieldControl = (buf[offset + 3] >> 4) & 0b11;
@@ -143,6 +152,14 @@ export class MediaClock {
     if (this.carry.length > PACKET * 8) this.carry = this.carry.subarray(this.carry.length - PACKET * 2);
   }
 
+  /** Every PID seen, busiest first — the fingerprint described above. */
+  pidInventory() {
+    return [...this.pidCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 16)
+      .map(([pid, count]) => ({ pid, hex: `0x${pid.toString(16).padStart(4, "0")}`, count }));
+  }
+
   /** The PID carrying the clock: whichever emitted the most PCRs. */
   clockPid() {
     let best = null;
@@ -169,6 +186,7 @@ export class MediaClock {
         packets: this.packets,
         resyncs: this.resyncs,
         continuityErrors: this.continuityErrors.length,
+        pidInventory: this.pidInventory(),
       };
     }
 
@@ -251,6 +269,7 @@ export class MediaClock {
     return {
       ok: true,
       clockPid: pid,
+      pidInventory: this.pidInventory(),
       pcrSamples: samples.length,
       packets: this.packets,
       resyncs: this.resyncs,
