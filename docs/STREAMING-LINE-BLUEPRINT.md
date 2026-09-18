@@ -563,6 +563,12 @@ Same flat 700 ms, same uncapped-after-first-play shape. **M6 is therefore not
 site-only**, and a flat 700 ms retry forever is a denial of service against a
 one-connection line.
 
+**[MEASURED 2026-09-18] Observed in a real incident.** During the Sep 16 drain
+most clients re-requested a *small number* of media tokens dozens to hundreds of
+times — one token 233 times, another 190 — with a near-exact 1:1 split of success
+to timeout. That is this loop, reusing the media URL without re-resolving the
+channel. See D.6. First runtime evidence for M6.
+
 **Symmetric across all cards.** It does not differ between fixtures, so it never
 explains why one card drains and another does not — but it shapes what a drain
 *looks like* once started.
@@ -1610,7 +1616,7 @@ reverse — Lab draining while the site plays — does **not** happen.
 | HEVC-specific player/transport path | ✗ | ✓ | ✓ | **UNKNOWN** — transport is clean (C.1); browser cannot test HEVC here (C.2) | An HEVC-capable browser, or an iPhone Safari session |
 | Client races itself: replacement before release | ✓ | ✓ | ✓ | **LEADING** (C.4, **D.3**) — 200 and 504 in the same second, same client; and in a real incident the failure rate is flat at ~48-55% from one client to five, with a lone client still failing 52% | Pairing requests by token and finding the failures are not self-inflicted |
 | Recovery logic surrenders the slot | ✓ | — | — | **SUPPORTED, code only** — Lab TS→HLS excursion (`iptv-lab.js:563-572`) into a path now re-confirmed to 403 (C.3); uncapped 700 ms loops in **both** pages | Instrumented session showing no HLS excursion before a drain |
-| Site-only mechanisms M1-M5 | ✗ | ✓ | — | **UNKNOWN, never instrumented** — but §0.5 pattern 2 is direct evidence for this family, and it is the least examined | A site-only drain with no remount and no toolbar churn |
+| Site-only mechanisms M1-M5 | ✗ | ✓ | — | **M1 now observed at runtime** (**D.6**) — one client used 62 tokens across 163 requests, re-resolving the channel per attempt, which is the remount path. M2-M5 remain uninstrumented. | A site-only drain with no remount and no toolbar churn |
 | Two honest viewers exceed the line | ✓ | ✗ | ✗ | **FALSIFIED as primary driver** (**D.3**) — measured in a real incident, success is flat across a fivefold change in concurrency and a lone client fails 52% | A drain whose failure rate tracks 1/N concurrency |
 
 ### C.7 The question the campaign was built to answer
@@ -1736,14 +1742,13 @@ and losing the race against *itself*.
 
 ### D.4 Alternative readings still open — do not close this yet
 
-1. **A structural 2:1, by design rather than by race.** `getIptvLabChannel`
-   returns **both** `playbackUrl` (HLS) and `tsPlaybackUrl` (§2 Stage 4). If a
-   page requests both, the second contends with the first for the one slot and
-   times out — producing a ~50% failure rate mechanically, with no reconnect loop
-   involved at all. **This has not been checked** and is the first thing to test,
-   because it is cheap: pair up requests by token within a session and see whether
-   the failures are the HLS ones. Note C.3 confirmed HLS segments 403 through the
-   proxy, which is consistent.
+1. **A structural 2:1, by design rather than by race — [FALSIFIED 2026-09-18].**
+   The proposal was that `getIptvLabChannel` returns **both** `playbackUrl` (HLS)
+   and `tsPlaybackUrl` (§2 Stage 4), so a page requesting both would produce ~50%
+   failure mechanically with no loop involved. Tested by grouping the incident's
+   requests by token — see **D.6**. It is not that: the *same* token is
+   re-requested dozens to hundreds of times. Two URLs fetched once each cannot
+   produce 190 requests for one token.
 2. **A 504 may not mean the viewer suffered.** If one long-lived request delivers
    while duplicates time out, the failures are noise and the picture is fine. The
    GA4 collapse in the same window argues against that, but GA4's timezone is
@@ -1764,3 +1769,62 @@ and losing the race against *itself*.
 - Option D in §7b — fix the recovery logic, build nothing — gains direct support:
   if the fault is self-inflicted request duplication, no amount of capacity or
   fan-out addresses it, and both would simply carry the duplication along.
+
+
+### D.6 The boring explanation, tested and eliminated
+
+**Hypothesis tested.** That the ~50% failure rate is structural — the page asks
+for both an HLS and a TS media URL, the second contends with the first for the
+single slot, and one times out. That would make the whole figure an artifact of
+asking for two things on a line that serves one, with no race and no retry loop.
+
+**Why it discriminates.** The two models make opposite predictions about
+*requests per token*. Structural: **two** tokens per session, each fetched about
+once, one of them consistently failing. Retry churn: **few** tokens, each fetched
+many times, with failures scattered across the repeats.
+
+**Method.** Group the incident window's media requests by (client, token, status).
+Free — Cloudflare only, no stream opened.
+
+| Client | Tokens | Requests | Req/token | Busiest single token |
+|---|---|---|---|---|
+| `2001:16a2:…` | 7 | 289 | **41.3** | **233 requests** — 123×200, 110×504, 1051 MB |
+| `2a04:7f80:…` | 2 | 193 | **96.5** | **190 requests** — 97×200, 92×504, 693 MB |
+| `1.178.122.237` | 4 | 96 | 24.0 | 39 — 20×200, 19×504 |
+| `105.72.205.254` | 6 | 110 | 18.3 | 50 — 22×200, 28×504 |
+| `145.224.121.47` | 11 | 105 | 9.5 | 29 — 11×200, 18×504 |
+| `41.188.108.209` | 17 | 248 | 14.6 | 60 — 34×200, 26×504 |
+| `2a02:3038:…` | 6 | 91 | 15.2 | 61 — 31×200, 30×504 |
+| `2607:fb91:…` | **62** | 163 | **2.6** | 6 — see below |
+
+**[FALSIFIED] The structural explanation is wrong.** One token was requested
+**190 times** and another **233 times**. Two URLs fetched once each cannot do
+that. The failures are not one URL that never works; they are repeats of a URL
+that works about half the time.
+
+**[MEASURED] The 1:1 ratio holds per token, not just per client.** 123/110,
+97/92, 31/30, 34/26, 30/26, 20/19. Each playback cycle costs two requests and one
+of them times out. That is the shape of a client that opens a replacement before
+the previous one has released — confirming C.4's same-second observation at the
+level of the individual URL.
+
+**[MEASURED] There are two distinct client behaviours, not one.** Most clients
+hammer a *small number of tokens* many times each: a reconnect that reuses the
+media URL without re-resolving the channel, which is what
+`watch-lab-continuity-guard.js` does (M6). The US iPhone `2607:fb91:…` is the
+opposite — **62 tokens for 163 requests, 2.6 each** — a *new* token per attempt,
+meaning it re-called `/api/iptv-lab/channel` every time. That is the full remount
+path (M1), which re-resolves before mounting.
+
+So M1 and M6 are both visible in the same incident, on different clients. This is
+the first runtime evidence for either; both were previously code-reading only.
+
+**[MEASURED] Bytes still flow throughout.** One token carried 1,051 MB across its
+233 requests. Viewers are getting video in bursts between failures, which is
+exactly what a drain looks like from the sofa — it plays, it dies, it comes back.
+
+**Alternatives still open.** Sampling means absolute counts are unreliable;
+ratios and the per-token repeat structure are what this rests on. And a token is
+not a session — a client reloading the page could be issued the same token again
+within the 6 h TTL, so "repeats" bundles reconnects with reloads. The 1:1 ratio
+is not explained by reloads.
