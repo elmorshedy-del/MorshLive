@@ -157,9 +157,11 @@ request, the proxy has no idle watchdog (§2 Stage 6) so the abandoned fetch
 lingers, and the viewer's next request collides with their own ghost. A long solo
 session accumulates the most ghosts, which is why being alone is worst.
 
-**Consequence for buying capacity:** the second connection is not for a second
-viewer — it is what lets one viewer's reconnect coexist with their own dying
-connection. It is the highest-value unit of slack available.
+**Consequence for buying capacity:** **[WITHDRAWN — see D.3]** This section's
+sizing advice is superseded by measurement. In a real three-hour incident the
+failure rate was flat at ~48-55% whether one client or five were active, and a
+client alone still failed 52%. Buying connections cannot fix a failure rate that
+does not depend on concurrency. Read D.3 before acting on anything in §1.
 
 **[DISPUTED — see B.4]** This section originally concluded "roughly 6-8
 connections, ghosts included". The independent evaluation rejects that sizing:
@@ -1606,10 +1608,10 @@ reverse — Lab draining while the site plays — does **not** happen.
 | Different upstream origin for beIN vs EG | ✓ | ✗ | ✓ | **Not supported** (C.1) — identical PID layout across beIN and EG | Differing PID layout, or upstream host exposed |
 | High-bitrate variants fail, low ones don't | ✓ | ✗ | ✓ | **FALSIFIED** — 8.84 Mbps H265 was cleanest; 2.84 Mbps `2449` gappiest; ladder already showed 4K healthiest (§5) | A capture where deficit tracks bitrate |
 | HEVC-specific player/transport path | ✗ | ✓ | ✓ | **UNKNOWN** — transport is clean (C.1); browser cannot test HEVC here (C.2) | An HEVC-capable browser, or an iPhone Safari session |
-| Client races itself: replacement before release | ✓ | ✓ | ✓ | **SUPPORTED** (C.4) — 200 and 504 in the same second, same client, median start gap 0 s, 504 always zero bytes | Incident traffic showing no overlapping starts |
+| Client races itself: replacement before release | ✓ | ✓ | ✓ | **LEADING** (C.4, **D.3**) — 200 and 504 in the same second, same client; and in a real incident the failure rate is flat at ~48-55% from one client to five, with a lone client still failing 52% | Pairing requests by token and finding the failures are not self-inflicted |
 | Recovery logic surrenders the slot | ✓ | — | — | **SUPPORTED, code only** — Lab TS→HLS excursion (`iptv-lab.js:563-572`) into a path now re-confirmed to 403 (C.3); uncapped 700 ms loops in **both** pages | Instrumented session showing no HLS excursion before a drain |
 | Site-only mechanisms M1-M5 | ✗ | ✓ | — | **UNKNOWN, never instrumented** — but §0.5 pattern 2 is direct evidence for this family, and it is the least examined | A site-only drain with no remount and no toolbar churn |
-| Two honest viewers exceed the line | ✓ | ✗ | ✗ | **Weakened** (C.4) — the heavy clients race themselves; byte counts show few real concurrent pullers | Incident with multiple distinct high-byte clients |
+| Two honest viewers exceed the line | ✓ | ✗ | ✗ | **FALSIFIED as primary driver** (**D.3**) — measured in a real incident, success is flat across a fivefold change in concurrency and a lone client fails 52% | A drain whose failure rate tracks 1/N concurrency |
 
 ### C.7 The question the campaign was built to answer
 
@@ -1633,3 +1635,132 @@ Five live pulls of 45 s, about 3.75 minutes of the single slot, plus roughly one
 second for the HLS check. No concurrent runs; lock held throughout; line verified
 idle at `0/1` before starting. Everything else — catalogue topology, codec
 capability, Cloudflare analysis, ghost polling — was free.
+
+---
+
+## Appendix D — a real incident, measured: 2026-09-16 19:00–22:00 UTC
+
+Appendix C was a baseline: everything was healthy when measured, so the question
+"what differs during a drain" went unanswered. This is that window, recovered
+from Cloudflare rather than from a live probe. **No provider connection was
+opened to produce anything in this appendix.**
+
+It was found by chasing a contradiction in the owner's GA4 screenshot: average
+session duration collapsed to ~zero from late afternoon onward, while Cloudflare
+showed that same period was the busiest real-browser block of the day.
+
+**[CAVEAT]** The GA4 chart's timezone is unconfirmed — the owner believes UTC but
+is explicitly unsure. Everything below is Cloudflare data in UTC and does not
+depend on that; the GA4 chart is what prompted the look, not evidence in it.
+
+### D.1 The window was a drain
+
+`/api/xtream/media` by hour, Sep 16 UTC:
+
+| Hour | 200 | 504 | 403 | Success | MB |
+|---|---|---|---|---|---|
+| 13:00–17:00 | 1–7 per hour | | | mixed | small |
+| 18:00 | 8 | 2 | 0 | 80% | 2,598 |
+| **19:00** | 170 | 164 | 0 | **50%** | 4,913 |
+| **20:00** | 232 | 247 | 20 | **45%** | 2,390 |
+| **21:00** | 248 | 268 | 25 | **42%** | 2,692 |
+| 22:00 | 14 | 24 | 10 | 24% | 207 |
+| 23:00 | 28 | 27 | 6 | 35% | 366 |
+
+**[MEASURED]** Morning hours carried 1–7 media requests each. The evening carried
+400–500 per hour. That is not a hundredfold increase in viewers; it is the retry
+storm. Roughly half of every request failed for three consecutive hours.
+
+### D.2 Who was there
+
+**[MEASURED]** 14 distinct clients, from Saudi Arabia, Palestine, Morocco, Oman
+(two), Qatar, Germany, Tunisia, Algeria and the US. A real MENA audience, not one
+leech and not one agent.
+
+Every one of them shows the same two properties:
+
+| Client | Country | Requests | 200 | 504 | Starts ≤2 s apart |
+|---|---|---|---|---|---|
+| `2001:16a2:…` | SA | 82 | 44 | 38 | 33/81 |
+| `1.178.122.237` | PS | 75 | 37 | 34 | 36/74 |
+| `105.72.205.254` | MA | 55 | 26 | 29 | 23/54 |
+| `2607:fb91:…` | US | 55 | 23 | 26 | 33/54 |
+| `145.224.121.47` | OM | 51 | 23 | 21 | 23/50 |
+| `145.224.121.242` | OM | 48 | 25 | 21 | 23/47 |
+| `2a02:9b0:…` | SA | 44 | 22 | 21 | 15/43 |
+| `2a04:7f80:…` | QA | 40 | 20 | 19 | 16/39 |
+
+Roughly 50% failure, and 40–60% of consecutive requests starting within two
+seconds of each other. **Uniform across every client, in every country.**
+
+### D.3 The result that matters — contention is not the driver
+
+**Hypothesis tested.** That failures during a drain are caused by viewers
+contending for the single connection.
+
+**Why it discriminates.** If one slot is shared strictly among N simultaneous
+clients, the share of attempts that succeed should fall as 1/N. Measuring
+success rate against per-minute concurrency tests that directly, and it can be
+done entirely from logs.
+
+**Method.** 500 individually sampled media requests in the window, bucketed by
+how many *distinct* clients started a request in the same minute.
+
+| Clients that minute | Minutes | Requests | Success | Predicted if 1 slot |
+|---|---|---|---|---|
+| **1 — alone** | 17 | 33 | **48%** | 100% |
+| 2 | 31 | 173 | 51% | 50% |
+| 3 | 14 | 166 | 48% | 33% |
+| 4 | 7 | 106 | 48% | 25% |
+| 5 | 1 | 22 | 55% | 20% |
+
+**[MEASURED] The curve is flat.** Contention predicts a steep decline and there
+is none across a fivefold change in concurrency. Most tellingly, **a client alone
+on the line, with `max_connections: 1` fully satisfied and nobody to compete
+with, still fails 52% of its requests.**
+
+This reproduces §1's "77% alone" figure inside a single three-hour incident
+rather than across a 24-hour aggregate, and it is not a request-counting
+artifact: the buckets are compared against each other on the same metric.
+
+**[FALSIFIED as the primary driver] Viewer contention.** It cannot explain a
+failure rate that is identical at one client and at five. This also reconciles
+the owner's long-standing observation — repeated and previously dismissed — that
+**multiple viewers have often coexisted without a drain**. Concurrency is simply
+not what determines whether requests fail.
+
+**[SUPPORTED] Each client fails about half of its own requests, by itself.** The
+~1:1 ratio of 200 to 504, holding per client and independent of everyone else, is
+the signature of a client issuing roughly twice the requests it can have served
+and losing the race against *itself*.
+
+### D.4 Alternative readings still open — do not close this yet
+
+1. **A structural 2:1, by design rather than by race.** `getIptvLabChannel`
+   returns **both** `playbackUrl` (HLS) and `tsPlaybackUrl` (§2 Stage 4). If a
+   page requests both, the second contends with the first for the one slot and
+   times out — producing a ~50% failure rate mechanically, with no reconnect loop
+   involved at all. **This has not been checked** and is the first thing to test,
+   because it is cheap: pair up requests by token within a session and see whether
+   the failures are the HLS ones. Note C.3 confirmed HLS segments 403 through the
+   proxy, which is consistent.
+2. **A 504 may not mean the viewer suffered.** If one long-lived request delivers
+   while duplicates time out, the failures are noise and the picture is fine. The
+   GA4 collapse in the same window argues against that, but GA4's timezone is
+   unconfirmed and this has not been shown on the same sessions.
+3. **Sampling.** `httpRequestsAdaptive` is sampled, so absolute counts are
+   unreliable. The *ratios* and the *flatness* are what this rests on, and both
+   are robust to uniform sampling.
+
+### D.5 What this changes
+
+- §1's "roughly 6–8 connections, ghosts included" sizing is **withdrawn**. Buying
+  connections cannot fix a failure rate that does not depend on concurrency.
+  Appendix B rejected that sizing on reasoning; this rejects it on measurement.
+- The hypothesis "two honest viewers exceed the line", listed in C.6 as
+  *Weakened*, is now **FALSIFIED as the primary driver** for this incident.
+- "Client races itself", listed as *SUPPORTED*, is now the **leading candidate**,
+  with D.4.1 as the specific mechanism to test first.
+- Option D in §7b — fix the recovery logic, build nothing — gains direct support:
+  if the fault is self-inflicted request duplication, no amount of capacity or
+  fan-out addresses it, and both would simply carry the duplication along.
