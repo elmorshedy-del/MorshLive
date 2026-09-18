@@ -63,7 +63,16 @@ describe("PSG-only Ligue 1 coverage", () => {
     });
   });
 
-  it("keeps the current PSG fixture names correct in Arabic", () => {
+  it("keeps PSG and every current Ligue 1 opponent Arabic-localized", () => {
+    const clubs = [
+      "Paris Saint-Germain", "Angers", "AJ Auxerre", "Brest", "Le Havre",
+      "Lens", "Lille", "Lorient", "Lyon", "Le Mans", "Marseille", "Monaco",
+      "Nice", "Paris FC", "Rennes", "Strasbourg", "Toulouse", "Troyes",
+    ];
+    for (const club of clubs) {
+      expect(TeamNames.arabicFor(club), club).toBeTruthy();
+      expect(TeamNames.arabicFor(club), club).not.toBe(club);
+    }
     expect(TeamNames.arabicFor("Paris Saint-Germain")).toBe("باريس سان جيرمان");
     expect(TeamNames.arabicFor("Marseille")).toBe("مارسيليا");
   });
