@@ -25,6 +25,24 @@ Two independent investigations feed this document: a primary trace, and a
 second agent given only the symptom and no access to the first agent's
 reasoning. Where they disagreed, that is stated rather than smoothed over.
 
+### Reading order — this document contains retractions
+
+It was written across several days and **several of its conclusions were later
+overturned by its own measurements.** Retracted claims are kept, marked, rather
+than deleted, because the reasoning that produced them is instructive. Read in
+this order:
+
+1. **§0.5** — the symptom, in the owner's words. Everything must explain this.
+2. **Appendix D** — the 2026-09-18 chain, and the current state of knowledge.
+   **D.0 is a map of what each step overturned; D.10 is what stands today.**
+3. **§1–§8** — the architecture and the mechanism catalogue. Accurate on the code,
+   but §1's central premise is falsified (see D.6) and several mechanisms are
+   assessed against assumptions that no longer hold.
+4. **Appendices A–C** — the raw record of earlier measurement, including runs that
+   produced wrong conclusions.
+
+If you only read one thing, read **D.0 and D.10**.
+
 ---
 
 ## 0.5 The symptom, in the owner's own terms
@@ -62,8 +80,8 @@ channel is resolved and fetched.
 evidence that more than one mechanism is in play. A fix that resolves one will
 look like it failed when the next appears, and one that lands on a quiet evening
 will look like it worked (§1, Sep 13). Always establish **which pattern** before
-reasoning about a report — `scripts/diagnostics/capture.mjs` exists to record
-exactly that at the moment it happens.
+reasoning about a report. There is no incident recorder; establishing which
+pattern is on the owner, and D.11 explains why that cannot be inferred from logs.
 
 ### A note on the Lab's HLS excursion
 
@@ -87,7 +105,7 @@ versa. Unproven.
 
 ## 1. The constraint that explains most failures — **[FALSIFIED 2026-09-18]**
 
-> **STOP. Read Appendix E before this section.** Its central claim was tested on
+> **STOP. Read D.6 before this section.** Its central claim was tested on
 > 2026-09-18 and is false: the line served **five concurrent streams**, same
 > channel and different channels alike, and `activeConnections` reported `0/1`
 > throughout. `max_connections: 1` is what the panel *claims*, not what the line
@@ -98,7 +116,7 @@ versa. Unproven.
 > was assumed.
 
 **The provider line permits ONE concurrent stream.** *(claimed by the panel;
-falsified in practice — see Appendix E)*
+falsified in practice — see D.6)*
 
 ```
 GET /api/iptv-lab/status  →  account.maxConnections: "1"
@@ -168,11 +186,12 @@ request, the proxy has no idle watchdog (§2 Stage 6) so the abandoned fetch
 lingers, and the viewer's next request collides with their own ghost. A long solo
 session accumulates the most ghosts, which is why being alone is worst.
 
-**Consequence for buying capacity:** **[WITHDRAWN — see D.3]** This section's
+**Consequence for buying capacity:** **[WITHDRAWN — see D.4 and D.6]** This section's
 sizing advice is superseded by measurement. In a real three-hour incident the
 failure rate was flat at ~48-55% whether one client or five were active, and a
 client alone still failed 52%. Buying connections cannot fix a failure rate that
-does not depend on concurrency. Read D.3 before acting on anything in §1.
+does not depend on concurrency, and D.6 shows the ceiling itself is not real.
+Read both before acting on anything in §1.
 
 **[DISPUTED — see B.4]** This section originally concluded "roughly 6-8
 connections, ghosts included". The independent evaluation rejects that sizing:
@@ -578,7 +597,7 @@ one-connection line.
 most clients re-requested a *small number* of media tokens dozens to hundreds of
 times — one token 233 times, another 190 — with a near-exact 1:1 split of success
 to timeout. That is this loop, reusing the media URL without re-resolving the
-channel. See D.6. First runtime evidence for M6.
+channel. See D.5. First runtime evidence for M6.
 
 **Symmetric across all cards.** It does not differ between fixtures, so it never
 explains why one card drains and another does not — but it shapes what a drain
@@ -916,13 +935,16 @@ better value, and they are not exclusive.
 | M3 accumulation | Predicted from code, never measured. |
 | Idle watchdog (M7) | Absent since `ae812e3` was reverted. Not scheduled. |
 | Reconnect cap (M6) | Uncapped after first play. Not scheduled. |
-| What explains a Lab + site drain | **Nothing in §4 does.** The stash-buffer theory was the only candidate and is falsified (M9). M1-M7 are site-only. Open. |
-| Player-side behaviour under a real decoder | Every browser-driven scenario reports NEVER STARTED here — no H.264/AAC in the bundled Chromium. Nothing about what the *player* does with the bytes has been observed, only what arrives. |
+| What explains a Lab + site drain | **Answered — see D.7.** A transient per-feed provider failure hits both surfaces when they share the failing feed, and all 40 of today's matches route to one channel. The earlier claim that "M1-M7 are site-only" was a code-reading error (M6 is duplicated in the Lab; M7 and M8 are server-side). |
+| Player-side behaviour under a real decoder | **Partly resolved.** Branded Chrome 153 is installed and H.264 decode is proven (C.2), so the H.264 feeds can now be driven in a real browser — that experiment has not yet been run. HEVC remains impossible here, so nothing about the `7053` path or iPhone Safari can be tested. |
 | Last-mile delivery | Every transport measurement so far is from a datacentre. Nothing is known about delivery to a phone on a mobile network, which is what most viewers use. |
-| A wrong `[MEASURED]` claim shipped | M9's first version asserted dropped segments and drove a change to a stream-locked file. Reverted. The metric that caused it (counting quiet seconds) is replaced by `bufferFloorSeconds`. |
+| Wrong `[MEASURED]` claims shipped — **four now** | M9 asserted dropped segments and drove a change to a stream-locked file (reverted). `bufferFloorSeconds` then replaced it and was itself void (B.1). §1's one-connection ceiling was believed untested for the whole investigation (D.6). A live "incident" was the owner browsing (D.9). **See D.11 for the single root cause they share.** |
 | `alternates` is read by nobody | `resolveXtreamChannel` computes and returns it, and **zero** client code consumes it. There is no failover today — a bad feed is simply played. |
-| `alternates` contains wrong channels | **[VERIFIED]** For `bein-sports-1` the list carries `669 [FR]_BeIN_SPORTS_1_HD` and `89778 BeIN Alkass 1 HD`. The language filter sets `fr` only on `/\bfrench\b\|\bfra\b/`, neither of which matches the token `fr`, so `[FR]` reads as Arabic — Turkish gets a `tokens.includes("tr")` check that French and English never got. Alkass is a different Qatari broadcaster that passes because its name contains "bein" and a `1`. Harmless only while nothing reads the list; **fix both before building any failover on it.** |
-| Other channels never health-checked | M9 was found on beIN because that is where the complaint was. No other channel's pick has been measured, and any of them could be sorted onto a bad feed the same way. |
+| `alternates` contains wrong channels — **now worse** | **[VERIFIED]** Of 23 candidates for `bein-sports-1`, **seven are wrong-language** and three are a different broadcaster (Alkass). The provider's 2026-09-18 rename put English and French at positions **3 and 4**, because the filter tests for `english`/`fra` and the names now say `EN`/`FR`. Turkish has a token check; English and French never got one. See D.8. Harmless only while nothing reads the list; **fix before any failover work.** |
+| Other channels never health-checked | No channel other than beIN 1 and Thmanyah has had its pick measured. Less urgent than it was: **all 40 of today's matches route to `bein-sports-1`** (D.7), so one feed carries the whole site. |
+| Quality parsing broken by the rename | **[VERIFIED]** `FHD` is not a recognised marker, so the 1080 and HEVC feeds parse as `sd` and rank below plain HD — and below the permanently-dead `4905`. See D.8. |
+| What produces the 403s | **[UNKNOWN]** Two code paths emit 403 and they are not separable by response size. The expired-cached-token theory is refuted (D.9). |
+| `ssc-1/2/3` can never resolve | The provider carries **zero** SSC streams. The ids are dead weight that would 404 if a card used them. See D.8. |
 
 ---
 
@@ -1625,10 +1647,10 @@ reverse — Lab draining while the site plays — does **not** happen.
 | Different upstream origin for beIN vs EG | ✓ | ✗ | ✓ | **Not supported** (C.1) — identical PID layout across beIN and EG | Differing PID layout, or upstream host exposed |
 | High-bitrate variants fail, low ones don't | ✓ | ✗ | ✓ | **FALSIFIED** — 8.84 Mbps H265 was cleanest; 2.84 Mbps `2449` gappiest; ladder already showed 4K healthiest (§5) | A capture where deficit tracks bitrate |
 | HEVC-specific player/transport path | ✗ | ✓ | ✓ | **UNKNOWN** — transport is clean (C.1); browser cannot test HEVC here (C.2) | An HEVC-capable browser, or an iPhone Safari session |
-| Client races itself: replacement before release | ✓ | ✓ | ✓ | **LEADING** (C.4, **D.3**) — 200 and 504 in the same second, same client; and in a real incident the failure rate is flat at ~48-55% from one client to five, with a lone client still failing 52% | Pairing requests by token and finding the failures are not self-inflicted |
+| Client races itself: replacement before release | ✓ | ✓ | ✓ | **WEAKENED** (**D.9**) — the same-second 200/504 pairing is also produced by a viewer opening and closing the site, so it is not evidence on its own. What survives is D.9's token-reuse split: 77% of the Sep 16 window sits on tokens re-requested 10+ times, which browsing cannot produce. | Ground truth during a confirmed incident showing no repeated re-requests |
 | Recovery logic surrenders the slot | ✓ | — | — | **SUPPORTED, code only** — Lab TS→HLS excursion (`iptv-lab.js:563-572`) into a path now re-confirmed to 403 (C.3); uncapped 700 ms loops in **both** pages | Instrumented session showing no HLS excursion before a drain |
-| Site-only mechanisms M1-M5 | ✗ | ✓ | — | **M1 now observed at runtime** (**D.6**) — one client used 62 tokens across 163 requests, re-resolving the channel per attempt, which is the remount path. M2-M5 remain uninstrumented. | A site-only drain with no remount and no toolbar churn |
-| Two honest viewers exceed the line | ✓ | ✗ | ✗ | **FALSIFIED as primary driver** (**D.3**) — measured in a real incident, success is flat across a fivefold change in concurrency and a lone client fails 52% | A drain whose failure rate tracks 1/N concurrency |
+| Site-only mechanisms M1-M5 | ✗ | ✓ | — | **M1 now observed at runtime** (**D.5**) — one client used 62 tokens across 163 requests, re-resolving the channel per attempt, which is the remount path. M2-M5 remain uninstrumented. | A site-only drain with no remount and no toolbar churn |
+| Two honest viewers exceed the line | ✓ | ✗ | ✗ | **FALSIFIED** (**D.4**, **D.6**) — success is flat across a fivefold change in concurrency, and the one-connection ceiling it assumed does not exist: the line served 5 concurrent streams | A drain whose failure rate tracks 1/N concurrency |
 
 ### C.7 The question the campaign was built to answer
 
@@ -1655,35 +1677,104 @@ capability, Cloudflare analysis, ghost polling — was free.
 
 ---
 
-## Appendix D — a real incident, measured: 2026-09-16 19:00–22:00 UTC
+---
 
-> **Read Appendix G alongside this.** G shows that 504-with-zero-bytes,
-> same-second 200/504 pairing and sub-2-second bursts are *also* produced by a
-> viewer opening and closing the site — so those markers alone do not establish a
-> fault. What survives for this window is the token-reuse split in G.2: 77% of
-> its traffic sits on tokens re-requested ten or more times, which browsing
-> cannot produce. Read the conclusions below through that filter.
+# Appendix D — The 2026-09-18 chain
 
-Appendix C was a baseline: everything was healthy when measured, so the question
-"what differs during a drain" went unanswered. This is that window, recovered
-from Cloudflare rather than from a live probe. **No provider connection was
-opened to produce anything in this appendix.**
+**From a Google Analytics screenshot to three falsifications.**
 
-It was found by chasing a contradiction in the owner's GA4 screenshot: average
-session duration collapsed to ~zero from late afternoon onward, while Cloudflare
-showed that same period was the busiest real-browser block of the day.
+## D.0 How to read this chapter
 
-**[CAVEAT]** The GA4 chart's timezone is unconfirmed — the owner believes UTC but
-is explicitly unsure. Everything below is Cloudflare data in UTC and does not
-depend on that; the GA4 chart is what prompted the look, not evidence in it.
+This is one continuous investigation, not four independent findings. Each step
+was prompted by the one before it, and **three of them overturned conclusions
+reached earlier in the same chain.** Reading them out of order gives the wrong
+picture, so the arc is stated first.
 
-### D.1 The window was a drain
+| # | Question | Answer | What it cost |
+|---|---|---|---|
+| 1 | Were the GA traffic spikes caused by our own probing? | **No** — three independent reasons | — |
+| 2 | Why did GA session duration collapse when traffic peaked? | Found a **real incident**, Sep 16 19:00–22:00 | — |
+| 3 | Is the drain caused by viewers contending for the line? | **No** — failure flat at ~50% from 1 client to 5 | Killed the contention model |
+| 4 | Is the 50% a structural artifact (HLS+TS both fetched)? | **No** — one token was re-requested 190 times | Killed the mundane explanation |
+| 5 | Is the line really limited to one connection? | **No** — it served **5 concurrent** | **Killed §1**, the premise under steps 3–4 |
+| 6 | What actually fails, then? | Caught a **per-feed transient 503** live | Gave a mechanism that fits all 3 symptoms |
+| 7 | Which stream does the site even play? | It **changed overnight**, no deploy | Made every "the site plays X" claim dated |
+| 8 | Was the session I captured really a drain? | **No** — the owner was opening and closing | Killed my own live-incident claim |
 
-`/api/xtream/media` by hour, Sep 16 UTC:
+**The single most important line in this chapter is step 8.** It showed that the
+signature used to identify a drain in steps 3–5 is also produced by a viewer
+browsing normally. What survives that, and what does not, is set out in D.9.
+
+Tags used below: **MEASURED** · **VERIFIED CODE** · **SUPPORTED** · **FALSIFIED** · **UNKNOWN**
+
+---
+
+## D.1 Where it started
+
+The owner sent a Google Analytics screenshot for **Wednesday 16 September**:
+average session duration `00:09:01`, up 56.91%, with spikes reaching ~30 minutes
+in the morning and early afternoon, then flat at zero from late afternoon
+onward. The question was simple: *are those spikes real viewers, or was it us
+probing the site over and over?*
+
+## D.2 Step 1 — The spikes were not us
+
+**[MEASURED]** Three independent reasons, none of which depends on the date:
+
+1. The transport probe is Node `fetch` — no browser, no JavaScript. It cannot
+   create a GA4 session under any circumstance.
+2. The browser runs served HTML from **localhost** (the diagnostics harness
+   proxies only `/api/*`), so production never logged a page view from them.
+3. `gtag.js` **failed to load** in those runs — `net::ERR_FAILED` on
+   `googletagmanager.com` appears in the harness output. No GA script, no session.
+
+And independently: Sep 16 predates the diagnostics harness, first committed
+2026-09-17.
+
+**What Sep 16 actually was** — 918 HTML page loads, split by whether the client
+can run JavaScript at all (and therefore appear in GA4):
+
+| | Count |
+|---|---|
+| Real browsers (can register in GA4) | **346** |
+| Bots / curl / non-JS (cannot) | 572 |
+
+Real-browser traffic by hour, UTC:
+
+```
+13:00  ######  6        18:00  #############################  29
+14:00  ####    4        19:00  ########################       24
+15:00  #####   5        20:00  ######################################## 141
+16:00  ###################  19   21:00  ####################################  76
+17:00  ######  6        22:00  ###########  11
+```
+
+From Oman, Saudi Arabia, Morocco, Algeria, Tunisia and Qatar — a genuine MENA
+audience concentrated at match time. The 572 non-JS loads are mostly PetalBot
+(six Singapore IPs) and curl from Azure, invisible to GA4.
+
+**[MEASURED] But the spikes themselves are thin.** In the hours where the chart
+peaks at 25–30 minutes, Cloudflare shows **1 to 6 real-browser page loads per
+hour**. An average over one or two sessions is one number, not a trend, and a
+single phone left open on a watch page produces exactly that shape.
+
+**[UNKNOWN]** The GA property's timezone is unconfirmed. The owner believes UTC
+but is explicitly unsure, so the chart's x-axis cannot be aligned to the hours
+above with certainty.
+
+---
+
+## D.3 Step 2 — A contradiction led to a real incident
+
+If the GA chart is UTC, it contains a contradiction: session duration collapses
+to ~zero from late afternoon, while the table above shows that period was the
+**busiest** real-browser block of the day. The media layer explains it.
+
+**[MEASURED]** `/api/xtream/media` by hour, 2026-09-16 UTC:
 
 | Hour | 200 | 504 | 403 | Success | MB |
 |---|---|---|---|---|---|
-| 13:00–17:00 | 1–7 per hour | | | mixed | small |
+| 13:00–17:00 | 1–7 per hour total | | | mixed | small |
 | 18:00 | 8 | 2 | 0 | 80% | 2,598 |
 | **19:00** | 170 | 164 | 0 | **50%** | 4,913 |
 | **20:00** | 232 | 247 | 20 | **45%** | 2,390 |
@@ -1691,17 +1782,12 @@ depend on that; the GA4 chart is what prompted the look, not evidence in it.
 | 22:00 | 14 | 24 | 10 | 24% | 207 |
 | 23:00 | 28 | 27 | 6 | 35% | 366 |
 
-**[MEASURED]** Morning hours carried 1–7 media requests each. The evening carried
-400–500 per hour. That is not a hundredfold increase in viewers; it is the retry
-storm. Roughly half of every request failed for three consecutive hours.
+Morning hours carried one to seven media requests each. The evening carried
+**400–500 per hour**, with roughly half failing for three consecutive hours.
+That is not a hundredfold increase in audience.
 
-### D.2 Who was there
-
-**[MEASURED]** 14 distinct clients, from Saudi Arabia, Palestine, Morocco, Oman
-(two), Qatar, Germany, Tunisia, Algeria and the US. A real MENA audience, not one
-leech and not one agent.
-
-Every one of them shows the same two properties:
+**Who was there — [MEASURED]** 14 distinct clients, from Saudi Arabia, Palestine,
+Morocco, Oman (two), Qatar, Germany, Tunisia, Algeria and the US:
 
 | Client | Country | Requests | 200 | 504 | Starts ≤2 s apart |
 |---|---|---|---|---|---|
@@ -1714,21 +1800,25 @@ Every one of them shows the same two properties:
 | `2a02:9b0:…` | SA | 44 | 22 | 21 | 15/43 |
 | `2a04:7f80:…` | QA | 40 | 20 | 19 | 16/39 |
 
-Roughly 50% failure, and 40–60% of consecutive requests starting within two
-seconds of each other. **Uniform across every client, in every country.**
+A real audience, not one leech and not one agent. **Every client shows ~50%
+failure and 40–60% of consecutive requests starting within two seconds.**
 
-### D.3 The result that matters — contention is not the driver
+**⚠ Read D.9 before drawing conclusions from the "starts ≤2 s apart" column.**
+That marker was later shown to be produced by ordinary browsing as well.
 
-**Hypothesis tested.** That failures during a drain are caused by viewers
-contending for the single connection.
+---
 
-**Why it discriminates.** If one slot is shared strictly among N simultaneous
-clients, the share of attempts that succeed should fall as 1/N. Measuring
-success rate against per-minute concurrency tests that directly, and it can be
-done entirely from logs.
+## D.4 Step 3 — Contention falsified
 
-**Method.** 500 individually sampled media requests in the window, bucketed by
-how many *distinct* clients started a request in the same minute.
+**Hypothesis.** Failures are caused by viewers competing for the single
+connection.
+
+**Why this test discriminates.** If one slot is shared strictly among N
+simultaneous clients, the share of attempts that succeed should fall as 1/N.
+
+**Method.** 500 individually sampled requests in the window, bucketed by how many
+*distinct* clients started a request in the same minute. Cloudflare only; no
+stream opened.
 
 | Clients that minute | Minutes | Requests | Success | Predicted if 1 slot |
 |---|---|---|---|---|
@@ -1738,182 +1828,115 @@ how many *distinct* clients started a request in the same minute.
 | 4 | 7 | 106 | 48% | 25% |
 | 5 | 1 | 22 | 55% | 20% |
 
-**[MEASURED] The curve is flat.** Contention predicts a steep decline and there
-is none across a fivefold change in concurrency. Most tellingly, **a client alone
-on the line, with `max_connections: 1` fully satisfied and nobody to compete
-with, still fails 52% of its requests.**
+**[FALSIFIED as the primary driver] Viewer contention.** The curve is flat across
+a fivefold change in concurrency where a steep decline was predicted. A client
+**alone on the line still failed 52%** of its requests.
 
-This reproduces §1's "77% alone" figure inside a single three-hour incident
-rather than across a 24-hour aggregate, and it is not a request-counting
-artifact: the buckets are compared against each other on the same metric.
+**This vindicated a claim the owner made repeatedly and this document had twice
+dismissed** — that multiple viewers had often coexisted with no drain.
+Concurrency is not what determines whether requests fail.
 
-**[FALSIFIED as the primary driver] Viewer contention.** It cannot explain a
-failure rate that is identical at one client and at five. This also reconciles
-the owner's long-standing observation — repeated and previously dismissed — that
-**multiple viewers have often coexisted without a drain**. Concurrency is simply
-not what determines whether requests fail.
-
-**[SUPPORTED] Each client fails about half of its own requests, by itself.** The
-~1:1 ratio of 200 to 504, holding per client and independent of everyone else, is
-the signature of a client issuing roughly twice the requests it can have served
-and losing the race against *itself*.
-
-### D.4 Alternative readings still open — do not close this yet
-
-1. **A structural 2:1, by design rather than by race — [FALSIFIED 2026-09-18].**
-   The proposal was that `getIptvLabChannel` returns **both** `playbackUrl` (HLS)
-   and `tsPlaybackUrl` (§2 Stage 4), so a page requesting both would produce ~50%
-   failure mechanically with no loop involved. Tested by grouping the incident's
-   requests by token — see **D.6**. It is not that: the *same* token is
-   re-requested dozens to hundreds of times. Two URLs fetched once each cannot
-   produce 190 requests for one token.
-2. **A 504 may not mean the viewer suffered.** If one long-lived request delivers
-   while duplicates time out, the failures are noise and the picture is fine. The
-   GA4 collapse in the same window argues against that, but GA4's timezone is
-   unconfirmed and this has not been shown on the same sessions.
-3. **Sampling.** `httpRequestsAdaptive` is sampled, so absolute counts are
-   unreliable. The *ratios* and the *flatness* are what this rests on, and both
-   are robust to uniform sampling.
-
-### D.5 What this changes
-
-- §1's "roughly 6–8 connections, ghosts included" sizing is **withdrawn**. Buying
-  connections cannot fix a failure rate that does not depend on concurrency.
-  Appendix B rejected that sizing on reasoning; this rejects it on measurement.
-- The hypothesis "two honest viewers exceed the line", listed in C.6 as
-  *Weakened*, is now **FALSIFIED as the primary driver** for this incident.
-- "Client races itself", listed as *SUPPORTED*, is now the **leading candidate**,
-  with D.4.1 as the specific mechanism to test first.
-- Option D in §7b — fix the recovery logic, build nothing — gains direct support:
-  if the fault is self-inflicted request duplication, no amount of capacity or
-  fan-out addresses it, and both would simply carry the duplication along.
-
-
-### D.6 The boring explanation, tested and eliminated
-
-**Hypothesis tested.** That the ~50% failure rate is structural — the page asks
-for both an HLS and a TS media URL, the second contends with the first for the
-single slot, and one times out. That would make the whole figure an artifact of
-asking for two things on a line that serves one, with no race and no retry loop.
-
-**Why it discriminates.** The two models make opposite predictions about
-*requests per token*. Structural: **two** tokens per session, each fetched about
-once, one of them consistently failing. Retry churn: **few** tokens, each fetched
-many times, with failures scattered across the repeats.
-
-**Method.** Group the incident window's media requests by (client, token, status).
-Free — Cloudflare only, no stream opened.
-
-| Client | Tokens | Requests | Req/token | Busiest single token |
-|---|---|---|---|---|
-| `2001:16a2:…` | 7 | 289 | **41.3** | **233 requests** — 123×200, 110×504, 1051 MB |
-| `2a04:7f80:…` | 2 | 193 | **96.5** | **190 requests** — 97×200, 92×504, 693 MB |
-| `1.178.122.237` | 4 | 96 | 24.0 | 39 — 20×200, 19×504 |
-| `105.72.205.254` | 6 | 110 | 18.3 | 50 — 22×200, 28×504 |
-| `145.224.121.47` | 11 | 105 | 9.5 | 29 — 11×200, 18×504 |
-| `41.188.108.209` | 17 | 248 | 14.6 | 60 — 34×200, 26×504 |
-| `2a02:3038:…` | 6 | 91 | 15.2 | 61 — 31×200, 30×504 |
-| `2607:fb91:…` | **62** | 163 | **2.6** | 6 — see below |
-
-**[FALSIFIED] The structural explanation is wrong.** One token was requested
-**190 times** and another **233 times**. Two URLs fetched once each cannot do
-that. The failures are not one URL that never works; they are repeats of a URL
-that works about half the time.
-
-**[MEASURED] The 1:1 ratio holds per token, not just per client.** 123/110,
-97/92, 31/30, 34/26, 30/26, 20/19. Each playback cycle costs two requests and one
-of them times out. That is the shape of a client that opens a replacement before
-the previous one has released — confirming C.4's same-second observation at the
-level of the individual URL.
-
-**[MEASURED] There are two distinct client behaviours, not one.** Most clients
-hammer a *small number of tokens* many times each: a reconnect that reuses the
-media URL without re-resolving the channel, which is what
-`watch-lab-continuity-guard.js` does (M6). The US iPhone `2607:fb91:…` is the
-opposite — **62 tokens for 163 requests, 2.6 each** — a *new* token per attempt,
-meaning it re-called `/api/iptv-lab/channel` every time. That is the full remount
-path (M1), which re-resolves before mounting.
-
-So M1 and M6 are both visible in the same incident, on different clients. This is
-the first runtime evidence for either; both were previously code-reading only.
-
-**[MEASURED] Bytes still flow throughout.** One token carried 1,051 MB across its
-233 requests. Viewers are getting video in bursts between failures, which is
-exactly what a drain looks like from the sofa — it plays, it dies, it comes back.
-
-**Alternatives still open.** Sampling means absolute counts are unreliable;
-ratios and the per-token repeat structure are what this rests on. And a token is
-not a session — a client reloading the page could be issued the same token again
-within the 6 h TTL, so "repeats" bundles reconnects with reloads. The 1:1 ratio
-is not explained by reloads.
+**Consequence:** §1's "roughly 6–8 connections" sizing was withdrawn. Appendix B
+had already rejected it on reasoning; this rejected it on measurement.
 
 ---
 
-## Appendix E — §1 is wrong: the line is not limited to one connection
+## D.5 Step 4 — The mundane explanation eliminated
 
-**2026-09-18 02:05–02:25 UTC, line reporting idle, zero media requests in the
+**Hypothesis.** The ~50% is structural rather than a race: `getIptvLabChannel`
+returns **both** an HLS and a TS playback URL (§2 Stage 4). A page fetching both
+would produce a 2:1 failure mechanically, with no loop involved.
+
+**Why this test discriminates.** The two models predict opposite things about
+**requests per token**. Structural: two tokens, each fetched about once, one
+consistently failing. Retry churn: few tokens, each fetched many times.
+
+| Client | Tokens | Requests | Req/token | Busiest single token |
+|---|---|---|---|---|
+| `2001:16a2:…` | 7 | 289 | **41.3** | **233 requests** — 123×200, 110×504, 1,051 MB |
+| `2a04:7f80:…` | 2 | 193 | **96.5** | **190 requests** — 97×200, 92×504, 693 MB |
+| `41.188.108.209` | 17 | 248 | 14.6 | 60 — 34×200, 26×504 |
+| `1.178.122.237` | 4 | 96 | 24.0 | 39 — 20×200, 19×504 |
+| `105.72.205.254` | 6 | 110 | 18.3 | 50 — 22×200, 28×504 |
+| `2a02:3038:…` | 6 | 91 | 15.2 | 61 — 31×200, 30×504 |
+| `145.224.121.47` | 11 | 105 | 9.5 | 29 — 11×200, 18×504 |
+| `2607:fb91:…` | **62** | 163 | **2.6** | 6 |
+
+**[FALSIFIED] The structural explanation.** One token was requested **190 times**
+and another **233**. Two URLs fetched once each cannot do that.
+
+**[MEASURED] Two distinct client behaviours, not one.** Most clients hammer a
+*small number of tokens*, which is a reconnect reusing the media URL without
+re-resolving — **M6**. The US iPhone is the opposite: **62 tokens for 163
+requests**, a new token per attempt, meaning it re-called
+`/api/iptv-lab/channel` every time — the full remount, **M1**. Both are visible
+in the same incident on different clients. This is the first runtime evidence for
+either; both were previously code-reading only.
+
+**[MEASURED] Bytes flow throughout.** One token carried 1,051 MB across its 233
+requests — video arriving in bursts between failures.
+
+---
+
+## D.6 Step 5 — §1 itself falsified: there is no one-connection limit
+
+**2026-09-18 02:05–02:25 UTC. Line reporting idle, zero media requests in the
 preceding 45 minutes, no viewers present.**
 
-§1 of this document is titled "The constraint that explains most failures" and
-every later section leans on it. It is wrong, and it was never tested — it was
-read off the panel's own `max_connections` field and believed.
-
-### E.1 The test
-
-The owner proposed a specific refinement: perhaps the limit is **per stream**
-rather than per account, so a crowd on one channel is fine and only two
+**Prompted by the owner**, who proposed a refinement: perhaps the limit is **per
+stream** rather than per account, so a crowd on one channel is fine and only two
 *different* channels collide. Cloudflare cannot answer it — every dimension that
-would identify a channel (`clientRequestQuery`, `clientRefererHost`) is blocked
-on this plan — so it was tested directly.
+identifies a channel (`clientRequestQuery`, `clientRefererHost`) is blocked on
+this plan — so it was tested directly.
 
 | Test | Setup | Result |
 |---|---|---|
 | A | one connection alone | served |
-| B | **two concurrent, same stream** (two viewers, one channel) | **both served** |
-| C | **two concurrent, different streams** (two viewers, two channels) | **both served** |
+| B | **two concurrent, same stream** | **both served** |
+| C | **two concurrent, different streams** | **both served** |
 | D | **three concurrent, different streams** | **3/3 served** |
 | E | **five concurrent, different streams** | **5/5 served** |
 
 Five simultaneous pulls delivered 8.3, 11.3, 28.4, 9.3 and 3.7 MB in 15 seconds.
 
-**[MEASURED] `max_connections: 1` is not enforced as reported.** The line served
-five concurrent streams. Neither the per-account reading nor the owner's
-per-stream reading survives.
+**[FALSIFIED] `max_connections: 1` is not enforced as reported.** Neither the
+per-account reading nor the owner's per-stream reading survives.
 
 **[MEASURED] `activeConnections` does not track reality.** It reported `0/1`
-*while five streams were being pulled*, and `1/1` at moments when nothing was
-running. The counter is not a measurement of anything.
+*while five streams were being pulled*, and `1/1` at moments when nothing ran.
 
-### E.2 What this invalidates
+### What this invalidated
 
-- **§1's central claim** — "Two honest viewers at once degrade each other" — is
-  **FALSIFIED**. So is "any second connection competes with the viewer we already
-  have", and with it the framing that a drain is "something asked for a second
-  connection".
-- **The ghost test (C.5) was meaningless.** Thirty polls of `activeConnections`
-  measured a counter that does not reflect actual connections. Its clean result
-  says nothing, and the test as designed cannot be rescued.
-- **Every capacity recommendation in this document is void.** Buying connections
-  cannot help when the reported ceiling is not the enforced one. §1's "6-8" was
-  already withdrawn in D.5; this removes the premise underneath it entirely.
-- **The fan-out case in §7b weakens sharply.** Its whole value was collapsing N
-  connections into one against a hard ceiling. There is no hard ceiling at 1.
-- **D.3 is explained rather than contradicted.** The failure rate was flat across
-  concurrency because there is no contention to escalate — not because
-  self-collision perfectly cancelled it out.
+- **§1's central claim** — "two honest viewers at once degrade each other" — and
+  with it the framing that a drain is "something asked for a second connection".
+- **The ghost test (C.5).** Thirty polls of `activeConnections` measured a
+  counter that does not reflect connections. Its clean result says nothing.
+- **Every capacity recommendation in this document.**
+- **The fan-out case in §7b**, whose value was collapsing N connections against a
+  hard ceiling that does not exist.
+- It also **explains D.4 rather than contradicting it**: the failure rate was flat
+  across concurrency because there is no contention to escalate.
 
-### E.3 What replaces it — and it fits all three symptom patterns
+### Limits
 
-During test A, at 02:07 UTC, **stream 2449 returned 503 to a lone connection on
-an idle line**, and did so on every attempt for roughly two minutes, while 3177
-served perfectly in the same instant. 2449 had pulled 16 MB cleanly three hours
+Tested at 02:0x UTC with no other viewers; enforcement could differ under load or
+may have changed over time. Each pull was 15–20 s. **Instrument caveat found
+here:** `mediaPerWall` on 15–20 s pulls is dominated by the opening burst and
+read 13× and 19× in these runs — it is meaningful only at 45 s or more.
+
+---
+
+## D.7 Step 6 — What replaces it: transient per-feed failures
+
+The connection-limit experiment's **baseline pull failed**, which is how the real
+fault was found.
+
+**[MEASURED 02:07 UTC]** Stream `2449` returned **503 to a lone connection on an
+idle line**, on every attempt, for roughly two minutes — while `3177` served
+perfectly in the same instant. `2449` had pulled 16 MB cleanly three hours
 earlier and pulled 3.7 MB cleanly ten minutes later.
 
-**[MEASURED] The provider intermittently fails individual streams, briefly.**
-That is a per-feed, time-varying fault — not capacity, not contention, not
-codec, not bitrate.
-
-A sweep taken while it was happening:
+A sweep taken during the window:
 
 | Stream | Feed | Status | Result |
 |---|---|---|---|
@@ -1925,61 +1948,47 @@ A sweep taken while it was happening:
 | `241362` | Thmanyah 1 1080 | 200 | KEEPS REAL TIME |
 | `3974` | ON E [EG] | 200 | KEEPS REAL TIME |
 
-`4905` dying at 0.51 s reproduces the Sep 17 ladder exactly (§5): that feed is
+`4905` dying at 0.51 s reproduces the Sep 17 ladder exactly (§5) — that feed is
 permanently broken, not intermittently.
 
-**This fits every symptom pattern in §0.5 without any further assumption:**
+**[SUPPORTED] The provider intermittently fails individual streams, briefly.**
+Per-feed and time-varying — not capacity, not contention, not codec, not bitrate.
+
+**Note:** `2449` and `3177` are **both beIN Sports 1**, two encodes of the same
+channel. So this was one variant failing while another variant of the identical
+channel served. The fault sits at the individual stream.
+
+**It fits all three symptom patterns (§0.5) with no further assumption:**
 
 | Pattern | Explanation |
 |---|---|
-| Site **and** Lab together | both are on the feed that is failing |
-| Site drains, Lab fine | they are on different channels; only one feed is failing |
+| Site **and** Lab together | both on the feed that is failing |
+| Site drains, Lab fine | different channels; only one feed failing |
 | Only beIN and some channels | exactly what a per-feed transient fault looks like |
 
-And the client behaviour measured in D.6 is the **amplifier**: when a feed blips,
-the player retries immediately and repeatedly, turning a short provider fault
-into a long visible outage and a request storm.
-
-### E.4 Limits — do not over-read this either
-
-- Tested at 02:0x UTC with **no other viewers**. Enforcement could differ under
-  real load, at peak, or by time of day. Five concurrent at 2 a.m. does not prove
-  fifty concurrent at kickoff.
-- Each pull was 15–20 s. A longer or larger test might find a real ceiling.
-- The provider may have changed the line at some point; a `max_connections: 1`
-  that was once enforced would explain the earlier history honestly.
-- **Instrument caveat found here:** `mediaPerWall` on very short pulls (15–20 s)
-  is dominated by the opening burst and read 13x and 19x in these runs. It is
-  only meaningful at 45 s or more. Short pulls are for liveness, not for delivery
-  quality.
-
-### E.5 The lesson this document keeps having to relearn
-
-§1 was believed for the entire investigation because a provider API said so. It
-was never tested, and it shaped every hypothesis built on top of it — including
-two rounds of capacity advice and a fan-out architecture proposal. **A number
-reported by a system is a claim about that system, not a measurement of it.**
+**And the site concentrates the risk.** All 40 matches in `today.json` carry
+`channelId: bein-sports-1`. Every viewer, every match, one feed — so a single
+feed blip takes down the whole site at once.
 
 ---
 
-## Appendix F — the provider renamed everything, and the resolver quietly changed its mind
+## D.8 Step 7 — The provider renamed everything
 
-**[MEASURED 2026-09-18 02:3x UTC]** Between 2026-09-17 and 2026-09-18 the provider
-rewrote the names of the beIN streams. Nothing in this repository changed. The
-resolver reads names, so its output changed by itself.
+**[MEASURED]** Between 2026-09-17 and 2026-09-18 the provider rewrote the beIN
+stream names. Nothing in this repository changed. The resolver reads names, so
+its output changed by itself.
 
 | | 2026-09-17 | 2026-09-18 |
 |---|---|---|
 | picked | `2449` `beIN_1HD_1080p` — 1080 h264 | **`3177`** `beIN Sport 1 HD` — hd h264 |
-| alt | `46028` `beIN_SPORTS_1_1080FHD` — 1080 | `2449` `beIN Sport 1 HD Q` — hd |
-| alt | `3177` `beIN_1_HD720` — hd | `3614` `beIN Sport 1 EN HD` — hd |
-| alt | `89778` `BeIN Alkass 1 HD` — hd | `32901` `beIN Sport 1 FR HD` — hd |
-| alt | `669` `[FR]_BeIN_SPORTS_1_HD` — hd | `89778` `BeIN Alkass 1 HD` — hd |
+| alt | `46028` `beIN_SPORTS_1_1080FHD` | `2449` `beIN Sport 1 HD Q` |
+| alt | `3177` `beIN_1_HD720` | `3614` `beIN Sport 1 EN HD` |
+| alt | `89778` `BeIN Alkass 1 HD` | `32901` `beIN Sport 1 FR HD` |
 
-Three things fell out of the rename, all verified by running
-`parseXtreamChannelName` against the new strings:
+Three consequences, each verified by running `parseXtreamChannelName` against the
+new strings rather than by reading the regexes:
 
-### F.1 English and French feeds now pass as Arabic — **[VERIFIED, live bug]**
+**1. [VERIFIED — live bug] English and French feeds now pass as Arabic.**
 
 ```
 beIN Sport 1 EN HD   ->  language "ar"
@@ -1988,83 +1997,95 @@ beIN Sport 1 FR HD   ->  language "ar"
 
 `lib/xtream-channel-map.js:88-90` tests `/\benglish\b|\beng\b/` and
 `/\bfrench\b|\bfra\b/`. The provider now writes the tokens **`EN`** and **`FR`**,
-which neither pattern matches. Turkish has a `tokens.includes("tr")` check;
-English and French never got the equivalent, which §8 recorded as a latent defect
-on 2026-09-17. **The rename has made it live.** Two wrong-commentary feeds now sit
-in `bein-sports-1`'s candidate list.
+which neither matches. Turkish has a `tokens.includes("tr")` check; English and
+French never got one. §8 recorded this as latent on 2026-09-17 — **the rename
+made it live.**
 
-It is still latent in *effect* only because no client code reads `alternates`
-(§8). If the ranking ever reorders — and F.2 shows the ranking is not stable —
-a viewer gets English or French commentary on an Arabic channel.
+Running the resolver against the live catalogue gives 23 candidates for
+`bein-sports-1`, of which **seven are wrong-language** and three are a different
+broadcaster (Alkass). Positions 3, 4 and 6 are English and French — directly
+behind the two Arabic feeds.
 
-### F.2 Quality detection has collapsed — **[VERIFIED]**
+**2. [VERIFIED] Quality detection has collapsed.**
 
 ```
 beIN Sport 1 FHD Q   ->  quality "sd"     (it is the 1080 FHD feed)
 beIN Sport 1 H265    ->  quality "sd"     (it is the 8 Mbps HEVC feed)
 ```
 
-`:112-117` recognises `4k`, `1080`, `720`/`hd`, `low`/`512`/`256` and `vega`. It
-does not recognise **`FHD`**. The new names dropped the numeric markers, so the
-FHD and HEVC feeds fall through to the `sd` default and are now ranked *below*
-the plain HD ones. The resolver believes the best feed available is SD.
+`:112-117` does not recognise **`FHD`**, and the new names dropped the numeric
+markers. The best feeds now rank *below* plain HD ones, and below a genuine SD
+feed. The known-dead `4905` sits at position 8, above both.
 
-### F.3 The site's pick changed with no deploy — **[MEASURED]**
+**3. [MEASURED] The site's pick changed with no deploy.** `2449` yesterday,
+`3177` today. Identification survived the rename exactly as the file's header
+intends; **ranking did not**, because rank is parsed from the same volatile names.
 
-On 2026-09-17 the site played `2449`. Today it plays `3177`. No commit, no
-deploy, no approval — the provider renamed a string and the ranking moved.
+**Accidental consequence, recorded honestly:** the repoint debated at length on
+2026-09-17 — moving off `2449` because it measured worse — happened by itself and
+landed on `3177`, which measured healthiest of the H.264 feeds. The right outcome
+for no good reason, and it can move back just as easily.
 
-This is the exact fragility the file's own header warns about ("Providers rename
-channels constantly") and which describe-and-search was built to survive. It does
-survive *identification* — every candidate is still correctly recognised as beIN
-Sports 1. What it does not survive is **ranking**, because the rank is parsed
-from the same volatile names.
+**Consequence for this document:** stream ids are stable; names, parsed quality
+and therefore the pick are not. **Any statement of the form "the site plays X" is
+true only on the date it was measured**, including Appendix C.
 
-**An accidental consequence worth noting honestly:** the repoint debated at
-length on 2026-09-17 — moving off `2449` because it measured worse — happened by
-itself, and landed on `3177`, which measured healthiest of the H.264 feeds. The
-right outcome for no good reason.
+### What the front page actually exposes
 
-### F.4 What this means for every measurement in this document
+Checked because of a question about whether H.265 streams were reachable. The
+front page emits **channel ids only, never stream ids** — 14 of them:
+`bein-sports-1..4`, `bein-max-1..4`, `thmanyah-1..3`, `ssc-1..3`. Stream ids like
+`22997` and `7053` appear nowhere in the repository.
 
-**Stream ids are stable; the names, the parsed quality and therefore the pick are
-not.** Any statement of the form "the site plays X" is true only on the date it
-was measured. Appendix C measured `2449` as the site's pick; that is now wrong,
-one day later, with no change on our side.
-
-When re-reading any feed comparison here, check what the resolver picks *today*
-before assuming it is still what viewers get.
+- **H.265 is never played.** HEVC scores 0 against H.264's 100, so `22997` and
+  `7053` rank 20th and 21st of 23. They are reachable only in the IPTV Lab, which
+  lists the whole catalogue by design — and since branded Chrome has **no HEVC**
+  (C.2) while iPhone Safari does, a Lab user gets video on a phone and a black
+  screen on desktop.
+- **`ssc-1/2/3` can never resolve.** Not a resolver gap: the provider carries
+  **zero** SSC streams in its 5,477-entry catalogue. Those three ids would 404 if
+  a match card ever used them.
 
 ---
 
-## Appendix G — logs cannot tell a drain from a viewer closing a tab
+## D.9 Step 8 — The retraction that reframes steps 3–5
 
 **[MEASURED 2026-09-18 02:2x UTC]** A session was observed live on
 `/api/xtream/media` showing every marker this document had been treating as a
-fault: 504s paired with 200s in the same second, 46 of 55 request-starts within
-two seconds of each other, 403 bursts, and 27% success.
+fault:
 
-It was recorded here as an incident in progress. **The owner then said he had
-simply been opening and closing the site.** Not draining. Browsing.
+```
+02:18:34  504
+02:18:34  200      <- paired, 0s apart
+02:18:59  200  (+25s)
+02:18:59  504
+02:19:55  200  (+56s)
+02:19:55  504
+02:20:56  504 504 200 403 200 403 403 504 403 504 504 403 504 200   <- 14 in 3s
+02:25:48  504 200 403 200 504 403 403 504 504 504                   <- 10 in 2s
 
-### G.1 What normal behaviour produces
+totals 504×25  200×16  403×15      starts <=2s apart: 46/55      median gap 0s
+```
+
+It was reported to the owner as an incident in progress. **The owner replied that
+he had simply been opening and closing the site.** Not draining. Browsing.
+
+### Why normal behaviour produces that signature
 
 Opening the page mounts a player and starts a media request. Closing abandons it,
 and the abandoned request is logged with **zero bytes** — as a 504. So:
 
 > one open + one close = one 200 and one 504
 
-That is the 1:1 pairing, the same-second overlap and the burst shape, all
-generated by a viewer doing nothing unusual. **None of those markers is evidence
-of a fault on its own.**
+That is the 1:1 pairing, the same-second overlap and the burst shape, all from a
+viewer doing nothing unusual. **None of those markers is evidence of a fault on
+its own.**
 
-### G.2 What still distinguishes real churn — token reuse
+### What still distinguishes real churn — token reuse
 
-A fresh page load always mints a new media token. So a token requested **once or
-twice** is consistent with open-and-close, while a token requested **ten or more
-times** cannot be: no amount of opening and closing reuses one URL that often.
-
-Re-cut across the Sep 16 19:00–22:00 incident on that axis:
+A fresh page load always mints a new media token. A token requested **once or
+twice** is consistent with open-and-close; a token requested **ten or more times**
+cannot be. Re-cutting the Sep 16 incident on that axis:
 
 | Token reused | Tokens | Requests | Success |
 |---|---|---|---|
@@ -2072,40 +2093,94 @@ Re-cut across the Sep 16 19:00–22:00 incident on that axis:
 | 3–9× — ambiguous | 51 | 232 | 33% |
 | **10+× — cannot be open/close** | **27** | **1,103** | **50%** |
 
-**[MEASURED] 1,103 of 1,439 requests — 77% — sit in the un-explainable-by-browsing
-bucket.** Appendix D's finding survives: that window carried genuine repeated
-re-requesting of single URLs, at scale.
+**[MEASURED] 1,103 of 1,439 requests — 77% — sit in the bucket browsing cannot
+produce.** D.3–D.5 survive on that basis: the Sep 16 window carried genuine
+repeated re-requesting of single URLs, at scale.
 
-**But the 27% row is genuinely ambiguous** and must not be read as failure. A
-token used once that never delivered is equally consistent with a real fault and
-with a tab closed before the stream established.
+**The 27% row is withdrawn as ambiguous.** A token used once that never delivered
+is equally consistent with a real fault and with a tab closed before the stream
+established.
 
-### G.3 The methodological hole, stated plainly
+### The hole this exposes
 
 **HTTP status codes do not carry intent.** A 504 with zero bytes means "this
-request delivered nothing". It does not distinguish:
+request delivered nothing". It cannot distinguish:
 
 - the provider refused or hung *(a fault)*
 - the viewer closed the tab *(normal)*
 - the player tore down and reconnected *(the amplifier)*
 
-Nothing available from Cloudflare separates these. `edgeResponseBytes` is zero in
-all three cases; the timing shape is the same in all three.
+Nothing available from Cloudflare separates them — `edgeResponseBytes` is zero in
+all three, and the timing shape is identical.
 
-**Consequences for reading this document:**
+**A related discriminator that also failed.** The 403s were investigated on the
+theory that they were expired cached tokens (the `LAB_CHANNEL_TTL` bug, §2 Stage
+5). **Refuted:** no token only ever 403s — every one that failed also succeeded,
+across 20 distinct tokens. An attempt to separate "provider refused" (`Upstream
+error 403`, 18-byte body) from "our token failed" (31-byte body) by response size
+was **inconclusive**: with headers included both land at ~795–811 bytes against an
+observed 826, and "expired" and "invalid" produce identical 31-byte bodies.
+**[UNKNOWN] — what produces the 403s is not established.**
 
-- Any claim here derived purely from status-code patterns carries this ambiguity,
-  including parts of Appendix D. The token-reuse split above is the only
-  discriminator found so far, and it is coarse.
-- §6's diagnosis procedure must establish **ground truth first** — *is it actually
-  failing, on which channel, right now* — before log shapes mean anything.
-- The three prior falsifications in this document (the 2 s gaps, the connection
-  limit, and this) share one root cause: **a number was read as a symptom without
-  checking what was happening at the time.** That is the failure mode to guard
-  against here, more than any particular wrong hypothesis.
+---
 
-### G.4 The rule this produces
+## D.10 State of knowledge after this chain
+
+### Stands
+
+| Finding | Basis |
+|---|---|
+| The GA spikes were real viewers, not our probing | D.2, three independent reasons |
+| Sep 16 19:00–22:00 carried genuine retry churn | D.9 — 77% of traffic on tokens reused 10+ times |
+| Viewer contention is not the primary driver | D.4 — flat across 1→5 clients |
+| The failure is not a structural two-URL artifact | D.5 — one token requested 190× |
+| **The line is not limited to one connection** | D.6 — 5 concurrent served |
+| `activeConnections` is not a measurement | D.6 — read `0/1` during 5 live pulls |
+| The provider transiently fails individual streams | D.7 — `2449` 503 for ~2 min while `3177` served |
+| M1 and M6 both occur at runtime | D.5 — two client behaviours in one incident |
+| `EN`/`FR` feeds now pass the Arabic filter | D.8, verified against the live parser |
+| Quality parsing is broken by the rename | D.8 — `FHD` reads as `sd` |
+| The site's pick is not stable across days | D.8 — changed with no deploy |
+
+### Dead
+
+- §1's one-connection constraint, and every capacity recommendation from it
+- The ghost test as designed (C.5)
+- "Same-second 200/504 pairing proves a fault" (D.9)
+- The expired-cached-token explanation for the 403s (D.9)
+
+### Open
+
+| Question | Why it is not answered |
+|---|---|
+| What produces the 403s | Two code paths, not separable by response size |
+| How often and how long per-feed 503s last | Caught once, for ~2 minutes |
+| Whether the drain is the provider fault or the retry amplifier | Needs ground truth during a confirmed incident |
+| Whether concurrency behaves differently under real load | Tested at 2 a.m. with nobody watching |
+
+---
+
+## D.11 The thread running through all of it
+
+Three findings in this chapter overturned earlier ones, and they share a single
+root cause:
+
+| Falsified | What was assumed | What was skipped |
+|---|---|---|
+| The ~2000 ms gaps (M9) | identical gap lengths = dropped segments | checking whether the bytes later arrived |
+| The one-connection limit (D.6) | the provider's own API field was true | testing it, once, in twenty minutes |
+| The live "incident" (D.9) | the request pattern meant a fault | asking the owner what he was doing |
+
+**In each case a number was read as a symptom without establishing what was
+actually happening when it was recorded.** That is the failure mode to guard
+against in this document, more than any particular wrong hypothesis.
+
+### The rule that follows
 
 > **Never classify a window as an incident without the owner confirming it was
-> one.** Ask which surface, which channel, and whether anything was working. Logs
-> describe traffic; only the person watching knows whether it was a drain.
+> one.** Ask which surface, which channel, and whether anything was working.
+> Logs describe traffic; only the person watching knows whether it was a drain.
+
+And its corollary for instruments: **a number reported by a system is a claim
+about that system, not a measurement of it.** `max_connections: 1` was believed
+for the entire investigation because a provider API said so.
