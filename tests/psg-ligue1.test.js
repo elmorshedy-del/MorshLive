@@ -59,6 +59,7 @@ describe("PSG-only Ligue 1 coverage", () => {
     expect(visible[0]).toMatchObject({
       competition: "ligue1",
       leagueAr: "الدوري الفرنسي",
+      channelId: null,
     });
   });
 

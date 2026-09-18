@@ -14,6 +14,7 @@ describe("major competition configuration", () => {
     expect(ESPN_LEAGUES).toEqual([
       "eng.1",
       "esp.1",
+      "fra.1",
       "ksa.1",
       "uefa.champions",
       "uefa.champions_qual",
@@ -23,6 +24,7 @@ describe("major competition configuration", () => {
     ]);
     expect(competitionForLeagueName("English Premier League")?.key).toBe("epl");
     expect(competitionForLeagueName("Spanish LALIGA")?.key).toBe("laliga");
+    expect(competitionForLeagueName("French Ligue 1")?.key).toBe("ligue1");
     expect(competitionForLeagueName("Saudi Pro League")?.key).toBe("spl");
     expect(competitionForLeagueName("Saudi-Arabian Pro League")?.key).toBe("spl");
     expect(competitionForLeagueName("UEFA Champions League Qualifying")?.key).toBe("ucl");

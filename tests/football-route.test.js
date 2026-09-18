@@ -29,6 +29,7 @@ describe("football routes", () => {
     expect(body.leagues.map((row) => row.slug)).toEqual([
       "eng.1",
       "esp.1",
+      "fra.1",
       "ksa.1",
       "uefa.champions",
       "uefa.champions_qual",
@@ -36,7 +37,7 @@ describe("football routes", () => {
       "uefa.nations",
       "fifa.friendly",
     ]);
-    expect(upstream).toHaveBeenCalledTimes(8);
+    expect(upstream).toHaveBeenCalledTimes(9);
   });
 
   it("proxies an allowlisted ESPN match summary for live detail", async () => {
