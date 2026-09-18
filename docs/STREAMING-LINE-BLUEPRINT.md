@@ -1579,8 +1579,15 @@ session.
 **Method.** Poll `/api/iptv-lab/status` — verified free, it only probes channels
 when `media=1` is passed — with no KoraZero player running. No stream opened.
 
-**[MEASURED]** Immediately before the campaign, three polls 4–5 s apart, all
-`active 0 / 1`. A longer poll was run after the campaign.
+**[MEASURED]** Immediately before the campaign, three polls 4–5 s apart: all
+`active 0 / 1`. After the campaign, **30 consecutive polls at 18 s intervals over
+roughly nine minutes (00:26:05 – 00:34:47 UTC): every one `active 0 / 1`**, with
+no anomaly and no single elevated sample.
+
+So the line releases cleanly and holds at zero when idle. Combined with C.4 — a
+504 that carries no bytes, and a replacement request starting in the same second
+as one still outstanding — the overlap being observed is **self-inflicted and
+short-lived**, not a long-lived provider-side session pinning the slot.
 
 **[UNKNOWN] This does not settle the question.** It shows there was no ghost *at
 that moment*, which is the weaker half. The test only pays out when polled during
