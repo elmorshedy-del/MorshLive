@@ -1952,3 +1952,78 @@ into a long visible outage and a request storm.
 was never tested, and it shaped every hypothesis built on top of it — including
 two rounds of capacity advice and a fan-out architecture proposal. **A number
 reported by a system is a claim about that system, not a measurement of it.**
+
+---
+
+## Appendix F — the provider renamed everything, and the resolver quietly changed its mind
+
+**[MEASURED 2026-09-18 02:3x UTC]** Between 2026-09-17 and 2026-09-18 the provider
+rewrote the names of the beIN streams. Nothing in this repository changed. The
+resolver reads names, so its output changed by itself.
+
+| | 2026-09-17 | 2026-09-18 |
+|---|---|---|
+| picked | `2449` `beIN_1HD_1080p` — 1080 h264 | **`3177`** `beIN Sport 1 HD` — hd h264 |
+| alt | `46028` `beIN_SPORTS_1_1080FHD` — 1080 | `2449` `beIN Sport 1 HD Q` — hd |
+| alt | `3177` `beIN_1_HD720` — hd | `3614` `beIN Sport 1 EN HD` — hd |
+| alt | `89778` `BeIN Alkass 1 HD` — hd | `32901` `beIN Sport 1 FR HD` — hd |
+| alt | `669` `[FR]_BeIN_SPORTS_1_HD` — hd | `89778` `BeIN Alkass 1 HD` — hd |
+
+Three things fell out of the rename, all verified by running
+`parseXtreamChannelName` against the new strings:
+
+### F.1 English and French feeds now pass as Arabic — **[VERIFIED, live bug]**
+
+```
+beIN Sport 1 EN HD   ->  language "ar"
+beIN Sport 1 FR HD   ->  language "ar"
+```
+
+`lib/xtream-channel-map.js:88-90` tests `/\benglish\b|\beng\b/` and
+`/\bfrench\b|\bfra\b/`. The provider now writes the tokens **`EN`** and **`FR`**,
+which neither pattern matches. Turkish has a `tokens.includes("tr")` check;
+English and French never got the equivalent, which §8 recorded as a latent defect
+on 2026-09-17. **The rename has made it live.** Two wrong-commentary feeds now sit
+in `bein-sports-1`'s candidate list.
+
+It is still latent in *effect* only because no client code reads `alternates`
+(§8). If the ranking ever reorders — and F.2 shows the ranking is not stable —
+a viewer gets English or French commentary on an Arabic channel.
+
+### F.2 Quality detection has collapsed — **[VERIFIED]**
+
+```
+beIN Sport 1 FHD Q   ->  quality "sd"     (it is the 1080 FHD feed)
+beIN Sport 1 H265    ->  quality "sd"     (it is the 8 Mbps HEVC feed)
+```
+
+`:112-117` recognises `4k`, `1080`, `720`/`hd`, `low`/`512`/`256` and `vega`. It
+does not recognise **`FHD`**. The new names dropped the numeric markers, so the
+FHD and HEVC feeds fall through to the `sd` default and are now ranked *below*
+the plain HD ones. The resolver believes the best feed available is SD.
+
+### F.3 The site's pick changed with no deploy — **[MEASURED]**
+
+On 2026-09-17 the site played `2449`. Today it plays `3177`. No commit, no
+deploy, no approval — the provider renamed a string and the ranking moved.
+
+This is the exact fragility the file's own header warns about ("Providers rename
+channels constantly") and which describe-and-search was built to survive. It does
+survive *identification* — every candidate is still correctly recognised as beIN
+Sports 1. What it does not survive is **ranking**, because the rank is parsed
+from the same volatile names.
+
+**An accidental consequence worth noting honestly:** the repoint debated at
+length on 2026-09-17 — moving off `2449` because it measured worse — happened by
+itself, and landed on `3177`, which measured healthiest of the H.264 feeds. The
+right outcome for no good reason.
+
+### F.4 What this means for every measurement in this document
+
+**Stream ids are stable; the names, the parsed quality and therefore the pick are
+not.** Any statement of the form "the site plays X" is true only on the date it
+was measured. Appendix C measured `2449` as the site's pick; that is now wrong,
+one day later, with no change on our side.
+
+When re-reading any feed comparison here, check what the resolver picks *today*
+before assuming it is still what viewers get.
