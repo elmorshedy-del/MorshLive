@@ -2184,3 +2184,65 @@ against in this document, more than any particular wrong hypothesis.
 And its corollary for instruments: **a number reported by a system is a claim
 about that system, not a measurement of it.** `max_connections: 1` was believed
 for the entire investigation because a provider API said so.
+
+---
+
+## D.12 Audit of every recommendation this document has made
+
+Written 2026-09-18, after D.6 falsified the one-connection premise. **Most
+recommendations in this document rested on that premise and do not survive it.**
+Each is re-judged below against current evidence rather than left standing.
+
+### Dead — do not act on these
+
+| Recommendation | Where it came from | Why it is dead |
+|---|---|---|
+| **Buy more provider connections** (§1 said 6–8; later revised to "buy 2") | §1's `max_connections: 1` | **D.6** — the line served 5 concurrent. There is no ceiling at 1 to raise. This would have been money spent on nothing. |
+| **Fan-out option A** — edge-cache HLS segments | §7b | **C.3 / D.7** — provider HLS segments return 403 through the proxy, re-verified. Not awkward; impossible. |
+| **Fan-out option B** — Durable Object teeing one upstream | §7b, endorsed by the evaluator | **D.6** — its entire value was collapsing N connections against a hard ceiling. There is no hard ceiling. |
+| **Fan-out option C** — repackage into R2 | §7b | Was always disproportionate; now has no capacity problem to solve either. |
+| **`curl /api/iptv-lab/status` during a drain** (§6 Step 2, C.5) | the ghost hypothesis | **D.6** — `activeConnections` read `0/1` while five streams were being pulled. The counter measures nothing. |
+| **Re-run `bufferFloorSeconds` offline** | Appendix B.1 | Superseded — the metric is retired (C.0). The media clock replaced it. |
+
+### Weakened — the code defect is real, the *reason* changed
+
+| Recommendation | Original rationale | Status now |
+|---|---|---|
+| **Delete the Lab's TS→HLS excursion** (`iptv-lab.js:563-572`) | It surrenders the only connection to a path that 403s | **Still worth doing, for a different reason.** Surrendering the connection costs nothing — there is no slot to lose (D.6). But it still abandons a *working* TS stream, waits 180 ms, retries a path re-confirmed to 403 on every segment (D.7), and only then comes back. That is a self-inflicted multi-second gap for no possible benefit. The defect stands; the urgency is lower. |
+| **Back off / cap the 700 ms reconnect loops** (`iptv-lab.js:574`, `watch-lab-continuity-guard.js:168`) | The immediate retry collides with the client's own unreleased connection on a one-slot line | **Justification collapsed.** There is no one-slot line, so there is nothing to collide with. What remains is noise: during the ~2-minute per-feed 503 seen in D.7, a 700 ms loop issues roughly 170 futile requests. **And backoff could make things worse** — if the feed recovers after 30 s and the client has backed off to 10 s, the viewer waits longer than they do today. **Genuinely unclear whether this helps. Do not ship it on the old reasoning.** |
+| **Relax `labChannelAlreadyHealthy`** — the M1 fix designed in §4 | A remount opens a second connection on a one-slot line | **Weakened but not dead.** The slot argument is gone. M1 *is* now observed at runtime (D.5 — one client used 62 tokens for 163 requests), and remounting a healthy player causes a visible glitch for nothing. But **it has never been shown to cause a drain**, and it touches a stream-locked file. |
+
+### Strengthened — the one case that got better
+
+| Recommendation | Status |
+|---|---|
+| **Fix the `EN`/`FR` language filter** (`lib/xtream-channel-map.js:88-90`) | **Stronger than when first raised.** It was latent on 2026-09-17; the provider's rename made it live (D.8). Of 23 candidates for `bein-sports-1`, seven are wrong-language, and English and French now sit at **positions 3 and 4** — directly behind the two Arabic feeds. Still harmless only because nothing reads `alternates`. **This is the clearest defect in the codebase with the smallest fix.** |
+| **Fix `FHD` quality parsing** (`:112-117`) | New, from D.8. The 1080 and HEVC feeds parse as `sd` and rank below plain HD — and below the permanently-dead `4905`. |
+
+### Tests suggested to the owner — which still stand
+
+| Test | Status |
+|---|---|
+| **`video.buffered` snippet during a real drain** | **Still the single best test available**, and now more important, not less. Every other avenue has been eliminated; this is the only way to see what the *player* experiences rather than what the network delivers. Unaffected by anything since. |
+| **Site and Lab consoles side by side during a drain** | **Stands.** Directly discriminates symptom patterns 1 and 2 (§0.5), and costs nothing. |
+| **90 s TS capture, PCR parsed offline** | **Done** — that is the media clock (C.0). Run against five feeds; all keep real time (C.1). Needs re-running *during* a confirmed incident. |
+| **Re-verify the HLS 403 claim** | **Done** — confirmed unchanged (C.3). |
+| **Poll `activeConnections` during a drain** | **Dead** — see above. |
+
+### What this leaves
+
+Nothing large is justified by current evidence. The honest position:
+
+1. **Two small, safe fixes** with clear evidence and no dependence on any
+   falsified premise: the language filter, and `FHD` quality parsing. Both are in
+   `lib/xtream-channel-map.js`, which is stream-locked, so both need the approval
+   path — but neither changes playback behaviour, only which candidate ranks
+   where, and `alternates` is read by nobody today.
+2. **One defect worth removing on its own merits**: the Lab's HLS excursion.
+3. **Everything else waits for ground truth** — a drain, confirmed by the owner as
+   it happens, with the `video.buffered` reading taken during it.
+
+**The pattern worth noticing:** every large recommendation this document produced
+— capacity, fan-out, recovery rewrites — traced back to a single untested number
+in §1. The small fixes, which came from reading code and checking it against the
+live catalogue, all survived.
