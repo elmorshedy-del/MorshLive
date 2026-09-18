@@ -8,6 +8,7 @@ const {
   competitionForLeagueName,
   filterDisplayMatches,
   normalizeEspnEvent,
+  normalizeEvent,
 } = require("../scripts/matches-lib.js");
 const { TeamNames } = require("../assets/js/team-names.js");
 
@@ -57,6 +58,22 @@ describe("PSG-only Ligue 1 coverage", () => {
 
     expect(visible.map((match) => match.id)).toEqual(["espn-fra.1-401876449"]);
     expect(visible[0]).toMatchObject({
+      competition: "ligue1",
+      leagueAr: "الدوري الفرنسي",
+      channelId: null,
+    });
+  });
+
+  it("does not invent a channel when TheSportsDB is the PSG fallback", () => {
+    const fallback = normalizeEvent({
+      idEvent: "999",
+      strLeague: "French Ligue 1",
+      strHomeTeam: "Paris Saint-Germain",
+      strAwayTeam: "Marseille",
+      strTimestamp: "2026-09-20T18:45:00",
+      strStatus: "NS",
+    });
+    expect(fallback).toMatchObject({
       competition: "ligue1",
       leagueAr: "الدوري الفرنسي",
       channelId: null,

@@ -198,7 +198,9 @@ function normalizeEvent(e) {
     competition: competition ? competition.key : "",
     venue: [e.strVenue, e.strCity].filter(Boolean).join(" · "),
     channel: null,
-    channelId: "bein-sports-1",
+    // PSG/Ligue 1 is display-only until existing broadcast hydration resolves
+    // an actual channel. Keep the fallback source from inventing beIN 1 too.
+    channelId: competition?.key === "ligue1" ? null : "bein-sports-1",
     commentator: null,
     source: "thesportsdb",
   };
