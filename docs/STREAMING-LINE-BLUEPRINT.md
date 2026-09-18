@@ -85,9 +85,20 @@ versa. Unproven.
 
 ---
 
-## 1. The constraint that explains most failures
+## 1. The constraint that explains most failures — **[FALSIFIED 2026-09-18]**
 
-**The provider line permits ONE concurrent stream.**
+> **STOP. Read Appendix E before this section.** Its central claim was tested on
+> 2026-09-18 and is false: the line served **five concurrent streams**, same
+> channel and different channels alike, and `activeConnections` reported `0/1`
+> throughout. `max_connections: 1` is what the panel *claims*, not what the line
+> *enforces*. Everything below was believed on the strength of that field and
+> never tested; the contention reasoning built on it does not hold, and the
+> capacity advice derived from it is void. The section is kept intact because a
+> great deal of this document reasons from it and the reader needs to see what
+> was assumed.
+
+**The provider line permits ONE concurrent stream.** *(claimed by the panel;
+falsified in practice — see Appendix E)*
 
 ```
 GET /api/iptv-lab/status  →  account.maxConnections: "1"
@@ -1828,3 +1839,116 @@ ratios and the per-token repeat structure are what this rests on. And a token is
 not a session — a client reloading the page could be issued the same token again
 within the 6 h TTL, so "repeats" bundles reconnects with reloads. The 1:1 ratio
 is not explained by reloads.
+
+---
+
+## Appendix E — §1 is wrong: the line is not limited to one connection
+
+**2026-09-18 02:05–02:25 UTC, line reporting idle, zero media requests in the
+preceding 45 minutes, no viewers present.**
+
+§1 of this document is titled "The constraint that explains most failures" and
+every later section leans on it. It is wrong, and it was never tested — it was
+read off the panel's own `max_connections` field and believed.
+
+### E.1 The test
+
+The owner proposed a specific refinement: perhaps the limit is **per stream**
+rather than per account, so a crowd on one channel is fine and only two
+*different* channels collide. Cloudflare cannot answer it — every dimension that
+would identify a channel (`clientRequestQuery`, `clientRefererHost`) is blocked
+on this plan — so it was tested directly.
+
+| Test | Setup | Result |
+|---|---|---|
+| A | one connection alone | served |
+| B | **two concurrent, same stream** (two viewers, one channel) | **both served** |
+| C | **two concurrent, different streams** (two viewers, two channels) | **both served** |
+| D | **three concurrent, different streams** | **3/3 served** |
+| E | **five concurrent, different streams** | **5/5 served** |
+
+Five simultaneous pulls delivered 8.3, 11.3, 28.4, 9.3 and 3.7 MB in 15 seconds.
+
+**[MEASURED] `max_connections: 1` is not enforced as reported.** The line served
+five concurrent streams. Neither the per-account reading nor the owner's
+per-stream reading survives.
+
+**[MEASURED] `activeConnections` does not track reality.** It reported `0/1`
+*while five streams were being pulled*, and `1/1` at moments when nothing was
+running. The counter is not a measurement of anything.
+
+### E.2 What this invalidates
+
+- **§1's central claim** — "Two honest viewers at once degrade each other" — is
+  **FALSIFIED**. So is "any second connection competes with the viewer we already
+  have", and with it the framing that a drain is "something asked for a second
+  connection".
+- **The ghost test (C.5) was meaningless.** Thirty polls of `activeConnections`
+  measured a counter that does not reflect actual connections. Its clean result
+  says nothing, and the test as designed cannot be rescued.
+- **Every capacity recommendation in this document is void.** Buying connections
+  cannot help when the reported ceiling is not the enforced one. §1's "6-8" was
+  already withdrawn in D.5; this removes the premise underneath it entirely.
+- **The fan-out case in §7b weakens sharply.** Its whole value was collapsing N
+  connections into one against a hard ceiling. There is no hard ceiling at 1.
+- **D.3 is explained rather than contradicted.** The failure rate was flat across
+  concurrency because there is no contention to escalate — not because
+  self-collision perfectly cancelled it out.
+
+### E.3 What replaces it — and it fits all three symptom patterns
+
+During test A, at 02:07 UTC, **stream 2449 returned 503 to a lone connection on
+an idle line**, and did so on every attempt for roughly two minutes, while 3177
+served perfectly in the same instant. 2449 had pulled 16 MB cleanly three hours
+earlier and pulled 3.7 MB cleanly ten minutes later.
+
+**[MEASURED] The provider intermittently fails individual streams, briefly.**
+That is a per-feed, time-varying fault — not capacity, not contention, not
+codec, not bitrate.
+
+A sweep taken while it was happening:
+
+| Stream | Feed | Status | Result |
+|---|---|---|---|
+| `2449` | beIN 1 H264 1080 | 200 | recovered — KEEPS REAL TIME |
+| `3177` | beIN 1 H264 720 | 200 | KEEPS REAL TIME |
+| `46028` | beIN 1 H264 1080FHD | 200 | KEEPS REAL TIME |
+| `7053` | beIN 1 HEVC 8M | 200 | KEEPS REAL TIME |
+| `4905` | beIN 1 low 512K | 200 | **EARLY CLOSE at 0.51 s** |
+| `241362` | Thmanyah 1 1080 | 200 | KEEPS REAL TIME |
+| `3974` | ON E [EG] | 200 | KEEPS REAL TIME |
+
+`4905` dying at 0.51 s reproduces the Sep 17 ladder exactly (§5): that feed is
+permanently broken, not intermittently.
+
+**This fits every symptom pattern in §0.5 without any further assumption:**
+
+| Pattern | Explanation |
+|---|---|
+| Site **and** Lab together | both are on the feed that is failing |
+| Site drains, Lab fine | they are on different channels; only one feed is failing |
+| Only beIN and some channels | exactly what a per-feed transient fault looks like |
+
+And the client behaviour measured in D.6 is the **amplifier**: when a feed blips,
+the player retries immediately and repeatedly, turning a short provider fault
+into a long visible outage and a request storm.
+
+### E.4 Limits — do not over-read this either
+
+- Tested at 02:0x UTC with **no other viewers**. Enforcement could differ under
+  real load, at peak, or by time of day. Five concurrent at 2 a.m. does not prove
+  fifty concurrent at kickoff.
+- Each pull was 15–20 s. A longer or larger test might find a real ceiling.
+- The provider may have changed the line at some point; a `max_connections: 1`
+  that was once enforced would explain the earlier history honestly.
+- **Instrument caveat found here:** `mediaPerWall` on very short pulls (15–20 s)
+  is dominated by the opening burst and read 13x and 19x in these runs. It is
+  only meaningful at 45 s or more. Short pulls are for liveness, not for delivery
+  quality.
+
+### E.5 The lesson this document keeps having to relearn
+
+§1 was believed for the entire investigation because a provider API said so. It
+was never tested, and it shaped every hypothesis built on top of it — including
+two rounds of capacity advice and a fan-out architecture proposal. **A number
+reported by a system is a claim about that system, not a measurement of it.**
