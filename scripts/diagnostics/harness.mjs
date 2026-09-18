@@ -21,8 +21,31 @@ import { fileURLToPath } from "node:url";
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 const ORIGIN = "https://korazero.com";
 
-/** Paths that reach the provider and can consume the line's single slot. */
-const SLOT_CONSUMING = [/^\/api\/xtream\/media/, /^\/api\/xtream\/direct/, /^\/wk\/hls/];
+/**
+ * Paths that reach the provider and can consume the line's single slot.
+ *
+ * `/api/iptv-lab/probe` belongs here and was missing: it reaches `probeMediaUrl`
+ * (backend/adapters/xtream.js), which fetches a real manifest, a real segment
+ * and a real TS body. Both `iptv-quality.js` and `iptv-lab-compat-fallback.js`
+ * fire it on `kz:iptv-playback-failed`, so a run WITHOUT --live could still take
+ * the slot from a viewer the moment a page reported a playback failure — which
+ * is exactly when a diagnostic is most likely to be running.
+ *
+ * `/api/iptv-lab/status` is deliberately NOT here: it only probes channels when
+ * `media=1` is passed, so the plain status call is free. `?media=1` is not.
+ */
+const SLOT_CONSUMING = [
+  /^\/api\/xtream\/media/,
+  /^\/api\/xtream\/direct/,
+  /^\/wk\/hls/,
+  /^\/api\/iptv-lab\/probe/,
+];
+
+/** Free to call, except in the one shape that reaches the provider. */
+export function consumesSlot(pathname, search) {
+  if (SLOT_CONSUMING.some((re) => re.test(pathname))) return true;
+  return /^\/api\/iptv-lab\/status/.test(pathname) && /(^|&)media=1(&|$)/.test(search.replace(/^\?/, ""));
+}
 
 const TYPES = {
   ".html": "text/html; charset=utf-8",
@@ -80,7 +103,7 @@ export function startHarness({ allowMedia = false, port = 0 } = {}) {
       });
     };
 
-    if (!allowMedia && SLOT_CONSUMING.some((re) => re.test(url.pathname))) {
+    if (!allowMedia && consumesSlot(url.pathname, url.search)) {
       refused.push(url.pathname);
       note("refused", 503, 0);
       res.writeHead(503, { "content-type": "text/plain" });

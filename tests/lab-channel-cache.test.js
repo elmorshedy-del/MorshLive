@@ -40,7 +40,7 @@ describe("Lab channel cache", () => {
   });
 
   it("checks the age of a cache entry rather than only its presence", () => {
-    const fn = /async function fetchLabChannel\(channelId\)\s*\{([\s\S]*?)\n  \}/.exec(watchSource);
+    const fn = /async function fetchLabChannel\(channelId\)\s*\{([\s\S]*?)\n {2}\}/.exec(watchSource);
     expect(fn, "watch.js should define fetchLabChannel").not.toBeNull();
     const body = fn[1];
 

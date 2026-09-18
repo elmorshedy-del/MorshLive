@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { bufferFloorSeconds, gapRhythm } from "../scripts/diagnostics/transport.mjs";
+import { consumesSlot } from "../scripts/diagnostics/harness.mjs";
+import { bufferFloorSeconds, gapRhythm, measureTransport } from "../scripts/diagnostics/transport.mjs";
 
 /**
  * These pin the two things the transport probe got wrong in the field, both of
@@ -121,5 +122,42 @@ describe("bufferFloorSeconds", () => {
     expect(bufferFloorSeconds(null, RATE)).toBeNull();
     // A rate of zero makes the model meaningless rather than infinite.
     expect(bufferFloorSeconds(withSilence({}), 0)).toBeNull();
+  });
+});
+
+describe("the probe refuses to lie about a failed run", () => {
+  it("rejects a --seconds value that is not a positive number", async () => {
+    // NaN made setTimeout(abort, NaN) fire immediately while the belt-and-braces
+    // guard `now - started > (NaN + 5) * 1000` never fired — a zero-length run
+    // that still cost a connection setup on a one-slot line.
+    // `undefined` is excluded on purpose: it means "use the documented default".
+    for (const bad of [Number.NaN, 0, -5, "abc", null, {}]) {
+      await expect(
+        measureTransport({ origin: "http://127.0.0.1:1", tsUrl: "http://127.0.0.1:1/x", seconds: bad }),
+      ).rejects.toThrow(/positive number/);
+    }
+  });
+});
+
+describe("harness slot policy", () => {
+  it("refuses /api/iptv-lab/probe, which fetches real media", () => {
+    // It reaches probeMediaUrl, which pulls a manifest, a segment AND a TS body.
+    // iptv-quality.js and iptv-lab-compat-fallback.js both fire it on playback
+    // failure — exactly when a diagnostic is most likely to be running.
+    expect(consumesSlot("/api/iptv-lab/probe", "?stream=2449")).toBe(true);
+    expect(consumesSlot("/api/xtream/media/abc", "")).toBe(true);
+    expect(consumesSlot("/wk/hls/x", "")).toBe(true);
+  });
+
+  it("allows the plain status call but refuses its media=1 form", () => {
+    // getXtreamStatus only probes channels when media=1 is passed.
+    expect(consumesSlot("/api/iptv-lab/status", "")).toBe(false);
+    expect(consumesSlot("/api/iptv-lab/status", "?media=1")).toBe(true);
+  });
+
+  it("leaves metadata endpoints free", () => {
+    for (const p of ["/api/iptv-lab/channel", "/api/iptv-lab/catalog", "/api/football/scoreboard"]) {
+      expect(consumesSlot(p, "?id=bein-sports-1")).toBe(false);
+    }
   });
 });

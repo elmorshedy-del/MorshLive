@@ -14,9 +14,21 @@
  * that matters — were there gaps where nothing arrived.
  */
 
+import fs from "node:fs";
+
+import { MediaClock, classifyDelivery } from "./ts-analysis.mjs";
+
 const MEDIA_RE = /\/api\/xtream\/media\//;
 
 /**
+ * SUPERSEDED 2026-09-18 — retained for the record and for its tests, and used
+ * in NO verdict. It consumes at the feed's own mean delivered rate, which makes
+ * it circular: it measures deviation from the feed's own trend and is
+ * structurally blind to sustained under-delivery. It is also dominated by the
+ * startup transient — every feed measured on 2026-09-17 reported its worst
+ * shortfall at 0.2-0.3 s, because once an opening burst banks a surplus no
+ * later gap can register. Use `MediaClock` in ts-analysis.mjs instead.
+ *
  * How much prebuffer would a player have needed to never run dry?
  *
  * This replaces counting quiet seconds, which was actively misleading. This
@@ -96,13 +108,19 @@ export async function resolvePlayable({ origin, channel, portal, stream }) {
  * `gapMs` is the longest interval in which no bytes arrived at all — the
  * transport-level equivalent of a rebuffer.
  */
-export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 1500 }) {
+export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 1500, rawPath = null }) {
+  if (!Number.isFinite(seconds) || seconds <= 0) {
+    throw new Error(`measureTransport: seconds must be a positive number, got ${JSON.stringify(seconds)}`);
+  }
   // Pull straight from production. The harness exists so a *browser* can reach
   // the site through a TLS-terminating sandbox proxy; Node has no such problem,
   // and the extra hop would only add its own buffering to the measurement.
   const url = MEDIA_RE.test(tsUrl) ? "https://korazero.com" + tsUrl : tsUrl;
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), seconds * 1000);
+  const timer = setTimeout(() => {
+    abortedByUs = true;
+    controller.abort();
+  }, seconds * 1000);
 
   const started = Date.now();
   let firstByteAt = null;
@@ -111,10 +129,17 @@ export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 
   let longestGapMs = 0;
   const gaps = [];
   const perSecond = new Map();
-  /** (ms since first byte, cumulative bytes) — the input to the buffer model. */
+  /** (ms since first byte, cumulative bytes) — kept in full, never truncated. */
   const arrivals = [];
+  /** Every chunk length, so batching can be re-derived offline. */
+  const chunkSizes = [];
+  const clock = new MediaClock();
+  const rawSink = rawPath ? fs.createWriteStream(rawPath) : null;
   let status = null;
   let error = null;
+  /** Did the body end on its own, before we asked it to stop? */
+  let upstreamClosed = false;
+  let abortedByUs = false;
 
   try {
     const res = await fetch(url, {
@@ -124,7 +149,17 @@ export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 
     status = res.status;
     if (!res.ok || !res.body) {
       clearTimeout(timer);
-      return { status, bytes: 0, error: `upstream ${status}`, seconds: (Date.now() - started) / 1000 };
+      rawSink?.end();
+      return {
+        status,
+        bytes: 0,
+        error: `upstream ${status}`,
+        requestedSeconds: seconds,
+        survivedSeconds: +((Date.now() - started) / 1000).toFixed(2),
+        earlyClose: true,
+        closeReason: `upstream refused with ${status}`,
+        seconds: (Date.now() - started) / 1000,
+      };
     }
     for await (const chunk of res.body) {
       const now = Date.now();
@@ -132,6 +167,7 @@ export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 
       // not to fire promptly, and a diagnostic must never outstay its welcome
       // on a one-slot line.
       if (now - started > (seconds + 5) * 1000) {
+        abortedByUs = true;
         controller.abort();
         break;
       }
@@ -143,17 +179,38 @@ export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 
       }
       lastChunkAt = now;
       total += chunk.length;
-      arrivals.push([now - started - firstByteAt, total]);
+      const sinceFirstByte = now - started - firstByteAt;
+      arrivals.push([sinceFirstByte, total]);
+      chunkSizes.push(chunk.length);
+      clock.push(chunk, sinceFirstByte);
+      rawSink?.write(Buffer.from(chunk));
       const sec = Math.floor((now - started) / 1000);
       perSecond.set(sec, (perSecond.get(sec) || 0) + chunk.length);
     }
+    // Falling out of the loop without having aborted means the body ENDED.
+    // A live stream does not end. This is the failure the old probe reported as
+    // healthy, because it simply computed a mean over a shorter window.
+    if (!abortedByUs) upstreamClosed = true;
   } catch (e) {
-    if (e?.name !== "AbortError") error = String(e?.message || e);
+    if (e?.name !== "AbortError") {
+      error = String(e?.message || e);
+      upstreamClosed = true;
+    }
   } finally {
     clearTimeout(timer);
+    rawSink?.end();
   }
 
   const elapsed = (Date.now() - started) / 1000;
+  // A live stream has no end. If the body finished on its own, the pull failed,
+  // however clean the bytes that did arrive looked.
+  const earlyClose = upstreamClosed && elapsed < seconds * 0.95;
+  const closeReason = !earlyClose
+    ? null
+    : error
+      ? `upstream errored after ${elapsed.toFixed(1)}s of ${seconds}s: ${error}`
+      : `upstream closed the body after ${elapsed.toFixed(1)}s of ${seconds}s requested`;
+  const clockReport = clock.report(Math.round(elapsed * 1000));
   const rates = [...perSecond.entries()].sort((a, b) => a[0] - b[0]).map(([, b]) => b);
   const mbps = (bytes) => +((bytes * 8) / 1e6).toFixed(2);
   const sorted = rates.slice().sort((a, b) => a - b);
@@ -178,13 +235,31 @@ export async function measureTransport({ origin, tsUrl, seconds = 30, stallMs = 
     minMbps: interiorSorted.length ? mbps(interiorSorted[0]) : 0,
     stallCount: gaps.length,
     longestGapMs,
-    gaps: gaps.slice(0, 12),
+    // Full, never truncated: gapRhythm used to judge a long run on its first
+    // twelve gaps while stallCount used all of them, so the two disagreed by
+    // construction.
+    gaps,
     perSecondMbps: rates.map(mbps),
-    // The metric that matters. `stallCount` above is retained only because it
-    // describes the delivery shape; it is NOT a health measure on this
-    // transport — see bufferFloorSeconds.
-    bufferFloor: bufferFloorSeconds(arrivals, elapsed ? total / elapsed : 0),
+    /** Complete raw series, so every figure here can be recomputed offline. */
+    arrivals,
+    chunkSizes,
     chunkBytes: medianChunkSize(arrivals),
+
+    /** Did the body end before we asked it to stop? A live stream must not. */
+    requestedSeconds: seconds,
+    survivedSeconds: +elapsed.toFixed(2),
+    earlyClose,
+    closeReason,
+
+    /**
+     * THE verdict. Absolute media clock, not the feed's own byte rate.
+     * `bufferFloor` below is computed only for continuity with older records
+     * and is deliberately used in no verdict — see its docstring.
+     */
+    clock: clockReport,
+    delivery: classifyDelivery(clockReport),
+    bufferFloor: bufferFloorSeconds(arrivals, elapsed ? total / elapsed : 0),
+    rawPath,
   };
 }
 
@@ -245,34 +320,48 @@ export function gapRhythm(gaps) {
 }
 
 export function formatTransport(label, r, meta) {
-  const lines = [`\n── ${label} ${"─".repeat(Math.max(2, 56 - label.length))}`];
+  const lines = [`\n\u2500\u2500 ${label} ${"\u2500".repeat(Math.max(2, 56 - label.length))}`];
   if (meta) lines.push(`  feed        : ${meta.name ?? "?"}   streamId ${meta.streamId ?? "?"}`);
-  if (r.error || r.status !== 200) {
-    lines.push(`  RESULT      : FAILED  status ${r.status ?? "-"}  ${r.error ?? ""}`);
+
+  if (r.error && !r.bytes) {
+    lines.push(`  RESULT      : FAILED  status ${r.status ?? "-"}  ${r.error}`);
     return lines.join("\n");
   }
-  lines.push(`  time to first byte : ${r.ttfbMs} ms`);
-  lines.push(`  delivered          : ${r.megabytes} MB in ${r.seconds}s`);
-  lines.push(`  rate               : mean ${r.meanMbps} Mbps   median ${r.medianMbps}   min ${r.minMbps}`);
-  if (r.chunkBytes) {
-    lines.push(`  delivered in       : ~${(r.chunkBytes / 1024).toFixed(0)} KiB chunks (batched, so quiet gaps are normal)`);
+  if (r.status !== 200) {
+    lines.push(`  RESULT      : FAILED  status ${r.status ?? "-"}  ${r.closeReason ?? ""}`);
+    return lines.join("\n");
   }
-  lines.push(`  quiet >1.5s        : ${r.stallCount}${r.stallCount ? `   longest ${r.longestGapMs} ms` : ""}  (delivery shape, NOT health)`);
+
+  lines.push(`  time to first byte : ${r.ttfbMs} ms`);
+  lines.push(`  requested / survived: ${r.requestedSeconds}s / ${r.survivedSeconds}s`);
+  if (r.earlyClose) {
+    // The failure the previous probe reported as healthy: it simply averaged
+    // over the shorter window and printed "EASY".
+    lines.push(`  *** EARLY CLOSE    : ${r.closeReason}`);
+  }
+  lines.push(`  delivered          : ${r.megabytes} MB`);
+  lines.push(`  rate               : mean ${r.meanMbps} Mbps   median ${r.medianMbps}   min ${r.minMbps}`);
+  if (r.chunkBytes) lines.push(`  chunk size         : ~${(r.chunkBytes / 1024).toFixed(0)} KiB (batched delivery)`);
+  lines.push(`  quiet >1.5s        : ${r.stallCount}${r.stallCount ? `   longest ${r.longestGapMs} ms` : ""}  (shape, not health)`);
   const rhythm = gapRhythm(r.gaps);
   if (rhythm) lines.push(`  gap rhythm         : ${rhythm}`);
 
-  // The verdict rests on the buffer model alone.
-  if (!r.bufferFloor) {
-    lines.push(`  verdict            : TOO LITTLE DATA to model the buffer`);
+  const c = r.clock;
+  lines.push(`  \u2500\u2500 media clock (absolute) \u2500`);
+  if (!c?.ok) {
+    lines.push(`  UNAVAILABLE        : ${c?.reason ?? "not analysed"}`);
+    lines.push(`  verdict            : ${r.delivery?.verdict ?? "NO MEDIA CLOCK"}`);
     return lines.join("\n");
   }
-  const need = r.bufferFloor.seconds;
-  lines.push(
-    `  prebuffer needed   : ${need}s to never run dry ` +
-      `(worst shortfall ${(r.bufferFloor.bytes / 1024).toFixed(0)} KiB at ${r.bufferFloor.atSec}s)`,
-  );
-  const verdict =
-    need <= 2 ? "EASY — any sane buffer rides this out" : need <= 5 ? "NEEDS A REAL BUFFER" : "DEMANDING — a shallow buffer will drain here";
+  lines.push(`  media / wall       : ${c.mediaSeconds}s of media in ${c.wallSeconds}s  =  ${c.mediaPerWall}x real time`);
+  lines.push(`  worst deficit      : ${c.maxDeficitSec}s at ${c.maxDeficitAtSec}s    final ${c.finalDeficitSec}s`);
+  lines.push(`  longest behind     : ${c.longestBehindSec}s${c.longestBehindFromSec === null ? "" : ` from ${c.longestBehindFromSec}s`}`);
+  lines.push(`  repaid the debt    : ${c.recovered ? "yes" : "NO"}`);
+  if (c.discontinuities) lines.push(`  PCR discontinuities: ${c.discontinuities}  ${JSON.stringify(c.discontinuityDetail.slice(0, 4))}`);
+  if (c.continuityErrors) lines.push(`  continuity errors  : ${c.continuityErrors} (packet loss)`);
+
+  const verdict = r.earlyClose ? `${r.delivery.verdict} + EARLY CLOSE` : r.delivery.verdict;
   lines.push(`  verdict            : ${verdict}`);
+  lines.push(`                       ${r.delivery.detail}`);
   return lines.join("\n");
 }

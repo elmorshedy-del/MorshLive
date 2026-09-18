@@ -37,6 +37,25 @@ import { formatTransport, measureTransport, resolvePlayable } from "./transport.
 const LOCK = path.join(os.tmpdir(), "korazero-diagnostics.lock");
 const MAX_SECONDS = 180;
 
+/**
+ * `Number(undefined)` and `Number("")` are NaN, and `setTimeout(fn, NaN)` fires
+ * immediately while `now - started > (NaN + 5) * 1000` never does — so a
+ * mistyped --seconds produced a zero-length run that still cost a connection.
+ */
+function seconds(args, fallback) {
+  if (args.seconds === undefined) return fallback;
+  const n = Number(args.seconds);
+  if (!Number.isFinite(n) || n <= 0) {
+    console.error(`--seconds must be a positive number; got ${JSON.stringify(args.seconds)}`);
+    process.exit(2);
+  }
+  if (n > MAX_SECONDS) {
+    console.error(`--seconds is capped at ${MAX_SECONDS}; got ${n}. You are borrowing a one-slot line.`);
+    process.exit(2);
+  }
+  return n;
+}
+
 function parseArgs(argv) {
   const out = { _: [], stream: [] };
   for (const arg of argv) {
@@ -52,22 +71,48 @@ function parseArgs(argv) {
   return out;
 }
 
+/**
+ * The lock records pid AND a start time. A bare pid is not enough: pids are
+ * recycled, so `process.kill(pid, 0)` on a stale lock can report a live run
+ * that finished hours ago and belongs to an unrelated process.
+ */
 function takeLock() {
+  const mine = JSON.stringify({ pid: process.pid, at: Date.now() });
   try {
-    fs.writeFileSync(LOCK, String(process.pid), { flag: "wx" });
+    fs.writeFileSync(LOCK, mine, { flag: "wx" });
     return true;
   } catch {
-    const owner = fs.readFileSync(LOCK, "utf8").trim();
+    let owner = null;
     try {
-      process.kill(Number(owner), 0);
-      return false; // a live run really is in progress
+      owner = JSON.parse(fs.readFileSync(LOCK, "utf8"));
     } catch {
-      fs.writeFileSync(LOCK, String(process.pid)); // stale lock, take it
-      return true;
+      owner = null;
     }
+    // Nothing legitimate outlives the run cap, so an older lock is abandoned.
+    const stale = !owner || !Number.isFinite(owner.at) || Date.now() - owner.at > (MAX_SECONDS + 60) * 1000;
+    if (!stale) {
+      try {
+        process.kill(Number(owner.pid), 0);
+        return false; // a live run really is in progress
+      } catch {
+        /* the pid is gone; fall through and take it */
+      }
+    }
+    fs.writeFileSync(LOCK, mine);
+    return true;
   }
 }
-const dropLock = () => fs.rmSync(LOCK, { force: true });
+
+/** Release only a lock this process owns, so a crash cannot free someone else's. */
+function dropLock() {
+  try {
+    const owner = JSON.parse(fs.readFileSync(LOCK, "utf8"));
+    if (owner?.pid !== process.pid) return;
+  } catch {
+    return;
+  }
+  fs.rmSync(LOCK, { force: true });
+}
 
 function fmt(label, run) {
   const p = run.probe;
@@ -112,12 +157,12 @@ function fmt(label, run) {
 }
 
 async function once({ harness, urlPath, label, args }) {
-  const seconds = Math.min(Number(args.seconds || 45), MAX_SECONDS);
-  process.stdout.write(`  running ${label} for ${seconds}s`);
+  const dwell = seconds(args, 45);
+  process.stdout.write(`  running ${label} for ${dwell}s`);
   const run = await drive({
     origin: harness.origin,
     urlPath,
-    seconds,
+    seconds: dwell,
     device: args.device || "desktop",
     network: args.net || "none",
     onTick: () => process.stdout.write("."),
@@ -169,7 +214,7 @@ async function main() {
       }
     } else if (scenario === "transport") {
       // No browser, no decoder: does this feed deliver bytes, steadily?
-      const seconds = Math.min(Number(args.seconds || 30), MAX_SECONDS);
+      const dwell = seconds(args, 30);
       const targets = args.stream.length
         ? args.stream.map((s) => ({ stream: s }))
         : [{ channel: args.channel || "bein-sports-1" }];
@@ -191,8 +236,17 @@ async function main() {
           });
           continue;
         }
-        process.stdout.write(`  pulling ${label} for ${seconds}s (uses the line's slot)…\n`);
-        const result = await measureTransport({ origin: harness.origin, tsUrl: meta.tsUrl, seconds });
+        process.stdout.write(`  pulling ${label} for ${dwell}s (uses the line's slot)…\n`);
+        const rawPath = args.raw
+          ? path.join(args.raw, `${label.replace(/[^a-z0-9]+/gi, "-")}-${Date.now()}.ts`)
+          : null;
+        if (rawPath) fs.mkdirSync(args.raw, { recursive: true });
+        const result = await measureTransport({
+          origin: harness.origin,
+          tsUrl: meta.tsUrl,
+          seconds: dwell,
+          rawPath,
+        });
         transports.push({ label, meta, result });
       }
     } else {
@@ -211,11 +265,13 @@ async function main() {
     console.log(`\n── transport comparison ${"─".repeat(36)}`);
     for (const t of transports) {
       const r = t.result;
+      const c = r.clock;
       console.log(
-        `  ${t.label.padEnd(18)} ${String(r.megabytes ?? "-").padStart(7)} MB  ` +
-          `mean ${String(r.meanMbps ?? "-").padStart(6)} Mbps  ` +
-          `needs ${String(r.bufferFloor?.seconds ?? "-").padStart(5)}s prebuffer` +
-          (r.error ? `  ${r.error}` : ""),
+        `  ${t.label.padEnd(16)} ${String(r.megabytes ?? "-").padStart(6)} MB  ` +
+          `${String(r.meanMbps ?? "-").padStart(5)} Mbps  ` +
+          `media/wall ${String(c?.mediaPerWall ?? "-").padStart(6)}  ` +
+          `deficit ${String(c?.maxDeficitSec ?? "-").padStart(5)}s  ` +
+          `${r.earlyClose ? "EARLY-CLOSE " : ""}${r.delivery?.verdict ?? r.error ?? ""}`,
       );
     }
   }
