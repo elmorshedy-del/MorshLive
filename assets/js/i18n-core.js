@@ -302,7 +302,7 @@
       "watch.ready": "جاهزة للبث",
       "watch.titleSuffix": "مشاهدة مباشرة | KoraZero",
       "watch.pressToPlayQ": "اضغط للتشغيل · جودة",
-      "watch.vs": "ضد",
+      "watch.vs": "و",
       "watch.liveWord": "بث مباشر",
       "watch.switchTitle": "قناة أخرى؟",
       "watch.switchHint": "لو القناة مش للمباراة اللي اخترتها، جرّب قناة من دول.",
