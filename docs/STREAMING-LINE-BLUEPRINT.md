@@ -2208,7 +2208,7 @@ Each is re-judged below against current evidence rather than left standing.
 
 | Recommendation | Original rationale | Status now |
 |---|---|---|
-| **Delete the Lab's TS→HLS excursion** (`iptv-lab.js:563-572`) | It surrenders the only connection to a path that 403s | **Still worth doing, for a different reason.** Surrendering the connection costs nothing — there is no slot to lose (D.6). But it still abandons a *working* TS stream, waits 180 ms, retries a path re-confirmed to 403 on every segment (D.7), and only then comes back. That is a self-inflicted multi-second gap for no possible benefit. The defect stands; the urgency is lower. |
+| **Delete the Lab's TS→HLS excursion** (`iptv-lab.js:563-572`) | It surrenders the only connection to a path that 403s | **Real defect, near-zero product value.** Surrendering the connection costs nothing — there is no slot to lose (D.6). It still abandons a *working* TS stream, waits 180 ms, retries a path re-confirmed to 403 on every segment (D.7), and only then returns — a self-inflicted multi-second blackout for no gain. **But [VERIFIED] it is Lab-only:** `tsRuntimeHlsAttempted` appears in `assets/js/iptv-lab.js` and nowhere else, and `watch-lab-continuity-guard.js` reconnects TS→TS with no HLS path. The Lab is a diagnostic page. **Fixing this helps no viewer.** |
 | **Back off / cap the 700 ms reconnect loops** (`iptv-lab.js:574`, `watch-lab-continuity-guard.js:168`) | The immediate retry collides with the client's own unreleased connection on a one-slot line | **Justification collapsed.** There is no one-slot line, so there is nothing to collide with. What remains is noise: during the ~2-minute per-feed 503 seen in D.7, a 700 ms loop issues roughly 170 futile requests. **And backoff could make things worse** — if the feed recovers after 30 s and the client has backed off to 10 s, the viewer waits longer than they do today. **Genuinely unclear whether this helps. Do not ship it on the old reasoning.** |
 | **Relax `labChannelAlreadyHealthy`** — the M1 fix designed in §4 | A remount opens a second connection on a one-slot line | **Weakened but not dead.** The slot argument is gone. M1 *is* now observed at runtime (D.5 — one client used 62 tokens for 163 requests), and remounting a healthy player causes a visible glitch for nothing. But **it has never been shown to cause a drain**, and it touches a stream-locked file. |
 
@@ -2228,6 +2228,32 @@ Each is re-judged below against current evidence rather than left standing.
 | **90 s TS capture, PCR parsed offline** | **Done** — that is the media clock (C.0). Run against five feeds; all keep real time (C.1). Needs re-running *during* a confirmed incident. |
 | **Re-verify the HLS 403 claim** | **Done** — confirmed unchanged (C.3). |
 | **Poll `activeConnections` during a drain** | **Dead** — see above. |
+
+### Option D as a whole — the thesis, not just the items
+
+The evaluator's plan rested on one argument:
+
+> the drain is manufactured by a *handover*: on a line with exactly one
+> connection and no queue, every recovery path drops the connection and re-asks,
+> and whoever asks first wins
+
+**That thesis is dead.** It requires a scarce connection, and D.6 showed the line
+served five concurrent streams. With no scarcity there is no handover race, and
+the three items lose their common justification — which is why each is re-judged
+above on its own merits rather than as a package.
+
+**Why a rigorous evaluation landed wrong.** Its reasoning was sound; two of its
+inputs were not, and both came from this document:
+
+- It was handed §1 — "the line permits ONE concurrent stream" — as established
+  fact. Untested (D.6).
+- It was handed §0.5 with the second symptom pattern **inverted**, so its headline
+  mechanism explained "the Lab drains while the site plays", which does not
+  happen.
+
+**An independent review inherits the errors in what it is given.** That is not a
+criticism of the review; it is an argument for testing premises before handing
+them to anyone, including a reviewer.
 
 ### What this leaves
 
