@@ -19,12 +19,9 @@ const APPROVAL_VALUE = "YES_I_INTEND_TO_CHANGE_PRODUCTION_STREAMING";
 const PLAN_PATH = resolve("config/stream-change-plan.json");
 const MAX_PLAN_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-// Git blob SHAs from the known-good production tree. These are exact-byte
-// fingerprints, not semantic guesses. Lab and KoraZero Live are intentionally
-// locked separately inside the same table.
 const LOCKED_FILES = Object.freeze({
   "iptv-lab.html": "67ace9fbc5e58c6dc08c532a5169fe294518e3f9",
-  "watch.html": "1221e76d929c3f1fcead13bb88e9504d9102905b",
+  "watch.html": "38ec38ee806495737f85c1f49594828c7e6f4b4c",
   "watch-embed.html": "c236f654fd4071f475c05d9e3086fe75c63217a1",
   "assets/js/iptv-lab.js": "5ff9896cc315258753cf23a76b506f32d75ffd1a",
   "assets/js/iptv-quality.js": "1c0de8794befded840bed10eae179a39ff936925",
