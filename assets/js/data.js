@@ -166,6 +166,16 @@ function embedForKey(key) {
 // name (shown in the UI) and resolves its playable embed through the calibration
 // above, so a single match always maps to its actual channel — not a parity guess.
 // beIN Sports 1 stays first so it remains the default fallback channel.
+//
+// MATCHDAY PATCH — Sevilla vs Barcelona, 19 Sep 2026.
+// This one-match synthetic socket deliberately has no IPTV-Lab mapping. That
+// makes the locked player fail closed on Lab and continue to the verified V2
+// HLS stream-plan. It lives in a one-channel group so beIN 2/3/4 never appear
+// on this watch view. Revert the matchday PR after the event.
+const V2_MATCHDAY_FIXTURE_ID = "espn-esp.1-401882859";
+const V2_MATCHDAY_CHANNEL_ID = "v2-bein-sports-1";
+const V2_MATCHDAY_HLS_PREFIX = "https://v2-mist-production.up.railway.app/hls/iptv-3645/";
+
 const CHANNEL_DEFS = [
   { id: "bein-sports-1", name: "beIN Sports 1", group: "beIN", num: "1", quality: "1080p", badge: "HD" },
   { id: "bein-sports-2", name: "beIN Sports 2", group: "beIN", num: "2", quality: "1080p", badge: "HD" },
@@ -173,6 +183,7 @@ const CHANNEL_DEFS = [
   // so a card on 3 or 4 had no channel to bind to and no alternative to offer.
   { id: "bein-sports-3", name: "beIN Sports 3", group: "beIN", num: "3", quality: "1080p", badge: "HD" },
   { id: "bein-sports-4", name: "beIN Sports 4", group: "beIN", num: "4", quality: "1080p", badge: "HD" },
+  { id: V2_MATCHDAY_CHANNEL_ID, name: "beIN Sports 1", group: "V2 Matchday", num: "1", quality: "1080p", badge: "V2" },
   { id: "bein-max-1", name: "beIN MAX 1", group: "beIN MAX", num: "1", quality: "1080p", badge: "HD" },
   { id: "bein-max-2", name: "beIN MAX 2", group: "beIN MAX", num: "2", quality: "1080p", badge: "HD" },
   { id: "bein-max-3", name: "beIN MAX 3", group: "beIN MAX", num: "3", quality: "1080p", badge: "HD" },
@@ -208,6 +219,9 @@ const THMANYAH_CHANNEL = /^thmanyah-[1-9]$/;
 
 /** Saudi fixtures belong on Thmanyah, and only Saudi fixtures do. */
 function channelFitsFixture(channelId, matchId) {
+  if (String(channelId || "") === V2_MATCHDAY_CHANNEL_ID) {
+    return String(matchId || "") === V2_MATCHDAY_FIXTURE_ID;
+  }
   return THMANYAH_CHANNEL.test(String(channelId || "")) === SAUDI_FIXTURE.test(String(matchId || ""));
 }
 
@@ -226,7 +240,15 @@ function resolveWatchSelection(matches, channels, searchParams) {
   const liveMatch = matches.find((m) => m.status === "live");
   const reqCh = params.get("ch");
   const matchId = params.get("match");
-  const explicitMatch = matchId ? matches.find((m) => m.id === matchId) : null;
+  const rawExplicitMatch = matchId ? matches.find((m) => m.id === matchId) : null;
+  const explicitMatch = rawExplicitMatch && String(rawExplicitMatch.id) === V2_MATCHDAY_FIXTURE_ID
+    ? {
+        ...rawExplicitMatch,
+        channelId: V2_MATCHDAY_CHANNEL_ID,
+        channel: "beIN Sports 1",
+        channelBinding: "resolved",
+      }
+    : rawExplicitMatch;
 
   let chId;
   if (explicitMatch && explicitMatch.channelId) {
@@ -260,6 +282,88 @@ window.SITE_DATA = {
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;
 window.keepDisplayMatch = keepDisplayMatch;
+
+/**
+ * Tiny source-bound proof for today's surgical V2 handoff.
+ *
+ * This does NOT show merely because the match is Barcelona. The badge appears
+ * only after the mounted video itself points at the V2 HLS origin (native HLS)
+ * or the browser has fetched that exact V2 HLS resource (hls.js). If Lab or a
+ * legacy player wins instead, there is no V2 badge.
+ */
+function installV2MatchdaySourceProof() {
+  if (typeof location === "undefined" || typeof document === "undefined") return;
+  const params = new URLSearchParams(location.search || "");
+  if (params.get("match") !== V2_MATCHDAY_FIXTURE_ID) return;
+
+  const mount = () => {
+    const shell = document.getElementById("player-shell");
+    if (!shell) return;
+
+    const hasV2Resource = () => {
+      const video = shell.querySelector("video.kz-main-video");
+      const direct = [video?.currentSrc, video?.src]
+        .filter(Boolean)
+        .some((value) => String(value).startsWith(V2_MATCHDAY_HLS_PREFIX));
+      if (direct) return true;
+      if (typeof performance === "undefined" || typeof performance.getEntriesByType !== "function") return false;
+      return performance
+        .getEntriesByType("resource")
+        .some((entry) => String(entry?.name || "").startsWith(V2_MATCHDAY_HLS_PREFIX));
+    };
+
+    const refresh = () => {
+      let badge = shell.querySelector("[data-kz-v2-source-proof]");
+      if (!hasV2Resource()) {
+        badge?.remove();
+        return;
+      }
+      if (badge) return;
+      badge = document.createElement("span");
+      badge.dataset.kzV2SourceProof = "1";
+      badge.textContent = "V2";
+      badge.setAttribute("aria-label", "KoraZero Stream V2 source verified");
+      badge.setAttribute("title", "KoraZero Stream V2");
+      badge.style.cssText = [
+        "position:absolute",
+        "right:10px",
+        "bottom:10px",
+        "z-index:8",
+        "pointer-events:none",
+        "padding:3px 6px",
+        "border:1px solid rgba(24,226,154,.55)",
+        "border-radius:999px",
+        "background:rgba(4,12,20,.72)",
+        "color:#18e29a",
+        "font:700 10px/1.1 system-ui,sans-serif",
+        "letter-spacing:.08em",
+        "box-shadow:0 1px 8px rgba(0,0,0,.28)",
+        "opacity:.86",
+      ].join(";");
+      shell.appendChild(badge);
+    };
+
+    if (typeof MutationObserver === "function") {
+      const observer = new MutationObserver(refresh);
+      observer.observe(shell, { childList: true, subtree: true, attributes: true, attributeFilter: ["src"] });
+    }
+    shell.addEventListener("loadedmetadata", refresh, true);
+    shell.addEventListener("playing", refresh, true);
+    refresh();
+
+    let checks = 0;
+    const timer = setInterval(() => {
+      refresh();
+      checks += 1;
+      if (checks >= 60 || shell.querySelector("[data-kz-v2-source-proof]")) clearInterval(timer);
+    }, 500);
+  };
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", mount, { once: true });
+  else mount();
+}
+
+installV2MatchdaySourceProof();
 
 /* ---------------------------------------------------------------------------
  * getMatches(): returns REAL fixtures from assets/data/today.json (refreshed by
