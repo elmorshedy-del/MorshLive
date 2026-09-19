@@ -38,6 +38,7 @@
  * connection opens, so a test shorter than the join it is probing cannot see it.
  */
 
+import { detectDrain, detectEviction } from "./drain-detect.mjs";
 import { measureTransport, resolvePlayable } from "./transport.mjs";
 
 const ORIGIN = process.env.KZ_DIAG_ORIGIN || "https://korazero.com";
@@ -61,16 +62,24 @@ const FEEDS = {
  */
 const ranSeconds = (r) => (r.megabytes && r.meanMbps ? (r.megabytes * 8) / r.meanMbps : 0);
 
+/**
+ * Print a pull and its verdict. The verdict comes from `detectDrain`, never from
+ * bytes: scoring on "did bytes arrive" is the error that produced the wrong D.6
+ * conclusion, and an evicted stream delivers bytes.
+ */
 function show(label, target, r) {
+  const detection = detectDrain(r);
   if (r.status !== 200) {
-    console.log(`  ${label.padEnd(26)} FAILED ${r.status ?? "-"} ${r.error ?? ""}`);
-    return;
+    console.log(`  ${label.padEnd(26)} ${detection.verdict.padEnd(12)} ${detection.reason}`);
+    return detection;
   }
   console.log(
     `  ${label.padEnd(26)} ran ${ranSeconds(r).toFixed(0).padStart(3)}s of ${String(target).padStart(3)}s  ` +
       `${String(r.megabytes ?? 0).padStart(6)} MB  ${String(r.meanMbps ?? "-").padStart(6)} Mbps  ` +
-      `${r.earlyClose ? "*** DIED EARLY ***" : "survived"}`,
+      `${detection.verdict}`,
   );
+  console.log(`  ${" ".repeat(26)} ${detection.reason}`);
+  return detection;
 }
 
 async function lineState(when) {
@@ -109,12 +118,9 @@ async function stress() {
       ),
     );
 
-    let survived = 0;
-    for (const { m, r } of results) {
-      if (r.status === 200 && !r.earlyClose) survived += 1;
-      show(`${m.id} ${FEEDS[m.id] ?? ""}`, RUN_SECONDS, r);
-    }
-    console.log(`\n  => ${survived}/${results.length} survived the full ${RUN_SECONDS}s`);
+    const detections = results.map(({ m, r }) => show(`${m.id} ${FEEDS[m.id] ?? ""}`, RUN_SECONDS, r));
+    const fleet = detectEviction(detections);
+    console.log(`\n  => ${fleet.verdict}: ${fleet.reason}`);
     await settle(10);
   }
 }
@@ -132,14 +138,76 @@ async function join(incumbentMeta, newcomerMeta, incumbentLabel, newcomerLabel) 
   });
 
   const [ri, rn] = await Promise.all([incumbent, newcomer]);
-  show(`incumbent ${incumbentLabel}`, RUN_SECONDS, ri);
-  show(`newcomer  ${newcomerLabel}`, RUN_SECONDS - JOIN_AT_SECONDS, rn);
+  const di = show(`incumbent ${incumbentLabel}`, RUN_SECONDS, ri);
+  const dn = show(`newcomer  ${newcomerLabel}`, RUN_SECONDS - JOIN_AT_SECONDS, rn);
 
-  if (ri.earlyClose && !rn.earlyClose) console.log("  => INCUMBENT EVICTED — a new viewer kills an established one");
-  else if (!ri.earlyClose && rn.earlyClose) console.log("  => newcomer refused — established viewers are protected");
-  else if (ri.earlyClose && rn.earlyClose) console.log("  => both died");
+  if (di.endedEarly && !dn.endedEarly) console.log("  => INCUMBENT EVICTED — a new viewer kills an established one");
+  else if (!di.endedEarly && dn.endedEarly) console.log("  => newcomer refused — established viewers are protected");
+  else if (di.endedEarly && dn.endedEarly) console.log("  => both died");
   else console.log("  => both survived — no eviction at this spacing");
-  return ri.earlyClose;
+  return di.endedEarly;
+}
+
+/**
+ * Is the limit account-wide, or something about beIN?
+ *
+ * The owner's question, and a fair one: every eviction measured so far had beIN
+ * on at least one side, and beIN is the heaviest thing on the line. If the cull
+ * were really a bandwidth ceiling, or something specific to the beIN feeds, a
+ * light Egyptian channel or a documentary channel joining should be harmless.
+ *
+ * So cross the families: beIN incumbent with a non-beIN newcomer, a non-beIN
+ * incumbent with a beIN newcomer, and a pair with no beIN on either side. If
+ * every combination evicts, the limit counts CONNECTIONS and nothing else.
+ *
+ * Each incumbent gets a solo control first, for the same reason the stagger mode
+ * does: without it, "the incumbent died" cannot be separated from "that feed
+ * dies on its own".
+ */
+const CROSS_FEEDS = {
+  74006: "beIN 1 FHD    heavy",
+  3643: "National Geo AD [AR]",
+  61726: "Egyptian [EG]",
+};
+
+async function soloControl(meta, label) {
+  console.log(`\n${"=".repeat(78)}\nCONTROL — ${label} alone for ${RUN_SECONDS}s\n${"=".repeat(78)}`);
+  const r = await measureTransport({ origin: ORIGIN, tsUrl: meta.tsUrl, seconds: RUN_SECONDS });
+  const d = show(`${label} solo`, RUN_SECONDS, r);
+  const ok = d.verdict === "HEALTHY";
+  console.log(`  => ${ok ? "survives alone — join tests against it are interpretable" : "DID NOT SURVIVE ALONE — do not interpret joins against this feed"}`);
+  return ok;
+}
+
+async function cross(part) {
+  const meta = {};
+  for (const id of Object.keys(CROSS_FEEDS)) {
+    meta[id] = await resolvePlayable({ origin: ORIGIN, portal: "p1", stream: id });
+    console.log(`${id.padEnd(7)} ${CROSS_FEEDS[id].padEnd(22)} resolved as ${meta[id].name}`);
+  }
+
+  // Split into parts so a single run stays a sane length on a borrowed line.
+  if (part !== "2") {
+    await soloControl(meta["3643"], "3643 NatGeo");
+    await settle(15);
+
+    console.log(`\n${"=".repeat(78)}\nbeIN incumbent, NAT GEO newcomer\n${"=".repeat(78)}`);
+    await join(meta["74006"], meta["3643"], "74006 beIN", "3643 NatGeo");
+    await settle(15);
+
+    console.log(`\n${"=".repeat(78)}\nbeIN incumbent, EGYPTIAN newcomer\n${"=".repeat(78)}`);
+    await join(meta["74006"], meta["61726"], "74006 beIN", "61726 Egyptian");
+  }
+
+  if (part !== "1") {
+    if (part === "2") await settle(5);
+    console.log(`\n${"=".repeat(78)}\nNAT GEO incumbent, beIN newcomer\n${"=".repeat(78)}`);
+    await join(meta["3643"], meta["74006"], "3643 NatGeo", "74006 beIN");
+    await settle(15);
+
+    console.log(`\n${"=".repeat(78)}\nNO beIN ON EITHER SIDE — NatGeo incumbent, Egyptian newcomer\n${"=".repeat(78)}`);
+    await join(meta["3643"], meta["61726"], "3643 NatGeo", "61726 Egyptian");
+  }
 }
 
 async function stagger() {
@@ -176,8 +244,9 @@ async function main() {
   const mode = process.argv[2];
   if (mode === "stress") await stress();
   else if (mode === "stagger") await stagger();
+  else if (mode === "cross") await cross(process.argv[3]);
   else {
-    console.error("usage: concurrency.mjs stress|stagger");
+    console.error("usage: concurrency.mjs stress|stagger|cross [1|2]");
     process.exit(2);
   }
 
