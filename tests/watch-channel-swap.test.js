@@ -47,6 +47,17 @@ const switchRow = (selection) =>
 const SAUDI = "espn-ksa.1-401900363";
 const EURO = "espn-uefa.champions-401915452";
 
+const SEVILLA_BARCELONA = "espn-esp.1-401882859";
+const V2_MATCHDAY_CHANNEL = "v2-bein-sports-1";
+
+const matchSelection = (match, query = "") =>
+  window.resolveWatchSelection([match], CHANNELS, new URLSearchParams(query || `match=${match.id}`));
+
+const actualSwitchRow = (selection) => {
+  const siblings = CHANNELS.filter((c) => c.group === selection.channel.group);
+  return siblings.length > 1 ? siblings.map((c) => c.name) : [];
+};
+
 describe("Saudi fixtures are swapped onto Thmanyah", () => {
   it("takes a Thmanyah channel instead of inheriting the beIN default", () => {
     const selection = select(`match=${SAUDI}`);
@@ -135,5 +146,63 @@ describe("with no fixture named", () => {
   it("leaves the existing beIN behaviour alone", () => {
     expect(select("ch=bein-sports-2").channel.id).toBe("bein-sports-2");
     expect(select("ch=live").channel.id).toBe("bein-sports-1");
+  });
+});
+
+
+describe("Sevilla–Barcelona one-match V2 patch", () => {
+  const match = {
+    id: SEVILLA_BARCELONA,
+    home: "Sevilla",
+    away: "Barcelona",
+    channelId: "bein-sports-1",
+    channel: "beIN Sports 1",
+    competition: "laliga",
+    leagueSlug: "esp.1",
+    status: "upcoming",
+    kickoffUtc: "2026-09-19T19:00:00Z",
+  };
+
+  it("replaces only this fixture's Lab-facing channel id with the isolated V2 socket", () => {
+    const selection = matchSelection(match);
+    expect(selection.channel.id).toBe(V2_MATCHDAY_CHANNEL);
+    expect(selection.channel.name).toBe("beIN Sports 1");
+    expect(selection.match.id).toBe(SEVILLA_BARCELONA);
+    expect(selection.match.channelId).toBe(V2_MATCHDAY_CHANNEL);
+    expect(selection.match.channel).toBe("beIN Sports 1");
+  });
+
+  it("hides the beIN 2/3/4 switch row by placing the temporary socket in a one-channel group", () => {
+    const selection = matchSelection(match);
+    expect(actualSwitchRow(selection)).toEqual([]);
+  });
+
+  it("ignores a stale or hand-written ch=bein-sports-2 on this one fixture", () => {
+    const selection = matchSelection(match, `match=${SEVILLA_BARCELONA}&ch=bein-sports-2`);
+    expect(selection.channel.id).toBe(V2_MATCHDAY_CHANNEL);
+    expect(actualSwitchRow(selection)).toEqual([]);
+  });
+
+  it("does not affect another Barcelona fixture", () => {
+    const other = {
+      ...match,
+      id: "espn-esp.1-499999999",
+      home: "Barcelona",
+      away: "Getafe",
+    };
+    const selection = matchSelection(other);
+    expect(selection.channel.id).toBe("bein-sports-1");
+    expect(selection.match.channelId).toBe("bein-sports-1");
+    expect(actualSwitchRow(selection)).toEqual([
+      "beIN Sports 1",
+      "beIN Sports 2",
+      "beIN Sports 3",
+      "beIN Sports 4",
+    ]);
+  });
+
+  it("does not make the synthetic V2 socket reachable without the exact match id", () => {
+    expect(select(`ch=${V2_MATCHDAY_CHANNEL}`).channel.id).toBe("bein-sports-1");
+    expect(select(`match=${EURO}&ch=${V2_MATCHDAY_CHANNEL}`).channel.id).toBe("bein-sports-1");
   });
 });
