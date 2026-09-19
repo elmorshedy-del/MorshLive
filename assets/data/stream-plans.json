@@ -1,10 +1,18 @@
 {
   "version": 1,
-  "updatedAt": "2026-08-30T17:31:00.000Z",
+  "updatedAt": "2026-09-19T17:46:57.669Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
-      "teams": [["everton"], ["crystal palace", "palace"]],
+      "teams": [
+        [
+          "everton"
+        ],
+        [
+          "crystal palace",
+          "palace"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879300",
       "kickoffUtc": "2026-08-22T14:00:00Z",
       "policy": {
@@ -28,7 +36,15 @@
     },
     {
       "matchId": "espn-eng.1-401879299",
-      "teams": [["ipswich town", "ipswich"], ["sunderland"]],
+      "teams": [
+        [
+          "ipswich town",
+          "ipswich"
+        ],
+        [
+          "sunderland"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879299",
       "kickoffUtc": "2026-08-22T14:00:00Z",
       "policy": {
@@ -52,7 +68,16 @@
     },
     {
       "matchId": "espn-eng.1-401879298",
-      "teams": [["nottingham forest", "forest"], ["leeds united", "leeds"]],
+      "teams": [
+        [
+          "nottingham forest",
+          "forest"
+        ],
+        [
+          "leeds united",
+          "leeds"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879298",
       "kickoffUtc": "2026-08-22T14:00:00Z",
       "policy": {
@@ -76,7 +101,16 @@
     },
     {
       "matchId": "espn-esp.1-401882916",
-      "teams": [["athletic club", "athletic bilbao", "athletic"], ["sevilla"]],
+      "teams": [
+        [
+          "athletic club",
+          "athletic bilbao",
+          "athletic"
+        ],
+        [
+          "sevilla"
+        ]
+      ],
       "contentKey": "match:espn-esp.1-401882916",
       "kickoffUtc": "2026-08-22T15:00:00Z",
       "policy": {
@@ -100,7 +134,16 @@
     },
     {
       "matchId": "espn-eng.1-401879321",
-      "teams": [["brentford"], ["tottenham hotspur", "tottenham", "spurs"]],
+      "teams": [
+        [
+          "brentford"
+        ],
+        [
+          "tottenham hotspur",
+          "tottenham",
+          "spurs"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879321",
       "kickoffUtc": "2026-08-22T16:30:00Z",
       "policy": {
@@ -124,7 +167,15 @@
     },
     {
       "matchId": "espn-esp.1-401882907",
-      "teams": [["valencia"], ["celta vigo", "celta"]],
+      "teams": [
+        [
+          "valencia"
+        ],
+        [
+          "celta vigo",
+          "celta"
+        ]
+      ],
       "contentKey": "match:espn-esp.1-401882907",
       "kickoffUtc": "2026-08-22T17:30:00Z",
       "policy": {
@@ -148,7 +199,14 @@
     },
     {
       "matchId": "espn-esp.1-401882912",
-      "teams": [["espanyol"], ["real madrid"]],
+      "teams": [
+        [
+          "espanyol"
+        ],
+        [
+          "real madrid"
+        ]
+      ],
       "contentKey": "match:espn-esp.1-401882912",
       "kickoffUtc": "2026-08-22T19:30:00Z",
       "policy": {
@@ -172,7 +230,17 @@
     },
     {
       "matchId": "espn-eng.1-401879320",
-      "teams": [["manchester city", "man city", "city"], ["afc bournemouth", "bournemouth"]],
+      "teams": [
+        [
+          "manchester city",
+          "man city",
+          "city"
+        ],
+        [
+          "afc bournemouth",
+          "bournemouth"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879320",
       "kickoffUtc": "2026-08-23T13:00:00Z",
       "status": "verified",
@@ -200,7 +268,16 @@
     },
     {
       "matchId": "espn-eng.1-401879297",
-      "teams": [["brighton", "brighton & hove albion"], ["aston villa", "villa"]],
+      "teams": [
+        [
+          "brighton",
+          "brighton & hove albion"
+        ],
+        [
+          "aston villa",
+          "villa"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879297",
       "kickoffUtc": "2026-08-23T13:00:00Z",
       "status": "verified",
@@ -228,7 +305,17 @@
     },
     {
       "matchId": "espn-esp.1-401882915",
-      "teams": [["atlético madrid", "atletico madrid", "atletico", "atlético"], ["villarreal"]],
+      "teams": [
+        [
+          "atlético madrid",
+          "atletico madrid",
+          "atletico",
+          "atlético"
+        ],
+        [
+          "villarreal"
+        ]
+      ],
       "contentKey": "match:espn-esp.1-401882915",
       "kickoffUtc": "2026-08-23T15:00:00Z",
       "status": "verified",
@@ -256,7 +343,15 @@
     },
     {
       "matchId": "espn-eng.1-401879319",
-      "teams": [["newcastle united", "newcastle"], ["liverpool"]],
+      "teams": [
+        [
+          "newcastle united",
+          "newcastle"
+        ],
+        [
+          "liverpool"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879319",
       "kickoffUtc": "2026-08-23T15:30:00Z",
       "status": "verified",
@@ -284,7 +379,17 @@
     },
     {
       "matchId": "espn-esp.1-401882913",
-      "teams": [["elche", "elche cf"], ["barcelona", "barça", "barca"]],
+      "teams": [
+        [
+          "elche",
+          "elche cf"
+        ],
+        [
+          "barcelona",
+          "barça",
+          "barca"
+        ]
+      ],
       "contentKey": "match:espn-esp.1-401882913",
       "kickoffUtc": "2026-08-23T19:30:00Z",
       "status": "verified",
@@ -312,7 +417,15 @@
     },
     {
       "matchId": "espn-esp.1-401882917",
-      "teams": [["valencia"], ["real betis", "betis"]],
+      "teams": [
+        [
+          "valencia"
+        ],
+        [
+          "real betis",
+          "betis"
+        ]
+      ],
       "contentKey": "match:espn-esp.1-401882917",
       "kickoffUtc": "2026-08-25T19:00:00Z",
       "status": "verified",
@@ -340,7 +453,16 @@
     },
     {
       "matchId": "espn-esp.1-401882919",
-      "teams": [["real madrid", "madrid"], ["real sociedad", "sociedad"]],
+      "teams": [
+        [
+          "real madrid",
+          "madrid"
+        ],
+        [
+          "real sociedad",
+          "sociedad"
+        ]
+      ],
       "contentKey": "match:espn-esp.1-401882919",
       "kickoffUtc": "2026-08-26T19:00:00Z",
       "status": "verified",
@@ -368,7 +490,18 @@
     },
     {
       "matchId": "espn-esp.1-401882921",
-      "teams": [["barcelona", "barça", "barca"], ["athletic club", "athletic bilbao", "athletic"]],
+      "teams": [
+        [
+          "barcelona",
+          "barça",
+          "barca"
+        ],
+        [
+          "athletic club",
+          "athletic bilbao",
+          "athletic"
+        ]
+      ],
       "contentKey": "match:espn-esp.1-401882921",
       "kickoffUtc": "2026-08-27T19:00:00Z",
       "status": "verified",
@@ -396,7 +529,17 @@
     },
     {
       "matchId": "espn-eng.1-401879294",
-      "teams": [["crystal palace", "palace"], ["manchester city", "man city", "mancity"]],
+      "teams": [
+        [
+          "crystal palace",
+          "palace"
+        ],
+        [
+          "manchester city",
+          "man city",
+          "mancity"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879294",
       "kickoffUtc": "2026-08-28T19:00:00Z",
       "status": "verified",
@@ -424,7 +567,17 @@
     },
     {
       "matchId": "espn-eng.1-401879312",
-      "teams": [["tottenham hotspur", "tottenham", "spurs"], ["newcastle united", "newcastle"]],
+      "teams": [
+        [
+          "tottenham hotspur",
+          "tottenham",
+          "spurs"
+        ],
+        [
+          "newcastle united",
+          "newcastle"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879312",
       "kickoffUtc": "2026-08-29T16:30:00Z",
       "status": "verified",
@@ -452,7 +605,16 @@
     },
     {
       "matchId": "espn-esp.1-401882897",
-      "teams": [["sevilla"], ["atlético madrid", "atletico madrid", "atleti"]],
+      "teams": [
+        [
+          "sevilla"
+        ],
+        [
+          "atlético madrid",
+          "atletico madrid",
+          "atleti"
+        ]
+      ],
       "contentKey": "match:espn-esp.1-401882897",
       "kickoffUtc": "2026-08-29T19:30:00Z",
       "status": "verified",
@@ -480,7 +642,15 @@
     },
     {
       "matchId": "espn-eng.1-401879317",
-      "teams": [["chelsea"], ["brighton & hove albion", "brighton"]],
+      "teams": [
+        [
+          "chelsea"
+        ],
+        [
+          "brighton & hove albion",
+          "brighton"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879317",
       "kickoffUtc": "2026-08-30T13:00:00Z",
       "status": "verified",
@@ -508,7 +678,14 @@
     },
     {
       "matchId": "espn-eng.1-401879313",
-      "teams": [["sunderland"], ["fulham"]],
+      "teams": [
+        [
+          "sunderland"
+        ],
+        [
+          "fulham"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879313",
       "kickoffUtc": "2026-08-30T13:00:00Z",
       "status": "verified",
@@ -536,7 +713,15 @@
     },
     {
       "matchId": "espn-eng.1-401879315",
-      "teams": [["leeds united", "leeds"], ["brentford"]],
+      "teams": [
+        [
+          "leeds united",
+          "leeds"
+        ],
+        [
+          "brentford"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879315",
       "kickoffUtc": "2026-08-30T13:00:00Z",
       "status": "verified",
@@ -564,7 +749,16 @@
     },
     {
       "matchId": "espn-esp.1-401882899",
-      "teams": [["real madrid", "madrid"], ["málaga", "malaga"]],
+      "teams": [
+        [
+          "real madrid",
+          "madrid"
+        ],
+        [
+          "málaga",
+          "malaga"
+        ]
+      ],
       "contentKey": "match:espn-esp.1-401882899",
       "kickoffUtc": "2026-08-30T15:00:00Z",
       "status": "verified",
@@ -592,7 +786,17 @@
     },
     {
       "matchId": "espn-eng.1-401879293",
-      "teams": [["manchester united", "man united", "united"], ["ipswich town", "ipswich"]],
+      "teams": [
+        [
+          "manchester united",
+          "man united",
+          "united"
+        ],
+        [
+          "ipswich town",
+          "ipswich"
+        ]
+      ],
       "contentKey": "match:espn-eng.1-401879293",
       "kickoffUtc": "2026-08-30T15:30:00Z",
       "status": "verified",
@@ -620,7 +824,17 @@
     },
     {
       "matchId": "espn-esp.1-401882904",
-      "teams": [["deportivo", "depor", "la coruña", "coruna"], ["valencia"]],
+      "teams": [
+        [
+          "deportivo",
+          "depor",
+          "la coruña",
+          "coruna"
+        ],
+        [
+          "valencia"
+        ]
+      ],
       "contentKey": "match:espn-esp.1-401882904",
       "kickoffUtc": "2026-08-30T17:30:00Z",
       "status": "verified",
@@ -643,6 +857,47 @@
           "verifiedAt": "2026-08-30T17:31:00.000Z",
           "label": "ديبورتيفو لا كورونيا × فالنسيا · عربي",
           "note": "Kickoff bind; bein4 beIN SPORTS 4 LIVE walk-out with DEPOR TIENDA boards at Riazor. Listed Arabic beIN 5 was a dead bumper. Leeds FT so bein4 is free. Did not steal 1bein1 (United still at Old Trafford)."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882859",
+      "teams": [
+        [
+          "sevilla",
+          "sevilla fc"
+        ],
+        [
+          "barcelona",
+          "fc barcelona",
+          "barça",
+          "barca"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882859",
+      "kickoffUtc": "2026-09-19T19:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-09-19T17:46:57.669Z",
+      "expiresAt": "2026-09-19T22:30:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein1",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
+          "contentKey": "match:espn-esp.1-401882859",
+          "status": "verified",
+          "verifiedAt": "2026-09-19T17:46:57.669Z",
+          "expiresAt": "2026-09-19T22:30:00.000Z",
+          "label": "beIN Sports 1 · V2",
+          "note": "Temporary matchday fanout through KoraZero Stream V2; revert the surgical PR after Sevilla–Barcelona."
         }
       ]
     }
