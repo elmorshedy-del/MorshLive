@@ -22,6 +22,9 @@
   const epgMatcher = () => window.KZIptvEpgMatcherCore;
   const OVERRIDE_URL = "/assets/data/manual-channel-overrides.json?v=20260904deterministic1";
   const REFRESH_MS = 45 * 1000;
+  // MATCHDAY PATCH: this exact ESPN fixture is routed by the V2 stream plan.
+  // Do not let the normal Lab router rewrite its card to source=xtream.
+  const V2_MATCHDAY_BYPASS_IDS = new Set(["espn-esp.1-401882859"]);
   const SUPPORTED_COMPETITIONS = new Set(["epl", "laliga", "spl", "ucl"]);
   const SUPPORTED_SLUGS = new Set([
     "eng.1",
@@ -450,6 +453,12 @@
     }
     const match = state.matches.get(String(url.searchParams.get("match") || ""));
     if (!match || !supportedMatch(match)) return;
+
+    if (V2_MATCHDAY_BYPASS_IDS.has(String(match.id))) {
+      clearAuto(original);
+      normalizeStageCopy(original, match);
+      return;
+    }
 
     const selection = state.selections.get(String(match.id));
     if (!tvWindow().isEligible(match) || !selection?.selected?.streamId) {
