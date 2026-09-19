@@ -485,7 +485,6 @@ describe("today's stream-plans catalog", () => {
     expect(shouldHoldPlayer(resolved)).toBe(false);
   });
 
-
   it("routes today's Sevilla–Barcelona fixture only to the verified V2 beIN 1 HLS", () => {
     const match = {
       id: "espn-esp.1-401882859",
