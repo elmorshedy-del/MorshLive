@@ -6,9 +6,7 @@ describe("Barcelona V2 matchday stability guard", () => {
 
   it("preserves the exact V2 player instead of remounting it on metadata refresh", () => {
     expect(watch).toContain('matchId !== "espn-esp.1-401882859"');
-    expect(watch).toContain(
-      'url !== "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8"',
-    );
+    expect(watch).toContain('url !== "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8"');
     expect(watch).toContain("v2MatchdayPinnedMirrorAlreadyHealthy(url)");
 
     const mountStart = watch.indexOf("function mountPinnedMainMirror");
