@@ -36,8 +36,9 @@ describe("football routes", () => {
       "caf.nations_qual",
       "uefa.nations",
       "fifa.friendly",
+      "global.gulf_cup",
     ]);
-    expect(upstream).toHaveBeenCalledTimes(9);
+    expect(upstream).toHaveBeenCalledTimes(10);
   });
 
   it("proxies an allowlisted ESPN match summary for live detail", async () => {
