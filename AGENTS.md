@@ -35,6 +35,10 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 - Add a failing test first for bug fixes in extractable logic.
 - No unit tests yet for full `worker.js` or browser UI — use targeted tests for pure functions.
 
+## Adding football leagues or tournaments
+
+For any request to add, enable, whitelist, or normalize a football league, cup, qualifier, or tournament, follow `.claude/skills/add-football-competition/SKILL.md` as the canonical procedure. Do not add a competition ad hoc. The registry-parity test in `tests/football-competition-parity.test.js` is mandatory and must not be weakened to bypass drift.
+
 ## Project structure
 
 | Path | Purpose |
