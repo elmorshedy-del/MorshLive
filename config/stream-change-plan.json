@@ -1,0 +1,11 @@
+{
+  "reason": "Operator-approved matchday unlock: stop Sevilla-Barcelona V2 20s remount while keeping the #264 route.",
+  "baseline": "8fe04a34667a75637d20bb46c4072a9925ab573c",
+  "expiresAt": "2026-09-20T19:40:00.000Z",
+  "allowedFiles": [
+    "watch.html",
+    "assets/js/watch.js",
+    "assets/js/watch-loader.js",
+    "scripts/verify-stream-lock.mjs"
+  ]
+}
