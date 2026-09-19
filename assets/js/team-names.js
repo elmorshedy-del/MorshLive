@@ -46,6 +46,7 @@
     Kuwait: "الكويت",
     Bahrain: "البحرين",
     Oman: "عُمان",
+    Yemen: "اليمن",
     Uzbekistan: "أوزبكستان",
     Morocco: "المغرب",
     Algeria: "الجزائر",
