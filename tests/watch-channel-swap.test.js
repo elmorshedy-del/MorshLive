@@ -149,7 +149,6 @@ describe("with no fixture named", () => {
   });
 });
 
-
 describe("Sevilla–Barcelona one-match V2 patch", () => {
   const match = {
     id: SEVILLA_BARCELONA,
