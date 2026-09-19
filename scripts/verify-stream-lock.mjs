@@ -36,7 +36,9 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
   "assets/js/watch-loader.js": "d40237ad871bb08164150881ff0f397d8786dafb",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
-  "assets/js/watch.js": "b2a9181ee1c801b6f5d33b732402215657ea31d3",
+  // Temporarily advanced on 2026-09-19 for the exact Sevilla–Barcelona V2
+  // matchday remount guard. Revert with the matchday patch after the event.
+  "assets/js/watch.js": "78c127939116f44ec42a7bd6356591a4caab44ad",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
