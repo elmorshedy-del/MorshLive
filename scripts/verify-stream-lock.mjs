@@ -24,7 +24,7 @@ const MAX_PLAN_WINDOW_MS = 24 * 60 * 60 * 1000;
 // locked separately inside the same table.
 const LOCKED_FILES = Object.freeze({
   "iptv-lab.html": "67ace9fbc5e58c6dc08c532a5169fe294518e3f9",
-  "watch.html": "1221e76d929c3f1fcead13bb88e9504d9102905b",
+  // Matchday cache-key advance: exposes the already-approved exact-fixture V2 wiring.\n  "watch.html": "46af8d1ab5580570f7356d4bcd0a9cc49879af8b",
   "watch-embed.html": "c236f654fd4071f475c05d9e3086fe75c63217a1",
   "assets/js/iptv-lab.js": "5ff9896cc315258753cf23a76b506f32d75ffd1a",
   "assets/js/iptv-quality.js": "1c0de8794befded840bed10eae179a39ff936925",
@@ -34,7 +34,7 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/stream-routes.js": "686bff614789077b9151ecf0a6f6c48510769d60",
   "assets/js/watch-embed.js": "3a648bb59889c70f54673faff0690549d7d44c24",
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
-  "assets/js/watch-loader.js": "d40237ad871bb08164150881ff0f397d8786dafb",
+  "assets/js/watch-loader.js": "dcd519e6515b488e480e1d3e5e0b62cb89a7f447",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
   // Temporarily advanced on 2026-09-19 for the exact Sevilla–Barcelona V2
   // matchday remount guard. Revert with the matchday patch after the event.
