@@ -485,6 +485,35 @@ describe("today's stream-plans catalog", () => {
     expect(shouldHoldPlayer(resolved)).toBe(false);
   });
 
+
+  it("routes today's Sevilla–Barcelona fixture only to the verified V2 beIN 1 HLS", () => {
+    const match = {
+      id: "espn-esp.1-401882859",
+      home: "Sevilla",
+      away: "Barcelona",
+      channelId: "v2-bein-sports-1",
+      status: "upcoming",
+      kickoffUtc: "2026-09-19T19:00:00Z",
+    };
+    const resolved = resolveStreamPlan({
+      match,
+      catalog: catalogJson,
+      legacyEmbedKey: "koraplus",
+      now: Date.parse("2026-09-19T18:00:00Z"),
+    });
+
+    expect(resolved.catalog).toBe(true);
+    expect(resolved.status).toBe("verified");
+    expect(resolved.selected.id).toBe("v2-bein1");
+    expect(resolved.selected.kind).toBe("hls");
+    expect(resolved.selected.profile).toBe("hls-direct-v1");
+    expect(resolved.selected.playbackUrl).toBe(
+      "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
+    );
+    expect(resolved.selected.contentKey).toBe("match:espn-esp.1-401882859");
+    expect(resolved.policy.allowLegacy).toBe(false);
+  });
+
   it("plays Madrid through the ad-free operator proxy instead of a raw koralive iframe", () => {
     const match = {
       id: "espn-esp.1-401882919",
