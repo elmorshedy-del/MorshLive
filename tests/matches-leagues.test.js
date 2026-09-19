@@ -21,6 +21,7 @@ describe("major competition configuration", () => {
       "caf.nations_qual",
       "uefa.nations",
       "fifa.friendly",
+      "global.gulf_cup",
     ]);
     expect(competitionForLeagueName("English Premier League")?.key).toBe("epl");
     expect(competitionForLeagueName("Spanish LALIGA")?.key).toBe("laliga");
@@ -32,7 +33,39 @@ describe("major competition configuration", () => {
     expect(competitionForLeagueName("Africa Cup of Nations Qualifying")?.key).toBe("afconq");
     expect(competitionForLeagueName("UEFA Nations League")?.key).toBe("unl");
     expect(competitionForLeagueName("International Friendly")?.key).toBe("friendly");
+    expect(competitionForLeagueName("Arabian Gulf Cup")?.key).toBe("gulfcup");
+    expect(competitionForLeagueName("Gulf Cup of Nations")?.key).toBe("gulfcup");
     expect(competitionForLeagueName("CONCACAF Nations League")).toBeNull();
+  });
+
+  it("normalizes Arabian Gulf Cup fixtures through the shared competition metadata", () => {
+    const match = normalizeEspnEvent(
+      {
+        id: "402999999",
+        date: "2026-09-23T18:00:00Z",
+        competitions: [
+          {
+            date: "2026-09-23T18:00:00Z",
+            status: { type: { state: "pre" } },
+            competitors: [
+              { homeAway: "home", team: { displayName: "Saudi Arabia", abbreviation: "KSA" } },
+              { homeAway: "away", team: { displayName: "Kuwait", abbreviation: "KUW" } },
+            ],
+          },
+        ],
+      },
+      { slug: "global.gulf_cup", name: "Arabian Gulf Cup" },
+    );
+
+    expect(match).toMatchObject({
+      id: "espn-global.gulf_cup-402999999",
+      competition: "gulfcup",
+      league: "Arabian Gulf Cup",
+      leagueAr: "كأس الخليج العربي",
+      leagueSlug: "global.gulf_cup",
+      home: "Saudi Arabia",
+      away: "Kuwait",
+    });
   });
 
   it("keeps the ESPN event identity required for lineups and stats", () => {
