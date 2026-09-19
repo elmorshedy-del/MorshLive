@@ -19,8 +19,7 @@ function comparableCompetition(competition) {
 }
 
 function loadBrowserCompetitionConfig() {
-  const marker =
-    '  const ESPN_LEAGUES = COMPETITIONS.flatMap((competition) => competition.espnSlugs);';
+  const marker = "  const ESPN_LEAGUES = COMPETITIONS.flatMap((competition) => competition.espnSlugs);";
   let source = readFileSync("assets/js/matches-api.js", "utf8");
   if (!source.includes(marker)) {
     throw new Error(
@@ -28,10 +27,7 @@ function loadBrowserCompetitionConfig() {
     );
   }
 
-  source = source.replace(
-    marker,
-    `  global.__KZ_TEST_COMPETITIONS__ = COMPETITIONS;\n${marker}`,
-  );
+  source = source.replace(marker, `  global.__KZ_TEST_COMPETITIONS__ = COMPETITIONS;\n${marker}`);
 
   const sandbox = { window: {} };
   vm.createContext(sandbox);
@@ -42,9 +38,7 @@ function loadBrowserCompetitionConfig() {
 describe("football competition registry parity", () => {
   it("keeps browser and Node competition metadata exactly aligned", () => {
     const browserCompetitions = loadBrowserCompetitionConfig();
-    expect(browserCompetitions.map(comparableCompetition)).toEqual(
-      COMPETITIONS.map(comparableCompetition),
-    );
+    expect(browserCompetitions.map(comparableCompetition)).toEqual(COMPETITIONS.map(comparableCompetition));
   });
 
   it("keeps the backend ESPN allowlist exactly aligned with the shared Node registry", () => {
