@@ -944,9 +944,25 @@
   // Auto-loads in the main shell — unlike mountInlineHls, its only fallback is
   // the same-content mirror URL, never the generic vip/amine embed system, so
   // nothing else can silently switch this match away from the pinned source.
+  //
+  // MATCHDAY PATCH — Atlético Madrid vs Real Madrid, 20 Sep 2026.
+  // Plan metadata refreshes every 20s and fixtures every 90s. If the exact V2
+  // source is already mounted and healthy, keep the same <video> + Hls.js
+  // instance instead of turning a metadata refresh into a playback remount.
+  function v2MatchdayPinnedMirrorAlreadyHealthy(url) {
+    const matchId = String((match && match.id) || params.get("match") || "");
+    if (matchId !== "espn-esp.1-401882865") return false;
+    if (url !== "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8") return false;
+    const expectedKeys = new Set([`pinned-mirror:${url}`, `plan-hls:${url}`]);
+    if (!expectedKeys.has(loadedUrl)) return false;
+    const video = shell && shell.querySelector(".kz-main-video");
+    return !!(video && video.readyState >= 2 && !video.error && !video.ended);
+  }
+
   function mountPinnedMainMirror(url, fallbackUrl, isIframe) {
-    destroyInlineHls();
     if (!shell || !url) return;
+    if (!isIframe && v2MatchdayPinnedMirrorAlreadyHealthy(url)) return;
+    destroyInlineHls();
 
     if (isIframe) {
       loadIframePlayer(url, true);

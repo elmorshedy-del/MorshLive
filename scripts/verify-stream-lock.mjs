@@ -33,7 +33,7 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
   "assets/js/watch-loader.js": "e2b6869f04799c5e0b3fa993970f31cce64d6fd3",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
-  "assets/js/watch.js": "b2a9181ee1c801b6f5d33b732402215657ea31d3",
+  // Temporary Real Madrid V2 matchday anti-remount guard.\n  "assets/js/watch.js": "46d0ef1d58ec31d9e2f5cff6321317da1f337fc6",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
