@@ -47,7 +47,7 @@ const switchRow = (selection) =>
 const SAUDI = "espn-ksa.1-401900363";
 const EURO = "espn-uefa.champions-401915452";
 
-const ATLETICO_REAL = "espn-esp.1-401882865";
+const MARSEILLE_PSG = "espn-fra.1-401876449";
 const V2_MATCHDAY_CHANNEL = "v2-bein-sports-1";
 
 const matchSelection = (match, query = "") =>
@@ -149,24 +149,24 @@ describe("with no fixture named", () => {
   });
 });
 
-describe("Atlético–Real Madrid one-match V2 patch", () => {
+describe("Marseille–Paris Saint-Germain one-match V2 patch", () => {
   const match = {
-    id: ATLETICO_REAL,
-    home: "Atlético Madrid",
-    away: "Real Madrid",
+    id: MARSEILLE_PSG,
+    home: "Marseille",
+    away: "Paris Saint-Germain",
     channelId: "bein-sports-1",
     channel: "beIN Sports 1",
-    competition: "laliga",
-    leagueSlug: "esp.1",
+    competition: "ligue1",
+    leagueSlug: "fra.1",
     status: "upcoming",
-    kickoffUtc: "2026-09-20T14:15:00Z",
+    kickoffUtc: "2026-09-20T18:45:00Z",
   };
 
   it("replaces only this fixture's Lab-facing channel id with the isolated V2 socket", () => {
     const selection = matchSelection(match);
     expect(selection.channel.id).toBe(V2_MATCHDAY_CHANNEL);
     expect(selection.channel.name).toBe("beIN Sports 1");
-    expect(selection.match.id).toBe(ATLETICO_REAL);
+    expect(selection.match.id).toBe(MARSEILLE_PSG);
     expect(selection.match.channelId).toBe(V2_MATCHDAY_CHANNEL);
     expect(selection.match.channel).toBe("beIN Sports 1");
   });
@@ -177,7 +177,7 @@ describe("Atlético–Real Madrid one-match V2 patch", () => {
   });
 
   it("ignores a stale or hand-written ch=bein-sports-2 on this one fixture", () => {
-    const selection = matchSelection(match, `match=${ATLETICO_REAL}&ch=bein-sports-2`);
+    const selection = matchSelection(match, `match=${MARSEILLE_PSG}&ch=bein-sports-2`);
     expect(selection.channel.id).toBe(V2_MATCHDAY_CHANNEL);
     expect(actualSwitchRow(selection)).toEqual([]);
   });

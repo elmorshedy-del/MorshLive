@@ -1,7 +1,7 @@
 {
-  "reason": "Operator-approved matchday unlock: stop Real Madrid derby V2 20s remount while keeping the #264 route.",
+  "reason": "Operator-approved PSG V2 remount hold: move the single beIN 1 V2 slot to Marseille vs Paris Saint-Germain and preserve the healthy-player remount guard.",
   "baseline": "8fe04a34667a75637d20bb46c4072a9925ab573c",
-  "expiresAt": "2026-09-20T19:40:00.000Z",
+  "expiresAt": "2026-09-21T04:00:00.000Z",
   "allowedFiles": [
     "watch.html",
     "assets/js/watch.js",

@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-describe("Real Madrid V2 matchday stability guard", () => {
+describe("PSG V2 matchday stability guard", () => {
   const watch = readFileSync("assets/js/watch.js", "utf8");
 
-  it("keeps the exact Madrid V2 player mounted across metadata refreshes", () => {
-    expect(watch).toContain('matchId !== "espn-esp.1-401882865"');
+  it("keeps the exact PSG V2 player mounted across metadata refreshes", () => {
+    expect(watch).toContain('matchId !== "espn-fra.1-401876449"');
     expect(watch).toContain(
       'url !== "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8"',
     );

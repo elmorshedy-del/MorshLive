@@ -485,20 +485,20 @@ describe("today's stream-plans catalog", () => {
     expect(shouldHoldPlayer(resolved)).toBe(false);
   });
 
-  it("routes today's Atlético–Real Madrid fixture only to the verified V2 beIN 1 HLS", () => {
+  it("routes today's Marseille–Paris Saint-Germain fixture only to the verified V2 beIN 1 HLS", () => {
     const match = {
-      id: "espn-esp.1-401882865",
-      home: "Atlético Madrid",
-      away: "Real Madrid",
+      id: "espn-fra.1-401876449",
+      home: "Marseille",
+      away: "Paris Saint-Germain",
       channelId: "v2-bein-sports-1",
       status: "upcoming",
-      kickoffUtc: "2026-09-20T14:15:00Z",
+      kickoffUtc: "2026-09-20T18:45:00Z",
     };
     const resolved = resolveStreamPlan({
       match,
       catalog: catalogJson,
       legacyEmbedKey: "koraplus",
-      now: Date.parse("2026-09-20T15:24:00Z"),
+      now: Date.parse("2026-09-20T17:00:00Z"),
     });
 
     expect(resolved.catalog).toBe(true);
@@ -509,7 +509,7 @@ describe("today's stream-plans catalog", () => {
     expect(resolved.selected.playbackUrl).toBe(
       "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
     );
-    expect(resolved.selected.contentKey).toBe("match:espn-esp.1-401882865");
+    expect(resolved.selected.contentKey).toBe("match:espn-fra.1-401876449");
     expect(resolved.policy.allowLegacy).toBe(false);
   });
 

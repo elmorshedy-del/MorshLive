@@ -21,7 +21,7 @@ const MAX_PLAN_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 const LOCKED_FILES = Object.freeze({
   "iptv-lab.html": "67ace9fbc5e58c6dc08c532a5169fe294518e3f9",
-  "watch.html": "38ec38ee806495737f85c1f49594828c7e6f4b4c",
+  "watch.html": "028a6d8d639cd77fc5833608243b9642dda21505",
   "watch-embed.html": "c236f654fd4071f475c05d9e3086fe75c63217a1",
   "assets/js/iptv-lab.js": "5ff9896cc315258753cf23a76b506f32d75ffd1a",
   "assets/js/iptv-quality.js": "1c0de8794befded840bed10eae179a39ff936925",
@@ -31,9 +31,9 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/stream-routes.js": "686bff614789077b9151ecf0a6f6c48510769d60",
   "assets/js/watch-embed.js": "3a648bb59889c70f54673faff0690549d7d44c24",
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
-  "assets/js/watch-loader.js": "e2b6869f04799c5e0b3fa993970f31cce64d6fd3",
+  "assets/js/watch-loader.js": "efbb037a56918a367d1b653f1722a57bc37b47bc",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
-  // Temporary Real Madrid V2 matchday anti-remount guard.\n  "assets/js/watch.js": "46d0ef1d58ec31d9e2f5cff6321317da1f337fc6",
+  // Temporary PSG V2 matchday anti-remount guard.\n  "assets/js/watch.js": "88c0587d7885272682a8fbff085238209295448f",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
