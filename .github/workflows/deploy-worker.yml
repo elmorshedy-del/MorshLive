@@ -6,6 +6,10 @@
 name: Deploy Worker (morshlive)
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/deploy-worker.yml"
   workflow_dispatch:
 
 permissions:
