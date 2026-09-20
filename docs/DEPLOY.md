@@ -57,3 +57,5 @@ Deploy and match-cron workflows are **manual-only** (`workflow_dispatch`) so the
 | `verify-deploy-token.js` fails | Token needs Workers Scripts Edit — see `config/cloudflare-api-token-scopes.json` |
 | Builds API "Invalid token" | Use user-scoped token with Workers Builds Configuration Edit for API setup |
 | GitHub Actions billing lock | Irrelevant for deploy once Workers Builds is connected |
+
+<!-- deploy-pulse: 2026-09-20T16:07Z -->
