@@ -167,12 +167,12 @@ function embedForKey(key) {
 // above, so a single match always maps to its actual channel — not a parity guess.
 // beIN Sports 1 stays first so it remains the default fallback channel.
 //
-// MATCHDAY PATCH — Sevilla vs Barcelona, 19 Sep 2026.
+// MATCHDAY PATCH — Atlético Madrid vs Real Madrid, 20 Sep 2026.
 // This one-match synthetic socket deliberately has no IPTV-Lab mapping. That
 // makes the locked player fail closed on Lab and continue to the verified V2
 // HLS stream-plan. It lives in a one-channel group so beIN 2/3/4 never appear
 // on this watch view. Revert the matchday PR after the event.
-const V2_MATCHDAY_FIXTURE_ID = "espn-esp.1-401882859";
+const V2_MATCHDAY_FIXTURE_ID = "espn-esp.1-401882865";
 const V2_MATCHDAY_CHANNEL_ID = "v2-bein-sports-1";
 const V2_MATCHDAY_HLS_PREFIX = "https://v2-mist-production.up.railway.app/hls/iptv-3645/";
 
@@ -286,7 +286,7 @@ window.keepDisplayMatch = keepDisplayMatch;
 /**
  * Tiny source-bound proof for today's surgical V2 handoff.
  *
- * This does NOT show merely because the match is Barcelona. The badge appears
+ * This does NOT show merely because the match is Real Madrid. The badge appears
  * only after the mounted video itself points at the V2 HLS origin (native HLS)
  * or the browser has fetched that exact V2 HLS resource (hls.js). If Lab or a
  * legacy player wins instead, there is no V2 badge.

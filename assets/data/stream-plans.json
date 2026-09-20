@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-19T17:46:57.669Z",
+  "updatedAt": "2026-09-20T15:24:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -647,13 +647,13 @@
       ]
     },
     {
-      "matchId": "espn-esp.1-401882859",
-      "teams": [["sevilla", "sevilla fc"], ["barcelona", "fc barcelona", "barça", "barca"]],
-      "contentKey": "match:espn-esp.1-401882859",
-      "kickoffUtc": "2026-09-19T19:00:00Z",
+      "matchId": "espn-esp.1-401882865",
+      "teams": [["atletico madrid", "atlético madrid", "atletico"], ["real madrid", "real"]],
+      "contentKey": "match:espn-esp.1-401882865",
+      "kickoffUtc": "2026-09-20T14:15:00Z",
       "status": "verified",
-      "verifiedAt": "2026-09-19T17:46:57.669Z",
-      "expiresAt": "2026-09-19T22:30:00.000Z",
+      "verifiedAt": "2026-09-20T15:24:00.000Z",
+      "expiresAt": "2026-09-20T18:30:00.000Z",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
@@ -667,12 +667,12 @@
           "kind": "hls",
           "profile": "hls-direct-v1",
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-esp.1-401882859",
+          "contentKey": "match:espn-esp.1-401882865",
           "status": "verified",
-          "verifiedAt": "2026-09-19T17:46:57.669Z",
-          "expiresAt": "2026-09-19T22:30:00.000Z",
+          "verifiedAt": "2026-09-20T15:24:00.000Z",
+          "expiresAt": "2026-09-20T18:30:00.000Z",
           "label": "beIN Sports 1 · V2",
-          "note": "Temporary matchday fanout through KoraZero Stream V2; revert the surgical PR after Sevilla–Barcelona."
+          "note": "Temporary matchday fanout through KoraZero Stream V2; moved from yesterday's Barcelona card to Atlético–Real Madrid."
         }
       ]
     }
