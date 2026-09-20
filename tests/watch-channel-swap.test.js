@@ -47,7 +47,7 @@ const switchRow = (selection) =>
 const SAUDI = "espn-ksa.1-401900363";
 const EURO = "espn-uefa.champions-401915452";
 
-const SEVILLA_BARCELONA = "espn-esp.1-401882859";
+const ATLETICO_REAL = "espn-esp.1-401882865";
 const V2_MATCHDAY_CHANNEL = "v2-bein-sports-1";
 
 const matchSelection = (match, query = "") =>
@@ -149,24 +149,24 @@ describe("with no fixture named", () => {
   });
 });
 
-describe("Sevilla–Barcelona one-match V2 patch", () => {
+describe("Atlético–Real Madrid one-match V2 patch", () => {
   const match = {
-    id: SEVILLA_BARCELONA,
-    home: "Sevilla",
-    away: "Barcelona",
+    id: ATLETICO_REAL,
+    home: "Atlético Madrid",
+    away: "Real Madrid",
     channelId: "bein-sports-1",
     channel: "beIN Sports 1",
     competition: "laliga",
     leagueSlug: "esp.1",
     status: "upcoming",
-    kickoffUtc: "2026-09-19T19:00:00Z",
+    kickoffUtc: "2026-09-20T14:15:00Z",
   };
 
   it("replaces only this fixture's Lab-facing channel id with the isolated V2 socket", () => {
     const selection = matchSelection(match);
     expect(selection.channel.id).toBe(V2_MATCHDAY_CHANNEL);
     expect(selection.channel.name).toBe("beIN Sports 1");
-    expect(selection.match.id).toBe(SEVILLA_BARCELONA);
+    expect(selection.match.id).toBe(ATLETICO_REAL);
     expect(selection.match.channelId).toBe(V2_MATCHDAY_CHANNEL);
     expect(selection.match.channel).toBe("beIN Sports 1");
   });
@@ -177,17 +177,18 @@ describe("Sevilla–Barcelona one-match V2 patch", () => {
   });
 
   it("ignores a stale or hand-written ch=bein-sports-2 on this one fixture", () => {
-    const selection = matchSelection(match, `match=${SEVILLA_BARCELONA}&ch=bein-sports-2`);
+    const selection = matchSelection(match, `match=${ATLETICO_REAL}&ch=bein-sports-2`);
     expect(selection.channel.id).toBe(V2_MATCHDAY_CHANNEL);
     expect(actualSwitchRow(selection)).toEqual([]);
   });
 
-  it("does not affect another Barcelona fixture", () => {
+  it("removes yesterday's Barcelona card from the V2 socket", () => {
     const other = {
       ...match,
-      id: "espn-esp.1-499999999",
-      home: "Barcelona",
-      away: "Getafe",
+      id: "espn-esp.1-401882859",
+      home: "Sevilla",
+      away: "Barcelona",
+      kickoffUtc: "2026-09-19T19:00:00Z",
     };
     const selection = matchSelection(other);
     expect(selection.channel.id).toBe("bein-sports-1");
