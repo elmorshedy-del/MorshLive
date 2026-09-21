@@ -10,6 +10,7 @@ export const FOOTBALL_LEAGUES = Object.freeze([
   "caf.nations_qual",
   "uefa.nations",
   "fifa.friendly",
+  "fifa.worldq.conmebol",
   "global.gulf_cup",
 ]);
 
