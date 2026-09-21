@@ -47,10 +47,4 @@
     demoteStaleLive,
     refineCachedStatus,
   };
-
-  if (!document.querySelector('script[src*="khaleeji-hero.js"]')) {
-    var hero = document.createElement("script");
-    hero.src = "assets/js/khaleeji-hero.js?v=20260920hero2";
-    document.head.appendChild(hero);
-  }
 })(window);
