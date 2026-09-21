@@ -33,7 +33,6 @@ function readJpeg(bytes) {
 }
 
 const HEROES = [
-  { file: "assets/img/korazero-khaleeji27.jpg", width: 1500, height: 844 },
   { file: "assets/img/korazero-saudi.jpg", width: 1672, height: 941 },
   { file: "assets/img/korazero-showdown.jpg", width: 1374, height: 768 },
 ];
@@ -58,22 +57,23 @@ describe("homepage hero artwork", () => {
         expect(jpeg.bytes).toBeGreaterThan(100_000);
       });
 
-      it("is referenced by the homepage", () => {
+      it("is the size index.html declares", () => {
         const html = readFileSync(require.resolve("../index.html"), "utf8");
-        const injector = readFileSync(require.resolve("../assets/js/khaleeji-hero.js"), "utf8");
         const name = hero.file.split("/").pop();
-        const fromHtml = html.match(new RegExp(`<img[^>]*${name.replace(".", "\\.")}[^>]*>`, "i"));
-        if (fromHtml) {
-          expect(Number(fromHtml[0].match(/\bwidth="(\d+)"/)?.[1])).toBe(jpeg.width);
-          expect(Number(fromHtml[0].match(/\bheight="(\d+)"/)?.[1])).toBe(jpeg.height);
-          return;
-        }
-        expect(injector.includes(name), `no homepage reference for ${name}`).toBe(true);
-        if (name === "korazero-khaleeji27.jpg") {
-          expect(injector).toMatch(/width\s*=\s*1500/);
-          expect(injector).toMatch(/height\s*=\s*844/);
-        }
+        const tag = html.match(new RegExp(`<img[^>]*${name.replace(".", "\\.")}[^>]*>`, "i"));
+        expect(tag, `no <img> for ${name} in index.html`).toBeTruthy();
+        expect(Number(tag[0].match(/\bwidth="(\d+)"/)?.[1])).toBe(jpeg.width);
+        expect(Number(tag[0].match(/\bheight="(\d+)"/)?.[1])).toBe(jpeg.height);
       });
     });
   }
+
+  it("wires the Khaleeji 27 slide at native 1500x844", () => {
+    const injector = readFileSync(require.resolve("../assets/js/khaleeji-hero.js"), "utf8");
+    const css = readFileSync(require.resolve("../assets/css/home-showdown.css"), "utf8");
+    expect(injector).toMatch(/width = 1500/);
+    expect(injector).toMatch(/height = 844/);
+    expect(injector).toMatch(/korazero-khaleeji27/);
+    expect(css).toMatch(/width: 300%/);
+  });
 });
