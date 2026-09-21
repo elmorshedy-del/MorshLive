@@ -43,36 +43,46 @@ describe("international audience filtering", () => {
   });
 
   it("keeps international friendlies involving GCC, North Africa, priority Europe, Brazil, or Argentina", () => {
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Brazil", away: "Australia" })).toBe(
-      true,
-    );
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Argentina", away: "Bolivia" })).toBe(
-      true,
-    );
-    expect(
-      shouldIncludeAudienceMatch({ competition: "friendly", home: "Saudi Arabia", away: "Kuwait" }),
-    ).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "UAE", away: "Japan" })).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Egypt", away: "Jordan" })).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "England", away: "United States" })).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "France", away: "Senegal" })).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Spain", away: "Mexico" })).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Germany", away: "Japan" })).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Italy", away: "Uruguay" })).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Portugal", away: "Canada" })).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Netherlands", away: "Colombia" })).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Belgium", away: "South Korea" })).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Croatia", away: "Australia" })).toBe(true);
+    const included = [
+      ["Brazil", "Australia"],
+      ["Argentina", "Bolivia"],
+      ["Saudi Arabia", "Kuwait"],
+      ["UAE", "Japan"],
+      ["Egypt", "Jordan"],
+      ["England", "United States"],
+      ["France", "Senegal"],
+      ["Spain", "Mexico"],
+      ["Germany", "Japan"],
+      ["Italy", "Uruguay"],
+      ["Portugal", "Canada"],
+      ["Netherlands", "Colombia"],
+      ["Belgium", "South Korea"],
+      ["Croatia", "Australia"],
+    ];
+
+    for (const [home, away] of included) {
+      expect(shouldIncludeAudienceMatch({ competition: "friendly", home, away })).toBe(true);
+    }
+
     expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Japan", away: "Uruguay" })).toBe(
       false,
     );
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Norway", away: "Sweden" })).toBe(false);
+    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Norway", away: "Sweden" })).toBe(
+      false,
+    );
   });
 
   it("keeps CONMEBOL World Cup qualifiers only for Brazil or Argentina", () => {
-    expect(shouldIncludeAudienceMatch({ competition: "conmebolq", home: "Brazil", away: "Bolivia" })).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "conmebolq", home: "Argentina", away: "Ecuador" })).toBe(true);
-    expect(shouldIncludeAudienceMatch({ competition: "conmebolq", home: "Uruguay", away: "Colombia" })).toBe(false);
+    for (const [home, away] of [
+      ["Brazil", "Bolivia"],
+      ["Argentina", "Ecuador"],
+    ]) {
+      expect(shouldIncludeAudienceMatch({ competition: "conmebolq", home, away })).toBe(true);
+    }
+
+    expect(
+      shouldIncludeAudienceMatch({ competition: "conmebolq", home: "Uruguay", away: "Colombia" }),
+    ).toBe(false);
   });
 
   it("does not filter normal club competitions", () => {
