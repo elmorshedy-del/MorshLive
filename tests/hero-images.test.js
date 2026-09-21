@@ -47,6 +47,7 @@ function readJpeg(bytes) {
    640×360, and once shipped truncated and undecodable at 19 KB, which browsers
    drew as a part-frame. See "Hero images" in AGENTS.md before changing one. */
 const HEROES = [
+  { file: "assets/img/korazero-khaleeji27.jpg", width: 1500, height: 844 },
   { file: "assets/img/korazero-saudi.jpg", width: 1672, height: 941 },
   { file: "assets/img/korazero-showdown.jpg", width: 1374, height: 768 },
 ];

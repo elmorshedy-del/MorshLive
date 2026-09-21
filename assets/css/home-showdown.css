@@ -1,0 +1,16 @@
+/* Three-slide homepage hero. Loaded after styles.css so it wins. */
+.home-showdown-track {
+  width: 300%;
+  animation: home-showdown-slide 15s ease-in-out infinite;
+}
+.home-showdown-track img {
+  flex: 0 0 33.333%;
+  width: 33.333%;
+}
+/* 4s hold + 1s slide per poster */
+@keyframes home-showdown-slide {
+  0%, 26.666% { transform: translateX(0); }
+  33.333%, 60% { transform: translateX(-33.333%); }
+  66.666%, 93.333% { transform: translateX(-66.666%); }
+  100% { transform: translateX(0); }
+}
