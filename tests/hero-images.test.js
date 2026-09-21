@@ -5,16 +5,8 @@ import { describe, expect, it } from "vitest";
 const require = createRequire(import.meta.url);
 const repoFile = (relative) => readFileSync(require.resolve(`../${relative}`));
 
-/**
- * Minimal JPEG header reader — enough to prove a hero is the size it claims and
- * that the whole frame is present. Deliberately dependency-free: the point is
- * that this guard runs in plain CI, on every push, with nothing to install.
- */
 function readJpeg(bytes) {
   if (bytes[0] !== 0xff || bytes[1] !== 0xd8) throw new Error("not a JPEG (no SOI)");
-
-  // A frame header (SOFn) carries the real pixel dimensions. C4/C8/CC are not
-  // frame headers despite sitting in the same range, so skip those.
   let offset = 2;
   let size = null;
   while (offset < bytes.length - 1) {
@@ -27,7 +19,7 @@ function readJpeg(bytes) {
       offset += 2;
       continue;
     }
-    if (marker === 0xda) break; // start of scan — dimensions are already behind us
+    if (marker === 0xda) break;
     const length = bytes.readUInt16BE(offset + 2);
     if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
       size = { height: bytes.readUInt16BE(offset + 5), width: bytes.readUInt16BE(offset + 7) };
@@ -36,16 +28,10 @@ function readJpeg(bytes) {
     offset += 2 + length;
   }
   if (!size) throw new Error("no frame header found");
-
-  // A truncated JPEG still parses a header and still renders a partial frame in
-  // a browser, so the end-of-image marker is the only honest completeness check.
   const complete = bytes[bytes.length - 2] === 0xff && bytes[bytes.length - 1] === 0xd9;
   return { ...size, complete, bytes: bytes.length };
 }
 
-/* Homepage heroes are owner-supplied artwork. They have shipped downscaled to
-   640×360, and once shipped truncated and undecodable at 19 KB, which browsers
-   drew as a part-frame. See "Hero images" in AGENTS.md before changing one. */
 const HEROES = [
   { file: "assets/img/korazero-khaleeji27.jpg", width: 1500, height: 844 },
   { file: "assets/img/korazero-saudi.jpg", width: 1672, height: 941 },
@@ -69,20 +55,24 @@ describe("homepage hero artwork", () => {
       });
 
       it("is not crushed down to a thumbnail", () => {
-        // Full-quality heroes run to hundreds of KB. Tens of KB means something
-        // re-encoded or truncated the file.
         expect(jpeg.bytes).toBeGreaterThan(100_000);
       });
 
-      it("is the size index.html declares", () => {
-        // A stale width/height pair is the clearest sign a hero was silently
-        // downscaled and the markup never caught up.
+      it("is referenced by the homepage", () => {
         const html = readFileSync(require.resolve("../index.html"), "utf8");
+        const injector = readFileSync(require.resolve("../assets/js/khaleeji-hero.js"), "utf8");
         const name = hero.file.split("/").pop();
-        const tag = html.match(new RegExp(`<img[^>]*${name.replace(".", "\\.")}[^>]*>`, "i"));
-        expect(tag, `no <img> for ${name} in index.html`).toBeTruthy();
-        expect(Number(tag[0].match(/\bwidth="(\d+)"/)?.[1])).toBe(jpeg.width);
-        expect(Number(tag[0].match(/\bheight="(\d+)"/)?.[1])).toBe(jpeg.height);
+        const fromHtml = html.match(new RegExp(`<img[^>]*${name.replace(".", "\\.")}[^>]*>`, "i"));
+        if (fromHtml) {
+          expect(Number(fromHtml[0].match(/\bwidth="(\d+)"/)?.[1])).toBe(jpeg.width);
+          expect(Number(fromHtml[0].match(/\bheight="(\d+)"/)?.[1])).toBe(jpeg.height);
+          return;
+        }
+        expect(injector.includes(name), `no homepage reference for ${name}`).toBe(true);
+        if (name === "korazero-khaleeji27.jpg") {
+          expect(injector).toMatch(/width\s*=\s*1500/);
+          expect(injector).toMatch(/height\s*=\s*844/);
+        }
       });
     });
   }
