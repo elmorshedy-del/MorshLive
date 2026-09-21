@@ -1,7 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <url>
     <loc>https://korazero.com/</loc>
+    <image:image>
+      <image:loc>https://korazero.com/assets/img/korazero-khaleeji27.jpg</image:loc>
+      <image:title>خليجي 27 — كأس الخليج العربي | كورة زيرو</image:title>
+      <image:caption>خليجي 27 وكأس الخليج العربي في جدة 2026 على كورة زيرو</image:caption>
+    </image:image>
+    <image:image>
+      <image:loc>https://korazero.com/assets/img/korazero-nations-league-2026.jpg</image:loc>
+      <image:title>دوري الأمم الأوروبية 2026/27 | كورة زيرو</image:title>
+      <image:caption>دوري الأمم الأوروبية 2026/27 على كورة زيرو</image:caption>
+    </image:image>
   </url>
   <url>
     <loc>https://korazero.com/tournament</loc>
