@@ -131,6 +131,7 @@ Current groups are defined through `assets/js/team-names.js` national-team metad
 - `north_africa`
 - `gcc`
 - `priority_latam`
+- `priority_europe`
 
 If the filter depends on a team being in a group, that team must resolve through the national-team registry. A plain English→Arabic translation is not enough.
 

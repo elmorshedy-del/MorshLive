@@ -69,7 +69,15 @@ const COMPETITIONS = Object.freeze([
     nameAr: "مباريات دولية ودية",
     espnSlugs: ["fifa.friendly"],
     leagueNames: ["International Friendly", "International Friendlies"],
-    audienceGroups: ["north_africa", "gcc", "priority_latam"],
+    audienceGroups: ["north_africa", "gcc", "priority_latam", "priority_europe"],
+  },
+  {
+    key: "conmebolq",
+    name: "FIFA World Cup Qualifying - CONMEBOL",
+    nameAr: "تصفيات كأس العالم - أمريكا الجنوبية",
+    espnSlugs: ["fifa.worldq.conmebol"],
+    leagueNames: ["FIFA World Cup Qualifying - CONMEBOL"],
+    audienceGroups: ["priority_latam"],
   },
   {
     key: "gulfcup",
