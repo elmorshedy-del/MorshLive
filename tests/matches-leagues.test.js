@@ -70,7 +70,7 @@ describe("major competition configuration", () => {
     });
   });
 
-  it("normalizes Arabian Gulf Cup fixtures through the shared competition metadata",
+  it("normalizes Arabian Gulf Cup fixtures through the shared competition metadata", () => {
     const match = normalizeEspnEvent(
       {
         id: "402999999",
