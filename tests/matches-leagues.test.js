@@ -21,6 +21,7 @@ describe("major competition configuration", () => {
       "caf.nations_qual",
       "uefa.nations",
       "fifa.friendly",
+      "fifa.worldq.conmebol",
       "global.gulf_cup",
     ]);
     expect(competitionForLeagueName("English Premier League")?.key).toBe("epl");
@@ -33,12 +34,43 @@ describe("major competition configuration", () => {
     expect(competitionForLeagueName("Africa Cup of Nations Qualifying")?.key).toBe("afconq");
     expect(competitionForLeagueName("UEFA Nations League")?.key).toBe("unl");
     expect(competitionForLeagueName("International Friendly")?.key).toBe("friendly");
+    expect(competitionForLeagueName("FIFA World Cup Qualifying - CONMEBOL")?.key).toBe("conmebolq");
     expect(competitionForLeagueName("Arabian Gulf Cup")?.key).toBe("gulfcup");
     expect(competitionForLeagueName("Gulf Cup of Nations")?.key).toBe("gulfcup");
     expect(competitionForLeagueName("CONCACAF Nations League")).toBeNull();
   });
 
-  it("normalizes Arabian Gulf Cup fixtures through the shared competition metadata", () => {
+  it("normalizes CONMEBOL World Cup qualifying fixtures through the shared competition metadata", () => {
+    const match = normalizeEspnEvent(
+      {
+        id: "403000001",
+        date: "2025-09-09T23:30:00Z",
+        competitions: [
+          {
+            date: "2025-09-09T23:30:00Z",
+            status: { type: { state: "pre" } },
+            competitors: [
+              { homeAway: "home", team: { displayName: "Brazil", abbreviation: "BRA" } },
+              { homeAway: "away", team: { displayName: "Bolivia", abbreviation: "BOL" } },
+            ],
+          },
+        ],
+      },
+      { slug: "fifa.worldq.conmebol", name: "FIFA World Cup Qualifying - CONMEBOL" },
+    );
+
+    expect(match).toMatchObject({
+      id: "espn-fifa.worldq.conmebol-403000001",
+      competition: "conmebolq",
+      league: "FIFA World Cup Qualifying - CONMEBOL",
+      leagueAr: "تصفيات كأس العالم - أمريكا الجنوبية",
+      leagueSlug: "fifa.worldq.conmebol",
+      home: "Brazil",
+      away: "Bolivia",
+    });
+  });
+
+  it("normalizes Arabian Gulf Cup fixtures through the shared competition metadata",
     const match = normalizeEspnEvent(
       {
         id: "402999999",
