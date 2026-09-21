@@ -80,9 +80,9 @@ describe("international audience filtering", () => {
       expect(shouldIncludeAudienceMatch({ competition: "conmebolq", home, away })).toBe(true);
     }
 
-    expect(
-      shouldIncludeAudienceMatch({ competition: "conmebolq", home: "Uruguay", away: "Colombia" }),
-    ).toBe(false);
+    expect(shouldIncludeAudienceMatch({ competition: "conmebolq", home: "Uruguay", away: "Colombia" })).toBe(
+      false,
+    );
   });
 
   it("does not filter normal club competitions", () => {
