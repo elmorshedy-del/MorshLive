@@ -1,16 +1,25 @@
-/* Three-slide homepage hero. Loaded after styles.css so it wins. */
+/* Four-slide homepage hero. Loaded after styles.css so it wins. */
 .home-showdown-track {
-  width: 300%;
-  animation: home-showdown-slide 15s ease-in-out infinite;
+  display: flex;
+  width: 400%;
+  animation: home-showdown-slide 20s ease-in-out infinite;
 }
 .home-showdown-track img {
-  flex: 0 0 33.333%;
-  width: 33.333%;
+  display: block;
+  flex: 0 0 25%;
+  width: 25%;
+  height: auto;
+  object-fit: contain;
+  object-position: center;
 }
-/* 4s hold + 1s slide per poster */
+/* 4s hold + 1s slide per poster. Existing Saudi + showdown heroes stay in rotation. */
 @keyframes home-showdown-slide {
-  0%, 26.666% { transform: translateX(0); }
-  33.333%, 60% { transform: translateX(-33.333%); }
-  66.666%, 93.333% { transform: translateX(-66.666%); }
+  0%, 20% { transform: translateX(0); }
+  25%, 45% { transform: translateX(-25%); }
+  50%, 70% { transform: translateX(-50%); }
+  75%, 95% { transform: translateX(-75%); }
   100% { transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .home-showdown-track { animation: none; }
 }

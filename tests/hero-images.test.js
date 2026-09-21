@@ -33,6 +33,8 @@ function readJpeg(bytes) {
 }
 
 const HEROES = [
+  { file: "assets/img/korazero-khaleeji27.jpg", width: 1536, height: 864 },
+  { file: "assets/img/korazero-nations-league-2026.jpg", width: 1536, height: 864 },
   { file: "assets/img/korazero-saudi.jpg", width: 1672, height: 941 },
   { file: "assets/img/korazero-showdown.jpg", width: 1374, height: 768 },
 ];
@@ -68,12 +70,14 @@ describe("homepage hero artwork", () => {
     });
   }
 
-  it("wires the Khaleeji 27 slide at native 1500x844", () => {
-    const injector = readFileSync(require.resolve("../assets/js/khaleeji-hero.js"), "utf8");
+  it("keeps all four homepage heroes in the carousel", () => {
+    const html = readFileSync(require.resolve("../index.html"), "utf8");
     const css = readFileSync(require.resolve("../assets/css/home-showdown.css"), "utf8");
-    expect(injector).toMatch(/width = 1500/);
-    expect(injector).toMatch(/height = 844/);
-    expect(injector).toMatch(/korazero-khaleeji27/);
-    expect(css).toMatch(/width: 300%/);
+    expect(html).toContain("korazero-khaleeji27.jpg");
+    expect(html).toContain("korazero-nations-league-2026.jpg");
+    expect(html).toContain("korazero-saudi.jpg");
+    expect(html).toContain("korazero-showdown.jpg");
+    expect(css).toMatch(/width: 400%/);
+    expect(css).toMatch(/flex: 0 0 25%/);
   });
 });

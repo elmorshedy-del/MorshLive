@@ -35,6 +35,7 @@
   <link rel="preconnect" href="https://vip.worldkoora.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css?v=20260830scorers" />
+  <link rel="stylesheet" href="assets/css/home-showdown.css?v=20260921fourheroes" />
   <!-- i18n must run before paint so dir/lang is correct with no flash -->
   <script src="assets/js/i18n.js?v=20260913freeze1"></script>
   <!-- GSAP 3 — industry-standard animation engine -->
@@ -46,12 +47,19 @@
       {
         "@type": "WebSite",
         "name": "KoraZero",
-        "alternateName": ["كورة زيرو", "كورة اون لاين", "KoraZero"],
+        "alternateName": [
+          "كورة زيرو",
+          "كورة اون لاين",
+          "KoraZero"
+        ],
         "url": "https://korazero.com/",
         "inLanguage": "ar",
         "potentialAction": {
           "@type": "SearchAction",
-          "target": { "@type": "EntryPoint", "urlTemplate": "https://korazero.com/search?q={search_term_string}" },
+          "target": {
+            "@type": "EntryPoint",
+            "urlTemplate": "https://korazero.com/search?q={search_term_string}"
+          },
           "query-input": "required name=search_term_string"
         }
       },
@@ -62,11 +70,35 @@
         "url": "https://korazero.com/",
         "logo": "https://korazero.com/logo.png",
         "slogan": "بث مباشر بدون إعلانات ولا نوافذ منبثقة",
-        "sameAs": ["https://www.facebook.com/profile.php?id=61591583004232"]
+        "sameAs": [
+          "https://www.facebook.com/profile.php?id=61591583004232"
+        ]
       },
       {
         "@type": "FAQPage",
         "mainEntity": []
+      },
+      {
+        "@type": "ImageObject",
+        "name": "خليجي 27 — كأس الخليج العربي | كورة زيرو",
+        "description": "صورة كورة زيرو لبطولة خليجي 27 وكأس الخليج العربي في جدة 2026.",
+        "contentUrl": "https://korazero.com/assets/img/korazero-khaleeji27.jpg",
+        "url": "https://korazero.com/assets/img/korazero-khaleeji27.jpg",
+        "encodingFormat": "image/jpeg",
+        "width": 1536,
+        "height": 864,
+        "inLanguage": "ar"
+      },
+      {
+        "@type": "ImageObject",
+        "name": "دوري الأمم الأوروبية 2026/27 | كورة زيرو",
+        "description": "صورة كورة زيرو لدوري الأمم الأوروبية 2026/27.",
+        "contentUrl": "https://korazero.com/assets/img/korazero-nations-league-2026.jpg",
+        "url": "https://korazero.com/assets/img/korazero-nations-league-2026.jpg",
+        "encodingFormat": "image/jpeg",
+        "width": 1536,
+        "height": 864,
+        "inLanguage": "ar"
       }
     ]
   }
@@ -125,12 +157,26 @@
   <div class="home-showdown" role="region" aria-roledescription="carousel" aria-label="KoraZero">
     <div class="home-showdown-track">
       <img
+        src="assets/img/korazero-khaleeji27.jpg?v=20260921hero"
+        width="1536"
+        height="864"
+        alt="خليجي 27 — كأس الخليج العربي في جدة 2026 | كورة زيرو"
+        decoding="async"
+        fetchpriority="high"
+      />
+      <img
+        src="assets/img/korazero-nations-league-2026.jpg?v=20260921hero"
+        width="1536"
+        height="864"
+        alt="دوري الأمم الأوروبية 2026/27 — ينطلق 24 سبتمبر | كورة زيرو"
+        decoding="async"
+      />
+      <img
         src="assets/img/korazero-saudi.jpg?v=20260908herofull"
         width="1672"
         height="941"
         alt="كورة زيرو — متاح الآن، تابع الدوري السعودي للمحترفين"
         decoding="async"
-        fetchpriority="high"
       />
       <img
         src="assets/img/korazero-showdown.jpg?v=20260828hero"
