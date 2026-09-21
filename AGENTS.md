@@ -39,6 +39,10 @@ npm run deploy           # manual wrangler deploy (CI deploys on push to main)
 
 For any request to add, enable, whitelist, or normalize a football league, cup, qualifier, or tournament, follow `.claude/skills/add-football-competition/SKILL.md` as the canonical procedure. Do not add a competition ad hoc. The registry-parity test in `tests/football-competition-parity.test.js` is mandatory and must not be weakened to bypass drift.
 
+## Adding homepage heroes
+
+For any request to add, replace, rotate, publish, or SEO-wire homepage hero/banner artwork, follow `.claude/skills/add-homepage-hero/SKILL.md` as the canonical procedure. Existing heroes are append-only unless the user explicitly requests removal. Heroes must be real static assets referenced directly from `index.html`; do not use runtime image injectors, data URIs, or base64-part loaders. `tests/hero-images.test.js` must cover every homepage hero.
+
 ## Project structure
 
 | Path | Purpose |
