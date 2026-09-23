@@ -167,14 +167,26 @@ function embedForKey(key) {
 // above, so a single match always maps to its actual channel — not a parity guess.
 // beIN Sports 1 stays first so it remains the default fallback channel.
 //
-// MATCHDAY PATCH — Saudi Arabia vs Kuwait, 23 Sep 2026.
-// This one-match synthetic socket deliberately has no IPTV-Lab mapping. That
-// makes the locked player fail closed on Lab and continue to the verified V2
-// HLS stream-plan. It lives in a one-channel group so beIN 2/3/4 never appear
-// on this watch view. Revert the matchday PR after the event.
-const V2_MATCHDAY_FIXTURE_ID = "espn-global.gulf_cup-401922490";
-const V2_MATCHDAY_CHANNEL_ID = "v2-alkass-1";
-const V2_MATCHDAY_HLS_PREFIX = "https://v2-mist-production.up.railway.app/hls/iptv-89778/";
+// KHALEEJI 27 V2 MAP — same isolated matchday handoff used for Sevilla–Barcelona.
+const V2_MATCHDAY_FIXTURES = Object.freeze({
+  "espn-global.gulf_cup-401922489": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
+  "espn-global.gulf_cup-401922490": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
+  "espn-global.gulf_cup-401922491": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
+  "espn-global.gulf_cup-401922492": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
+  "espn-global.gulf_cup-401922493": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
+  "espn-global.gulf_cup-401922494": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
+  "espn-global.gulf_cup-401922495": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
+  "espn-global.gulf_cup-401922496": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
+  "espn-global.gulf_cup-401922497": Object.freeze({ channelId: "v2-alkass-2", channel: "Al Kass 2", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89779/" }),
+  "espn-global.gulf_cup-401922498": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
+  "espn-global.gulf_cup-401922499": Object.freeze({ channelId: "v2-alkass-2", channel: "Al Kass 2", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89779/" }),
+  "espn-global.gulf_cup-401922500": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
+});
+const V2_MATCHDAY_CHANNEL_IDS = new Set(["v2-alkass-1", "v2-alkass-2"]);
+
+function v2FixtureFor(matchId) {
+  return V2_MATCHDAY_FIXTURES[String(matchId || "")] || null;
+}
 
 const CHANNEL_DEFS = [
   { id: "bein-sports-1", name: "beIN Sports 1", group: "beIN", num: "1", quality: "1080p", badge: "HD" },
@@ -183,7 +195,8 @@ const CHANNEL_DEFS = [
   // so a card on 3 or 4 had no channel to bind to and no alternative to offer.
   { id: "bein-sports-3", name: "beIN Sports 3", group: "beIN", num: "3", quality: "1080p", badge: "HD" },
   { id: "bein-sports-4", name: "beIN Sports 4", group: "beIN", num: "4", quality: "1080p", badge: "HD" },
-  { id: V2_MATCHDAY_CHANNEL_ID, name: "Al Kass 1", group: "V2 Matchday", num: "1", quality: "720p", badge: "V2" },
+  { id: "v2-alkass-1", name: "Al Kass 1", group: "V2 Matchday · Al Kass 1", num: "1", quality: "720p", badge: "V2" },
+  { id: "v2-alkass-2", name: "Al Kass 2", group: "V2 Matchday · Al Kass 2", num: "2", quality: "720p", badge: "V2" },
   { id: "bein-max-1", name: "beIN MAX 1", group: "beIN MAX", num: "1", quality: "1080p", badge: "HD" },
   { id: "bein-max-2", name: "beIN MAX 2", group: "beIN MAX", num: "2", quality: "1080p", badge: "HD" },
   { id: "bein-max-3", name: "beIN MAX 3", group: "beIN MAX", num: "3", quality: "1080p", badge: "HD" },
@@ -219,13 +232,17 @@ const THMANYAH_CHANNEL = /^thmanyah-[1-9]$/;
 
 /** Saudi fixtures belong on Thmanyah, and only Saudi fixtures do. */
 function channelFitsFixture(channelId, matchId) {
-  if (String(channelId || "") === V2_MATCHDAY_CHANNEL_ID) {
-    return String(matchId || "") === V2_MATCHDAY_FIXTURE_ID;
+  const v2Fixture = v2FixtureFor(matchId);
+  if (V2_MATCHDAY_CHANNEL_IDS.has(String(channelId || ""))) {
+    return !!v2Fixture && String(channelId || "") === v2Fixture.channelId;
   }
+  if (v2Fixture) return false;
   return THMANYAH_CHANNEL.test(String(channelId || "")) === SAUDI_FIXTURE.test(String(matchId || ""));
 }
 
 function defaultChannelFor(matchId, channels) {
+  const v2Fixture = v2FixtureFor(matchId);
+  if (v2Fixture) return v2Fixture.channelId;
   if (SAUDI_FIXTURE.test(String(matchId || ""))) {
     const thmanyah = channels.find((c) => THMANYAH_CHANNEL.test(c.id));
     if (thmanyah) return thmanyah.id;
@@ -241,11 +258,13 @@ function resolveWatchSelection(matches, channels, searchParams) {
   const reqCh = params.get("ch");
   const matchId = params.get("match");
   const rawExplicitMatch = matchId ? matches.find((m) => m.id === matchId) : null;
-  const explicitMatch = rawExplicitMatch && String(rawExplicitMatch.id) === V2_MATCHDAY_FIXTURE_ID
+  const v2Fixture = v2FixtureFor(matchId);
+  const explicitMatch = v2Fixture
     ? {
-        ...rawExplicitMatch,
-        channelId: V2_MATCHDAY_CHANNEL_ID,
-        channel: "Al Kass 1",
+        ...(rawExplicitMatch || {}),
+        id: matchId,
+        channelId: v2Fixture.channelId,
+        channel: v2Fixture.channel,
         channelBinding: "resolved",
       }
     : rawExplicitMatch;
@@ -278,6 +297,7 @@ window.SITE_DATA = {
   CHANNELS, MATCHES, EMBEDS, embedKeyFor, embedForKey, embedUrlFor,
   servIndexFromParam, EMBED_BINDING, streamOptionsFor, streamOptionUrl,
   altStreamsForMatch, altStreamUrl, dlEmbedUrlFor, DLHD_STREAM_IDS,
+  V2_MATCHDAY_FIXTURES, v2FixtureFor,
 };
 window.resolveWatchSelection = resolveWatchSelection;
 window.isRecentlyEndedMatch = isRecentlyEndedMatch;
@@ -294,7 +314,8 @@ window.keepDisplayMatch = keepDisplayMatch;
 function installV2MatchdaySourceProof() {
   if (typeof location === "undefined" || typeof document === "undefined") return;
   const params = new URLSearchParams(location.search || "");
-  if (params.get("match") !== V2_MATCHDAY_FIXTURE_ID) return;
+  const fixture = v2FixtureFor(params.get("match"));
+  if (!fixture) return;
 
   const mount = () => {
     const shell = document.getElementById("player-shell");
@@ -304,12 +325,12 @@ function installV2MatchdaySourceProof() {
       const video = shell.querySelector("video.kz-main-video");
       const direct = [video?.currentSrc, video?.src]
         .filter(Boolean)
-        .some((value) => String(value).startsWith(V2_MATCHDAY_HLS_PREFIX));
+        .some((value) => String(value).startsWith(fixture.hlsPrefix));
       if (direct) return true;
       if (typeof performance === "undefined" || typeof performance.getEntriesByType !== "function") return false;
       return performance
         .getEntriesByType("resource")
-        .some((entry) => String(entry?.name || "").startsWith(V2_MATCHDAY_HLS_PREFIX));
+        .some((entry) => String(entry?.name || "").startsWith(fixture.hlsPrefix));
     };
 
     const refresh = () => {
