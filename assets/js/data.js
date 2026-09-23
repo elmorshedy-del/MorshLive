@@ -304,9 +304,9 @@ window.isRecentlyEndedMatch = isRecentlyEndedMatch;
 window.keepDisplayMatch = keepDisplayMatch;
 
 /**
- * Tiny source-bound proof for today's surgical V2 handoff.
+ * Source-bound proof for the pre-mapped Khaleeji 27 V2 handoff.
  *
- * This does NOT show merely because the match is Paris Saint-Germain. The badge appears
+ * The badge appears
  * only after the mounted video itself points at the V2 HLS origin (native HLS)
  * or the browser has fetched that exact V2 HLS resource (hls.js). If Lab or a
  * legacy player wins instead, there is no V2 badge.
