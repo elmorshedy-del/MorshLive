@@ -5,7 +5,7 @@ describe("Saudi–Kuwait V2 matchday stability guard", () => {
   const watch = readFileSync("assets/js/watch.js", "utf8");
 
   it("keeps the exact Saudi–Kuwait V2 player mounted across metadata refreshes", () => {
-    expect(watch).toContain('matchId !== "espn-fra.1-401876449"');
+    expect(watch).toContain('matchId !== "espn-global.gulf_cup-401922490"');
     expect(watch).toContain('url !== "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8"');
     expect(watch).toContain("v2MatchdayPinnedMirrorAlreadyHealthy(url)");
 
