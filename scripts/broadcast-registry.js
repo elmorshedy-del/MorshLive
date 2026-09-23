@@ -39,40 +39,6 @@ function resolveBroadcastChannel(label) {
     };
   }
 
-  if (/(?:الكأس|الكاس|alkass|al\s*kass)/i.test(raw)) {
-    const number = channelNumber(raw);
-    const exact = number >= 1 && number <= 8 ? number : null;
-    return {
-      channel: exact ? `Al Kass ${exact}` : "Al Kass",
-      provider: "alkass",
-      broadcastChannelId: exact ? `alkass-${exact}` : "alkass",
-      playbackChannelId: exact ? `alkass-${exact}` : null,
-      confidence: exact ? "exact" : "network",
-    };
-  }
-
-  if (/(?:عمان\s+الرياضية|oman\s+sports?)/i.test(raw)) {
-    return {
-      channel: "Oman Sports",
-      provider: "oman-sports",
-      broadcastChannelId: "oman-sports",
-      playbackChannelId: "oman-sports",
-      confidence: "exact",
-    };
-  }
-
-  if (/(?:شاشا|shasha)/i.test(raw)) {
-    const number = channelNumber(raw);
-    const exact = number >= 1 && number <= 3 ? number : null;
-    return {
-      channel: exact ? `Shasha Sport ${exact}` : "Shasha Sport",
-      provider: "shasha",
-      broadcastChannelId: exact ? `shasha-sport-${exact}` : "shasha",
-      playbackChannelId: exact ? `shasha-sport-${exact}` : null,
-      confidence: exact ? "exact" : "network",
-    };
-  }
-
   if (/(?:ثمانية|thmanyah)/i.test(raw)) {
     const number = channelNumber(raw);
     const exact = number >= 1 && number <= 3 ? number : null;
