@@ -168,7 +168,7 @@ describe("Saudi Arabia–Kuwait one-match V2 patch", () => {
     expect(selection.channel.name).toBe("Al Kass 1");
     expect(selection.match.id).toBe(SAUDI_KUWAIT);
     expect(selection.match.channelId).toBe(V2_MATCHDAY_CHANNEL);
-    expect(selection.match.channel).toBe("beIN Sports 1");
+    expect(selection.match.channel).toBe("Al Kass 1");
   });
 
   it("hides the beIN 2/3/4 switch row by placing the temporary socket in a one-channel group", () => {
