@@ -175,6 +175,8 @@ function embedForKey(key) {
 const V2_MATCHDAY_FIXTURE_ID = "espn-fra.1-401876449";
 const V2_MATCHDAY_CHANNEL_ID = "v2-bein-sports-1";
 const V2_MATCHDAY_HLS_PREFIX = "https://v2-mist-production.up.railway.app/hls/iptv-3645/";
+const SAUDI_KUWAIT_GULF_CUP_FIXTURE_ID = "espn-global.gulf_cup-401922490";
+const SAUDI_KUWAIT_CHANNEL_ID = "alkass-1";
 
 const CHANNEL_DEFS = [
   { id: "bein-sports-1", name: "beIN Sports 1", group: "beIN", num: "1", quality: "1080p", badge: "HD" },
@@ -264,7 +266,13 @@ function resolveWatchSelection(matches, channels, searchParams) {
     : rawExplicitMatch;
 
   let chId;
-  if (explicitMatch && explicitMatch.channelId) {
+  // Match-specific preview routing: this verified Gulf Cup broadcaster is
+  // intentionally available before the normal T-30 TV window so operators can
+  // inspect the exact channel/player path ahead of kickoff. The homepage can
+  // keep using ?ch=live; the fixture id alone is enough to select Al Kass 1.
+  if (String(matchId || "") === SAUDI_KUWAIT_GULF_CUP_FIXTURE_ID && (!reqCh || reqCh === "live")) {
+    chId = SAUDI_KUWAIT_CHANNEL_ID;
+  } else if (explicitMatch && explicitMatch.channelId) {
     chId = explicitMatch.channelId;
   } else if ((!reqCh || reqCh === "live") && liveMatch && liveMatch.channelId) {
     chId = liveMatch.channelId;
