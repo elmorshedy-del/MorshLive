@@ -116,16 +116,18 @@ function buildIndex(rows) {
 }
 
 function broadcastFor(entry) {
-  for (const channel of entry?.channels || []) {
+  const candidates = [
+    ...(entry?.channels || []),
+    ...(entry?.commentators || []).map((item) => item?.channel).filter(Boolean),
+  ];
+  let firstKnown = null;
+  for (const channel of candidates) {
     const resolved = resolveBroadcastChannel(channel);
-    if (resolved.channel) return resolved;
+    if (resolved.playbackChannelId) return resolved;
+    if (!firstKnown && resolved.provider) firstKnown = resolved;
+    else if (!firstKnown && resolved.channel) firstKnown = resolved;
   }
-  for (const item of entry?.commentators || []) {
-    if (!item?.channel) continue;
-    const resolved = resolveBroadcastChannel(item.channel);
-    if (resolved.channel) return resolved;
-  }
-  return resolveBroadcastChannel("");
+  return firstKnown || resolveBroadcastChannel("");
 }
 
 /* Playback routing remains intentionally narrower than broadcast metadata.
