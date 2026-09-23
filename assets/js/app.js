@@ -48,6 +48,11 @@
   }
 
   function watchHref(m) {
+    // Exact-match matchday route. Keep the homepage card on the already
+    // verified Al Kass 1 watch path instead of the generic ch=live fallback.
+    if (String(m?.id || "") === "espn-global.gulf_cup-401922490") {
+      return "watch.html?ch=alkass-1&match=espn-global.gulf_cup-401922490";
+    }
     if (m.status === "ended" && m.key && isWorldCupMatch(m)) {
       const href = window.TeamNames?.matchPageHref?.(m);
       if (href) return href;
