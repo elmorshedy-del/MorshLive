@@ -27,16 +27,11 @@
       .normalize("NFKD")
       .replace(/[\u0300-\u036f]/g, "")
       .toLowerCase()
-      .replace(/\b(?:alkass|alkasssports?)(\d{1,2})\b/g, " alkass $1 ")
-      .replace(/\bshashasports?(\d{1,2})\b/g, " shasha sports $1 ")
       .replace(/\bbeinsports?(\d{1,2})\b/g, " bein sports $1 ")
       .replace(/\bbeinmax(\d{1,2})\b/g, " bein max $1 ")
       .replace(/\bsscsports?(\d{1,2})\b/g, " ssc sports $1 ")
       .replace(/\b(?:thmanayah|thmanyah|thmanya|thamanyah|thamanya)([123])\b/g, " thmanyah $1 ")
       .replace(/ثمانية/g, " thmanyah ")
-      .replace(/(?:الكأس|الكاس)/g, " alkass ")
-      .replace(/شاشا/g, " shasha ")
-      .replace(/عمان\s+الرياضية/g, " oman sports ")
       .replace(/بي\s*(?:إن|ان)|بين(?=\s*(?:سبورت|sport))/g, " bein ")
       .replace(/سبورت(?:س)?/g, " sports ")
       .replace(/ماكس/g, " max ")
@@ -68,20 +63,12 @@
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "-")
       .replace(/^-+|-+$/g, "");
-    if (/^alkass-[1-8]$/.test(slug)) return slug;
-    if (/^shasha-sport-[1-3]$/.test(slug)) return slug;
-    if (slug === "oman-sports") return slug;
     if (/^bein-(?:sports|max)-\d{1,2}$/.test(slug)) return slug;
     if (/^ssc-sports-\d{1,2}$/.test(slug)) return slug;
     if (/^thmanyah-[123]$/.test(slug)) return slug;
 
     const text = normalizeText(raw);
-    let match = text.match(/\balkass\s+([1-8])\b/);
-    if (match) return `alkass-${Number(match[1])}`;
-    match = text.match(/\bshasha\s+(?:sports\s+)?([1-3])\b/);
-    if (match) return `shasha-sport-${Number(match[1])}`;
-    if (/\boman\s+sports\b/.test(text)) return "oman-sports";
-    match = text.match(/\bbein\s+max\s+(\d{1,2})\b/);
+    let match = text.match(/\bbein\s+max\s+(\d{1,2})\b/);
     if (match) return `bein-max-${Number(match[1])}`;
     match = text.match(/\bbein\s+sports\s+(\d{1,2})\b/);
     if (match) return `bein-sports-${Number(match[1])}`;
@@ -114,17 +101,7 @@
     const category = normalizeText(channel?.categoryName || "");
     const combined = `${name} ${category}`.trim();
 
-    let numberMatch = name.match(/\balkass\s+([1-8])\b/);
-    if (!numberMatch) numberMatch = combined.match(/\balkass\s+([1-8])\b/);
-    if (numberMatch) return `alkass-${Number(numberMatch[1])}`;
-
-    numberMatch = name.match(/\bshasha\s+(?:sports\s+)?([1-3])\b/);
-    if (!numberMatch) numberMatch = combined.match(/\bshasha\s+(?:sports\s+)?([1-3])\b/);
-    if (numberMatch) return `shasha-sport-${Number(numberMatch[1])}`;
-
-    if (/\boman\s+sports\b/.test(combined)) return "oman-sports";
-
-    numberMatch = name.match(/\bbein\s+(?:sports\s+)?(\d{1,2})\b/);
+    let numberMatch = name.match(/\bbein\s+(?:sports\s+)?(\d{1,2})\b/);
     if (!numberMatch) numberMatch = combined.match(/\bbein\s+(?:sports\s+)?(\d{1,2})\b/);
     if (numberMatch) {
       const number = Number(numberMatch[1]);
