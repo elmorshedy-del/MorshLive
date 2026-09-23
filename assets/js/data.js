@@ -198,6 +198,19 @@ const CHANNEL_DEFS = [
   { id: "thmanyah-1", name: "ثمانية 1", group: "ثمانية", num: "1", quality: "1080p", badge: "HD" },
   { id: "thmanyah-2", name: "ثمانية 2", group: "ثمانية", num: "2", quality: "1080p", badge: "HD" },
   { id: "thmanyah-3", name: "ثمانية 3", group: "ثمانية", num: "3", quality: "1080p", badge: "HD" },
+  // Gulf Cup rights holders available in the isolated IPTV Lab catalogue.
+  { id: "alkass-1", name: "Al Kass 1", group: "Al Kass", num: "1", quality: "1080p", badge: "HD" },
+  { id: "alkass-2", name: "Al Kass 2", group: "Al Kass", num: "2", quality: "1080p", badge: "HD" },
+  { id: "alkass-3", name: "Al Kass 3", group: "Al Kass", num: "3", quality: "1080p", badge: "HD" },
+  { id: "alkass-4", name: "Al Kass 4", group: "Al Kass", num: "4", quality: "1080p", badge: "HD" },
+  { id: "alkass-5", name: "Al Kass 5", group: "Al Kass", num: "5", quality: "1080p", badge: "HD" },
+  { id: "alkass-6", name: "Al Kass 6", group: "Al Kass", num: "6", quality: "1080p", badge: "HD" },
+  { id: "alkass-7", name: "Al Kass 7", group: "Al Kass", num: "7", quality: "1080p", badge: "HD" },
+  { id: "alkass-8", name: "Al Kass 8", group: "Al Kass", num: "8", quality: "1080p", badge: "HD" },
+  { id: "oman-sports", name: "Oman Sports", group: "Oman Sports", num: "1", quality: "HD", badge: "HD" },
+  { id: "shasha-sport-1", name: "Shasha Sport 1", group: "Shasha", num: "1", quality: "HD", badge: "HD" },
+  { id: "shasha-sport-2", name: "Shasha Sport 2", group: "Shasha", num: "2", quality: "HD", badge: "HD" },
+  { id: "shasha-sport-3", name: "Shasha Sport 3", group: "Shasha", num: "3", quality: "HD", badge: "HD" },
 ];
 const CHANNELS = CHANNEL_DEFS.map((c) => ({ ...c, embed: { ...embedFor(c.id), channelId: c.id } }));
 
