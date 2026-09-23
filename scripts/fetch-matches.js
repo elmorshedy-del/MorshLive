@@ -51,6 +51,7 @@ const OUT = path.join(__dirname, "..", "assets", "data", "today.json");
 const BANNERS_OUT = path.join(__dirname, "..", "assets", "data", "highlights-banners.json");
 const TEAM_AR = path.join(__dirname, "..", "assets", "data", "team-names-ar.json");
 const SCHEDULE_DAYS_AHEAD = 7;
+const FRIENDLY_EXTRA_DAYS_AHEAD = 7;
 
 function get(url) {
   return new Promise((resolve, reject) => {
@@ -101,8 +102,15 @@ async function fetchDay(date) {
   return events.filter((e) => isSupportedLeagueName(e.strLeague));
 }
 
-function espnDateRange(center) {
-  return `${shiftDate(center, -1).replace(/-/g, "")}-${shiftDate(center, SCHEDULE_DAYS_AHEAD).replace(/-/g, "")}`;
+function espnDateRange(center, daysAhead = SCHEDULE_DAYS_AHEAD) {
+  return `${shiftDate(center, -1).replace(/-/g, "")}-${shiftDate(center, daysAhead).replace(/-/g, "")}`;
+}
+
+function espnDateRangeForLeague(center, slug) {
+  const daysAhead = slug === "fifa.friendly"
+    ? SCHEDULE_DAYS_AHEAD + FRIENDLY_EXTRA_DAYS_AHEAD
+    : SCHEDULE_DAYS_AHEAD;
+  return espnDateRange(center, daysAhead);
 }
 
 async function fetchEspnLeague(slug, dateRange) {
@@ -225,7 +233,7 @@ function mergeReplayFromPrevious(matches, previousPayload) {
   }
 
   const espnResults = await Promise.allSettled(
-    ESPN_LEAGUES.map((slug) => fetchEspnLeague(slug, espnDateRange(centerDate)))
+    ESPN_LEAGUES.map((slug) => fetchEspnLeague(slug, espnDateRangeForLeague(centerDate, slug)))
   );
   const espnMatches = espnResults.flatMap((result) => result.status === "fulfilled" ? result.value : []);
   // ESPN stays primary so its event id survives deduplication and can power the

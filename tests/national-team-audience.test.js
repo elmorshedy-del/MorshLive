@@ -18,6 +18,8 @@ describe("national-team registry", () => {
     expect(TeamNames.isInAudienceGroup("United Arab Emirates", "gcc")).toBe(true);
     expect(TeamNames.arabicFor("Albania")).toBe("ألبانيا");
     expect(TeamNames.arabicFor("Libya")).toBe("ليبيا");
+    expect(TeamNames.isHiddenNationalTeam("Israel")).toBe(true);
+    expect(TeamNames.isHiddenNationalTeam("Brazil")).toBe(false);
   });
 
   it("localizes international opponent countries even when they are not audience-filter teams", () => {
@@ -32,6 +34,14 @@ describe("national-team registry", () => {
 });
 
 describe("international audience filtering", () => {
+  it("filters Israel out across international competitions before audience rules", () => {
+    expect(shouldIncludeAudienceMatch({ competition: "unl", home: "Austria", away: "Israel" })).toBe(false);
+    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Israel", away: "France" })).toBe(
+      false,
+    );
+    expect(shouldIncludeAudienceMatch({ competition: "unl", home: "Austria", away: "Ireland" })).toBe(true);
+  });
+
   it("keeps all UEFA Nations League matches", () => {
     expect(shouldIncludeAudienceMatch({ competition: "unl", home: "Albania", away: "Armenia" })).toBe(true);
   });

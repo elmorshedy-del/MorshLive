@@ -22,6 +22,24 @@ function defaultDateRange(now = Date.now()) {
   return `${day(-1)}-${day(7)}`;
 }
 
+const FRIENDLY_EXTRA_DAYS_AHEAD = 7;
+
+function extendDateRangeEnd(value, extraDays) {
+  const match = /^(\d{8})-(\d{8})$/.exec(value || "");
+  if (!match || !extraDays) return value;
+  const end = Date.parse(`${match[2].slice(0, 4)}-${match[2].slice(4, 6)}-${match[2].slice(6, 8)}T00:00:00Z`);
+  if (!Number.isFinite(end)) return value;
+  const extended = new Date(end + extraDays * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10)
+    .replace(/-/g, "");
+  return `${match[1]}-${extended}`;
+}
+
+function dateRangeForLeague(slug, requested) {
+  return slug === "fifa.friendly" ? extendDateRangeEnd(requested, FRIENDLY_EXTRA_DAYS_AHEAD) : requested;
+}
+
 function validDateRange(value) {
   const match = /^(\d{8})-(\d{8})$/.exec(value || "");
   if (!match) return false;
@@ -45,7 +63,7 @@ export async function getFootballScoreboards(params) {
   const settled = await Promise.allSettled(
     FOOTBALL_LEAGUES.map(async (slug) => ({
       slug,
-      data: await fetchEspnScoreboard(slug, requested),
+      data: await fetchEspnScoreboard(slug, dateRangeForLeague(slug, requested)),
     })),
   );
   const leagues = settled.flatMap((result) => (result.status === "fulfilled" ? [result.value] : []));

@@ -110,6 +110,8 @@ function shouldIncludeAudienceMatch(match) {
   const competition = COMPETITIONS.find((item) => item.key === match?.competition);
   const teams = [match?.home, match?.away];
 
+  if (teams.some((team) => TeamNames.isHiddenNationalTeam?.(team))) return false;
+
   const whitelist = competition?.teamWhitelist || [];
   if (whitelist.length) {
     const allowed = new Set(whitelist.map(canonical));

@@ -39,7 +39,13 @@ describe("football routes", () => {
       "fifa.worldq.conmebol",
       "global.gulf_cup",
     ]);
-    expect(upstream).toHaveBeenCalledTimes(11);
+    const requestedUrls = upstream.mock.calls.map(([url]) => String(url));
+    const friendlyUrls = requestedUrls.filter((url) => url.includes("/fifa.friendly/scoreboard"));
+    const premierLeagueUrls = requestedUrls.filter((url) => url.includes("/eng.1/scoreboard"));
+    expect(friendlyUrls.some((url) => url.includes("dates=202608"))).toBe(true);
+    expect(friendlyUrls.some((url) => url.includes("dates=202609"))).toBe(true);
+    expect(premierLeagueUrls).toHaveLength(1);
+    expect(upstream).toHaveBeenCalledTimes(12);
   });
 
   it("proxies an allowlisted ESPN match summary for live detail", async () => {
