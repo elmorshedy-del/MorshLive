@@ -3,6 +3,75 @@ import { resolveXtreamChannel } from "../../lib/xtream-channel-map.js";
 import { fetchXtreamJson, fetchXtreamSourceMaps, loadXtreamPortals } from "../adapters/xtream.js";
 import { getXtreamCategories, getXtreamLive, getXtreamStatus, probeXtreamChannel } from "./xtream.js";
 
+function gulfChannelNumber(id, prefix, max) {
+  const match = new RegExp(`^${prefix}-(\\d+)import { iptvLabWorkerEnv } from "../../lib/iptv-lab.js";
+import { resolveXtreamChannel } from "../../lib/xtream-channel-map.js";
+import { fetchXtreamJson, fetchXtreamSourceMaps, loadXtreamPortals } from "../adapters/xtream.js";
+import { getXtreamCategories, getXtreamLive, getXtreamStatus, probeXtreamChannel } from "./xtream.js";
+
+).exec(String(id || "").toLowerCase());
+  if (!match) return null;
+  const number = Number(match[1]);
+  return Number.isInteger(number) && number >= 1 && number <= max ? number : null;
+}
+
+function gulfCandidateScore(row) {
+  const text = `${row?.name || ""} ${row?.categoryName || ""}`.toLowerCase();
+  let score = 0;
+  if (/\bfhd\b|1080/.test(text)) score += 30;
+  else if (/\bhd\b|720/.test(text)) score += 20;
+  if (/\bsd\b|low|480|360/.test(text)) score -= 20;
+  if (/4k|uhd|2160/.test(text)) score -= 10;
+  if (/backup|\bbk\b|test|alt/.test(text)) score -= 30;
+  return score;
+}
+
+function resolveGulfChannel(channelId, streams) {
+  const rows = Array.isArray(streams) ? streams : [];
+  const alkass = gulfChannelNumber(channelId, "alkass", 8);
+  const shasha = gulfChannelNumber(channelId, "shasha-sport", 3);
+  const oman = String(channelId || "").toLowerCase() === "oman-sports";
+
+  let matches = [];
+  if (alkass) {
+    const re = new RegExp(`\\b(?:al\\s*)?kass\\s*${alkass}\\b`, "i");
+    matches = rows.filter((row) => re.test(String(row?.name || "")));
+  } else if (shasha) {
+    const re = new RegExp(`\\bshasha\\s+(?:sport\\s+)?${shasha}\\b`, "i");
+    matches = rows.filter((row) => re.test(String(row?.name || "")));
+  } else if (oman) {
+    matches = rows.filter((row) => /\boman\s+sports?\b/i.test(String(row?.name || "")));
+  } else {
+    return null;
+  }
+
+  if (!matches.length) return null;
+  const ranked = [...matches].sort((a, b) => gulfCandidateScore(b) - gulfCandidateScore(a));
+  const best = ranked[0];
+  return {
+    streamId: String(best.streamId || ""),
+    name: String(best.name || ""),
+    codec: "h264",
+    quality: /4k|uhd|2160/i.test(String(best.name || ""))
+      ? "4k"
+      : /\bfhd\b|1080/i.test(String(best.name || ""))
+        ? "1080"
+        : /\bhd\b|720/i.test(String(best.name || ""))
+          ? "hd"
+          : "unknown",
+    alternates: ranked.slice(1).map((row) => ({
+      streamId: String(row.streamId || ""),
+      name: String(row.name || ""),
+      codec: "h264",
+      quality: /\bfhd\b|1080/i.test(String(row.name || "")) ? "1080" : /\bhd\b|720/i.test(String(row.name || "")) ? "hd" : "unknown",
+    })),
+  };
+}
+
+export function resolveIptvLabChannel(channelId, streams) {
+  return resolveXtreamChannel(channelId, streams) || resolveGulfChannel(channelId, streams);
+}
+
 function labOrError(env) {
   const lab = iptvLabWorkerEnv(env);
   if (!lab.ok) return { error: lab.error, status: 404 };
@@ -326,7 +395,7 @@ export async function getIptvLabChannel(env, searchParams) {
 
   try {
     const { streams } = await loadCatalog(lab);
-    const resolved = resolveXtreamChannel(channelId, streams);
+    const resolved = resolveIptvLabChannel(channelId, streams);
     if (!resolved) {
       // Say so rather than falling back to something adjacent: a wrong channel
       // plays a different match, which is worse than no picture.
