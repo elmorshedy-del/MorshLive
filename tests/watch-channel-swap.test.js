@@ -96,6 +96,11 @@ describe("European fixtures keep beIN", () => {
     expect(select(`match=${EURO}&ch=bein-sports-2`).channel.id).toBe("bein-sports-2");
   });
 
+  it("opens Saudi Arabia vs Kuwait on Al Kass 1 even when the card uses ch=live", () => {
+    const selection = select("match=espn-global.gulf_cup-401922490&ch=live");
+    expect(selection.channel.id).toBe("alkass-1");
+  });
+
   it("refuses a Thmanyah channel left over from a Saudi card", () => {
     // The regression this guards: a stale `ch` once repainted a Champions League
     // page with ثمانية 1/2/3 and bound its embed to a Saudi stream.
