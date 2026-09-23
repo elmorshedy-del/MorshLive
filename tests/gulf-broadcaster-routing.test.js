@@ -20,9 +20,7 @@ describe("Gulf Cup broadcaster routing", () => {
 
   it("resolves the Oman Sports singleton", () => {
     expect(
-      browserResolver.resolveChannel("oman-sports", [
-        { streamId: "4650", name: "Oman Sport [OM]" },
-      ]),
+      browserResolver.resolveChannel("oman-sports", [{ streamId: "4650", name: "Oman Sport [OM]" }]),
     ).toMatchObject({ streamId: "4650" });
   });
 
