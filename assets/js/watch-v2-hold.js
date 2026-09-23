@@ -1,12 +1,26 @@
-/* MATCHDAY 2026-09-23 — Saudi Arabia vs Kuwait V2 hold.
- * Watch.js plan refresh calls loadPlayer every 20s and remounts HLS.
- * For this exact fixture only, keep metadata ticking off that interval.
- * Rollback: remove this script tag from watch.html and delete this file.
+/* KHALEEJI 27 V2 hold.
+ * Watch.js plan refresh calls loadPlayer every 20s and can remount HLS.
+ * Keep metadata ticking without destroying the healthy V2 player for the
+ * pre-mapped Gulf Cup group-stage fixtures.
  */
 (function () {
   "use strict";
   var matchId = new URLSearchParams(location.search).get("match");
-  if (matchId !== "espn-global.gulf_cup-401922490") return;
+  var mapped = new Set([
+    "espn-global.gulf_cup-401922489",
+    "espn-global.gulf_cup-401922490",
+    "espn-global.gulf_cup-401922491",
+    "espn-global.gulf_cup-401922492",
+    "espn-global.gulf_cup-401922493",
+    "espn-global.gulf_cup-401922494",
+    "espn-global.gulf_cup-401922495",
+    "espn-global.gulf_cup-401922496",
+    "espn-global.gulf_cup-401922497",
+    "espn-global.gulf_cup-401922498",
+    "espn-global.gulf_cup-401922499",
+    "espn-global.gulf_cup-401922500",
+  ]);
+  if (!mapped.has(matchId)) return;
   var orig = window.setInterval;
   window.setInterval = function (fn, delay) {
     if (Number(delay) === 20000) {
