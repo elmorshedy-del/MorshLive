@@ -1,12 +1,22 @@
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
+import { resolveIptvLabChannel } from "../backend/services/iptv-lab.js";
 
 const require = createRequire(import.meta.url);
 const browserResolver = require("../assets/js/iptv-channel-resolver.js");
 const { resolveBroadcastChannel } = require("../scripts/broadcast-registry.js");
 
 describe("Gulf Cup broadcaster routing", () => {
+  it("resolves Al Kass 1 in the standard watch-page backend endpoint", () => {
+    const hit = resolveIptvLabChannel("alkass-1", [
+      { streamId: "210259", name: "BeIN Alkass 1 SD", categoryName: "AlKass قطر" },
+      { streamId: "89778", name: "BeIN Alkass 1 HD", categoryName: "AlKass قطر" },
+      { streamId: "210263", name: "BeIN Alkass 1 4K", categoryName: "AlKass قطر" },
+    ]);
+    expect(hit).toMatchObject({ streamId: "89778", name: "BeIN Alkass 1 HD" });
+  });
+
   it("resolves Al Kass 1 to the best live-catalogue variant", () => {
     const catalog = [
       { streamId: "210259", name: "BeIN Alkass 1 SD" },
