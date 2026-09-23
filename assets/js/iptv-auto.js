@@ -25,14 +25,13 @@
   // MATCHDAY PATCH: this exact ESPN fixture is routed by the V2 stream plan.
   // Do not let the normal Lab router rewrite its card to source=xtream.
   const V2_MATCHDAY_BYPASS_IDS = new Set(["espn-fra.1-401876449"]);
-  const SUPPORTED_COMPETITIONS = new Set(["epl", "laliga", "spl", "ucl", "gulfcup"]);
+  const SUPPORTED_COMPETITIONS = new Set(["epl", "laliga", "spl", "ucl"]);
   const SUPPORTED_SLUGS = new Set([
     "eng.1",
     "esp.1",
     "ksa.1",
     "uefa.champions",
     "uefa.champions_qual",
-    "global.gulf_cup",
   ]);
 
   let state = null;
