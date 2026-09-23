@@ -945,14 +945,26 @@
   // the same-content mirror URL, never the generic vip/amine embed system, so
   // nothing else can silently switch this match away from the pinned source.
   //
-  // MATCHDAY PATCH — Saudi Arabia vs Kuwait, 23 Sep 2026.
-  // Plan metadata refreshes every 20s and fixtures every 90s. If the exact V2
-  // source is already mounted and healthy, keep the same <video> + Hls.js
-  // instance instead of turning a metadata refresh into a playback remount.
+  // KHALEEJI 27 V2 MAP — preserve the same healthy-player behavior used
+  // by the Sep 19 Sevilla–Barcelona handoff, but for every known group fixture.
+  const V2_GULF_HLS_BY_MATCH = Object.freeze({
+    "espn-global.gulf_cup-401922489": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+    "espn-global.gulf_cup-401922490": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+    "espn-global.gulf_cup-401922491": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+    "espn-global.gulf_cup-401922492": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+    "espn-global.gulf_cup-401922493": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+    "espn-global.gulf_cup-401922494": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+    "espn-global.gulf_cup-401922495": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+    "espn-global.gulf_cup-401922496": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+    "espn-global.gulf_cup-401922497": "https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8",
+    "espn-global.gulf_cup-401922498": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+    "espn-global.gulf_cup-401922499": "https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8",
+    "espn-global.gulf_cup-401922500": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+  });
   function v2MatchdayPinnedMirrorAlreadyHealthy(url) {
     const matchId = String((match && match.id) || params.get("match") || "");
-    if (matchId !== "espn-global.gulf_cup-401922490") return false;
-    if (url !== "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8") return false;
+    const expectedUrl = V2_GULF_HLS_BY_MATCH[matchId];
+    if (!expectedUrl || url !== expectedUrl) return false;
     const expectedKeys = new Set([`pinned-mirror:${url}`, `plan-hls:${url}`]);
     if (!expectedKeys.has(loadedUrl)) return false;
     const video = shell && shell.querySelector(".kz-main-video");
