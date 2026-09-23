@@ -36,7 +36,9 @@ describe("national-team registry", () => {
 describe("international audience filtering", () => {
   it("filters Israel out across international competitions before audience rules", () => {
     expect(shouldIncludeAudienceMatch({ competition: "unl", home: "Austria", away: "Israel" })).toBe(false);
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Israel", away: "France" })).toBe(false);
+    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Israel", away: "France" })).toBe(
+      false,
+    );
     expect(shouldIncludeAudienceMatch({ competition: "unl", home: "Austria", away: "Ireland" })).toBe(true);
   });
 
