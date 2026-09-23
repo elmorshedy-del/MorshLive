@@ -289,6 +289,14 @@
     .replace(/[^a-z0-9]/g, "")
     .trim();
 
+  // Product-level national-team exclusions live here so every competition
+  // applies the same rule instead of growing one-off league filters.
+  const HIDDEN_NATIONAL_TEAMS = new Set(["israel"]);
+
+  function isHiddenNationalTeam(name) {
+    return HIDDEN_NATIONAL_TEAMS.has(norm(name));
+  }
+
   const NORM_AR = {};
   Object.keys(EN_AR).forEach((en) => {
     NORM_AR[norm(en)] = EN_AR[en];
@@ -408,6 +416,7 @@
     arabicFor,
     resolveNationalTeam,
     isInAudienceGroup,
+    isHiddenNationalTeam,
     canonicalToken,
     canonicalKey,
     canonicalizeKey,
