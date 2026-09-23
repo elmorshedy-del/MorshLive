@@ -4,5 +4,16 @@
     "channelId": "bein-sports-2",
     "premiumTest": true,
     "reason": "manual verified broadcaster override"
+  },
+  "espn-global.gulf_cup-401922490": {
+    "channel": "Al Kass 1",
+    "channelId": "alkass-1",
+    "broadcast": {
+      "provider": "alkass",
+      "channelId": "alkass-1",
+      "source": "manual verified broadcaster override",
+      "confidence": "exact"
+    },
+    "reason": "Saudi Arabia vs Kuwait — verified Al Kass 1 broadcaster and live Lab route"
   }
 }
