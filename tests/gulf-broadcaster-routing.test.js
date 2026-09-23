@@ -55,6 +55,19 @@ describe("Gulf Cup broadcaster routing", () => {
     });
   });
 
+  it("pins Saudi Arabia vs Kuwait to Al Kass 1 by exact ESPN id", () => {
+    const overrides = JSON.parse(readFileSync("assets/data/manual-channel-overrides.json", "utf8"));
+    expect(overrides["espn-global.gulf_cup-401922490"]).toMatchObject({
+      channel: "Al Kass 1",
+      channelId: "alkass-1",
+      broadcast: {
+        provider: "alkass",
+        channelId: "alkass-1",
+        confidence: "exact",
+      },
+    });
+  });
+
   it("enables the Gulf Cup in the deterministic IPTV router", () => {
     const auto = readFileSync("assets/js/iptv-auto.js", "utf8");
     expect(auto).toContain('"gulfcup"');
