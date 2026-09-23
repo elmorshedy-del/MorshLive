@@ -485,32 +485,49 @@ describe("today's stream-plans catalog", () => {
     expect(shouldHoldPlayer(resolved)).toBe(false);
   });
 
-  it("routes Saudi Arabia–Kuwait only to the verified V2 Al Kass 1 HLS", () => {
-    const match = {
-      id: "espn-global.gulf_cup-401922490",
-      home: "Saudi Arabia",
-      away: "Kuwait",
-      channelId: "v2-alkass-1",
-      status: "upcoming",
-      kickoffUtc: "2026-09-23T18:00:00Z",
-    };
-    const resolved = resolveStreamPlan({
-      match,
-      catalog: catalogJson,
-      legacyEmbedKey: "koraplus",
-      now: Date.parse("2026-09-23T03:00:00Z"),
-    });
+  it("pre-maps every published Khaleeji 27 group fixture to its V2 Al Kass HLS", () => {
+    const expected = new Map([
+      ["espn-global.gulf_cup-401922489", "89778"],
+      ["espn-global.gulf_cup-401922490", "89778"],
+      ["espn-global.gulf_cup-401922491", "89778"],
+      ["espn-global.gulf_cup-401922492", "89778"],
+      ["espn-global.gulf_cup-401922493", "89778"],
+      ["espn-global.gulf_cup-401922494", "89778"],
+      ["espn-global.gulf_cup-401922495", "89778"],
+      ["espn-global.gulf_cup-401922496", "89778"],
+      ["espn-global.gulf_cup-401922497", "89779"],
+      ["espn-global.gulf_cup-401922498", "89778"],
+      ["espn-global.gulf_cup-401922499", "89779"],
+      ["espn-global.gulf_cup-401922500", "89778"],
+    ]);
 
-    expect(resolved.catalog).toBe(true);
-    expect(resolved.status).toBe("verified");
-    expect(resolved.selected.id).toBe("v2-alkass1");
-    expect(resolved.selected.kind).toBe("hls");
-    expect(resolved.selected.profile).toBe("hls-direct-v1");
-    expect(resolved.selected.playbackUrl).toBe(
-      "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    );
-    expect(resolved.selected.contentKey).toBe("match:espn-global.gulf_cup-401922490");
-    expect(resolved.policy.allowLegacy).toBe(false);
+    for (const [matchId, streamId] of expected) {
+      const plan = catalogJson.plans.find((item) => item.matchId === matchId);
+      expect(plan).toBeTruthy();
+      const match = {
+        id: matchId,
+        home: plan.teams[0][0],
+        away: plan.teams[1][0],
+        channelId: streamId === "89779" ? "v2-alkass-2" : "v2-alkass-1",
+        status: "upcoming",
+        kickoffUtc: plan.kickoffUtc,
+      };
+      const resolved = resolveStreamPlan({
+        match,
+        catalog: catalogJson,
+        legacyEmbedKey: "koraplus",
+        now: Date.parse("2026-09-23T03:00:00Z"),
+      });
+      expect(resolved.catalog).toBe(true);
+      expect(resolved.status).toBe("verified");
+      expect(resolved.selected.kind).toBe("hls");
+      expect(resolved.selected.profile).toBe("hls-direct-v1");
+      expect(resolved.selected.playbackUrl).toBe(
+        `https://v2-mist-production.up.railway.app/hls/iptv-${streamId}/index.m3u8`,
+      );
+      expect(resolved.selected.contentKey).toBe(`match:${matchId}`);
+      expect(resolved.policy.allowLegacy).toBe(false);
+    }
   });
 
   it("plays Madrid through the ad-free operator proxy instead of a raw koralive iframe", () => {

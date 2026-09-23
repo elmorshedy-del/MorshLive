@@ -1,14 +1,24 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-describe("Saudi–Kuwait V2 matchday stability guard", () => {
+describe("Khaleeji 27 V2 matchday stability guard", () => {
   const watch = readFileSync("assets/js/watch.js", "utf8");
+  const hold = readFileSync("assets/js/watch-v2-hold.js", "utf8");
 
-  it("keeps the exact Saudi–Kuwait V2 player mounted across metadata refreshes", () => {
-    expect(watch).toContain('matchId !== "espn-global.gulf_cup-401922490"');
-    expect(watch).toContain('url !== "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8"');
+  it("covers every published group-stage fixture", () => {
+    for (let id = 401922489; id <= 401922500; id += 1) {
+      expect(watch).toContain(`"espn-global.gulf_cup-${id}"`);
+      expect(hold).toContain(`"espn-global.gulf_cup-${id}"`);
+    }
+  });
+
+  it("knows both verified V2 Al Kass HLS endpoints", () => {
+    expect(watch).toContain("https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8");
+    expect(watch).toContain("https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8");
     expect(watch).toContain("v2MatchdayPinnedMirrorAlreadyHealthy(url)");
+  });
 
+  it("checks the healthy-player guard before destroying HLS", () => {
     const mountStart = watch.indexOf("function mountPinnedMainMirror");
     const guardCall = watch.indexOf("v2MatchdayPinnedMirrorAlreadyHealthy(url)", mountStart);
     const destroyCall = watch.indexOf("destroyInlineHls();", mountStart);

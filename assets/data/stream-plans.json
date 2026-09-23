@@ -1,19 +1,20 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-23T02:10:58.000Z",
+  "updatedAt": "2026-09-23T02:30:00.000Z",
   "plans": [
     {
-      "matchId": "espn-eng.1-401879300",
+      "matchId": "espn-eng.1-401879298",
       "teams": [
         [
-          "everton"
+          "nottingham forest",
+          "forest"
         ],
         [
-          "crystal palace",
-          "palace"
+          "leeds united",
+          "leeds"
         ]
       ],
-      "contentKey": "match:espn-eng.1-401879300",
+      "contentKey": "match:espn-eng.1-401879298",
       "kickoffUtc": "2026-08-22T14:00:00Z",
       "policy": {
         "sameContentOnly": true,
@@ -27,10 +28,10 @@
           "role": "primary",
           "kind": "iframe",
           "profile": "operator-iframe-v1",
-          "url": "https://mo.yallacuo.xyz/albaplayer/sport-1/",
-          "contentKey": "match:espn-eng.1-401879300",
+          "url": "https://mo.yallacuo.xyz/albaplayer/sport-5/",
+          "contentKey": "match:espn-eng.1-401879298",
           "status": "operator",
-          "label": "إيفرتون × بالاس · عربي"
+          "label": "فورست × ليدز · عربي"
         }
       ]
     },
@@ -67,18 +68,17 @@
       ]
     },
     {
-      "matchId": "espn-eng.1-401879298",
+      "matchId": "espn-eng.1-401879300",
       "teams": [
         [
-          "nottingham forest",
-          "forest"
+          "everton"
         ],
         [
-          "leeds united",
-          "leeds"
+          "crystal palace",
+          "palace"
         ]
       ],
-      "contentKey": "match:espn-eng.1-401879298",
+      "contentKey": "match:espn-eng.1-401879300",
       "kickoffUtc": "2026-08-22T14:00:00Z",
       "policy": {
         "sameContentOnly": true,
@@ -92,10 +92,10 @@
           "role": "primary",
           "kind": "iframe",
           "profile": "operator-iframe-v1",
-          "url": "https://mo.yallacuo.xyz/albaplayer/sport-5/",
-          "contentKey": "match:espn-eng.1-401879298",
+          "url": "https://mo.yallacuo.xyz/albaplayer/sport-1/",
+          "contentKey": "match:espn-eng.1-401879300",
           "status": "operator",
-          "label": "فورست × ليدز · عربي"
+          "label": "إيفرتون × بالاس · عربي"
         }
       ]
     },
@@ -229,6 +229,43 @@
       ]
     },
     {
+      "matchId": "espn-eng.1-401879297",
+      "teams": [
+        [
+          "brighton",
+          "brighton & hove albion"
+        ],
+        [
+          "aston villa",
+          "villa"
+        ]
+      ],
+      "contentKey": "match:espn-eng.1-401879297",
+      "kickoffUtc": "2026-08-23T13:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-23T13:22:34.474Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v1",
+          "url": "https://mo.yallacuo.xyz/albaplayer/sport-2/",
+          "contentKey": "match:espn-eng.1-401879297",
+          "status": "verified",
+          "verifiedAt": "2026-08-23T13:22:34.474Z",
+          "label": "برايتون × أستون فيلا · عربي",
+          "note": "yallacuo sport-2 shows Brighton–Villa Arabic, live"
+        }
+      ]
+    },
+    {
       "matchId": "espn-eng.1-401879320",
       "teams": [
         [
@@ -263,43 +300,6 @@
           "verifiedAt": "2026-08-23T13:22:34.450Z",
           "label": "مانشستر سيتي × بورنموث · عربي",
           "note": "koralive bein1 shows City–Bournemouth Arabic, live"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-eng.1-401879297",
-      "teams": [
-        [
-          "brighton",
-          "brighton & hove albion"
-        ],
-        [
-          "aston villa",
-          "villa"
-        ]
-      ],
-      "contentKey": "match:espn-eng.1-401879297",
-      "kickoffUtc": "2026-08-23T13:00:00Z",
-      "status": "verified",
-      "verifiedAt": "2026-08-23T13:22:34.474Z",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "primary",
-          "role": "primary",
-          "kind": "iframe",
-          "profile": "operator-iframe-v1",
-          "url": "https://mo.yallacuo.xyz/albaplayer/sport-2/",
-          "contentKey": "match:espn-eng.1-401879297",
-          "status": "verified",
-          "verifiedAt": "2026-08-23T13:22:34.474Z",
-          "label": "برايتون × أستون فيلا · عربي",
-          "note": "yallacuo sport-2 shows Brighton–Villa Arabic, live"
         }
       ]
     },
@@ -641,42 +641,6 @@
       ]
     },
     {
-      "matchId": "espn-eng.1-401879317",
-      "teams": [
-        [
-          "chelsea"
-        ],
-        [
-          "brighton & hove albion",
-          "brighton"
-        ]
-      ],
-      "contentKey": "match:espn-eng.1-401879317",
-      "kickoffUtc": "2026-08-30T13:00:00Z",
-      "status": "verified",
-      "verifiedAt": "2026-08-30T12:56:58.000Z",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "primary",
-          "role": "primary",
-          "kind": "iframe",
-          "profile": "operator-iframe-v2",
-          "url": "https://pl.koralive1.cc/albaplayer/1bein1/?serv=0",
-          "contentKey": "match:espn-eng.1-401879317",
-          "status": "verified",
-          "verifiedAt": "2026-08-30T12:56:58.000Z",
-          "label": "تشيلسي × برايتون · عربي",
-          "note": "T-5 bind; 1bein1 pre-match Stamford Bridge walkout — WORLD CHAMPIONS tunnel, BingX, blue seats. Listed beIN 1. Saturday Atleti/Barca FT so slot is free."
-        }
-      ]
-    },
-    {
       "matchId": "espn-eng.1-401879313",
       "teams": [
         [
@@ -744,6 +708,42 @@
           "verifiedAt": "2026-08-30T13:05:48.000Z",
           "label": "ليدز × برينتفورد · عربي",
           "note": "Kickoff bind; bein4 scorebug LEE 0-0 BRE at 02:26 on beIN SPORTS 4. Did not take 1bein1 or bein3."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879317",
+      "teams": [
+        [
+          "chelsea"
+        ],
+        [
+          "brighton & hove albion",
+          "brighton"
+        ]
+      ],
+      "contentKey": "match:espn-eng.1-401879317",
+      "kickoffUtc": "2026-08-30T13:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-08-30T12:56:58.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "primary",
+          "role": "primary",
+          "kind": "iframe",
+          "profile": "operator-iframe-v2",
+          "url": "https://pl.koralive1.cc/albaplayer/1bein1/?serv=0",
+          "contentKey": "match:espn-eng.1-401879317",
+          "status": "verified",
+          "verifiedAt": "2026-08-30T12:56:58.000Z",
+          "label": "تشيلسي × برايتون · عربي",
+          "note": "T-5 bind; 1bein1 pre-match Stamford Bridge walkout — WORLD CHAMPIONS tunnel, BingX, blue seats. Listed beIN 1. Saturday Atleti/Barca FT so slot is free."
         }
       ]
     },
@@ -861,6 +861,46 @@
       ]
     },
     {
+      "matchId": "espn-global.gulf_cup-401922489",
+      "teams": [
+        [
+          "iraq",
+          "العراق"
+        ],
+        [
+          "oman",
+          "عمان",
+          "عُمان"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401922489",
+      "kickoffUtc": "2026-09-23T14:30:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-09-23T02:30:00.000Z",
+      "expiresAt": "2026-09-23T19:00:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass1",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401922489",
+          "status": "verified",
+          "verifiedAt": "2026-09-23T02:30:00.000Z",
+          "expiresAt": "2026-09-23T19:00:00.000Z",
+          "label": "Al Kass 1 · V2",
+          "note": "Khaleeji 27 pre-map: Al Kass 1 is explicitly listed for Iraq vs Oman; V2 Lab stream 89778 verified."
+        }
+      ]
+    },
+    {
       "matchId": "espn-global.gulf_cup-401922490",
       "teams": [
         [
@@ -876,7 +916,7 @@
       "contentKey": "match:espn-global.gulf_cup-401922490",
       "kickoffUtc": "2026-09-23T18:00:00Z",
       "status": "verified",
-      "verifiedAt": "2026-09-23T02:10:58.000Z",
+      "verifiedAt": "2026-09-23T02:30:00.000Z",
       "expiresAt": "2026-09-23T22:30:00.000Z",
       "policy": {
         "sameContentOnly": true,
@@ -893,10 +933,410 @@
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
           "contentKey": "match:espn-global.gulf_cup-401922490",
           "status": "verified",
-          "verifiedAt": "2026-09-23T02:10:58.000Z",
+          "verifiedAt": "2026-09-23T02:30:00.000Z",
           "expiresAt": "2026-09-23T22:30:00.000Z",
           "label": "Al Kass 1 · V2",
-          "note": "Temporary matchday fanout through KoraZero Stream V2; moved from Marseille–PSG to Saudi Arabia–Kuwait using the verified V2 Lab Al Kass 1 stream."
+          "note": "Khaleeji 27 pre-map: Al Kass 1 is explicitly listed for Saudi Arabia vs Kuwait; V2 Lab stream 89778 verified."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-global.gulf_cup-401922491",
+      "teams": [
+        [
+          "united arab emirates",
+          "uae",
+          "emirates",
+          "الإمارات"
+        ],
+        [
+          "yemen",
+          "اليمن"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401922491",
+      "kickoffUtc": "2026-09-24T15:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-09-23T02:30:00.000Z",
+      "expiresAt": "2026-09-24T19:30:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass1",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401922491",
+          "status": "verified",
+          "verifiedAt": "2026-09-23T02:30:00.000Z",
+          "expiresAt": "2026-09-24T19:30:00.000Z",
+          "label": "Al Kass 1 · V2",
+          "note": "Khaleeji 27 pre-map: Al Kass 1 is explicitly listed for United Arab Emirates vs Yemen; V2 Lab stream 89778 verified."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-global.gulf_cup-401922492",
+      "teams": [
+        [
+          "qatar",
+          "قطر"
+        ],
+        [
+          "bahrain",
+          "البحرين"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401922492",
+      "kickoffUtc": "2026-09-24T18:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-09-23T02:30:00.000Z",
+      "expiresAt": "2026-09-24T22:30:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass1",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401922492",
+          "status": "verified",
+          "verifiedAt": "2026-09-23T02:30:00.000Z",
+          "expiresAt": "2026-09-24T22:30:00.000Z",
+          "label": "Al Kass 1 · V2",
+          "note": "Khaleeji 27 pre-map: Al Kass 1 is explicitly listed for Qatar vs Bahrain; V2 Lab stream 89778 verified."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-global.gulf_cup-401922493",
+      "teams": [
+        [
+          "kuwait",
+          "الكويت"
+        ],
+        [
+          "iraq",
+          "العراق"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401922493",
+      "kickoffUtc": "2026-09-26T15:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-09-23T02:30:00.000Z",
+      "expiresAt": "2026-09-26T19:30:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass1",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401922493",
+          "status": "verified",
+          "verifiedAt": "2026-09-23T02:30:00.000Z",
+          "expiresAt": "2026-09-26T19:30:00.000Z",
+          "label": "Al Kass 1 · V2",
+          "note": "Khaleeji 27 pre-map: tournament rights + non-overlap slot mapped to Al Kass 1; automatically recheck the broadcaster guide before kickoff. V2 Lab stream 89778 verified."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-global.gulf_cup-401922494",
+      "teams": [
+        [
+          "oman",
+          "عمان",
+          "عُمان"
+        ],
+        [
+          "saudi arabia",
+          "saudi",
+          "السعودية"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401922494",
+      "kickoffUtc": "2026-09-26T18:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-09-23T02:30:00.000Z",
+      "expiresAt": "2026-09-26T22:30:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass1",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401922494",
+          "status": "verified",
+          "verifiedAt": "2026-09-23T02:30:00.000Z",
+          "expiresAt": "2026-09-26T22:30:00.000Z",
+          "label": "Al Kass 1 · V2",
+          "note": "Khaleeji 27 pre-map: tournament rights + non-overlap slot mapped to Al Kass 1; automatically recheck the broadcaster guide before kickoff. V2 Lab stream 89778 verified."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-global.gulf_cup-401922495",
+      "teams": [
+        [
+          "yemen",
+          "اليمن"
+        ],
+        [
+          "qatar",
+          "قطر"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401922495",
+      "kickoffUtc": "2026-09-27T15:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-09-23T02:30:00.000Z",
+      "expiresAt": "2026-09-27T19:30:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass1",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401922495",
+          "status": "verified",
+          "verifiedAt": "2026-09-23T02:30:00.000Z",
+          "expiresAt": "2026-09-27T19:30:00.000Z",
+          "label": "Al Kass 1 · V2",
+          "note": "Khaleeji 27 pre-map: tournament rights + non-overlap slot mapped to Al Kass 1; automatically recheck the broadcaster guide before kickoff. V2 Lab stream 89778 verified."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-global.gulf_cup-401922496",
+      "teams": [
+        [
+          "bahrain",
+          "البحرين"
+        ],
+        [
+          "united arab emirates",
+          "uae",
+          "emirates",
+          "الإمارات"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401922496",
+      "kickoffUtc": "2026-09-27T18:00:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-09-23T02:30:00.000Z",
+      "expiresAt": "2026-09-27T22:30:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass1",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401922496",
+          "status": "verified",
+          "verifiedAt": "2026-09-23T02:30:00.000Z",
+          "expiresAt": "2026-09-27T22:30:00.000Z",
+          "label": "Al Kass 1 · V2",
+          "note": "Khaleeji 27 pre-map: tournament rights + non-overlap slot mapped to Al Kass 1; automatically recheck the broadcaster guide before kickoff. V2 Lab stream 89778 verified."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-global.gulf_cup-401922497",
+      "teams": [
+        [
+          "oman",
+          "عمان",
+          "عُمان"
+        ],
+        [
+          "kuwait",
+          "الكويت"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401922497",
+      "kickoffUtc": "2026-09-29T17:30:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-09-23T02:30:00.000Z",
+      "expiresAt": "2026-09-29T22:00:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass2",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401922497",
+          "status": "verified",
+          "verifiedAt": "2026-09-23T02:30:00.000Z",
+          "expiresAt": "2026-09-29T22:00:00.000Z",
+          "label": "Al Kass 2 · V2",
+          "note": "Khaleeji 27 pre-map: simultaneous final group round split across Al Kass 1/2; this 2 assignment is preloaded and must be automatically rechecked against the broadcaster guide before kickoff. V2 Lab stream 89779 verified."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-global.gulf_cup-401922498",
+      "teams": [
+        [
+          "saudi arabia",
+          "saudi",
+          "السعودية"
+        ],
+        [
+          "iraq",
+          "العراق"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401922498",
+      "kickoffUtc": "2026-09-29T17:30:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-09-23T02:30:00.000Z",
+      "expiresAt": "2026-09-29T22:00:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass1",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401922498",
+          "status": "verified",
+          "verifiedAt": "2026-09-23T02:30:00.000Z",
+          "expiresAt": "2026-09-29T22:00:00.000Z",
+          "label": "Al Kass 1 · V2",
+          "note": "Khaleeji 27 pre-map: simultaneous final group round split across Al Kass 1/2; this 1 assignment is preloaded and must be automatically rechecked against the broadcaster guide before kickoff. V2 Lab stream 89778 verified."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-global.gulf_cup-401922499",
+      "teams": [
+        [
+          "bahrain",
+          "البحرين"
+        ],
+        [
+          "yemen",
+          "اليمن"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401922499",
+      "kickoffUtc": "2026-09-30T17:30:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-09-23T02:30:00.000Z",
+      "expiresAt": "2026-09-30T22:00:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass2",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401922499",
+          "status": "verified",
+          "verifiedAt": "2026-09-23T02:30:00.000Z",
+          "expiresAt": "2026-09-30T22:00:00.000Z",
+          "label": "Al Kass 2 · V2",
+          "note": "Khaleeji 27 pre-map: simultaneous final group round split across Al Kass 1/2; this 2 assignment is preloaded and must be automatically rechecked against the broadcaster guide before kickoff. V2 Lab stream 89779 verified."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-global.gulf_cup-401922500",
+      "teams": [
+        [
+          "united arab emirates",
+          "uae",
+          "emirates",
+          "الإمارات"
+        ],
+        [
+          "qatar",
+          "قطر"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401922500",
+      "kickoffUtc": "2026-09-30T17:30:00Z",
+      "status": "verified",
+      "verifiedAt": "2026-09-23T02:30:00.000Z",
+      "expiresAt": "2026-09-30T22:00:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass1",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401922500",
+          "status": "verified",
+          "verifiedAt": "2026-09-23T02:30:00.000Z",
+          "expiresAt": "2026-09-30T22:00:00.000Z",
+          "label": "Al Kass 1 · V2",
+          "note": "Khaleeji 27 pre-map: simultaneous final group round split across Al Kass 1/2; this 1 assignment is preloaded and must be automatically rechecked against the broadcaster guide before kickoff. V2 Lab stream 89778 verified."
         }
       ]
     }

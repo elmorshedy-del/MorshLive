@@ -47,8 +47,20 @@ const switchRow = (selection) =>
 const SAUDI = "espn-ksa.1-401900363";
 const EURO = "espn-uefa.champions-401915452";
 
-const SAUDI_KUWAIT = "espn-global.gulf_cup-401922490";
-const V2_MATCHDAY_CHANNEL = "v2-alkass-1";
+const KHALEEJI_V2 = new Map([
+  ["espn-global.gulf_cup-401922489", "v2-alkass-1"],
+  ["espn-global.gulf_cup-401922490", "v2-alkass-1"],
+  ["espn-global.gulf_cup-401922491", "v2-alkass-1"],
+  ["espn-global.gulf_cup-401922492", "v2-alkass-1"],
+  ["espn-global.gulf_cup-401922493", "v2-alkass-1"],
+  ["espn-global.gulf_cup-401922494", "v2-alkass-1"],
+  ["espn-global.gulf_cup-401922495", "v2-alkass-1"],
+  ["espn-global.gulf_cup-401922496", "v2-alkass-1"],
+  ["espn-global.gulf_cup-401922497", "v2-alkass-2"],
+  ["espn-global.gulf_cup-401922498", "v2-alkass-1"],
+  ["espn-global.gulf_cup-401922499", "v2-alkass-2"],
+  ["espn-global.gulf_cup-401922500", "v2-alkass-1"],
+]);
 
 const matchSelection = (match, query = "") =>
   window.resolveWatchSelection([match], CHANNELS, new URLSearchParams(query || `match=${match.id}`));
@@ -149,62 +161,30 @@ describe("with no fixture named", () => {
   });
 });
 
-describe("Saudi Arabia–Kuwait one-match V2 patch", () => {
-  const match = {
-    id: SAUDI_KUWAIT,
-    home: "Saudi Arabia",
-    away: "Kuwait",
-    channelId: "bein-sports-1",
-    channel: "beIN Sports 1",
-    competition: "gulfcup",
-    leagueSlug: "global.gulf_cup",
-    status: "upcoming",
-    kickoffUtc: "2026-09-23T18:00:00Z",
-  };
-
-  it("replaces only this fixture's Lab-facing channel id with the isolated V2 socket", () => {
-    const selection = matchSelection(match);
-    expect(selection.channel.id).toBe(V2_MATCHDAY_CHANNEL);
-    expect(selection.channel.name).toBe("Al Kass 1");
-    expect(selection.match.id).toBe(SAUDI_KUWAIT);
-    expect(selection.match.channelId).toBe(V2_MATCHDAY_CHANNEL);
-    expect(selection.match.channel).toBe("Al Kass 1");
+describe("Khaleeji 27 V2 fixture map", () => {
+  it("routes every published group-stage ESPN fixture into its isolated V2 socket", () => {
+    for (const [id, expectedChannel] of KHALEEJI_V2) {
+      const selection = select(`match=${id}&ch=bein-sports-2`);
+      expect(selection.channel.id).toBe(expectedChannel);
+      expect(selection.match.id).toBe(id);
+      expect(selection.match.channelId).toBe(expectedChannel);
+      expect(actualSwitchRow(selection)).toEqual([]);
+    }
   });
 
-  it("hides the beIN 2/3/4 switch row by placing the temporary socket in a one-channel group", () => {
-    const selection = matchSelection(match);
-    expect(actualSwitchRow(selection)).toEqual([]);
+  it("uses Al Kass 2 for the secondary simultaneous final-round fixtures", () => {
+    expect(select("match=espn-global.gulf_cup-401922497").channel.name).toBe("Al Kass 2");
+    expect(select("match=espn-global.gulf_cup-401922499").channel.name).toBe("Al Kass 2");
   });
 
-  it("ignores a stale or hand-written ch=bein-sports-2 on this one fixture", () => {
-    const selection = matchSelection(match, `match=${SAUDI_KUWAIT}&ch=bein-sports-2`);
-    expect(selection.channel.id).toBe(V2_MATCHDAY_CHANNEL);
-    expect(actualSwitchRow(selection)).toEqual([]);
+  it("keeps the main simultaneous final-round fixtures on Al Kass 1", () => {
+    expect(select("match=espn-global.gulf_cup-401922498").channel.name).toBe("Al Kass 1");
+    expect(select("match=espn-global.gulf_cup-401922500").channel.name).toBe("Al Kass 1");
   });
 
-  it("removes the previous PSG card from the V2 socket", () => {
-    const other = {
-      ...match,
-      id: "espn-fra.1-401876449",
-      home: "Marseille",
-      away: "Paris Saint-Germain",
-      competition: "ligue1",
-      leagueSlug: "fra.1",
-      kickoffUtc: "2026-09-20T18:45:00Z",
-    };
-    const selection = matchSelection(other);
-    expect(selection.channel.id).toBe("bein-sports-1");
-    expect(selection.match.channelId).toBe("bein-sports-1");
-    expect(actualSwitchRow(selection)).toEqual([
-      "beIN Sports 1",
-      "beIN Sports 2",
-      "beIN Sports 3",
-      "beIN Sports 4",
-    ]);
-  });
-
-  it("does not make the synthetic V2 socket reachable without the exact match id", () => {
-    expect(select(`ch=${V2_MATCHDAY_CHANNEL}`).channel.id).toBe("bein-sports-1");
-    expect(select(`match=${EURO}&ch=${V2_MATCHDAY_CHANNEL}`).channel.id).toBe("bein-sports-1");
+  it("does not expose either synthetic V2 socket without a mapped match id", () => {
+    expect(select("ch=v2-alkass-1").channel.id).toBe("bein-sports-1");
+    expect(select("ch=v2-alkass-2").channel.id).toBe("bein-sports-1");
+    expect(select(`match=${EURO}&ch=v2-alkass-1`).channel.id).toBe("bein-sports-1");
   });
 });
