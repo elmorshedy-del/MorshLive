@@ -167,14 +167,14 @@ function embedForKey(key) {
 // above, so a single match always maps to its actual channel — not a parity guess.
 // beIN Sports 1 stays first so it remains the default fallback channel.
 //
-// MATCHDAY PATCH — Marseille vs Paris Saint-Germain, 20 Sep 2026.
+// MATCHDAY PATCH — Saudi Arabia vs Kuwait, 23 Sep 2026.
 // This one-match synthetic socket deliberately has no IPTV-Lab mapping. That
 // makes the locked player fail closed on Lab and continue to the verified V2
 // HLS stream-plan. It lives in a one-channel group so beIN 2/3/4 never appear
 // on this watch view. Revert the matchday PR after the event.
-const V2_MATCHDAY_FIXTURE_ID = "espn-fra.1-401876449";
-const V2_MATCHDAY_CHANNEL_ID = "v2-bein-sports-1";
-const V2_MATCHDAY_HLS_PREFIX = "https://v2-mist-production.up.railway.app/hls/iptv-3645/";
+const V2_MATCHDAY_FIXTURE_ID = "espn-global.gulf_cup-401922490";
+const V2_MATCHDAY_CHANNEL_ID = "v2-alkass-1";
+const V2_MATCHDAY_HLS_PREFIX = "https://v2-mist-production.up.railway.app/hls/iptv-89778/";
 
 const CHANNEL_DEFS = [
   { id: "bein-sports-1", name: "beIN Sports 1", group: "beIN", num: "1", quality: "1080p", badge: "HD" },
@@ -183,7 +183,7 @@ const CHANNEL_DEFS = [
   // so a card on 3 or 4 had no channel to bind to and no alternative to offer.
   { id: "bein-sports-3", name: "beIN Sports 3", group: "beIN", num: "3", quality: "1080p", badge: "HD" },
   { id: "bein-sports-4", name: "beIN Sports 4", group: "beIN", num: "4", quality: "1080p", badge: "HD" },
-  { id: V2_MATCHDAY_CHANNEL_ID, name: "beIN Sports 1", group: "V2 Matchday", num: "1", quality: "1080p", badge: "V2" },
+  { id: V2_MATCHDAY_CHANNEL_ID, name: "Al Kass 1", group: "V2 Matchday", num: "1", quality: "720p", badge: "V2" },
   { id: "bein-max-1", name: "beIN MAX 1", group: "beIN MAX", num: "1", quality: "1080p", badge: "HD" },
   { id: "bein-max-2", name: "beIN MAX 2", group: "beIN MAX", num: "2", quality: "1080p", badge: "HD" },
   { id: "bein-max-3", name: "beIN MAX 3", group: "beIN MAX", num: "3", quality: "1080p", badge: "HD" },
@@ -245,7 +245,7 @@ function resolveWatchSelection(matches, channels, searchParams) {
     ? {
         ...rawExplicitMatch,
         channelId: V2_MATCHDAY_CHANNEL_ID,
-        channel: "beIN Sports 1",
+        channel: "Al Kass 1",
         channelBinding: "resolved",
       }
     : rawExplicitMatch;
