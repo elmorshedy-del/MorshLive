@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-20T16:40:00.000Z",
+  "updatedAt": "2026-09-23T02:10:58.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879300",
@@ -861,23 +861,23 @@
       ]
     },
     {
-      "matchId": "espn-fra.1-401876449",
+      "matchId": "espn-global.gulf_cup-401922490",
       "teams": [
         [
-          "marseille",
-          "olympique de marseille"
+          "saudi arabia",
+          "saudi",
+          "السعودية"
         ],
         [
-          "paris saint-germain",
-          "paris saint germain",
-          "psg"
+          "kuwait",
+          "الكويت"
         ]
       ],
-      "contentKey": "match:espn-fra.1-401876449",
-      "kickoffUtc": "2026-09-20T18:45:00Z",
+      "contentKey": "match:espn-global.gulf_cup-401922490",
+      "kickoffUtc": "2026-09-23T18:00:00Z",
       "status": "verified",
-      "verifiedAt": "2026-09-20T16:40:00.000Z",
-      "expiresAt": "2026-09-20T23:00:00.000Z",
+      "verifiedAt": "2026-09-23T02:10:58.000Z",
+      "expiresAt": "2026-09-23T22:30:00.000Z",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
@@ -886,17 +886,17 @@
       },
       "sources": [
         {
-          "id": "v2-bein1",
+          "id": "v2-alkass1",
           "role": "primary",
           "kind": "hls",
           "profile": "hls-direct-v1",
-          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-fra.1-401876449",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401922490",
           "status": "verified",
-          "verifiedAt": "2026-09-20T16:40:00.000Z",
-          "expiresAt": "2026-09-20T23:00:00.000Z",
-          "label": "beIN Sports 1 · V2",
-          "note": "Temporary matchday fanout through KoraZero Stream V2; moved from Atlético–Real Madrid to Marseille–Paris Saint-Germain."
+          "verifiedAt": "2026-09-23T02:10:58.000Z",
+          "expiresAt": "2026-09-23T22:30:00.000Z",
+          "label": "Al Kass 1 · V2",
+          "note": "Temporary matchday fanout through KoraZero Stream V2; moved from Marseille–PSG to Saudi Arabia–Kuwait using the verified V2 Lab Al Kass 1 stream."
         }
       ]
     }

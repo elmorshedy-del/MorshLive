@@ -47,8 +47,8 @@ const switchRow = (selection) =>
 const SAUDI = "espn-ksa.1-401900363";
 const EURO = "espn-uefa.champions-401915452";
 
-const MARSEILLE_PSG = "espn-fra.1-401876449";
-const V2_MATCHDAY_CHANNEL = "v2-bein-sports-1";
+const SAUDI_KUWAIT = "espn-global.gulf_cup-401922490";
+const V2_MATCHDAY_CHANNEL = "v2-alkass-1";
 
 const matchSelection = (match, query = "") =>
   window.resolveWatchSelection([match], CHANNELS, new URLSearchParams(query || `match=${match.id}`));
@@ -149,26 +149,26 @@ describe("with no fixture named", () => {
   });
 });
 
-describe("Marseille–Paris Saint-Germain one-match V2 patch", () => {
+describe("Saudi Arabia–Kuwait one-match V2 patch", () => {
   const match = {
-    id: MARSEILLE_PSG,
-    home: "Marseille",
-    away: "Paris Saint-Germain",
+    id: SAUDI_KUWAIT,
+    home: "Saudi Arabia",
+    away: "Kuwait",
     channelId: "bein-sports-1",
     channel: "beIN Sports 1",
-    competition: "ligue1",
-    leagueSlug: "fra.1",
+    competition: "gulfcup",
+    leagueSlug: "global.gulf_cup",
     status: "upcoming",
-    kickoffUtc: "2026-09-20T18:45:00Z",
+    kickoffUtc: "2026-09-23T18:00:00Z",
   };
 
   it("replaces only this fixture's Lab-facing channel id with the isolated V2 socket", () => {
     const selection = matchSelection(match);
     expect(selection.channel.id).toBe(V2_MATCHDAY_CHANNEL);
-    expect(selection.channel.name).toBe("beIN Sports 1");
-    expect(selection.match.id).toBe(MARSEILLE_PSG);
+    expect(selection.channel.name).toBe("Al Kass 1");
+    expect(selection.match.id).toBe(SAUDI_KUWAIT);
     expect(selection.match.channelId).toBe(V2_MATCHDAY_CHANNEL);
-    expect(selection.match.channel).toBe("beIN Sports 1");
+    expect(selection.match.channel).toBe("Al Kass 1");
   });
 
   it("hides the beIN 2/3/4 switch row by placing the temporary socket in a one-channel group", () => {
@@ -177,18 +177,20 @@ describe("Marseille–Paris Saint-Germain one-match V2 patch", () => {
   });
 
   it("ignores a stale or hand-written ch=bein-sports-2 on this one fixture", () => {
-    const selection = matchSelection(match, `match=${MARSEILLE_PSG}&ch=bein-sports-2`);
+    const selection = matchSelection(match, `match=${SAUDI_KUWAIT}&ch=bein-sports-2`);
     expect(selection.channel.id).toBe(V2_MATCHDAY_CHANNEL);
     expect(actualSwitchRow(selection)).toEqual([]);
   });
 
-  it("removes yesterday's Barcelona card from the V2 socket", () => {
+  it("removes the previous PSG card from the V2 socket", () => {
     const other = {
       ...match,
-      id: "espn-esp.1-401882859",
-      home: "Sevilla",
-      away: "Barcelona",
-      kickoffUtc: "2026-09-19T19:00:00Z",
+      id: "espn-fra.1-401876449",
+      home: "Marseille",
+      away: "Paris Saint-Germain",
+      competition: "ligue1",
+      leagueSlug: "fra.1",
+      kickoffUtc: "2026-09-20T18:45:00Z",
     };
     const selection = matchSelection(other);
     expect(selection.channel.id).toBe("bein-sports-1");

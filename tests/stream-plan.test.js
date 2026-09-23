@@ -485,31 +485,31 @@ describe("today's stream-plans catalog", () => {
     expect(shouldHoldPlayer(resolved)).toBe(false);
   });
 
-  it("routes today's Marseille–Paris Saint-Germain fixture only to the verified V2 beIN 1 HLS", () => {
+  it("routes Saudi Arabia–Kuwait only to the verified V2 Al Kass 1 HLS", () => {
     const match = {
-      id: "espn-fra.1-401876449",
-      home: "Marseille",
-      away: "Paris Saint-Germain",
-      channelId: "v2-bein-sports-1",
+      id: "espn-global.gulf_cup-401922490",
+      home: "Saudi Arabia",
+      away: "Kuwait",
+      channelId: "v2-alkass-1",
       status: "upcoming",
-      kickoffUtc: "2026-09-20T18:45:00Z",
+      kickoffUtc: "2026-09-23T18:00:00Z",
     };
     const resolved = resolveStreamPlan({
       match,
       catalog: catalogJson,
       legacyEmbedKey: "koraplus",
-      now: Date.parse("2026-09-20T17:00:00Z"),
+      now: Date.parse("2026-09-23T03:00:00Z"),
     });
 
     expect(resolved.catalog).toBe(true);
     expect(resolved.status).toBe("verified");
-    expect(resolved.selected.id).toBe("v2-bein1");
+    expect(resolved.selected.id).toBe("v2-alkass1");
     expect(resolved.selected.kind).toBe("hls");
     expect(resolved.selected.profile).toBe("hls-direct-v1");
     expect(resolved.selected.playbackUrl).toBe(
-      "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
+      "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
     );
-    expect(resolved.selected.contentKey).toBe("match:espn-fra.1-401876449");
+    expect(resolved.selected.contentKey).toBe("match:espn-global.gulf_cup-401922490");
     expect(resolved.policy.allowLegacy).toBe(false);
   });
 

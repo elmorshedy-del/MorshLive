@@ -24,7 +24,7 @@
   const REFRESH_MS = 45 * 1000;
   // MATCHDAY PATCH: this exact ESPN fixture is routed by the V2 stream plan.
   // Do not let the normal Lab router rewrite its card to source=xtream.
-  const V2_MATCHDAY_BYPASS_IDS = new Set(["espn-fra.1-401876449"]);
+  const V2_MATCHDAY_BYPASS_IDS = new Set(["espn-global.gulf_cup-401922490"]);
   const SUPPORTED_COMPETITIONS = new Set(["epl", "laliga", "spl", "ucl"]);
   const SUPPORTED_SLUGS = new Set([
     "eng.1",
@@ -452,13 +452,15 @@
       return;
     }
     const match = state.matches.get(String(url.searchParams.get("match") || ""));
-    if (!match || !supportedMatch(match)) return;
+    if (!match) return;
 
     if (V2_MATCHDAY_BYPASS_IDS.has(String(match.id))) {
       clearAuto(original);
       normalizeStageCopy(original, match);
       return;
     }
+
+    if (!supportedMatch(match)) return;
 
     const selection = state.selections.get(String(match.id));
     if (!tvWindow().isEligible(match) || !selection?.selected?.streamId) {
