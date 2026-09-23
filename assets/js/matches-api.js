@@ -81,6 +81,7 @@
   ];
   const ESPN_LEAGUES = COMPETITIONS.flatMap((competition) => competition.espnSlugs);
   const SCHEDULE_DAYS_AHEAD = 7;
+  const FRIENDLY_EXTRA_DAYS_AHEAD = 7;
   const CACHE_MS = 60 * 1000; // 1 min client cache
   const FETCH_TIMEOUT_MS = 5000;
   const MATCH_WINDOW_MS = 135 * 60 * 1000;
@@ -107,6 +108,11 @@
   function shouldIncludeAudienceMatch(match) {
     const competition = COMPETITIONS.find((item) => item.key === match?.competition);
     const teams = [match?.home, match?.away];
+
+    if (
+      global.TeamNames?.isHiddenNationalTeam
+      && teams.some((team) => global.TeamNames.isHiddenNationalTeam(team))
+    ) return false;
 
     const whitelist = competition?.teamWhitelist || [];
     if (whitelist.length) {
@@ -244,6 +250,20 @@
   function espnDateRange() {
     const today = arabiaToday();
     return `${shiftDate(today, -1).replace(/-/g, "")}-${shiftDate(today, SCHEDULE_DAYS_AHEAD).replace(/-/g, "")}`;
+  }
+
+  function extendDateRangeEnd(dateRange, extraDays) {
+    const match = /^(\d{8})-(\d{8})$/.exec(String(dateRange || ""));
+    if (!match || !extraDays) return dateRange;
+    const endIso = `${match[2].slice(0, 4)}-${match[2].slice(4, 6)}-${match[2].slice(6, 8)}`;
+    const extended = shiftDate(endIso, extraDays).replace(/-/g, "");
+    return `${match[1]}-${extended}`;
+  }
+
+  function espnDateRangeForLeague(slug, baseRange) {
+    return slug === "fifa.friendly"
+      ? extendDateRangeEnd(baseRange, FRIENDLY_EXTRA_DAYS_AHEAD)
+      : baseRange;
   }
 
   // ESPN 400s a `dates` range ("Failed to get events endpoint.") but still
@@ -393,7 +413,7 @@
     }
 
     const settled = await Promise.allSettled(
-      ESPN_LEAGUES.map((slug) => fetchEspnLeague(slug, dateRange))
+      ESPN_LEAGUES.map((slug) => fetchEspnLeague(slug, espnDateRangeForLeague(slug, dateRange)))
     );
     return settled.flatMap((result) => result.status === "fulfilled" ? result.value : []);
   }
