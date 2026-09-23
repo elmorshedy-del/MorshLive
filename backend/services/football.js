@@ -27,9 +27,7 @@ const FRIENDLY_EXTRA_DAYS_AHEAD = 7;
 function extendDateRangeEnd(value, extraDays) {
   const match = /^(\d{8})-(\d{8})$/.exec(value || "");
   if (!match || !extraDays) return value;
-  const end = Date.parse(
-    `${match[2].slice(0, 4)}-${match[2].slice(4, 6)}-${match[2].slice(6, 8)}T00:00:00Z`,
-  );
+  const end = Date.parse(`${match[2].slice(0, 4)}-${match[2].slice(4, 6)}-${match[2].slice(6, 8)}T00:00:00Z`);
   if (!Number.isFinite(end)) return value;
   const extended = new Date(end + extraDays * 24 * 60 * 60 * 1000)
     .toISOString()
@@ -39,9 +37,7 @@ function extendDateRangeEnd(value, extraDays) {
 }
 
 function dateRangeForLeague(slug, requested) {
-  return slug === "fifa.friendly"
-    ? extendDateRangeEnd(requested, FRIENDLY_EXTRA_DAYS_AHEAD)
-    : requested;
+  return slug === "fifa.friendly" ? extendDateRangeEnd(requested, FRIENDLY_EXTRA_DAYS_AHEAD) : requested;
 }
 
 function validDateRange(value) {
