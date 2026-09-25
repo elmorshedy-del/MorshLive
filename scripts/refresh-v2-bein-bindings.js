@@ -99,21 +99,30 @@ async function main() {
 
   const vega = JSON.parse(fs.readFileSync(VEGA_PATH, "utf8"));
   const bindings = buildBindings(fixtures, rows, vega);
-  const generatedAt = new Date().toISOString();
+  const previousSnapshot = fs.existsSync(OUT_PATH)
+    ? JSON.parse(fs.readFileSync(OUT_PATH, "utf8"))
+    : null;
+  const bindingsUnchanged =
+    JSON.stringify(previousSnapshot?.bindings || []) === JSON.stringify(bindings);
+  const generatedAt = bindingsUnchanged && previousSnapshot?.generatedAt
+    ? previousSnapshot.generatedAt
+    : new Date().toISOString();
   const snapshot = {
     version: 1,
     generatedAt,
-    window: { start: startIso, end: endIso },
+    window: bindingsUnchanged && previousSnapshot?.window
+      ? previousSnapshot.window
+      : { start: startIso, end: endIso },
     source: "filgoal",
     variant: vega.variant,
     bindings,
   };
 
   const catalog = JSON.parse(fs.readFileSync(PLANS_PATH, "utf8"));
-  const mergedPlans = mergeGeneratedPlans(catalog, bindings, vega);
+  const mergedPlans = bindingsUnchanged ? catalog : mergeGeneratedPlans(catalog, bindings, vega);
 
   const bindingsChanged = writeIfChanged(OUT_PATH, snapshot);
-  const plansChanged = writeIfChanged(PLANS_PATH, mergedPlans);
+  const plansChanged = bindingsUnchanged ? false : writeIfChanged(PLANS_PATH, mergedPlans);
   console.log(
     `V2 beIN qualifier bindings: ${bindings.length} exact Arabic Vega bindings ` +
     `(${bindingsChanged ? "bindings updated" : "bindings unchanged"}, ` +
