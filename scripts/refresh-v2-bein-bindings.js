@@ -9,6 +9,7 @@ const {
 } = require("./matches-lib");
 const {
   buildBindings,
+  mergeActiveBindings,
   mergeGeneratedPlans,
   parseFilGoalBroadcasts,
 } = require("./v2-bein-bindings-lib");
@@ -98,10 +99,19 @@ async function main() {
   ]);
 
   const vega = JSON.parse(fs.readFileSync(VEGA_PATH, "utf8"));
-  const bindings = buildBindings(fixtures, rows, vega);
+  const freshBindings = buildBindings(fixtures, rows, vega);
   const previousSnapshot = fs.existsSync(OUT_PATH)
     ? JSON.parse(fs.readFileSync(OUT_PATH, "utf8"))
     : null;
+
+  // A temporary scrape gap or generic/EN listing must not erase an exact
+  // Arabic binding that is still inside its match window. Fresh exact rows win.
+  const bindings = mergeActiveBindings(
+    previousSnapshot?.bindings || [],
+    freshBindings,
+    fixtures,
+  );
+
   const bindingsUnchanged =
     JSON.stringify(previousSnapshot?.bindings || []) === JSON.stringify(bindings);
   const generatedAt = bindingsUnchanged && previousSnapshot?.generatedAt

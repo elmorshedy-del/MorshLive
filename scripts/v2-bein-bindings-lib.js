@@ -126,6 +126,18 @@ function buildBindings(fixtures, rows, vegaCatalog, now = Date.now()) {
   return out.sort((a, b) => Date.parse(a.kickoffUtc) - Date.parse(b.kickoffUtc));
 }
 
+function mergeActiveBindings(previous, fresh, fixtures, now = Date.now()) {
+  const liveFixtureIds = new Set((fixtures || []).map((match) => String(match?.id || "")));
+  const byMatch = new Map(
+    (previous || [])
+      .filter((binding) => Date.parse(binding?.expiresAt || "") > now)
+      .filter((binding) => liveFixtureIds.has(String(binding?.matchId || "")))
+      .map((binding) => [String(binding.matchId), binding]),
+  );
+  for (const binding of fresh || []) byMatch.set(String(binding.matchId), binding);
+  return [...byMatch.values()].sort((a, b) => Date.parse(a.kickoffUtc) - Date.parse(b.kickoffUtc));
+}
+
 function generatedPlan(binding, baseUrl, nowIso) {
   const contentKey = `match:${binding.matchId}`;
   return {
@@ -184,4 +196,5 @@ module.exports = {
   parseFilGoalBroadcasts,
   parseFilGoalKickoff,
   matchRowToFixture,
+  mergeActiveBindings,
 };
