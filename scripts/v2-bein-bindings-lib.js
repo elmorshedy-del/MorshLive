@@ -18,7 +18,7 @@ function stripHtml(value) {
 
 function parseBeinChannel(label) {
   const raw = stripHtml(label);
-  if (!/\bbein\b/i.test(raw) || /\bfr\b/i.test(raw)) return null;
+  if (!/\bbein\b/i.test(raw) || /\bfr\b/i.test(raw) || /\ben\b/i.test(raw)) return null;
   let m = raw.match(/\bbein\s+sports\s+xtra\s*([1-9])/i);
   if (m) return { key: `bein-xtra-${Number(m[1])}`, label: raw };
   m = raw.match(/\bbein\s+sports\s+en\s*([1-9])/i);
