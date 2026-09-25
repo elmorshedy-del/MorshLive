@@ -51,18 +51,41 @@ async function getText(url) {
   return res.text();
 }
 
+function relevantFixtures(fixtures) {
+  return filterDisplayMatches(fixtures).filter((m) => m.competition === "unl" || m.competition === "afconq");
+}
+
 async function fetchFixtures(startIso, endIso) {
   const dates = `${compact(startIso)}-${compact(endIso)}`;
   const settled = await Promise.allSettled(
     ESPN_SLUGS.map((slug) => fetchEspnScoreboardWindow(slug, dates, getJson, { limit: 200 })),
   );
-  const fixtures = [];
+  const direct = [];
   for (const result of settled) {
     if (result.status !== "fulfilled") continue;
     const { league, events } = result.value;
-    for (const event of events) fixtures.push(normalizeEspnEvent(event, league));
+    for (const event of events) direct.push(normalizeEspnEvent(event, league));
   }
-  return filterDisplayMatches(fixtures).filter((m) => m.competition === "unl" || m.competition === "afconq");
+  const directRelevant = relevantFixtures(direct);
+  if (directRelevant.length) return directRelevant;
+
+  // GitHub-hosted runners are occasionally blocked/empty at ESPN even while
+  // KoraZero's production football proxy has the same fixtures. Use that
+  // existing read-only API as a fallback rather than letting a network quirk
+  // erase or stall channel bindings.
+  try {
+    const bundle = await getJson(`https://korazero.com/api/football/scoreboard?dates=${dates}`);
+    const fallback = [];
+    for (const row of bundle?.leagues || []) {
+      if (!ESPN_SLUGS.includes(String(row?.slug || ""))) continue;
+      const league = { ...(row?.data?.leagues?.[0] || {}), slug: row.slug };
+      for (const event of row?.data?.events || []) fallback.push(normalizeEspnEvent(event, league));
+    }
+    return relevantFixtures(fallback);
+  } catch (error) {
+    console.warn(`V2 beIN bindings: production fixture fallback skipped: ${error.message}`);
+    return [];
+  }
 }
 
 async function fetchBroadcastRows(startIso, endIso) {
@@ -135,7 +158,8 @@ async function main() {
   const plansChanged = bindingsUnchanged ? false : writeIfChanged(PLANS_PATH, mergedPlans);
   console.log(
     `V2 beIN qualifier bindings: ${bindings.length} exact Arabic Vega bindings ` +
-    `(${bindingsChanged ? "bindings updated" : "bindings unchanged"}, ` +
+    `(${fixtures.length} fixtures, ${rows.length} broadcaster rows; ` +
+    `${bindingsChanged ? "bindings updated" : "bindings unchanged"}, ` +
     `${plansChanged ? "plans updated" : "plans unchanged"})`,
   );
 }
