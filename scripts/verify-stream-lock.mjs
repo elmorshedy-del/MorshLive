@@ -33,7 +33,7 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
   "assets/js/watch-loader.js": "ade77be3472d5f1824692d1bf1c8cc5198f5fb13",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
-  // Khaleeji 27 V2 matchday anti-remount guard.\n  "assets/js/watch.js": "b6cd460ad03d83fa11ba1876b3174a6b71b6fc05",
+  // Khaleeji 27 V2 matchday anti-remount guard.\n  "assets/js/watch.js": "0e01d26b89368992eba217bad14ee8c2b9d79b8d",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",

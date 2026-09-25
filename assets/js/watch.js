@@ -1113,8 +1113,17 @@
       }
       return;
     }
-    // Our own IPTV first. Everything below this point is a third-party
-    // aggregator we do not control, and those go dark without warning.
+    // Match-scoped stream plans own playback. This must run before the generic
+    // IPTV Lab fallback; otherwise a fixture with no channelId falls through to
+    // the site's default beIN 1 and masks its exact V2 plan.
+    const planSource = activePlan && activePlan.selected;
+    const planReady = planSource && (activePlan.status === "verified" || activePlan.status === "operator");
+    if (planReady && mountPlanSource(planSource, activePlan)) {
+      applyWatchChrome();
+      return;
+    }
+
+    // Generic IPTV Lab is fallback only when no ready match plan exists.
     if (await mountLabChannel()) return;
 
     // Bridge and WC pinned mirrors are leftover 24/7 / World Cup rails.
@@ -1130,13 +1139,6 @@
     if (saudiStreamComingSoon(match, activePlan)) {
       applyWatchChrome();
       showPlanWaiting("saudi-soon");
-      return;
-    }
-
-    const planSource = activePlan && activePlan.selected;
-    const planReady = planSource && (activePlan.status === "verified" || activePlan.status === "operator");
-    if (planReady && mountPlanSource(planSource, activePlan)) {
-      applyWatchChrome();
       return;
     }
 
