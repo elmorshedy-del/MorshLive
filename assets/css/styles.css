@@ -3433,6 +3433,7 @@ button.kz-hl-banner { appearance: none; -webkit-appearance: none; }
 
 /* Stream-plan watch: no 24/7 channel grid, server pills, Daddy/Koora tabs, or WC mirrors. */
 .page-watch.match-plan-chrome .watch-sources-card,
+.page-watch.match-plan-chrome #channel-switch,
 .page-watch.match-plan-chrome #alt-streams,
 .page-watch.match-plan-chrome #manual-mirrors,
 .page-watch.match-plan-chrome .info-item--legacy-source {
