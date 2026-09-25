@@ -169,6 +169,7 @@ function embedForKey(key) {
 //
 // KHALEEJI 27 V2 MAP — same isolated matchday handoff used for Sevilla–Barcelona.
 const V2_MATCHDAY_FIXTURES = Object.freeze({
+  "espn-caf.nations_qual-401920038": Object.freeze({ channelId: "v2-bein-1", channel: "beIN Sports 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-3645/" }),
   "espn-global.gulf_cup-401922489": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
   "espn-global.gulf_cup-401922490": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
   "espn-global.gulf_cup-401922491": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
@@ -182,7 +183,7 @@ const V2_MATCHDAY_FIXTURES = Object.freeze({
   "espn-global.gulf_cup-401922499": Object.freeze({ channelId: "v2-alkass-2", channel: "Al Kass 2", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89779/" }),
   "espn-global.gulf_cup-401922500": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
 });
-const V2_MATCHDAY_CHANNEL_IDS = new Set(["v2-alkass-1", "v2-alkass-2"]);
+const V2_MATCHDAY_CHANNEL_IDS = new Set(["v2-bein-1", "v2-alkass-1", "v2-alkass-2"]);
 
 function v2FixtureFor(matchId) {
   return V2_MATCHDAY_FIXTURES[String(matchId || "")] || null;
@@ -195,6 +196,7 @@ const CHANNEL_DEFS = [
   // so a card on 3 or 4 had no channel to bind to and no alternative to offer.
   { id: "bein-sports-3", name: "beIN Sports 3", group: "beIN", num: "3", quality: "1080p", badge: "HD" },
   { id: "bein-sports-4", name: "beIN Sports 4", group: "beIN", num: "4", quality: "1080p", badge: "HD" },
+  { id: "v2-bein-1", name: "beIN Sports 1", group: "V2 Matchday · beIN 1", num: "1", quality: "576p", badge: "V2" },
   { id: "v2-alkass-1", name: "Al Kass 1", group: "V2 Matchday · Al Kass 1", num: "1", quality: "720p", badge: "V2" },
   { id: "v2-alkass-2", name: "Al Kass 2", group: "V2 Matchday · Al Kass 2", num: "2", quality: "720p", badge: "V2" },
   { id: "bein-max-1", name: "beIN MAX 1", group: "beIN MAX", num: "1", quality: "1080p", badge: "HD" },

@@ -161,6 +161,23 @@ describe("with no fixture named", () => {
   });
 });
 
+describe("Egypt qualifier direct V2 handoff", () => {
+  const EGYPT = "espn-caf.nations_qual-401920038";
+
+  it("forces the Egypt fixture onto the isolated V2 beIN 1 socket", () => {
+    const selection = select(`match=${EGYPT}&ch=bein-sports-1`);
+    expect(selection.channel.id).toBe("v2-bein-1");
+    expect(selection.match.id).toBe(EGYPT);
+    expect(selection.match.channelId).toBe("v2-bein-1");
+    expect(actualSwitchRow(selection)).toEqual([]);
+  });
+
+  it("does not expose the synthetic V2 beIN socket without the Egypt fixture", () => {
+    expect(select("ch=v2-bein-1").channel.id).toBe("bein-sports-1");
+    expect(select(`match=${EURO}&ch=v2-bein-1`).channel.id).toBe("bein-sports-1");
+  });
+});
+
 describe("Khaleeji 27 V2 fixture map", () => {
   it("routes every published group-stage ESPN fixture into its isolated V2 socket", () => {
     for (const [id, expectedChannel] of KHALEEJI_V2) {
