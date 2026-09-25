@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "variant": "Vega",
+  "baseUrl": "https://v2-mist-production.up.railway.app/hls",
+  "channels": {
+    "bein-sports-1": { "playbackChannelId": "v2-bein-sports-1", "streamId": "3645", "name": "beIN Sports 1" },
+    "bein-sports-2": { "playbackChannelId": "v2-bein-sports-2", "streamId": "3644", "name": "beIN Sports 2" },
+    "bein-sports-3": { "playbackChannelId": "v2-bein-sports-3", "streamId": "3653", "name": "beIN Sports 3" },
+    "bein-sports-4": { "playbackChannelId": "v2-bein-sports-4", "streamId": "3652", "name": "beIN Sports 4" },
+    "bein-sports-5": { "playbackChannelId": "v2-bein-sports-5", "streamId": "3651", "name": "beIN Sports 5" },
+    "bein-sports-6": { "playbackChannelId": "v2-bein-sports-6", "streamId": "3650", "name": "beIN Sports 6" },
+    "bein-sports-7": { "playbackChannelId": "v2-bein-sports-7", "streamId": "3649", "name": "beIN Sports 7" },
+    "bein-sports-8": { "playbackChannelId": "v2-bein-sports-8", "streamId": "3648", "name": "beIN Sports 8" },
+    "bein-sports-9": { "playbackChannelId": "v2-bein-sports-9", "streamId": "3647", "name": "beIN Sports 9" },
+    "bein-xtra-1": { "playbackChannelId": "v2-bein-xtra-1", "streamId": "3844", "name": "beIN Sports Xtra 1" },
+    "bein-xtra-2": { "playbackChannelId": "v2-bein-xtra-2", "streamId": "31153", "name": "beIN Sports Xtra 2" },
+    "bein-xtra-3": { "playbackChannelId": "v2-bein-xtra-3", "streamId": "115383", "name": "beIN Sports Xtra 3" },
+    "bein-en-1": { "playbackChannelId": "v2-bein-en-1", "streamId": "3843", "name": "beIN Sports EN 1" }
+  }
+}
