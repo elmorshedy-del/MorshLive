@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 const require = createRequire(import.meta.url);
 const {
   buildBindings,
+  mergeActiveBindings,
   mergeGeneratedPlans,
   parseBeinChannel,
   parseFilGoalBroadcasts,
@@ -119,6 +120,59 @@ describe("V2 beIN qualifier bindings", () => {
       streamId: "3650",
       playbackChannelId: "v2-bein-sports-6",
     });
+  });
+
+  it("keeps a still-active exact Arabic binding when the scrape returns no usable row", () => {
+    const fixtures = [
+      {
+        id: "espn-uefa.nations-1",
+        competition: "unl",
+        home: "Sweden",
+        away: "Romania",
+        kickoffUtc: "2026-09-25T18:45:00Z",
+      },
+    ];
+    const previous = [
+      {
+        matchId: "espn-uefa.nations-1",
+        home: "Sweden",
+        away: "Romania",
+        kickoffUtc: "2026-09-25T18:45:00Z",
+        channel: "beIN Sports 9",
+        streamId: "3647",
+        expiresAt: "2026-09-25T21:30:00Z",
+      },
+    ];
+    const merged = mergeActiveBindings(
+      previous,
+      [],
+      fixtures,
+      Date.parse("2026-09-25T14:00:00Z"),
+    );
+    expect(merged).toEqual(previous);
+  });
+
+  it("lets a fresh exact Arabic assignment replace the retained one", () => {
+    const fixtures = [{ id: "m1" }];
+    const previous = [
+      {
+        matchId: "m1",
+        kickoffUtc: "2026-09-25T18:45:00Z",
+        streamId: "3647",
+        expiresAt: "2026-09-25T21:30:00Z",
+      },
+    ];
+    const fresh = [
+      {
+        matchId: "m1",
+        kickoffUtc: "2026-09-25T18:45:00Z",
+        streamId: "3650",
+        expiresAt: "2026-09-25T21:30:00Z",
+      },
+    ];
+    expect(
+      mergeActiveBindings(previous, fresh, fixtures, Date.parse("2026-09-25T14:00:00Z")),
+    ).toEqual(fresh);
   });
 
   it("replaces only generated plans and preserves manual matchday plans", () => {
