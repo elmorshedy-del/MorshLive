@@ -128,10 +128,13 @@ function buildBindings(fixtures, rows, vegaCatalog, now = Date.now()) {
 
 function mergeActiveBindings(previous, fresh, fixtures, now = Date.now()) {
   const liveFixtureIds = new Set((fixtures || []).map((match) => String(match?.id || "")));
+  const fixtureFeedAvailable = liveFixtureIds.size > 0;
   const byMatch = new Map(
     (previous || [])
       .filter((binding) => Date.parse(binding?.expiresAt || "") > now)
-      .filter((binding) => liveFixtureIds.has(String(binding?.matchId || "")))
+      .filter((binding) =>
+        fixtureFeedAvailable ? liveFixtureIds.has(String(binding?.matchId || "")) : true
+      )
       .map((binding) => [String(binding.matchId), binding]),
   );
   for (const binding of fresh || []) byMatch.set(String(binding.matchId), binding);
