@@ -98,10 +98,28 @@ async function main() {
   ]);
 
   const vega = JSON.parse(fs.readFileSync(VEGA_PATH, "utf8"));
-  const bindings = buildBindings(fixtures, rows, vega);
+  const freshBindings = buildBindings(fixtures, rows, vega);
   const previousSnapshot = fs.existsSync(OUT_PATH)
     ? JSON.parse(fs.readFileSync(OUT_PATH, "utf8"))
     : null;
+
+  // A temporary source outage or a generic/EN listing must never erase an
+  // already verified Arabic channel before that fixture expires. Fresh exact
+  // numbered Arabic rows win; otherwise retain the previous exact row until
+  // its own match-window expiry. This keeps refresh fail-closed without making
+  // a scrape failure destructive.
+  const now = Date.now();
+  const liveFixtureIds = new Set(fixtures.map((match) => String(match.id || "")));
+  const bindingByMatch = new Map(
+    (previousSnapshot?.bindings || [])
+      .filter((binding) => Date.parse(binding.expiresAt || "") > now)
+      .filter((binding) => liveFixtureIds.has(String(binding.matchId || "")))
+      .map((binding) => [String(binding.matchId), binding]),
+  );
+  for (const binding of freshBindings) bindingByMatch.set(String(binding.matchId), binding);
+  const bindings = [...bindingByMatch.values()]
+    .sort((a, b) => Date.parse(a.kickoffUtc) - Date.parse(b.kickoffUtc));
+
   const bindingsUnchanged =
     JSON.stringify(previousSnapshot?.bindings || []) === JSON.stringify(bindings);
   const generatedAt = bindingsUnchanged && previousSnapshot?.generatedAt
