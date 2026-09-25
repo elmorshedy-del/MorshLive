@@ -25,6 +25,7 @@ describe("refreshStepsForDeploy", () => {
     expect(refreshStepsForDeploy({ workersCi: "1" })).toEqual(CI_DEPLOY_STEPS);
     expect(CI_DEPLOY_STEPS).toContain("scripts/enrich-seo-matches.mjs");
     expect(CI_DEPLOY_STEPS).toContain("scripts/build-seo-pages.mjs");
+    expect(CI_DEPLOY_STEPS).toContain("scripts/refresh-v2-bein-bindings.js");
     expect(CI_DEPLOY_STEPS).not.toContain("scripts/fetch-matches.js");
   });
 
@@ -34,6 +35,7 @@ describe("refreshStepsForDeploy", () => {
     expect(FULL_CRAWL_STEPS).toContain("scripts/fetch-matches.js");
     expect(FULL_CRAWL_STEPS).toContain("scripts/enrich-seo-matches.mjs");
     expect(FULL_CRAWL_STEPS).toContain("scripts/update-season-highlights.mjs");
+    expect(FULL_CRAWL_STEPS).toContain("scripts/refresh-v2-bein-bindings.js");
   });
 });
 
