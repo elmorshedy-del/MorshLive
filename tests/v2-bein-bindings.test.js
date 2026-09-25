@@ -101,15 +101,17 @@ describe("V2 beIN qualifier bindings", () => {
         kickoffUtc: "2026-09-25T18:45:00Z",
       },
     ];
-    const rows = [{
-      competition: "unl",
-      homeAr: "إيطاليا",
-      awayAr: "بلجيكا",
-      channelKey: "bein-sports-6",
-      channelLabel: "beIN SPORTS 6 HD",
-      kickoffUtc: "2026-09-25T18:45:00Z",
-      sourceHref: "/matches/1",
-    }];
+    const rows = [
+      {
+        competition: "unl",
+        homeAr: "إيطاليا",
+        awayAr: "بلجيكا",
+        channelKey: "bein-sports-6",
+        channelLabel: "beIN SPORTS 6 HD",
+        kickoffUtc: "2026-09-25T18:45:00Z",
+        sourceHref: "/matches/1",
+      },
+    ];
     const bindings = buildBindings(fixtures, rows, VEGA, Date.parse("2026-09-25T12:00:00Z"));
     expect(bindings).toHaveLength(1);
     expect(bindings[0]).toMatchObject({
@@ -127,16 +129,18 @@ describe("V2 beIN qualifier bindings", () => {
         { matchId: "old-auto", generatedBy: "v2-bein-qualifiers", sources: [] },
       ],
     };
-    const bindings = [{
-      matchId: "espn-uefa.nations-1",
-      home: "Italy",
-      away: "Belgium",
-      kickoffUtc: "2026-09-25T18:45:00Z",
-      channel: "beIN Sports 6",
-      streamId: "3650",
-      observedLabel: "beIN SPORTS 6 HD",
-      expiresAt: "2026-09-25T21:30:00Z",
-    }];
+    const bindings = [
+      {
+        matchId: "espn-uefa.nations-1",
+        home: "Italy",
+        away: "Belgium",
+        kickoffUtc: "2026-09-25T18:45:00Z",
+        channel: "beIN Sports 6",
+        streamId: "3650",
+        observedLabel: "beIN SPORTS 6 HD",
+        expiresAt: "2026-09-25T21:30:00Z",
+      },
+    ];
     const merged = mergeGeneratedPlans(catalog, bindings, VEGA, Date.parse("2026-09-25T12:00:00Z"));
     expect(merged.plans.some((plan) => plan.matchId === "manual")).toBe(true);
     expect(merged.plans.some((plan) => plan.matchId === "old-auto")).toBe(false);
