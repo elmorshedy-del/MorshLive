@@ -1,13 +1,12 @@
-/* Match-scoped V2 hold.
+/* KHALEEJI 27 V2 hold.
  * Watch.js plan refresh calls loadPlayer every 20s and can remount HLS.
  * Keep metadata ticking without destroying the healthy V2 player for the
- * explicitly mapped live fixtures.
+ * pre-mapped Gulf Cup group-stage fixtures.
  */
 (function () {
   "use strict";
   var matchId = new URLSearchParams(location.search).get("match");
   var mapped = new Set([
-    "espn-caf.nations_qual-401920038",
     "espn-global.gulf_cup-401922489",
     "espn-global.gulf_cup-401922490",
     "espn-global.gulf_cup-401922491",
