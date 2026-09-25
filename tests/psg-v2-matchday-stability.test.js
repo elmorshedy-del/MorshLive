@@ -12,6 +12,10 @@ describe("Khaleeji 27 V2 matchday stability guard", () => {
     }
   });
 
+  it("holds the Egypt qualifier V2 player across the 20-second metadata refresh", () => {
+    expect(hold).toContain('"espn-caf.nations_qual-401920038"');
+  });
+
   it("knows both verified V2 Al Kass HLS endpoints", () => {
     expect(watch).toContain("https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8");
     expect(watch).toContain("https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8");
