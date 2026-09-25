@@ -143,12 +143,7 @@ describe("V2 beIN qualifier bindings", () => {
         expiresAt: "2026-09-25T21:30:00Z",
       },
     ];
-    const merged = mergeActiveBindings(
-      previous,
-      [],
-      fixtures,
-      Date.parse("2026-09-25T14:00:00Z"),
-    );
+    const merged = mergeActiveBindings(previous, [], fixtures, Date.parse("2026-09-25T14:00:00Z"));
     expect(merged).toEqual(previous);
   });
 
@@ -170,9 +165,7 @@ describe("V2 beIN qualifier bindings", () => {
         expiresAt: "2026-09-25T21:30:00Z",
       },
     ];
-    expect(
-      mergeActiveBindings(previous, fresh, fixtures, Date.parse("2026-09-25T14:00:00Z")),
-    ).toEqual(fresh);
+    expect(mergeActiveBindings(previous, fresh, fixtures, Date.parse("2026-09-25T14:00:00Z"))).toEqual(fresh);
   });
 
   it("replaces only generated plans and preserves manual matchday plans", () => {
