@@ -147,6 +147,18 @@ describe("V2 beIN qualifier bindings", () => {
     expect(merged).toEqual(previous);
   });
 
+  it("keeps unexpired bindings when the ESPN fixture refresh itself is unavailable", () => {
+    const previous = [
+      {
+        matchId: "espn-uefa.nations-1",
+        kickoffUtc: "2026-09-25T18:45:00Z",
+        streamId: "3647",
+        expiresAt: "2026-09-25T21:30:00Z",
+      },
+    ];
+    expect(mergeActiveBindings(previous, [], [], Date.parse("2026-09-25T14:00:00Z"))).toEqual(previous);
+  });
+
   it("lets a fresh exact Arabic assignment replace the retained one", () => {
     const fixtures = [{ id: "m1" }];
     const previous = [
