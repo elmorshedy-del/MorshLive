@@ -945,35 +945,9 @@
   // the same-content mirror URL, never the generic vip/amine embed system, so
   // nothing else can silently switch this match away from the pinned source.
   //
-  // KHALEEJI 27 V2 MAP — preserve the same healthy-player behavior used
-  // by the Sep 19 Sevilla–Barcelona handoff, but for every known group fixture.
-  const V2_GULF_HLS_BY_MATCH = Object.freeze({
-    "espn-global.gulf_cup-401922489": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922490": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922491": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922492": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922493": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922494": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922495": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922496": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922497": "https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8",
-    "espn-global.gulf_cup-401922498": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922499": "https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8",
-    "espn-global.gulf_cup-401922500": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-  });
-  function v2MatchdayPinnedMirrorAlreadyHealthy(url) {
-    const matchId = String((match && match.id) || params.get("match") || "");
-    const expectedUrl = V2_GULF_HLS_BY_MATCH[matchId];
-    if (!expectedUrl || url !== expectedUrl) return false;
-    const expectedKeys = new Set([`pinned-mirror:${url}`, `plan-hls:${url}`]);
-    if (!expectedKeys.has(loadedUrl)) return false;
-    const video = shell && shell.querySelector(".kz-main-video");
-    return !!(video && video.readyState >= 2 && !video.error && !video.ended);
-  }
-
-  function mountPinnedMainMirror(url, fallbackUrl, isIframe) {
+  // V2 is one provider socket. The 20s plan refresh may update metadata, but\n  // it must not destroy a healthy HLS player when the V2 URL did not change.\n  const V2_MIST_HLS_RE = /^https:\\/\\/v2-mist-production\\.up\\.railway\\.app\\/hls\\/iptv-\\d+\\/index\\.m3u8(?:[?#].*)?$/i;\n  function v2PinnedMirrorAlreadyHealthy(url) {\n    const href = String(url || "");\n    if (!V2_MIST_HLS_RE.test(href)) return false;\n    const currentUrl = String(loadedUrl || "").replace(/^(?:pinned-mirror|plan-hls):/, "");\n    if (currentUrl !== href) return false;\n    const video = shell && shell.querySelector(".kz-main-video");\n    return !!(video && video.readyState >= 2 && !video.error && !video.ended);\n  }\n\n  function mountPinnedMainMirror(url, fallbackUrl, isIframe) {
     if (!shell || !url) return;
-    if (!isIframe && v2MatchdayPinnedMirrorAlreadyHealthy(url)) return;
+    if (!isIframe && v2PinnedMirrorAlreadyHealthy(url)) return;
     destroyInlineHls();
 
     if (isIframe) {
