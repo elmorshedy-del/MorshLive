@@ -1,7 +1,7 @@
 {
-  "reason": "Operator-approved Khaleeji 27 V2 map: extend the verified Sep-19 Barcelona-style isolated V2 handoff across all currently published group-stage fixtures, preserving the healthy-player remount guard.",
+  "reason": "Owner-approved V2 single-socket cleanup: keep only England-Spain on iptv-3645 live, replace the match-specific 20s remount guard with a generic healthy same-URL guard, and bump only the watch loader chain.",
   "baseline": "8fe04a34667a75637d20bb46c4072a9925ab573c",
-  "expiresAt": "2026-09-24T02:00:00.000Z",
+  "expiresAt": "2026-09-27T12:59:00.000Z",
   "allowedFiles": [
     "watch.html",
     "assets/js/watch.js",
