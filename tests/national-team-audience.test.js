@@ -110,7 +110,10 @@ describe("international audience filtering", () => {
     ];
     for (const competition of competitions) {
       for (const [home, away] of included) {
-        expect(shouldIncludeAudienceMatch({ competition, home, away }), `${competition}: ${home} v ${away}`).toBe(true);
+        expect(
+          shouldIncludeAudienceMatch({ competition, home, away }),
+          `${competition}: ${home} v ${away}`,
+        ).toBe(true);
       }
     }
 
@@ -122,7 +125,10 @@ describe("international audience filtering", () => {
     ];
     for (const competition of competitions) {
       for (const [home, away] of excluded) {
-        expect(shouldIncludeAudienceMatch({ competition, home, away }), `${competition}: ${home} v ${away}`).toBe(false);
+        expect(
+          shouldIncludeAudienceMatch({ competition, home, away }),
+          `${competition}: ${home} v ${away}`,
+        ).toBe(false);
       }
     }
   });
@@ -162,9 +168,9 @@ describe("international audience filtering", () => {
     expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Japan", away: "Uruguay" })).toBe(
       false,
     );
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Albania", away: "Switzerland" })).toBe(
-      false,
-    );
+    expect(
+      shouldIncludeAudienceMatch({ competition: "friendly", home: "Albania", away: "Switzerland" }),
+    ).toBe(false);
   });
 
   it("keeps CONMEBOL World Cup qualifiers only for Brazil or Argentina", () => {
