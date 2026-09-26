@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-26T15:57:14.563Z",
+  "generatedAt": "2026-09-26T16:45:22.729Z",
   "window": {
     "start": "2026-09-26",
     "end": "2026-09-29"
@@ -8,6 +8,20 @@
   "source": "filgoal",
   "variant": "Vega",
   "bindings": [
+    {
+      "matchId": "espn-uefa.nations-401861061",
+      "home": "Bulgaria",
+      "away": "Luxembourg",
+      "kickoffUtc": "2026-09-26T16:00Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/378019/مباراة-بلغاريا-لوكسمبورج-في-دوري-الأمم-الأوروبية-المستوى-الثالث",
+      "expiresAt": "2026-09-26T18:45:00.000Z"
+    },
     {
       "matchId": "espn-uefa.nations-401861066",
       "home": "England",
