@@ -9,7 +9,8 @@ import {
 import { fetchAssetJson, loadTodayMatches } from "../adapters/assets.js";
 
 const V2_ACTIVE_URL = "https://v2-control-production.up.railway.app/api/active";
-const V2_MIST_SOURCE_RE = /^https:\/\/v2-mist-production\.up\.railway\.app\/hls\/(iptv-\d+)\/index\.m3u8(?:[?#].*)?$/i;
+const V2_MIST_SOURCE_RE =
+  /^https:\/\/v2-mist-production\.up\.railway\.app\/hls\/(iptv-\d+)\/index\.m3u8(?:[?#].*)?$/i;
 
 function v2ChannelId(source) {
   const match = String(source?.playbackUrl || source?.url || "").match(V2_MIST_SOURCE_RE);
@@ -87,7 +88,12 @@ function gateV2Plan(plan, state) {
       playbackUrl: undefined,
     })),
     profile: null,
-    reason: state === null ? "v2-remote-unavailable" : activeChannelId ? `v2-remote-other:${activeChannelId}` : "v2-remote-off",
+    reason:
+      state === null
+        ? "v2-remote-unavailable"
+        : activeChannelId
+          ? `v2-remote-other:${activeChannelId}`
+          : "v2-remote-off",
     v2Remote: { active: activeChannelId },
   };
 }
