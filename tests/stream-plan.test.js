@@ -485,19 +485,10 @@ describe("today's stream-plans catalog", () => {
     expect(shouldHoldPlayer(resolved)).toBe(false);
   });
 
-  it("pre-maps every published Khaleeji 27 group fixture to its V2 Al Kass HLS", () => {
+  it("keeps non-active V2 match rows pending instead of mounting them", () => {
     const expected = new Map([
       ["espn-global.gulf_cup-401922489", "89778"],
-      ["espn-global.gulf_cup-401922490", "89778"],
-      ["espn-global.gulf_cup-401922491", "89778"],
-      ["espn-global.gulf_cup-401922492", "89778"],
-      ["espn-global.gulf_cup-401922493", "89778"],
-      ["espn-global.gulf_cup-401922494", "89778"],
-      ["espn-global.gulf_cup-401922495", "89778"],
-      ["espn-global.gulf_cup-401922496", "89778"],
       ["espn-global.gulf_cup-401922497", "89779"],
-      ["espn-global.gulf_cup-401922498", "89778"],
-      ["espn-global.gulf_cup-401922499", "89779"],
       ["espn-global.gulf_cup-401922500", "89778"],
     ]);
 
@@ -516,17 +507,17 @@ describe("today's stream-plans catalog", () => {
         match,
         catalog: catalogJson,
         legacyEmbedKey: "koraplus",
-        now: Date.parse("2026-09-23T03:00:00Z"),
+        now: Date.parse("2026-09-26T13:00:00Z"),
       });
       expect(resolved.catalog).toBe(true);
-      expect(resolved.status).toBe("verified");
-      expect(resolved.selected.kind).toBe("hls");
-      expect(resolved.selected.profile).toBe("hls-direct-v1");
-      expect(resolved.selected.playbackUrl).toBe(
+      expect(resolved.status).toBe("waiting");
+      expect(resolved.selected).toBeNull();
+      expect(resolved.reason).toBe("no-playable-same-content-source");
+      expect(resolved.policy.allowLegacy).toBe(false);
+      expect(plan.sources[0].url).toBe(
         `https://v2-mist-production.up.railway.app/hls/iptv-${streamId}/index.m3u8`,
       );
-      expect(resolved.selected.contentKey).toBe(`match:${matchId}`);
-      expect(resolved.policy.allowLegacy).toBe(false);
+      expect(plan.sources[0].status).toBe("pending");
     }
   });
 
