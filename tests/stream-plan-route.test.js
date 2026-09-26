@@ -270,5 +270,4 @@ describe("stream plan route", () => {
       v2Remote: { active: "iptv-89778" },
     });
   });
-
 });
