@@ -85,7 +85,7 @@
       nameAr: "مباريات دولية ودية",
       espnSlugs: ["fifa.friendly"],
       leagueNames: ["International Friendly", "International Friendlies"],
-      audienceGroups: ["north_africa", "gcc", "priority_latam", "eu_uk_norway"],
+      audienceGroups: ["north_africa", "gcc", "priority_latam", "europe_surface"],
     },
     {
       key: "conmebolq",
@@ -144,7 +144,7 @@
 
     if (competition?.nationalTeamRegion === "europe") {
       if (!global.TeamNames?.isInAudienceGroup) return true;
-      return teams.some((team) => global.TeamNames.isInAudienceGroup(team, "eu_uk_norway"));
+      return teams.some((team) => global.TeamNames.isInAudienceGroup(team, "europe_surface"));
     }
 
     const groups = competition?.audienceGroups || [];
