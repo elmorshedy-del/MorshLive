@@ -133,13 +133,13 @@ Current groups are defined through `assets/js/team-names.js` national-team metad
 - `north_africa`
 - `gcc`
 - `priority_latam`
-- `eu_uk_norway`
+- `europe_surface`
 
-European national-team competitions are a special semantic case: set `nationalTeamRegion: "europe"`. The shared audience filter then automatically requires at least one team from `eu_uk_norway` — EU-27, England, Scotland, Wales, Northern Ireland, or Norway. Do not duplicate that group manually on each European competition.
+European national-team competitions are a special semantic case: set `nationalTeamRegion: "europe"`. The shared audience filter then surfaces a fixture when at least one side belongs to `europe_surface`. That trigger set is EU member nations **except Estonia, Finland, Latvia, Lithuania, Luxembourg, Malta, Romania, and Slovakia**, plus England, Scotland, Wales, Northern Ireland, and Norway. The excluded EU nations remain normal teams/opponents; they simply do not trigger inclusion by themselves. Therefore Germany–Estonia is included because Germany triggers it, while Estonia–Iceland is excluded because neither side triggers it. Do not turn these non-trigger teams into fixture-level blacklists.
 
 This applies to UEFA Nations League, UEFA European Championship, UEFA European Championship Qualifying, FIFA World Cup Qualifying - UEFA, and any future European national-team championship/qualifier added to the registry. It does **not** apply to UEFA club competitions such as Champions League or Europa League.
 
-International friendlies are global, so they keep normal `audienceGroups`; their European audience component is `eu_uk_norway`.
+International friendlies are global, so they keep normal `audienceGroups`; their European component is the same `europe_surface` trigger set. The same OR semantics apply: either side may trigger inclusion.
 
 If the filter depends on a team being in a group, that team must resolve through the national-team registry. A plain English→Arabic translation is not enough.
 
