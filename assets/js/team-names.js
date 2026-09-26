@@ -275,7 +275,7 @@
     // but do not trigger inclusion by themselves. Keep this as canonical audience policy.
     { name: "Austria", ar: "النمسا", aliases: [], groups: ["europe_surface"] },
     { name: "Belgium", ar: "بلجيكا", aliases: [], groups: ["europe_surface"] },
-    { name: "Bulgaria", ar: "بلغاريا", aliases: [], groups: [] },
+    { name: "Bulgaria", ar: "بلغاريا", aliases: [], groups: ["europe_surface"] },
     { name: "Croatia", ar: "كرواتيا", aliases: [], groups: ["europe_surface"] },
     { name: "Cyprus", ar: "قبرص", aliases: [], groups: ["europe_surface"] },
     {
