@@ -21,7 +21,7 @@ const MAX_PLAN_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 const LOCKED_FILES = Object.freeze({
   "iptv-lab.html": "67ace9fbc5e58c6dc08c532a5169fe294518e3f9",
-  "watch.html": "eb1749bc5f607a83637e25920226a03827f418f6",
+  "watch.html": "de6297da80f952573028ec7cdd3bc02478aec3e0",
   "watch-embed.html": "c236f654fd4071f475c05d9e3086fe75c63217a1",
   "assets/js/iptv-lab.js": "5ff9896cc315258753cf23a76b506f32d75ffd1a",
   "assets/js/iptv-quality.js": "1c0de8794befded840bed10eae179a39ff936925",
@@ -31,9 +31,10 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/stream-routes.js": "686bff614789077b9151ecf0a6f6c48510769d60",
   "assets/js/watch-embed.js": "3a648bb59889c70f54673faff0690549d7d44c24",
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
-  "assets/js/watch-loader.js": "ade77be3472d5f1824692d1bf1c8cc5198f5fb13",
+  "assets/js/watch-loader.js": "9afe75312e4a472e8f68629447752ab90dfdf1c3",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
-  // Khaleeji 27 V2 matchday anti-remount guard.\n  "assets/js/watch.js": "b6cd460ad03d83fa11ba1876b3174a6b71b6fc05",
+  // V2 single-socket healthy same-URL remount guard.
+  "assets/js/watch.js": "6a93eed0427c45fd6782aa5a53c63c007614a5b2",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",

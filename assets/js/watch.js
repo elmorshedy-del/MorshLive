@@ -886,6 +886,13 @@
     }
   }
 
+  function v2MatchdaySelected() {
+    const matchId = (match && match.id) || params.get("match") || "";
+    const fixture = window.SITE_DATA?.v2FixtureFor?.(matchId);
+    const channelId = (match && match.channelId) || channel?.id || "";
+    return !!fixture || /^v2-/.test(String(channelId));
+  }
+
   function mountPlanSource(source, plan) {
     if (!source) return false;
     const policy = (plan && plan.profile) || {};
@@ -896,7 +903,11 @@
     if (source.kind === "hls") {
       const href = planPlaybackUrl(source);
       if (!href) return false;
-      mountPinnedMainMirror(href, source.fallbackUrl, false);
+      if (v2MatchdaySelected() && !V2_MIST_HLS_RE.test(href)) return false;
+      const fallbackUrl = v2MatchdaySelected() && source.fallbackUrl && !V2_MIST_HLS_RE.test(source.fallbackUrl)
+        ? ""
+        : source.fallbackUrl;
+      mountPinnedMainMirror(href, fallbackUrl, false);
       loadedUrl = `plan-hls:${href}`;
       return true;
     }
@@ -945,35 +956,21 @@
   // the same-content mirror URL, never the generic vip/amine embed system, so
   // nothing else can silently switch this match away from the pinned source.
   //
-  // KHALEEJI 27 V2 MAP — preserve the same healthy-player behavior used
-  // by the Sep 19 Sevilla–Barcelona handoff, but for every known group fixture.
-  const V2_GULF_HLS_BY_MATCH = Object.freeze({
-    "espn-global.gulf_cup-401922489": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922490": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922491": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922492": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922493": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922494": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922495": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922496": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922497": "https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8",
-    "espn-global.gulf_cup-401922498": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-    "espn-global.gulf_cup-401922499": "https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8",
-    "espn-global.gulf_cup-401922500": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
-  });
-  function v2MatchdayPinnedMirrorAlreadyHealthy(url) {
-    const matchId = String((match && match.id) || params.get("match") || "");
-    const expectedUrl = V2_GULF_HLS_BY_MATCH[matchId];
-    if (!expectedUrl || url !== expectedUrl) return false;
-    const expectedKeys = new Set([`pinned-mirror:${url}`, `plan-hls:${url}`]);
-    if (!expectedKeys.has(loadedUrl)) return false;
+  // V2 is one provider socket. The 20s plan refresh may update metadata, but
+  // it must not destroy a healthy HLS player when the V2 URL did not change.
+  const V2_MIST_HLS_RE = /^https:\/\/v2-mist-production\.up\.railway\.app\/hls\/iptv-\d+\/index\.m3u8(?:[?#].*)?$/i;
+  function v2PinnedMirrorAlreadyHealthy(url) {
+    const href = String(url || "");
+    if (!V2_MIST_HLS_RE.test(href)) return false;
+    const currentUrl = String(loadedUrl || "").replace(/^(?:pinned-mirror|plan-hls):/, "");
+    if (currentUrl !== href) return false;
     const video = shell && shell.querySelector(".kz-main-video");
     return !!(video && video.readyState >= 2 && !video.error && !video.ended);
   }
 
   function mountPinnedMainMirror(url, fallbackUrl, isIframe) {
     if (!shell || !url) return;
-    if (!isIframe && v2MatchdayPinnedMirrorAlreadyHealthy(url)) return;
+    if (!isIframe && v2PinnedMirrorAlreadyHealthy(url)) return;
     destroyInlineHls();
 
     if (isIframe) {
@@ -1065,6 +1062,7 @@
 
   async function mountLabChannel() {
     if (!shell || !window.mpegts?.isSupported?.()) return false;
+    if (v2MatchdaySelected()) return false;
     const channelId = (match && match.channelId) || channel.id;
     // CHATGPT-STAMP 2026-09-05T08:08-04:00 — the 20s/90s metadata ticks must
     // not become playback ticks. Same channel + healthy media = leave it alone.
@@ -1113,8 +1111,26 @@
       }
       return;
     }
-    // Our own IPTV first. Everything below this point is a third-party
-    // aggregator we do not control, and those go dark without warning.
+    // Match-scoped stream plans are authoritative. A verified/operator plan
+    // must mount before any IPTV Lab lookup so a numeric provider stream id can
+    // never be resolved through the isolated Lab/V1 rail by accident.
+    const planSource = activePlan && activePlan.selected;
+    const planReady = planSource && (activePlan.status === "verified" || activePlan.status === "operator");
+    if (planReady && mountPlanSource(planSource, activePlan)) {
+      applyWatchChrome();
+      return;
+    }
+
+    // V2 is namespace-pinned to the V2 Mist origin. If its plan is unavailable
+    // or not ready, hold closed instead of touching /api/iptv-lab/channel.
+    if (v2MatchdaySelected()) {
+      applyWatchChrome();
+      showPlanWaiting((activePlan && activePlan.reason) || "v2-plan-unavailable");
+      return;
+    }
+
+    // Non-V2 matches may still use the isolated IPTV Lab when no playable
+    // match-scoped stream plan exists.
     if (await mountLabChannel()) return;
 
     // Bridge and WC pinned mirrors are leftover 24/7 / World Cup rails.
@@ -1130,13 +1146,6 @@
     if (saudiStreamComingSoon(match, activePlan)) {
       applyWatchChrome();
       showPlanWaiting("saudi-soon");
-      return;
-    }
-
-    const planSource = activePlan && activePlan.selected;
-    const planReady = planSource && (activePlan.status === "verified" || activePlan.status === "operator");
-    if (planReady && mountPlanSource(planSource, activePlan)) {
-      applyWatchChrome();
       return;
     }
 
