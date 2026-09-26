@@ -43,7 +43,7 @@ const LOCKED_FILES = Object.freeze({
   "backend/routes/stream-plan.js": "9383c53caa67085b2dd26a0f41e44cb6b5d54fff",
   "backend/routes/xtream.js": "443cfaed838dcdc6d0dc397793a1487c92a51d2a",
   "backend/services/iptv-lab.js": "ffe3967558222b8ebae55b0411defcc02524f9eb",
-  "backend/services/stream-plan.js": "66a09bf960c3f407af40b7a5bec94c195901b86d",
+  "backend/services/stream-plan.js": "425f725470d8f378e9f3df3832add5bd3d9e610c",
   "backend/services/xtream.js": "82e481766d2b87a17a33a88d41185931c3cfaa97",
   "lib/hls-cache.js": "7df783457d4600318b1bf0f0b674a43a8bd2fb5b",
   "lib/hls-recover.js": "4772633e75ee2d80f01035d55e26e8747aec0cf5",
