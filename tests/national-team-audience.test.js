@@ -22,6 +22,52 @@ describe("national-team registry", () => {
     expect(TeamNames.isHiddenNationalTeam("Brazil")).toBe(false);
   });
 
+  it("defines the EU + UK + Norway audience set through canonical national-team metadata", () => {
+    const allowed = [
+      "Austria",
+      "Belgium",
+      "Bulgaria",
+      "Croatia",
+      "Cyprus",
+      "Czechia",
+      "Denmark",
+      "Estonia",
+      "Finland",
+      "France",
+      "Germany",
+      "Greece",
+      "Hungary",
+      "Ireland",
+      "Italy",
+      "Latvia",
+      "Lithuania",
+      "Luxembourg",
+      "Malta",
+      "Netherlands",
+      "Poland",
+      "Portugal",
+      "Romania",
+      "Slovakia",
+      "Slovenia",
+      "Spain",
+      "Sweden",
+      "England",
+      "Scotland",
+      "Wales",
+      "Northern Ireland",
+      "Norway",
+    ];
+    for (const team of allowed) {
+      expect(TeamNames.isInAudienceGroup(team, "eu_uk_norway"), team).toBe(true);
+    }
+
+    for (const team of ["Albania", "Armenia", "Iceland", "Serbia", "Switzerland", "Türkiye", "Ukraine"]) {
+      expect(TeamNames.isInAudienceGroup(team, "eu_uk_norway"), team).toBe(false);
+    }
+    expect(TeamNames.isInAudienceGroup("Republic of Ireland", "eu_uk_norway")).toBe(true);
+    expect(TeamNames.isInAudienceGroup("Czech Republic", "eu_uk_norway")).toBe(true);
+  });
+
   it("localizes international opponent countries even when they are not audience-filter teams", () => {
     expect(TeamNames.arabicFor("Uganda")).toBe("أوغندا");
     expect(TeamNames.arabicFor("Botswana")).toBe("بوتسوانا");
@@ -42,8 +88,27 @@ describe("international audience filtering", () => {
     expect(shouldIncludeAudienceMatch({ competition: "unl", home: "Austria", away: "Ireland" })).toBe(true);
   });
 
-  it("keeps all UEFA Nations League matches", () => {
-    expect(shouldIncludeAudienceMatch({ competition: "unl", home: "Albania", away: "Armenia" })).toBe(true);
+  it("keeps European national-team competition matches only when EU, UK, or Norway is involved", () => {
+    const included = [
+      ["Austria", "Ireland"],
+      ["Norway", "Iceland"],
+      ["Scotland", "Serbia"],
+      ["Wales", "Switzerland"],
+      ["Northern Ireland", "Türkiye"],
+      ["Czech Republic", "Albania"],
+    ];
+    for (const [home, away] of included) {
+      expect(shouldIncludeAudienceMatch({ competition: "unl", home, away })).toBe(true);
+    }
+
+    for (const [home, away] of [
+      ["Albania", "Armenia"],
+      ["Switzerland", "Serbia"],
+      ["Iceland", "Türkiye"],
+      ["Ukraine", "Georgia"],
+    ]) {
+      expect(shouldIncludeAudienceMatch({ competition: "unl", home, away })).toBe(false);
+    }
   });
 
   it("keeps AFCON qualifiers only when a North African team is involved", () => {
@@ -52,7 +117,7 @@ describe("international audience filtering", () => {
     expect(shouldIncludeAudienceMatch({ competition: "afconq", home: "Nigeria", away: "Ghana" })).toBe(false);
   });
 
-  it("keeps international friendlies involving GCC, North Africa, priority Europe, Brazil, or Argentina", () => {
+  it("keeps international friendlies involving GCC, North Africa, EU/UK/Norway, Brazil, or Argentina", () => {
     const included = [
       ["Brazil", "Australia"],
       ["Argentina", "Bolivia"],
@@ -68,6 +133,10 @@ describe("international audience filtering", () => {
       ["Netherlands", "Colombia"],
       ["Belgium", "South Korea"],
       ["Croatia", "Australia"],
+      ["Norway", "Japan"],
+      ["Sweden", "Mexico"],
+      ["Scotland", "Canada"],
+      ["Republic of Ireland", "Colombia"],
     ];
 
     for (const [home, away] of included) {
@@ -77,7 +146,7 @@ describe("international audience filtering", () => {
     expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Japan", away: "Uruguay" })).toBe(
       false,
     );
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Norway", away: "Sweden" })).toBe(
+    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Albania", away: "Switzerland" })).toBe(
       false,
     );
   });
