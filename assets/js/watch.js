@@ -887,6 +887,19 @@
   }
 
   function v2MatchdaySelected() {
+    const planSources = [
+      ...(activePlan?.selected ? [activePlan.selected] : []),
+      ...(Array.isArray(activePlan?.alternates) ? activePlan.alternates : []),
+    ];
+    if (
+      planSources.some((source) => {
+        const href = planPlaybackUrl(source) || String(source?.url || "");
+        return source?.kind === "hls" && V2_MIST_HLS_RE.test(href);
+      })
+    ) {
+      return true;
+    }
+
     const matchId = (match && match.id) || params.get("match") || "";
     const fixture = window.SITE_DATA?.v2FixtureFor?.(matchId);
     const channelId = (match && match.channelId) || channel?.id || "";
