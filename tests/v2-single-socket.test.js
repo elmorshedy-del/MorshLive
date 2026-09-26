@@ -3,25 +3,38 @@ import { describe, expect, it } from "vitest";
 
 describe("V2 plan single-socket policy", () => {
   const catalog = JSON.parse(readFileSync("assets/data/stream-plans.json", "utf8"));
+  const service = readFileSync("backend/services/stream-plan.js", "utf8");
+  const v2Prefix = "https://v2-mist-production.up.railway.app/hls/iptv-";
 
-  it("has exactly one operator or verified V2 Mist source", () => {
-    const live = [];
+  it("keeps every static V2 match mapping fail-closed and single-source", () => {
+    const v2Plans = [];
+
     for (const plan of catalog.plans || []) {
-      for (const source of plan.sources || []) {
-        const url = String(source.url || "");
-        if (!url.startsWith("https://v2-mist-production.up.railway.app/hls/iptv-")) continue;
-        if (!["operator", "verified"].includes(source.status)) continue;
-        live.push({ matchId: plan.matchId, url, status: source.status, role: source.role });
-      }
+      const sources = (plan.sources || []).filter((source) =>
+        String(source.url || "").startsWith(v2Prefix),
+      );
+      if (!sources.length) continue;
+
+      v2Plans.push(plan.matchId);
+      expect(plan.policy?.allowLegacy, plan.matchId).toBe(false);
+      expect(sources, plan.matchId).toHaveLength(1);
+
+      const [source] = sources;
+      expect(source.kind, plan.matchId).toBe("hls");
+      expect(["primary", "alternate"], plan.matchId).toContain(source.role);
+      expect(["pending", "operator", "verified"], plan.matchId).toContain(source.status);
+      expect(source.fallbackUrl, plan.matchId).toBeUndefined();
     }
 
-    expect(live).toEqual([
-      {
-        matchId: "espn-uefa.nations-401861066",
-        url: "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
-        status: "operator",
-        role: "primary",
-      },
-    ]);
+    expect(v2Plans.length).toBeGreaterThan(0);
+  });
+
+  it("uses controller state as the runtime authority for the one active V2 socket", () => {
+    expect(service).toContain("https://v2-control-production.up.railway.app/api/active");
+    expect(service).toContain("function gateV2Plan(plan, state)");
+    expect(service).toContain("const activeChannelId = state?.activeChannelId || null");
+    expect(service).toContain("selected: null");
+    expect(service).toContain("v2-remote-other:");
+    expect(service).toContain("v2-remote-off");
   });
 });
