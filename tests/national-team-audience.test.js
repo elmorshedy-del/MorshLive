@@ -1,9 +1,45 @@
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 
 const require = createRequire(import.meta.url);
 const { TeamNames } = require("../assets/js/team-names.js");
 const { shouldIncludeAudienceMatch } = require("../scripts/matches-lib.js");
+
+const EU_UK_NORWAY_TEAMS = [
+  "Austria",
+  "Belgium",
+  "Bulgaria",
+  "Croatia",
+  "Cyprus",
+  "Czechia",
+  "Denmark",
+  "Estonia",
+  "Finland",
+  "France",
+  "Germany",
+  "Greece",
+  "Hungary",
+  "Ireland",
+  "Italy",
+  "Latvia",
+  "Lithuania",
+  "Luxembourg",
+  "Malta",
+  "Netherlands",
+  "Poland",
+  "Portugal",
+  "Romania",
+  "Slovakia",
+  "Slovenia",
+  "Spain",
+  "Sweden",
+  "England",
+  "Scotland",
+  "Wales",
+  "Northern Ireland",
+  "Norway",
+];
 
 describe("national-team registry", () => {
   it("resolves aliases to one canonical team with Arabic localization and audience groups", () => {
@@ -23,40 +59,7 @@ describe("national-team registry", () => {
   });
 
   it("defines the EU + UK + Norway audience set through canonical national-team metadata", () => {
-    const allowed = [
-      "Austria",
-      "Belgium",
-      "Bulgaria",
-      "Croatia",
-      "Cyprus",
-      "Czechia",
-      "Denmark",
-      "Estonia",
-      "Finland",
-      "France",
-      "Germany",
-      "Greece",
-      "Hungary",
-      "Ireland",
-      "Italy",
-      "Latvia",
-      "Lithuania",
-      "Luxembourg",
-      "Malta",
-      "Netherlands",
-      "Poland",
-      "Portugal",
-      "Romania",
-      "Slovakia",
-      "Slovenia",
-      "Spain",
-      "Sweden",
-      "England",
-      "Scotland",
-      "Wales",
-      "Northern Ireland",
-      "Norway",
-    ];
+    const allowed = EU_UK_NORWAY_TEAMS;
     for (const team of allowed) {
       expect(TeamNames.isInAudienceGroup(team, "eu_uk_norway"), team).toBe(true);
     }
@@ -66,6 +69,13 @@ describe("national-team registry", () => {
     }
     expect(TeamNames.isInAudienceGroup("Republic of Ireland", "eu_uk_norway")).toBe(true);
     expect(TeamNames.isInAudienceGroup("Czech Republic", "eu_uk_norway")).toBe(true);
+  });
+
+  it("keeps static Arabic data complete for every newly visible European audience team", () => {
+    const staticArabic = JSON.parse(readFileSync("assets/data/team-names-ar.json", "utf8"));
+    for (const team of EU_UK_NORWAY_TEAMS) {
+      expect(staticArabic[team], team).toBeTruthy();
+    }
   });
 
   it("localizes international opponent countries even when they are not audience-filter teams", () => {
