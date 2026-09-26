@@ -155,14 +155,20 @@ describe("stream plan route", () => {
   });
 
   it("promotes only the pending V2 source whose Mist channel is active", async () => {
-    vi.stubGlobal("fetch", vi.fn(async (url) => {
-      expect(String(url)).toBe("https://v2-control-production.up.railway.app/api/active");
-      return new Response(JSON.stringify({
-        active: { channelId: "iptv-89778", streamId: "89778", inputs: 1 },
-        conflict: false,
-        live: [],
-      }), { status: 200, headers: { "Content-Type": "application/json" } });
-    }));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url) => {
+        expect(String(url)).toBe("https://v2-control-production.up.railway.app/api/active");
+        return new Response(
+          JSON.stringify({
+            active: { channelId: "iptv-89778", streamId: "89778", inputs: 1 },
+            conflict: false,
+            live: [],
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }),
+    );
 
     const env = assetEnv({
       "/assets/data/today.json": {
@@ -170,19 +176,23 @@ describe("stream plan route", () => {
       },
       "/assets/data/stream-plans.json": {
         version: 1,
-        plans: [{
-          matchId: "iraq",
-          contentKey: "match:iraq",
-          policy: { allowLegacy: false },
-          sources: [{
-            id: "v2-alkass1",
-            role: "alternate",
-            kind: "hls",
-            url: "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+        plans: [
+          {
+            matchId: "iraq",
             contentKey: "match:iraq",
-            status: "pending",
-          }],
-        }],
+            policy: { allowLegacy: false },
+            sources: [
+              {
+                id: "v2-alkass1",
+                role: "alternate",
+                kind: "hls",
+                url: "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+                contentKey: "match:iraq",
+                status: "pending",
+              },
+            ],
+          },
+        ],
       },
     });
 
@@ -206,11 +216,20 @@ describe("stream plan route", () => {
   });
 
   it("fails closed when a statically operator V2 source is not the active remote channel", async () => {
-    vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({
-      active: { channelId: "iptv-89778", streamId: "89778", inputs: 1 },
-      conflict: false,
-      live: [],
-    }), { status: 200, headers: { "Content-Type": "application/json" } })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              active: { channelId: "iptv-89778", streamId: "89778", inputs: 1 },
+              conflict: false,
+              live: [],
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+      ),
+    );
 
     const env = assetEnv({
       "/assets/data/today.json": {
@@ -218,19 +237,23 @@ describe("stream plan route", () => {
       },
       "/assets/data/stream-plans.json": {
         version: 1,
-        plans: [{
-          matchId: "england",
-          contentKey: "match:england",
-          policy: { allowLegacy: false },
-          sources: [{
-            id: "v2-bein-3645",
-            role: "primary",
-            kind: "hls",
-            url: "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
+        plans: [
+          {
+            matchId: "england",
             contentKey: "match:england",
-            status: "operator",
-          }],
-        }],
+            policy: { allowLegacy: false },
+            sources: [
+              {
+                id: "v2-bein-3645",
+                role: "primary",
+                kind: "hls",
+                url: "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
+                contentKey: "match:england",
+                status: "operator",
+              },
+            ],
+          },
+        ],
       },
     });
 
