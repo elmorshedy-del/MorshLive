@@ -20,6 +20,9 @@ describe("major competition configuration", () => {
       "uefa.champions_qual",
       "caf.nations_qual",
       "uefa.nations",
+      "uefa.euro",
+      "uefa.euroq",
+      "fifa.worldq.uefa",
       "fifa.friendly",
       "fifa.worldq.conmebol",
       "global.gulf_cup",
@@ -33,11 +36,53 @@ describe("major competition configuration", () => {
     expect(competitionForLeagueName("African Cup of Nations Qualifying")?.key).toBe("afconq");
     expect(competitionForLeagueName("Africa Cup of Nations Qualifying")?.key).toBe("afconq");
     expect(competitionForLeagueName("UEFA Nations League")?.key).toBe("unl");
+    expect(competitionForLeagueName("UEFA European Championship")?.key).toBe("euro");
+    expect(competitionForLeagueName("UEFA European Championship Qualifying")?.key).toBe("euroq");
+    expect(competitionForLeagueName("FIFA World Cup Qualifying - UEFA")?.key).toBe("uefawcq");
     expect(competitionForLeagueName("International Friendly")?.key).toBe("friendly");
     expect(competitionForLeagueName("FIFA World Cup Qualifying - CONMEBOL")?.key).toBe("conmebolq");
     expect(competitionForLeagueName("Arabian Gulf Cup")?.key).toBe("gulfcup");
     expect(competitionForLeagueName("Gulf Cup of Nations")?.key).toBe("gulfcup");
     expect(competitionForLeagueName("CONCACAF Nations League")).toBeNull();
+  });
+
+  it("normalizes every European national-team competition through shared metadata", () => {
+    const cases = [
+      ["uefa.nations", "UEFA Nations League", "unl", "دوري الأمم الأوروبية"],
+      ["uefa.euro", "UEFA European Championship", "euro", "بطولة أمم أوروبا"],
+      ["uefa.euroq", "UEFA European Championship Qualifying", "euroq", "تصفيات بطولة أمم أوروبا"],
+      ["fifa.worldq.uefa", "FIFA World Cup Qualifying - UEFA", "uefawcq", "تصفيات كأس العالم - أوروبا"],
+    ];
+
+    for (const [slug, name, key, nameAr] of cases) {
+      const match = normalizeEspnEvent(
+        {
+          id: "403100001",
+          date: "2026-09-26T18:45:00Z",
+          competitions: [
+            {
+              date: "2026-09-26T18:45:00Z",
+              status: { type: { state: "pre" } },
+              competitors: [
+                { homeAway: "home", team: { displayName: "England", abbreviation: "ENG" } },
+                { homeAway: "away", team: { displayName: "Spain", abbreviation: "ESP" } },
+              ],
+            },
+          ],
+        },
+        { slug, name },
+      );
+
+      expect(match).toMatchObject({
+        id: `espn-${slug}-403100001`,
+        competition: key,
+        league: name,
+        leagueAr: nameAr,
+        leagueSlug: slug,
+        home: "England",
+        away: "Spain",
+      });
+    }
   });
 
   it("normalizes CONMEBOL World Cup qualifying fixtures through the shared competition metadata", () => {
