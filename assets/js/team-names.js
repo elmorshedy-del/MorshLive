@@ -271,7 +271,7 @@
     { name: "Oman", ar: "عُمان", aliases: [], groups: ["gcc"] },
 
     // European national-team surface triggers: selected EU nations + the four UK home nations + Norway.
-    // Estonia, Finland, Latvia, Lithuania, Luxembourg, and Malta remain valid teams/opponents
+    // Estonia, Finland, Latvia, Lithuania, Luxembourg, Malta, Romania, and Slovakia remain valid teams/opponents
     // but do not trigger inclusion by themselves. Keep this as canonical audience policy.
     { name: "Austria", ar: "النمسا", aliases: [], groups: ["europe_surface"] },
     { name: "Belgium", ar: "بلجيكا", aliases: [], groups: ["europe_surface"] },
@@ -305,8 +305,8 @@
     { name: "Netherlands", ar: "هولندا", aliases: [], groups: ["europe_surface"] },
     { name: "Poland", ar: "بولندا", aliases: [], groups: ["europe_surface"] },
     { name: "Portugal", ar: "البرتغال", aliases: [], groups: ["europe_surface"] },
-    { name: "Romania", ar: "رومانيا", aliases: [], groups: ["europe_surface"] },
-    { name: "Slovakia", ar: "سلوفاكيا", aliases: [], groups: ["europe_surface"] },
+    { name: "Romania", ar: "رومانيا", aliases: [], groups: [] },
+    { name: "Slovakia", ar: "سلوفاكيا", aliases: [], groups: [] },
     { name: "Slovenia", ar: "سلوفينيا", aliases: [], groups: ["europe_surface"] },
     { name: "Spain", ar: "إسبانيا", aliases: [], groups: ["europe_surface"] },
     { name: "Sweden", ar: "السويد", aliases: [], groups: ["europe_surface"] },
