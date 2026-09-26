@@ -167,23 +167,7 @@ function embedForKey(key) {
 // above, so a single match always maps to its actual channel — not a parity guess.
 // beIN Sports 1 stays first so it remains the default fallback channel.
 //
-// KHALEEJI 27 V2 MAP — same isolated matchday handoff used for Sevilla–Barcelona.
-const V2_MATCHDAY_FIXTURES = Object.freeze({
-  "espn-caf.nations_qual-401920038": Object.freeze({ channelId: "v2-bein-1", channel: "beIN Sports 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-3645/" }),
-  "espn-global.gulf_cup-401922489": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
-  "espn-global.gulf_cup-401922490": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
-  "espn-global.gulf_cup-401922491": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
-  "espn-global.gulf_cup-401922492": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
-  "espn-global.gulf_cup-401922493": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
-  "espn-global.gulf_cup-401922494": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
-  "espn-global.gulf_cup-401922495": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
-  "espn-global.gulf_cup-401922496": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
-  "espn-global.gulf_cup-401922497": Object.freeze({ channelId: "v2-alkass-2", channel: "Al Kass 2", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89779/" }),
-  "espn-global.gulf_cup-401922498": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
-  "espn-global.gulf_cup-401922499": Object.freeze({ channelId: "v2-alkass-2", channel: "Al Kass 2", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89779/" }),
-  "espn-global.gulf_cup-401922500": Object.freeze({ channelId: "v2-alkass-1", channel: "Al Kass 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-89778/" }),
-});
-const V2_MATCHDAY_CHANNEL_IDS = new Set(["v2-bein-1", "v2-alkass-1", "v2-alkass-2"]);
+// V2 single-socket operator pin — the guide may list many matches, but only the\n// currently selected remote channel is exposed as a live V2 fixture.\nconst V2_MATCHDAY_FIXTURES = Object.freeze({\n  "espn-uefa.nations-401861066": Object.freeze({ channelId: "v2-bein-1", channel: "beIN Sports 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-3645/" }),\n});\nconst V2_MATCHDAY_CHANNEL_IDS = new Set(["v2-bein-1", "v2-alkass-1", "v2-alkass-2"]);
 
 function v2FixtureFor(matchId) {
   return V2_MATCHDAY_FIXTURES[String(matchId || "")] || null;
