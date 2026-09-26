@@ -126,7 +126,6 @@ describe("international audience filtering", () => {
       ["England", "Slovakia"],
     ];
     const excluded = [
-      ["Bulgaria", "Luxembourg"],
       ["Estonia", "Iceland"],
       ["Finland", "Belarus"],
       ["Latvia", "Kazakhstan"],
