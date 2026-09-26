@@ -94,7 +94,7 @@ const COMPETITIONS = Object.freeze([
     nameAr: "مباريات دولية ودية",
     espnSlugs: ["fifa.friendly"],
     leagueNames: ["International Friendly", "International Friendlies"],
-    audienceGroups: ["north_africa", "gcc", "priority_latam", "eu_uk_norway"],
+    audienceGroups: ["north_africa", "gcc", "priority_latam", "europe_surface"],
   },
   {
     key: "conmebolq",
@@ -144,7 +144,7 @@ function shouldIncludeAudienceMatch(match) {
   }
 
   if (competition?.nationalTeamRegion === "europe") {
-    return teams.some((team) => TeamNames.isInAudienceGroup(team, "eu_uk_norway"));
+    return teams.some((team) => TeamNames.isInAudienceGroup(team, "europe_surface"));
   }
 
   const groups = competition?.audienceGroups || [];
