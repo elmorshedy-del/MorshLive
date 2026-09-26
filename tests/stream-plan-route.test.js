@@ -153,4 +153,121 @@ describe("stream plan route", () => {
       reason: "shared-content-key",
     });
   });
+
+  it("promotes only the pending V2 source whose Mist channel is active", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (url) => {
+        expect(String(url)).toBe("https://v2-control-production.up.railway.app/api/active");
+        return new Response(
+          JSON.stringify({
+            active: { channelId: "iptv-89778", streamId: "89778", inputs: 1 },
+            conflict: false,
+            live: [],
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }),
+    );
+
+    const env = assetEnv({
+      "/assets/data/today.json": {
+        matches: [{ id: "iraq", home: "Kuwait", away: "Iraq", status: "upcoming" }],
+      },
+      "/assets/data/stream-plans.json": {
+        version: 1,
+        plans: [
+          {
+            matchId: "iraq",
+            contentKey: "match:iraq",
+            policy: { allowLegacy: false },
+            sources: [
+              {
+                id: "v2-alkass1",
+                role: "alternate",
+                kind: "hls",
+                url: "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+                contentKey: "match:iraq",
+                status: "pending",
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    const res = await dispatchBackendRoutes(
+      [streamPlanRoute],
+      new Request("https://korazero.com/api/stream-plan?match=iraq"),
+      env,
+      {},
+    );
+    expect(res?.status).toBe(200);
+    expect(await res.json()).toMatchObject({
+      status: "operator",
+      selected: {
+        id: "v2-alkass1",
+        status: "operator",
+        playbackUrl: "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+      },
+      reason: "remote-active:iptv-89778",
+      v2Remote: { active: "iptv-89778" },
+    });
+  });
+
+  it("fails closed when a statically operator V2 source is not the active remote channel", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(
+        async () =>
+          new Response(
+            JSON.stringify({
+              active: { channelId: "iptv-89778", streamId: "89778", inputs: 1 },
+              conflict: false,
+              live: [],
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+      ),
+    );
+
+    const env = assetEnv({
+      "/assets/data/today.json": {
+        matches: [{ id: "england", home: "England", away: "Spain", status: "upcoming" }],
+      },
+      "/assets/data/stream-plans.json": {
+        version: 1,
+        plans: [
+          {
+            matchId: "england",
+            contentKey: "match:england",
+            policy: { allowLegacy: false },
+            sources: [
+              {
+                id: "v2-bein-3645",
+                role: "primary",
+                kind: "hls",
+                url: "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
+                contentKey: "match:england",
+                status: "operator",
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    const res = await dispatchBackendRoutes(
+      [streamPlanRoute],
+      new Request("https://korazero.com/api/stream-plan?match=england"),
+      env,
+      {},
+    );
+    expect(await res.json()).toMatchObject({
+      status: "waiting",
+      selected: null,
+      reason: "v2-remote-other:iptv-89778",
+      v2Remote: { active: "iptv-89778" },
+    });
+  });
 });
