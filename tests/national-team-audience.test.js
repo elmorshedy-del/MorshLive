@@ -6,7 +6,7 @@ const require = createRequire(import.meta.url);
 const { TeamNames } = require("../assets/js/team-names.js");
 const { shouldIncludeAudienceMatch } = require("../scripts/matches-lib.js");
 
-const EU_UK_NORWAY_TEAMS = [
+const EUROPE_SURFACE_TEAMS = [
   "Austria",
   "Belgium",
   "Bulgaria",
@@ -14,23 +14,15 @@ const EU_UK_NORWAY_TEAMS = [
   "Cyprus",
   "Czechia",
   "Denmark",
-  "Estonia",
-  "Finland",
   "France",
   "Germany",
   "Greece",
   "Hungary",
   "Ireland",
   "Italy",
-  "Latvia",
-  "Lithuania",
-  "Luxembourg",
-  "Malta",
   "Netherlands",
   "Poland",
   "Portugal",
-  "Romania",
-  "Slovakia",
   "Slovenia",
   "Spain",
   "Sweden",
@@ -39,6 +31,17 @@ const EU_UK_NORWAY_TEAMS = [
   "Wales",
   "Northern Ireland",
   "Norway",
+];
+
+const EUROPE_NON_TRIGGER_TEAMS = [
+  "Estonia",
+  "Finland",
+  "Latvia",
+  "Lithuania",
+  "Luxembourg",
+  "Malta",
+  "Romania",
+  "Slovakia",
 ];
 
 describe("national-team registry", () => {
@@ -58,22 +61,30 @@ describe("national-team registry", () => {
     expect(TeamNames.isHiddenNationalTeam("Brazil")).toBe(false);
   });
 
-  it("defines the EU + UK + Norway audience set through canonical national-team metadata", () => {
-    const allowed = EU_UK_NORWAY_TEAMS;
-    for (const team of allowed) {
-      expect(TeamNames.isInAudienceGroup(team, "eu_uk_norway"), team).toBe(true);
+  it("defines the European surface trigger set through canonical national-team metadata", () => {
+    for (const team of EUROPE_SURFACE_TEAMS) {
+      expect(TeamNames.isInAudienceGroup(team, "europe_surface"), team).toBe(true);
     }
 
-    for (const team of ["Albania", "Armenia", "Iceland", "Serbia", "Switzerland", "Türkiye", "Ukraine"]) {
-      expect(TeamNames.isInAudienceGroup(team, "eu_uk_norway"), team).toBe(false);
+    for (const team of [
+      ...EUROPE_NON_TRIGGER_TEAMS,
+      "Albania",
+      "Armenia",
+      "Iceland",
+      "Serbia",
+      "Switzerland",
+      "Türkiye",
+      "Ukraine",
+    ]) {
+      expect(TeamNames.isInAudienceGroup(team, "europe_surface"), team).toBe(false);
     }
-    expect(TeamNames.isInAudienceGroup("Republic of Ireland", "eu_uk_norway")).toBe(true);
-    expect(TeamNames.isInAudienceGroup("Czech Republic", "eu_uk_norway")).toBe(true);
+    expect(TeamNames.isInAudienceGroup("Republic of Ireland", "europe_surface")).toBe(true);
+    expect(TeamNames.isInAudienceGroup("Czech Republic", "europe_surface")).toBe(true);
   });
 
-  it("keeps static Arabic data complete for every newly visible European audience team", () => {
+  it("keeps static Arabic data complete for European trigger and opponent teams", () => {
     const staticArabic = JSON.parse(readFileSync("assets/data/team-names-ar.json", "utf8"));
-    for (const team of EU_UK_NORWAY_TEAMS) {
+    for (const team of [...EUROPE_SURFACE_TEAMS, ...EUROPE_NON_TRIGGER_TEAMS]) {
       expect(staticArabic[team], team).toBeTruthy();
     }
   });
@@ -98,16 +109,34 @@ describe("international audience filtering", () => {
     expect(shouldIncludeAudienceMatch({ competition: "unl", home: "Austria", away: "Ireland" })).toBe(true);
   });
 
-  it("applies the EU + UK + Norway filter to every European national-team competition", () => {
+  it("surfaces European national-team matches when either side is in the trigger set", () => {
     const competitions = ["unl", "euro", "euroq", "uefawcq"];
     const included = [
-      ["Austria", "Ireland"],
+      ["Germany", "Cyprus"],
+      ["Cyprus", "Germany"],
+      ["Germany", "Estonia"],
       ["Norway", "Iceland"],
       ["Scotland", "Serbia"],
       ["Wales", "Switzerland"],
       ["Northern Ireland", "Türkiye"],
       ["Czech Republic", "Albania"],
+      ["France", "Romania"],
+      ["England", "Slovakia"],
     ];
+    const excluded = [
+      ["Estonia", "Iceland"],
+      ["Finland", "Belarus"],
+      ["Latvia", "Kazakhstan"],
+      ["Lithuania", "Azerbaijan"],
+      ["Luxembourg", "Iceland"],
+      ["Malta", "Liechtenstein"],
+      ["Romania", "Serbia"],
+      ["Slovakia", "Kazakhstan"],
+      ["Albania", "Armenia"],
+      ["Switzerland", "Serbia"],
+      ["Ukraine", "Georgia"],
+    ];
+
     for (const competition of competitions) {
       for (const [home, away] of included) {
         expect(
@@ -115,15 +144,6 @@ describe("international audience filtering", () => {
           `${competition}: ${home} v ${away}`,
         ).toBe(true);
       }
-    }
-
-    const excluded = [
-      ["Albania", "Armenia"],
-      ["Switzerland", "Serbia"],
-      ["Iceland", "Türkiye"],
-      ["Ukraine", "Georgia"],
-    ];
-    for (const competition of competitions) {
       for (const [home, away] of excluded) {
         expect(
           shouldIncludeAudienceMatch({ competition, home, away }),
@@ -139,7 +159,7 @@ describe("international audience filtering", () => {
     expect(shouldIncludeAudienceMatch({ competition: "afconq", home: "Nigeria", away: "Ghana" })).toBe(false);
   });
 
-  it("keeps international friendlies involving GCC, North Africa, EU/UK/Norway, Brazil, or Argentina", () => {
+  it("keeps international friendlies involving GCC, North Africa, Europe triggers, Brazil, or Argentina", () => {
     const included = [
       ["Brazil", "Australia"],
       ["Argentina", "Bolivia"],
@@ -159,6 +179,8 @@ describe("international audience filtering", () => {
       ["Sweden", "Mexico"],
       ["Scotland", "Canada"],
       ["Republic of Ireland", "Colombia"],
+      ["Germany", "Estonia"],
+      ["England", "Romania"],
     ];
 
     for (const [home, away] of included) {
@@ -170,6 +192,12 @@ describe("international audience filtering", () => {
     );
     expect(
       shouldIncludeAudienceMatch({ competition: "friendly", home: "Albania", away: "Switzerland" }),
+    ).toBe(false);
+    expect(
+      shouldIncludeAudienceMatch({ competition: "friendly", home: "Romania", away: "Serbia" }),
+    ).toBe(false);
+    expect(
+      shouldIncludeAudienceMatch({ competition: "friendly", home: "Slovakia", away: "Kazakhstan" }),
     ).toBe(false);
   });
 
