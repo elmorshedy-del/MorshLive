@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-26T15:28:27.679Z",
+  "updatedAt": "2026-09-26T15:57:14.563Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1341,158 +1341,6 @@
       ]
     },
     {
-      "matchId": "espn-uefa.nations-401861057",
-      "teams": [
-        [
-          "Slovenia"
-        ],
-        [
-          "Scotland"
-        ]
-      ],
-      "contentKey": "match:espn-uefa.nations-401861057",
-      "kickoffUtc": "2026-09-26T13:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
-      "expiresAt": "2026-09-26T15:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3645",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861057",
-          "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
-          "expiresAt": "2026-09-26T15:45:00.000Z",
-          "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-uefa.nations-401861058",
-      "teams": [
-        [
-          "Iceland"
-        ],
-        [
-          "Estonia"
-        ]
-      ],
-      "contentKey": "match:espn-uefa.nations-401861058",
-      "kickoffUtc": "2026-09-26T16:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
-      "expiresAt": "2026-09-26T18:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3645",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861058",
-          "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
-          "expiresAt": "2026-09-26T18:45:00.000Z",
-          "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-uefa.nations-401861061",
-      "teams": [
-        [
-          "Bulgaria"
-        ],
-        [
-          "Luxembourg"
-        ]
-      ],
-      "contentKey": "match:espn-uefa.nations-401861061",
-      "kickoffUtc": "2026-09-26T16:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
-      "expiresAt": "2026-09-26T18:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3644",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3644/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861061",
-          "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
-          "expiresAt": "2026-09-26T18:45:00.000Z",
-          "label": "beIN Sports 2 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 2 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-uefa.nations-401861059",
-      "teams": [
-        [
-          "San Marino"
-        ],
-        [
-          "Finland"
-        ]
-      ],
-      "contentKey": "match:espn-uefa.nations-401861059",
-      "kickoffUtc": "2026-09-26T16:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
-      "expiresAt": "2026-09-26T18:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3653",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3653/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861059",
-          "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
-          "expiresAt": "2026-09-26T18:45:00.000Z",
-          "label": "beIN Sports 3 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 3 HD"
-        }
-      ]
-    },
-    {
       "matchId": "espn-uefa.nations-401861066",
       "teams": [
         [
@@ -1505,7 +1353,7 @@
       "contentKey": "match:espn-uefa.nations-401861066",
       "kickoffUtc": "2026-09-26T18:45Z",
       "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
+      "verifiedAt": "2026-09-26T15:57:14.563Z",
       "expiresAt": "2026-09-26T21:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
@@ -1523,7 +1371,7 @@
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
           "contentKey": "match:espn-uefa.nations-401861066",
           "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
+          "verifiedAt": "2026-09-26T15:57:14.563Z",
           "expiresAt": "2026-09-26T21:30:00.000Z",
           "label": "beIN Sports 1 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 1 HD"
@@ -1543,7 +1391,7 @@
       "contentKey": "match:espn-uefa.nations-401861063",
       "kickoffUtc": "2026-09-26T18:45Z",
       "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
+      "verifiedAt": "2026-09-26T15:57:14.563Z",
       "expiresAt": "2026-09-26T21:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
@@ -1561,84 +1409,8 @@
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-3644/index.m3u8",
           "contentKey": "match:espn-uefa.nations-401861063",
           "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
+          "verifiedAt": "2026-09-26T15:57:14.563Z",
           "expiresAt": "2026-09-26T21:30:00.000Z",
-          "label": "beIN Sports 2 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 2 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-uefa.nations-401861064",
-      "teams": [
-        [
-          "Slovakia"
-        ],
-        [
-          "Moldova"
-        ]
-      ],
-      "contentKey": "match:espn-uefa.nations-401861064",
-      "kickoffUtc": "2026-09-26T18:45Z",
-      "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
-      "expiresAt": "2026-09-26T21:30:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3652",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3652/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861064",
-          "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
-          "expiresAt": "2026-09-26T21:30:00.000Z",
-          "label": "beIN Sports 4 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 4 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-uefa.nations-401861067",
-      "teams": [
-        [
-          "Lithuania"
-        ],
-        [
-          "Azerbaijan"
-        ]
-      ],
-      "contentKey": "match:espn-uefa.nations-401861067",
-      "kickoffUtc": "2026-09-27T13:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
-      "expiresAt": "2026-09-27T15:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3644",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3644/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861067",
-          "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
-          "expiresAt": "2026-09-27T15:45:00.000Z",
           "label": "beIN Sports 2 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 2 HD"
         }
@@ -1657,7 +1429,7 @@
       "contentKey": "match:espn-uefa.nations-401861068",
       "kickoffUtc": "2026-09-27T16:00Z",
       "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
+      "verifiedAt": "2026-09-26T15:57:14.563Z",
       "expiresAt": "2026-09-27T18:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
@@ -1675,7 +1447,7 @@
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
           "contentKey": "match:espn-uefa.nations-401861068",
           "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
+          "verifiedAt": "2026-09-26T15:57:14.563Z",
           "expiresAt": "2026-09-27T18:45:00.000Z",
           "label": "beIN Sports 1 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 1 HD"
@@ -1695,7 +1467,7 @@
       "contentKey": "match:espn-uefa.nations-401861070",
       "kickoffUtc": "2026-09-27T16:00Z",
       "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
+      "verifiedAt": "2026-09-26T15:57:14.563Z",
       "expiresAt": "2026-09-27T18:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
@@ -1713,7 +1485,7 @@
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-3644/index.m3u8",
           "contentKey": "match:espn-uefa.nations-401861070",
           "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
+          "verifiedAt": "2026-09-26T15:57:14.563Z",
           "expiresAt": "2026-09-27T18:45:00.000Z",
           "label": "beIN Sports 2 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 2 HD"
@@ -1733,7 +1505,7 @@
       "contentKey": "match:espn-uefa.nations-401861071",
       "kickoffUtc": "2026-09-27T16:00Z",
       "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
+      "verifiedAt": "2026-09-26T15:57:14.563Z",
       "expiresAt": "2026-09-27T18:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
@@ -1751,7 +1523,7 @@
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-3653/index.m3u8",
           "contentKey": "match:espn-uefa.nations-401861071",
           "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
+          "verifiedAt": "2026-09-26T15:57:14.563Z",
           "expiresAt": "2026-09-27T18:45:00.000Z",
           "label": "beIN Sports 3 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 3 HD"
@@ -1771,7 +1543,7 @@
       "contentKey": "match:espn-uefa.nations-401861074",
       "kickoffUtc": "2026-09-27T18:45Z",
       "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
+      "verifiedAt": "2026-09-26T15:57:14.563Z",
       "expiresAt": "2026-09-27T21:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
@@ -1789,7 +1561,7 @@
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-3644/index.m3u8",
           "contentKey": "match:espn-uefa.nations-401861074",
           "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
+          "verifiedAt": "2026-09-26T15:57:14.563Z",
           "expiresAt": "2026-09-27T21:30:00.000Z",
           "label": "beIN Sports 2 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 2 HD"
@@ -1809,7 +1581,7 @@
       "contentKey": "match:espn-uefa.nations-401861073",
       "kickoffUtc": "2026-09-27T18:45Z",
       "status": "operator",
-      "verifiedAt": "2026-09-26T15:28:27.679Z",
+      "verifiedAt": "2026-09-26T15:57:14.563Z",
       "expiresAt": "2026-09-27T21:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
@@ -1827,7 +1599,7 @@
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
           "contentKey": "match:espn-uefa.nations-401861073",
           "status": "operator",
-          "verifiedAt": "2026-09-26T15:28:27.679Z",
+          "verifiedAt": "2026-09-26T15:57:14.563Z",
           "expiresAt": "2026-09-27T21:30:00.000Z",
           "label": "beIN Sports 1 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 1 HD"

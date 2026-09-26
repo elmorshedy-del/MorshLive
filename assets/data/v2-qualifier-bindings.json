@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-26T15:28:27.679Z",
+  "generatedAt": "2026-09-26T15:57:14.563Z",
   "window": {
     "start": "2026-09-26",
     "end": "2026-09-29"
@@ -8,62 +8,6 @@
   "source": "filgoal",
   "variant": "Vega",
   "bindings": [
-    {
-      "matchId": "espn-uefa.nations-401861057",
-      "home": "Slovenia",
-      "away": "Scotland",
-      "kickoffUtc": "2026-09-26T13:00Z",
-      "competition": "unl",
-      "broadcastChannelId": "bein-sports-1",
-      "channel": "beIN Sports 1",
-      "playbackChannelId": "v2-bein-sports-1",
-      "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1 HD",
-      "sourceHref": "/matches/378069/مباراة-سلوفينيا-اسكتلندا-في-دوري-الأمم-الأوروبية-المستوى-الثاني",
-      "expiresAt": "2026-09-26T15:45:00.000Z"
-    },
-    {
-      "matchId": "espn-uefa.nations-401861058",
-      "home": "Iceland",
-      "away": "Estonia",
-      "kickoffUtc": "2026-09-26T16:00Z",
-      "competition": "unl",
-      "broadcastChannelId": "bein-sports-1",
-      "channel": "beIN Sports 1",
-      "playbackChannelId": "v2-bein-sports-1",
-      "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1 HD",
-      "sourceHref": "/matches/378021/مباراة-أيسلندا-إستونيا-في-دوري-الأمم-الأوروبية-المستوى-الثالث",
-      "expiresAt": "2026-09-26T18:45:00.000Z"
-    },
-    {
-      "matchId": "espn-uefa.nations-401861061",
-      "home": "Bulgaria",
-      "away": "Luxembourg",
-      "kickoffUtc": "2026-09-26T16:00Z",
-      "competition": "unl",
-      "broadcastChannelId": "bein-sports-2",
-      "channel": "beIN Sports 2",
-      "playbackChannelId": "v2-bein-sports-2",
-      "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2 HD",
-      "sourceHref": "/matches/378019/مباراة-بلغاريا-لوكسمبورج-في-دوري-الأمم-الأوروبية-المستوى-الثالث",
-      "expiresAt": "2026-09-26T18:45:00.000Z"
-    },
-    {
-      "matchId": "espn-uefa.nations-401861059",
-      "home": "San Marino",
-      "away": "Finland",
-      "kickoffUtc": "2026-09-26T16:00Z",
-      "competition": "unl",
-      "broadcastChannelId": "bein-sports-3",
-      "channel": "beIN Sports 3",
-      "playbackChannelId": "v2-bein-sports-3",
-      "streamId": "3653",
-      "observedLabel": "beIN SPORTS 3 HD",
-      "sourceHref": "/matches/378022/مباراة-سان-مارينو-فنلندا-في-دوري-الأمم-الأوروبية-المستوى-الثالث",
-      "expiresAt": "2026-09-26T18:45:00.000Z"
-    },
     {
       "matchId": "espn-uefa.nations-401861066",
       "home": "England",
@@ -91,34 +35,6 @@
       "observedLabel": "beIN SPORTS 2 HD",
       "sourceHref": "/matches/377816/مباراة-التشيك-كرواتيا-في-دوري-الأمم-الأوروبية-المستوى-الأول",
       "expiresAt": "2026-09-26T21:30:00.000Z"
-    },
-    {
-      "matchId": "espn-uefa.nations-401861064",
-      "home": "Slovakia",
-      "away": "Moldova",
-      "kickoffUtc": "2026-09-26T18:45Z",
-      "competition": "unl",
-      "broadcastChannelId": "bein-sports-4",
-      "channel": "beIN Sports 4",
-      "playbackChannelId": "v2-bein-sports-4",
-      "streamId": "3652",
-      "observedLabel": "beIN SPORTS 4 HD",
-      "sourceHref": "/matches/378024/مباراة-سلوفاكيا-مولدوفا-في-دوري-الأمم-الأوروبية-المستوى-الثالث",
-      "expiresAt": "2026-09-26T21:30:00.000Z"
-    },
-    {
-      "matchId": "espn-uefa.nations-401861067",
-      "home": "Lithuania",
-      "away": "Azerbaijan",
-      "kickoffUtc": "2026-09-27T13:00Z",
-      "competition": "unl",
-      "broadcastChannelId": "bein-sports-2",
-      "channel": "beIN Sports 2",
-      "playbackChannelId": "v2-bein-sports-2",
-      "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2 HD",
-      "sourceHref": "/matches/378101/مباراة-ليتوانيا-أذربيجان-في-دوري-الأمم-الأوروبية-المستوى-الرابع",
-      "expiresAt": "2026-09-27T15:45:00.000Z"
     },
     {
       "matchId": "espn-uefa.nations-401861068",
