@@ -9,6 +9,7 @@ const { shouldIncludeAudienceMatch } = require("../scripts/matches-lib.js");
 const EUROPE_SURFACE_TEAMS = [
   "Austria",
   "Belgium",
+  "Bulgaria",
   "Croatia",
   "Cyprus",
   "Czechia",
@@ -33,7 +34,6 @@ const EUROPE_SURFACE_TEAMS = [
 ];
 
 const EUROPE_NON_TRIGGER_TEAMS = [
-  "Bulgaria",
   "Estonia",
   "Finland",
   "Latvia",
@@ -114,6 +114,7 @@ describe("international audience filtering", () => {
     const included = [
       ["Germany", "Cyprus"],
       ["Cyprus", "Germany"],
+      ["Bulgaria", "Luxembourg"],
       ["Germany", "Estonia"],
       ["Germany", "Bulgaria"],
       ["Norway", "Iceland"],
