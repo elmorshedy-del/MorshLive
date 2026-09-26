@@ -167,7 +167,12 @@ function embedForKey(key) {
 // above, so a single match always maps to its actual channel — not a parity guess.
 // beIN Sports 1 stays first so it remains the default fallback channel.
 //
-// V2 single-socket operator pin — the guide may list many matches, but only the\n// currently selected remote channel is exposed as a live V2 fixture.\nconst V2_MATCHDAY_FIXTURES = Object.freeze({\n  "espn-uefa.nations-401861066": Object.freeze({ channelId: "v2-bein-1", channel: "beIN Sports 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-3645/" }),\n});\nconst V2_MATCHDAY_CHANNEL_IDS = new Set(["v2-bein-1", "v2-alkass-1", "v2-alkass-2"]);
+// V2 single-socket operator pin — the guide may list many matches, but only the
+// currently selected remote channel is exposed as a live V2 fixture.
+const V2_MATCHDAY_FIXTURES = Object.freeze({
+  "espn-uefa.nations-401861066": Object.freeze({ channelId: "v2-bein-1", channel: "beIN Sports 1", hlsPrefix: "https://v2-mist-production.up.railway.app/hls/iptv-3645/" }),
+});
+const V2_MATCHDAY_CHANNEL_IDS = new Set(["v2-bein-1", "v2-alkass-1", "v2-alkass-2"]);
 
 function v2FixtureFor(matchId) {
   return V2_MATCHDAY_FIXTURES[String(matchId || "")] || null;
