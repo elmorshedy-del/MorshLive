@@ -88,7 +88,8 @@ describe("international audience filtering", () => {
     expect(shouldIncludeAudienceMatch({ competition: "unl", home: "Austria", away: "Ireland" })).toBe(true);
   });
 
-  it("keeps European national-team competition matches only when EU, UK, or Norway is involved", () => {
+  it("applies the EU + UK + Norway filter to every European national-team competition", () => {
+    const competitions = ["unl", "euro", "euroq", "uefawcq"];
     const included = [
       ["Austria", "Ireland"],
       ["Norway", "Iceland"],
@@ -97,17 +98,22 @@ describe("international audience filtering", () => {
       ["Northern Ireland", "Türkiye"],
       ["Czech Republic", "Albania"],
     ];
-    for (const [home, away] of included) {
-      expect(shouldIncludeAudienceMatch({ competition: "unl", home, away })).toBe(true);
+    for (const competition of competitions) {
+      for (const [home, away] of included) {
+        expect(shouldIncludeAudienceMatch({ competition, home, away }), `${competition}: ${home} v ${away}`).toBe(true);
+      }
     }
 
-    for (const [home, away] of [
+    const excluded = [
       ["Albania", "Armenia"],
       ["Switzerland", "Serbia"],
       ["Iceland", "Türkiye"],
       ["Ukraine", "Georgia"],
-    ]) {
-      expect(shouldIncludeAudienceMatch({ competition: "unl", home, away })).toBe(false);
+    ];
+    for (const competition of competitions) {
+      for (const [home, away] of excluded) {
+        expect(shouldIncludeAudienceMatch({ competition, home, away }), `${competition}: ${home} v ${away}`).toBe(false);
+      }
     }
   });
 
