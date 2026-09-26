@@ -195,9 +195,9 @@ describe("international audience filtering", () => {
     expect(
       shouldIncludeAudienceMatch({ competition: "friendly", home: "Albania", away: "Switzerland" }),
     ).toBe(false);
-    expect(
-      shouldIncludeAudienceMatch({ competition: "friendly", home: "Romania", away: "Serbia" }),
-    ).toBe(false);
+    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Romania", away: "Serbia" })).toBe(
+      false,
+    );
     expect(
       shouldIncludeAudienceMatch({ competition: "friendly", home: "Slovakia", away: "Kazakhstan" }),
     ).toBe(false);
