@@ -161,8 +161,7 @@ describe("V2 single-socket remote pin", () => {
   it("does not keep the finished Egypt qualifier pinned to V2", () => {
     const selection = select(`match=${EGYPT}&ch=bein-sports-1`);
     expect(selection.channel.id).toBe("bein-sports-1");
-    expect(selection.match.id).toBe(EGYPT);
-    expect(selection.match.channelId).not.toBe("v2-bein-1");
+    expect(selection.match).toBeNull();
   });
 
   it("keeps Gulf Cup rows listed without forcing an Al Kass V2 socket", () => {
@@ -173,8 +172,7 @@ describe("V2 single-socket remote pin", () => {
     ]) {
       const selection = select(`match=${id}&ch=bein-sports-2`);
       expect(selection.channel.id).toBe("bein-sports-2");
-      expect(selection.match.id).toBe(id);
-      expect(selection.match.channelId).not.toMatch(/^v2-alkass-/);
+      expect(selection.match).toBeNull();
     }
   });
 
