@@ -62,6 +62,31 @@ const COMPETITIONS = Object.freeze([
     nameAr: "دوري الأمم الأوروبية",
     espnSlugs: ["uefa.nations"],
     leagueNames: ["UEFA Nations League"],
+    nationalTeamRegion: "europe",
+  },
+  {
+    key: "euro",
+    name: "UEFA European Championship",
+    nameAr: "بطولة أمم أوروبا",
+    espnSlugs: ["uefa.euro"],
+    leagueNames: ["UEFA European Championship"],
+    nationalTeamRegion: "europe",
+  },
+  {
+    key: "euroq",
+    name: "UEFA European Championship Qualifying",
+    nameAr: "تصفيات بطولة أمم أوروبا",
+    espnSlugs: ["uefa.euroq"],
+    leagueNames: ["UEFA European Championship Qualifying"],
+    nationalTeamRegion: "europe",
+  },
+  {
+    key: "uefawcq",
+    name: "FIFA World Cup Qualifying - UEFA",
+    nameAr: "تصفيات كأس العالم - أوروبا",
+    espnSlugs: ["fifa.worldq.uefa"],
+    leagueNames: ["FIFA World Cup Qualifying - UEFA"],
+    nationalTeamRegion: "europe",
   },
   {
     key: "friendly",
@@ -69,7 +94,7 @@ const COMPETITIONS = Object.freeze([
     nameAr: "مباريات دولية ودية",
     espnSlugs: ["fifa.friendly"],
     leagueNames: ["International Friendly", "International Friendlies"],
-    audienceGroups: ["north_africa", "gcc", "priority_latam", "priority_europe"],
+    audienceGroups: ["north_africa", "gcc", "priority_latam", "eu_uk_norway"],
   },
   {
     key: "conmebolq",
@@ -116,6 +141,10 @@ function shouldIncludeAudienceMatch(match) {
   if (whitelist.length) {
     const allowed = new Set(whitelist.map(canonical));
     if (!teams.some((team) => allowed.has(canonical(team)))) return false;
+  }
+
+  if (competition?.nationalTeamRegion === "europe") {
+    return teams.some((team) => TeamNames.isInAudienceGroup(team, "eu_uk_norway"));
   }
 
   const groups = competition?.audienceGroups || [];

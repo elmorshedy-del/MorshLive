@@ -41,6 +41,7 @@ The Node registry is the semantic reference. The browser registry intentionally 
 - provider league-name aliases
 - `teamWhitelist`
 - `audienceGroups`
+- `nationalTeamRegion`
 - flattened backend ESPN allowlist
 - uniqueness of keys, slugs, and aliases
 
@@ -61,6 +62,7 @@ Record the values before implementation:
 | `leagueNames` | Exact provider competition-name aliases that should normalize to this key |
 | scope | Full competition, selected teams, or audience-group filtered |
 | participants | Every club/national team that can appear in the requested visible scope |
+| `nationalTeamRegion` | Set to `"europe"` for European national-team competitions; omit for club competitions and non-European national competitions |
 | channel policy | Normally unchanged; special handling only when evidence requires it |
 
 The internal `key` is stable application data. Do not rename an existing key casually because cached/generated match objects may already carry it.
@@ -131,7 +133,13 @@ Current groups are defined through `assets/js/team-names.js` national-team metad
 - `north_africa`
 - `gcc`
 - `priority_latam`
-- `priority_europe`
+- `eu_uk_norway`
+
+European national-team competitions are a special semantic case: set `nationalTeamRegion: "europe"`. The shared audience filter then automatically requires at least one team from `eu_uk_norway` — EU-27, England, Scotland, Wales, Northern Ireland, or Norway. Do not duplicate that group manually on each European competition.
+
+This applies to UEFA Nations League, UEFA European Championship, UEFA European Championship Qualifying, FIFA World Cup Qualifying - UEFA, and any future European national-team championship/qualifier added to the registry. It does **not** apply to UEFA club competitions such as Champions League or Europa League.
+
+International friendlies are global, so they keep normal `audienceGroups`; their European audience component is `eu_uk_norway`.
 
 If the filter depends on a team being in a group, that team must resolve through the national-team registry. A plain English→Arabic translation is not enough.
 
@@ -231,6 +239,7 @@ Optional fields:
 ```js
 teamWhitelist: ["..."],
 audienceGroups: ["..."],
+nationalTeamRegion: "europe",
 ```
 
 Only add provider aliases you have a reason to support. Do not generate speculative spellings.
@@ -468,6 +477,8 @@ Use `teamWhitelist` and write both inclusion and exclusion tests. Do not fetch a
 ### International feed shown only to KoraZero audience segments
 
 Use `audienceGroups` and ensure aliases resolve through `NATIONAL_TEAM_REGISTRY`. Test both an allowed and disallowed fixture.
+
+For a European national-team competition, use `nationalTeamRegion: "europe"` instead of manually copying the Europe group. The runtime audience rule then applies EU-27 + UK home nations + Norway consistently.
 
 ### Future tournament with no event on today's scoreboard
 

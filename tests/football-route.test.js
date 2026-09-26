@@ -35,6 +35,9 @@ describe("football routes", () => {
       "uefa.champions_qual",
       "caf.nations_qual",
       "uefa.nations",
+      "uefa.euro",
+      "uefa.euroq",
+      "fifa.worldq.uefa",
       "fifa.friendly",
       "fifa.worldq.conmebol",
       "global.gulf_cup",
@@ -45,7 +48,7 @@ describe("football routes", () => {
     expect(friendlyUrls.some((url) => url.includes("dates=202608"))).toBe(true);
     expect(friendlyUrls.some((url) => url.includes("dates=202609"))).toBe(true);
     expect(premierLeagueUrls).toHaveLength(1);
-    expect(upstream).toHaveBeenCalledTimes(12);
+    expect(upstream).toHaveBeenCalledTimes(15);
   });
 
   it("proxies an allowlisted ESPN match summary for live detail", async () => {

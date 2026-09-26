@@ -1,9 +1,45 @@
+import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 
 const require = createRequire(import.meta.url);
 const { TeamNames } = require("../assets/js/team-names.js");
 const { shouldIncludeAudienceMatch } = require("../scripts/matches-lib.js");
+
+const EU_UK_NORWAY_TEAMS = [
+  "Austria",
+  "Belgium",
+  "Bulgaria",
+  "Croatia",
+  "Cyprus",
+  "Czechia",
+  "Denmark",
+  "Estonia",
+  "Finland",
+  "France",
+  "Germany",
+  "Greece",
+  "Hungary",
+  "Ireland",
+  "Italy",
+  "Latvia",
+  "Lithuania",
+  "Luxembourg",
+  "Malta",
+  "Netherlands",
+  "Poland",
+  "Portugal",
+  "Romania",
+  "Slovakia",
+  "Slovenia",
+  "Spain",
+  "Sweden",
+  "England",
+  "Scotland",
+  "Wales",
+  "Northern Ireland",
+  "Norway",
+];
 
 describe("national-team registry", () => {
   it("resolves aliases to one canonical team with Arabic localization and audience groups", () => {
@@ -20,6 +56,26 @@ describe("national-team registry", () => {
     expect(TeamNames.arabicFor("Libya")).toBe("ليبيا");
     expect(TeamNames.isHiddenNationalTeam("Israel")).toBe(true);
     expect(TeamNames.isHiddenNationalTeam("Brazil")).toBe(false);
+  });
+
+  it("defines the EU + UK + Norway audience set through canonical national-team metadata", () => {
+    const allowed = EU_UK_NORWAY_TEAMS;
+    for (const team of allowed) {
+      expect(TeamNames.isInAudienceGroup(team, "eu_uk_norway"), team).toBe(true);
+    }
+
+    for (const team of ["Albania", "Armenia", "Iceland", "Serbia", "Switzerland", "Türkiye", "Ukraine"]) {
+      expect(TeamNames.isInAudienceGroup(team, "eu_uk_norway"), team).toBe(false);
+    }
+    expect(TeamNames.isInAudienceGroup("Republic of Ireland", "eu_uk_norway")).toBe(true);
+    expect(TeamNames.isInAudienceGroup("Czech Republic", "eu_uk_norway")).toBe(true);
+  });
+
+  it("keeps static Arabic data complete for every newly visible European audience team", () => {
+    const staticArabic = JSON.parse(readFileSync("assets/data/team-names-ar.json", "utf8"));
+    for (const team of EU_UK_NORWAY_TEAMS) {
+      expect(staticArabic[team], team).toBeTruthy();
+    }
   });
 
   it("localizes international opponent countries even when they are not audience-filter teams", () => {
@@ -42,8 +98,39 @@ describe("international audience filtering", () => {
     expect(shouldIncludeAudienceMatch({ competition: "unl", home: "Austria", away: "Ireland" })).toBe(true);
   });
 
-  it("keeps all UEFA Nations League matches", () => {
-    expect(shouldIncludeAudienceMatch({ competition: "unl", home: "Albania", away: "Armenia" })).toBe(true);
+  it("applies the EU + UK + Norway filter to every European national-team competition", () => {
+    const competitions = ["unl", "euro", "euroq", "uefawcq"];
+    const included = [
+      ["Austria", "Ireland"],
+      ["Norway", "Iceland"],
+      ["Scotland", "Serbia"],
+      ["Wales", "Switzerland"],
+      ["Northern Ireland", "Türkiye"],
+      ["Czech Republic", "Albania"],
+    ];
+    for (const competition of competitions) {
+      for (const [home, away] of included) {
+        expect(
+          shouldIncludeAudienceMatch({ competition, home, away }),
+          `${competition}: ${home} v ${away}`,
+        ).toBe(true);
+      }
+    }
+
+    const excluded = [
+      ["Albania", "Armenia"],
+      ["Switzerland", "Serbia"],
+      ["Iceland", "Türkiye"],
+      ["Ukraine", "Georgia"],
+    ];
+    for (const competition of competitions) {
+      for (const [home, away] of excluded) {
+        expect(
+          shouldIncludeAudienceMatch({ competition, home, away }),
+          `${competition}: ${home} v ${away}`,
+        ).toBe(false);
+      }
+    }
   });
 
   it("keeps AFCON qualifiers only when a North African team is involved", () => {
@@ -52,7 +139,7 @@ describe("international audience filtering", () => {
     expect(shouldIncludeAudienceMatch({ competition: "afconq", home: "Nigeria", away: "Ghana" })).toBe(false);
   });
 
-  it("keeps international friendlies involving GCC, North Africa, priority Europe, Brazil, or Argentina", () => {
+  it("keeps international friendlies involving GCC, North Africa, EU/UK/Norway, Brazil, or Argentina", () => {
     const included = [
       ["Brazil", "Australia"],
       ["Argentina", "Bolivia"],
@@ -68,6 +155,10 @@ describe("international audience filtering", () => {
       ["Netherlands", "Colombia"],
       ["Belgium", "South Korea"],
       ["Croatia", "Australia"],
+      ["Norway", "Japan"],
+      ["Sweden", "Mexico"],
+      ["Scotland", "Canada"],
+      ["Republic of Ireland", "Colombia"],
     ];
 
     for (const [home, away] of included) {
@@ -77,9 +168,9 @@ describe("international audience filtering", () => {
     expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Japan", away: "Uruguay" })).toBe(
       false,
     );
-    expect(shouldIncludeAudienceMatch({ competition: "friendly", home: "Norway", away: "Sweden" })).toBe(
-      false,
-    );
+    expect(
+      shouldIncludeAudienceMatch({ competition: "friendly", home: "Albania", away: "Switzerland" }),
+    ).toBe(false);
   });
 
   it("keeps CONMEBOL World Cup qualifiers only for Brazil or Argentina", () => {
