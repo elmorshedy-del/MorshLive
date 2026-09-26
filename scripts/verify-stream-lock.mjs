@@ -34,7 +34,7 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-loader.js": "9afe75312e4a472e8f68629447752ab90dfdf1c3",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
   // V2 single-socket healthy same-URL remount guard.
-  "assets/js/watch.js": "6a93eed0427c45fd6782aa5a53c63c007614a5b2",
+  "assets/js/watch.js": "4ffaf21adfd0aefaa2674f32302491dc3c27dbd2",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
