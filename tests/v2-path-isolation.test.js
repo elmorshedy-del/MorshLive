@@ -16,6 +16,14 @@ describe("V2 playback path isolation", () => {
     expect(labMount).toBeGreaterThan(planMount);
   });
 
+  it("treats a pending V2 plan as V2 even when the fixture map does not know the match", () => {
+    const selectorStart = watch.indexOf("function v2MatchdaySelected()");
+    const selectorEnd = watch.indexOf("function mountPlanSource", selectorStart);
+    const selector = watch.slice(selectorStart, selectorEnd);
+    expect(selector).toContain("activePlan?.alternates");
+    expect(selector).toContain("V2_MIST_HLS_RE.test(href)");
+  });
+
   it("hard-stops V2 channels from the isolated IPTV Lab rail", () => {
     const labStart = watch.indexOf("async function mountLabChannel()");
     const labFetch = watch.indexOf("fetchLabChannel(channelId)", labStart);
