@@ -1,7 +1,7 @@
 FROM node:22-bookworm-slim
 
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends git ca-certificates tini \
+  && apt-get install -y --no-install-recommends git ca-certificates tini procps \
   && rm -rf /var/lib/apt/lists/*
 
 RUN npm install -g gitnexus@latest
