@@ -15,6 +15,7 @@ function comparableCompetition(competition) {
     leagueNames: [...competition.leagueNames],
     teamWhitelist: [...(competition.teamWhitelist || [])],
     audienceGroups: [...(competition.audienceGroups || [])],
+    nationalTeamRegion: competition.nationalTeamRegion || null,
   };
 }
 
