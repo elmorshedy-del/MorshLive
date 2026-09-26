@@ -32,7 +32,6 @@ async function loadActiveV2State(env) {
   const timer = setTimeout(() => controller.abort(), 1500);
   try {
     const response = await fetch(endpoint, {
-      cache: "no-store",
       headers: { Accept: "application/json" },
       signal: controller.signal,
     });
