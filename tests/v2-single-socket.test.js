@@ -10,9 +10,7 @@ describe("V2 plan single-socket policy", () => {
     const v2Plans = [];
 
     for (const plan of catalog.plans || []) {
-      const sources = (plan.sources || []).filter((source) =>
-        String(source.url || "").startsWith(v2Prefix),
-      );
+      const sources = (plan.sources || []).filter((source) => String(source.url || "").startsWith(v2Prefix));
       if (!sources.length) continue;
 
       v2Plans.push(plan.matchId);
