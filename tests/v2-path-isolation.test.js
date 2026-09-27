@@ -4,8 +4,8 @@ import { describe, expect, it } from "vitest";
 describe("V2 playback path isolation", () => {
   const watch = readFileSync("assets/js/watch.js", "utf8");
   const catalog = JSON.parse(readFileSync("assets/data/stream-plans.json", "utf8"));
-  const matchId = "espn-uefa.nations-401861066";
-  const v2Host = "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8";
+  const matchId = "espn-global.gulf_cup-401922495";
+  const v2Host = "https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8";
 
   it("mounts a ready stream plan before any IPTV Lab lookup", () => {
     const loadStart = watch.indexOf("async function loadPlayer()");
@@ -43,8 +43,8 @@ describe("V2 playback path isolation", () => {
     expect(plan.sources).toHaveLength(1);
     expect(plan.sources[0]).toMatchObject({
       kind: "hls",
-      role: "primary",
-      status: "operator",
+      role: "alternate",
+      status: "pending",
       url: v2Host,
     });
     expect(plan.sources[0].fallbackUrl).toBeUndefined();
