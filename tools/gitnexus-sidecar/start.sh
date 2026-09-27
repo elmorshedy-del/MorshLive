@@ -46,6 +46,30 @@ sync_once() {
   gitnexus group add korazero streaming KoraZero-StreamV2 >/tmp/gitnexus-group-add-streaming.log 2>&1 || true
   gitnexus group sync korazero || true
 
+  if [ ! -f "$GITNEXUS_HOME/.kz-bootstrap-verified" ]; then
+    echo "[kz-gitnexus] === bootstrap verification ==="
+    gitnexus list || true
+    gitnexus group list korazero || true
+
+    echo "[kz-gitnexus] === query: stream-plan / V2 / watch ==="
+    (
+      cd "$MORSH_DIR"
+      gitnexus query "stream plan V2 controller active state watch player" || true
+    )
+
+    echo "[kz-gitnexus] === query: national-team audience filter ==="
+    (
+      cd "$MORSH_DIR"
+      gitnexus query "European national team audience filter shouldIncludeAudienceMatch" || true
+    )
+
+    echo "[kz-gitnexus] === group query: controller / active channel / Mist ==="
+    gitnexus group query korazero "V2 controller active channel stream plan Mist" || true
+
+    touch "$GITNEXUS_HOME/.kz-bootstrap-verified"
+    echo "[kz-gitnexus] === bootstrap verification complete ==="
+  fi
+
   echo "[kz-gitnexus] sync complete"
 }
 
