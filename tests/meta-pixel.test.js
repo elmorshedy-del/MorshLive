@@ -29,10 +29,11 @@ describe("Meta Pixel wiring", () => {
     expect(read("watch.html")).not.toContain(pixelSrc);
   });
 
-  it.each(["lib/seo-pages.js", "lib/seo-pages-core.js", "lib/match-seo-page.js"])(
-    "loads the pixel in generated page template %s",
-    (path) => {
-      expect(read(path)).toContain(pixelSrc);
-    },
-  );
+  it.each([
+    "lib/seo-pages.js",
+    "lib/seo-pages-core.js",
+    "lib/match-seo-page.js",
+  ])("loads the pixel in generated page template %s", (path) => {
+    expect(read(path)).toContain(pixelSrc);
+  });
 });
