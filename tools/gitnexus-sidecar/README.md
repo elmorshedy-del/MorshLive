@@ -66,7 +66,7 @@ Operational:
 
 - `GITNEXUS_LBUG_BUFFER_POOL_SIZE=4294967296` — MorshLive exceeds the default
   LadybugDB import pool during a full graph rebuild.
-- `GITNEXUS_MCP_DEFAULT_MAX_TOKENS=6000` — keeps normal graph answers compact.
+- `GITNEXUS_MCP_DEFAULT_MAX_TOKENS=6000` — keeps normal graph answers compact; agents may override the budget for a specific deep query.
 - `GITNEXUS_MCP_ALLOWED_REPOS=MorshLive,KoraZero-StreamV2` — bounds the MCP
   server to the two KoraZero indexes.
 
