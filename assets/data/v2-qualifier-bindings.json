@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-26T21:33:49.568Z",
+  "generatedAt": "2026-09-27T17:17:07.107Z",
   "window": {
     "start": "2026-09-27",
     "end": "2026-09-30"
@@ -77,6 +77,104 @@
       "observedLabel": "beIN SPORTS 1 HD",
       "sourceHref": "/matches/377830/مباراة-النرويج-البرتغال-في-دوري-الأمم-الأوروبية-المستوى-الأول",
       "expiresAt": "2026-09-27T21:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861081",
+      "home": "Belgium",
+      "away": "France",
+      "kickoffUtc": "2026-09-28T18:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/377793/مباراة-بلجيكا-فرنسا-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-09-28T21:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861077",
+      "home": "Türkiye",
+      "away": "Italy",
+      "kickoffUtc": "2026-09-28T18:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-3",
+      "channel": "beIN Sports 3",
+      "playbackChannelId": "v2-bein-sports-3",
+      "streamId": "3653",
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/377794/مباراة-تركيا-إيطاليا-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-09-28T21:30:00.000Z"
+    },
+    {
+      "matchId": "espn-caf.nations_qual-401920030",
+      "home": "Tunisia",
+      "away": "Botswana",
+      "kickoffUtc": "2026-09-28T19:00Z",
+      "competition": "afconq",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/377997/مباراة-بوتسوانا-تونس-في-تصفيات-كأس-الأمم-الإفريقية-2027",
+      "expiresAt": "2026-09-28T21:45:00.000Z"
+    },
+    {
+      "matchId": "espn-caf.nations_qual-401920027",
+      "home": "South Sudan",
+      "away": "Egypt",
+      "kickoffUtc": "2026-09-29T13:00Z",
+      "competition": "afconq",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/377046/مباراة-جنوب-السودان-مصر-في-تصفيات-كأس-الأمم-الإفريقية-2027",
+      "expiresAt": "2026-09-29T15:45:00.000Z"
+    },
+    {
+      "matchId": "espn-caf.nations_qual-401920028",
+      "home": "Burundi",
+      "away": "Algeria",
+      "kickoffUtc": "2026-09-29T13:00Z",
+      "competition": "afconq",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/377999/مباراة-بوروندي-الجزائر-في-تصفيات-كأس-الأمم-الإفريقية-2027",
+      "expiresAt": "2026-09-29T15:45:00.000Z"
+    },
+    {
+      "matchId": "espn-caf.nations_qual-401920006",
+      "home": "Lesotho",
+      "away": "Morocco",
+      "kickoffUtc": "2026-09-29T13:00Z",
+      "competition": "afconq",
+      "broadcastChannelId": "bein-sports-3",
+      "channel": "beIN Sports 3",
+      "playbackChannelId": "v2-bein-sports-3",
+      "streamId": "3653",
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/378001/مباراة-ليسوتو-المغرب-في-تصفيات-كأس-الأمم-الإفريقية-2027",
+      "expiresAt": "2026-09-29T15:45:00.000Z"
+    },
+    {
+      "matchId": "espn-caf.nations_qual-401920001",
+      "home": "Uganda",
+      "away": "Libya",
+      "kickoffUtc": "2026-09-29T16:00Z",
+      "competition": "afconq",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/378007/مباراة-أوغندا-ليبيا-في-تصفيات-كأس-الأمم-الإفريقية-2027",
+      "expiresAt": "2026-09-29T18:45:00.000Z"
     }
   ]
 }
