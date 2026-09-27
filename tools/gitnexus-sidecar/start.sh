@@ -4,36 +4,61 @@ set -euo pipefail
 : "${GITNEXUS_MCP_AUTH_TOKEN:?GITNEXUS_MCP_AUTH_TOKEN is required}"
 
 export GITNEXUS_HOME="${GITNEXUS_HOME:-/data/gitnexus}"
-REPO_ROOT="${KORAZERO_REPO_ROOT:-/repos}"
+REPO_ROOT="${KORAZERO_REPO_ROOT:-/data/repos}"
 PORT="${PORT:-3000}"
+SYNC_SECONDS="${GITNEXUS_SYNC_SECONDS:-300}"
+
+MORSH_DIR="$REPO_ROOT/MorshLive"
+V2_DIR="$REPO_ROOT/KoraZero-StreamV2"
 
 mkdir -p "$GITNEXUS_HOME" "$REPO_ROOT"
 
-cat > "$GITNEXUS_HOME/watch_config.yml" <<EOF
-sync_interval_minutes: 5
-max_concurrency: 1
-repo_git_timeout: 60s
-analyze_timeout: 20m
-analyze_failure_threshold: 3
-projects:
-  - local_path: $REPO_ROOT
-    branches: [main]
-    overwrite_local_changes: false
-    group_name: korazero
-    remote_urls:
-      - https://github.com/elmorshedy-del/MorshLive.git
-  - local_path: $REPO_ROOT
-    branches: [feature/gateway-control, main]
-    overwrite_local_changes: false
-    group_name: korazero
-    remote_urls:
-      - https://github.com/elmorshedy-del/KoraZero-StreamV2.git
-EOF
+sync_repo() {
+  local url="$1"
+  local branch="$2"
+  local dir="$3"
 
-# Group creation is idempotent for our purposes.
-gitnexus group create korazero >/tmp/gitnexus-group-create.log 2>&1 || true
+  if [ ! -d "$dir/.git" ]; then
+    rm -rf "$dir"
+    git clone --depth 1 --branch "$branch" "$url" "$dir"
+  else
+    git -C "$dir" fetch --depth 1 origin "$branch"
+    git -C "$dir" checkout -q "$branch"
+    git -C "$dir" reset --hard "origin/$branch"
+    git -C "$dir" clean -fd -e .gitnexus/
+  fi
 
-gitnexus auto-sync start &
+  gitnexus analyze "$dir" --skip-agents-md --skip-skills
+}
+
+sync_once() {
+  echo "[kz-gitnexus] syncing MorshLive/main"
+  sync_repo "https://github.com/elmorshedy-del/MorshLive.git" "main" "$MORSH_DIR"
+
+  echo "[kz-gitnexus] syncing KoraZero-StreamV2/feature/gateway-control"
+  if ! sync_repo "https://github.com/elmorshedy-del/KoraZero-StreamV2.git" "feature/gateway-control" "$V2_DIR"; then
+    echo "[kz-gitnexus] active V2 branch unavailable; falling back to main"
+    sync_repo "https://github.com/elmorshedy-del/KoraZero-StreamV2.git" "main" "$V2_DIR"
+  fi
+
+  gitnexus group create korazero >/tmp/gitnexus-group-create.log 2>&1 || true
+  gitnexus group add korazero website MorshLive >/tmp/gitnexus-group-add-website.log 2>&1 || true
+  gitnexus group add korazero streaming KoraZero-StreamV2 >/tmp/gitnexus-group-add-streaming.log 2>&1 || true
+  gitnexus group sync korazero || true
+
+  echo "[kz-gitnexus] sync complete"
+}
+
+sync_loop() {
+  while true; do
+    if ! sync_once; then
+      echo "[kz-gitnexus] sync failed; keeping previous published indexes" >&2
+    fi
+    sleep "$SYNC_SECONDS"
+  done
+}
+
+sync_loop &
 SYNC_PID=$!
 
 gitnexus mcp --http --host 0.0.0.0 --port "$PORT" --auth-token "$GITNEXUS_MCP_AUTH_TOKEN" &
@@ -45,5 +70,5 @@ cleanup() {
 }
 trap cleanup INT TERM EXIT
 
-# If either process dies, fail the container so Railway restarts it.
-wait -n "$SYNC_PID" "$MCP_PID"
+# MCP is the serving process. If it dies, fail the container so Railway restarts it.
+wait "$MCP_PID"
