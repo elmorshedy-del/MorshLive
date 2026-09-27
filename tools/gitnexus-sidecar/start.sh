@@ -4,6 +4,7 @@ set -euo pipefail
 : "${GITNEXUS_MCP_AUTH_TOKEN:?GITNEXUS_MCP_AUTH_TOKEN is required}"
 
 export GITNEXUS_HOME="${GITNEXUS_HOME:-/data/gitnexus}"
+export HOME="${GITNEXUS_RUNTIME_HOME:-/data/home}"
 REPO_ROOT="${KORAZERO_REPO_ROOT:-/data/repos}"
 PORT="${PORT:-3000}"
 SYNC_SECONDS="${GITNEXUS_SYNC_SECONDS:-300}"
@@ -11,7 +12,7 @@ SYNC_SECONDS="${GITNEXUS_SYNC_SECONDS:-300}"
 MORSH_DIR="$REPO_ROOT/MorshLive"
 V2_DIR="$REPO_ROOT/KoraZero-StreamV2"
 
-mkdir -p "$GITNEXUS_HOME" "$REPO_ROOT"
+mkdir -p "$GITNEXUS_HOME" "$REPO_ROOT" "$HOME"
 
 sync_repo() {
   local url="$1"
@@ -34,7 +35,7 @@ sync_repo() {
 repair_fts_once() {
   local dir="$1"
   local key="$2"
-  local marker="$GITNEXUS_HOME/.fts-repaired-$key"
+  local marker="$GITNEXUS_HOME/.fts-repaired-v2-$key"
 
   if [ -f "$marker" ]; then
     return 0
@@ -102,7 +103,7 @@ sync_once() {
     echo "[kz-gitnexus] === bootstrap verification complete ==="
   fi
 
-  if [ ! -f "$GITNEXUS_HOME/.kz-dual-account-graph-probe-v1" ]; then
+  if [ ! -f "$GITNEXUS_HOME/.kz-dual-account-graph-probe-v2" ]; then
     echo "[kz-gitnexus] === dual-account graph probe: active channel/controller ==="
     (
       cd "$V2_DIR"
@@ -145,7 +146,7 @@ sync_once() {
       gitnexus impact ChannelFrom --direction upstream || true
     )
 
-    touch "$GITNEXUS_HOME/.kz-dual-account-graph-probe-v1"
+    touch "$GITNEXUS_HOME/.kz-dual-account-graph-probe-v2"
     echo "[kz-gitnexus] === dual-account graph probe complete ==="
   fi
 
