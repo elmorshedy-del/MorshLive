@@ -102,6 +102,53 @@ sync_once() {
     echo "[kz-gitnexus] === bootstrap verification complete ==="
   fi
 
+  if [ ! -f "$GITNEXUS_HOME/.kz-dual-account-graph-probe-v1" ]; then
+    echo "[kz-gitnexus] === dual-account graph probe: active channel/controller ==="
+    (
+      cd "$V2_DIR"
+      gitnexus query "active channel activeChannelId controller channel selection ChannelFrom CreateApp" || true
+    )
+
+    echo "[kz-gitnexus] === dual-account graph probe: account/session/upstream ==="
+    (
+      cd "$V2_DIR"
+      gitnexus query "account login auth credentials session upstream relay Mist provider" || true
+    )
+
+    echo "[kz-gitnexus] === dual-account graph probe: singletons/locks ==="
+    (
+      cd "$V2_DIR"
+      gitnexus query "single socket singleton mutex lock one active channel one upstream login one pull" || true
+    )
+
+    echo "[kz-gitnexus] === dual-account graph probe: CreateApp context ==="
+    (
+      cd "$V2_DIR"
+      gitnexus context CreateApp || true
+    )
+
+    echo "[kz-gitnexus] === dual-account graph probe: ChannelFrom context ==="
+    (
+      cd "$V2_DIR"
+      gitnexus context ChannelFrom || true
+    )
+
+    echo "[kz-gitnexus] === dual-account graph probe: CreateApp impact ==="
+    (
+      cd "$V2_DIR"
+      gitnexus impact CreateApp --direction upstream || true
+    )
+
+    echo "[kz-gitnexus] === dual-account graph probe: ChannelFrom impact ==="
+    (
+      cd "$V2_DIR"
+      gitnexus impact ChannelFrom --direction upstream || true
+    )
+
+    touch "$GITNEXUS_HOME/.kz-dual-account-graph-probe-v1"
+    echo "[kz-gitnexus] === dual-account graph probe complete ==="
+  fi
+
   echo "[kz-gitnexus] sync complete"
 }
 
