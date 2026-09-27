@@ -33,7 +33,9 @@ describe("Meta Pixel wiring", () => {
     "lib/seo-pages.js",
     "lib/seo-pages-core.js",
     "lib/match-seo-page.js",
-  ])("loads the pixel in generated page template %s", (path) => {
-    expect(read(path)).toContain(pixelSrc);
+  ])("tracks generated page template %s without client JavaScript", (path) => {
+    const source = read(path);
+    expect(source).toContain("facebook.com/tr?id=2344222863048329");
+    expect(source).not.toContain(pixelSrc);
   });
 });
