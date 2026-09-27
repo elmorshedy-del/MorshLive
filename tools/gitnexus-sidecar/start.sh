@@ -150,6 +150,35 @@ sync_once() {
     echo "[kz-gitnexus] === dual-account graph probe complete ==="
   fi
 
+  if [ ! -f "$GITNEXUS_HOME/.kz-dual-account-exact-probe-v1" ]; then
+    echo "[kz-gitnexus] === exact probe: createGatewayService ==="
+    ( cd "$V2_DIR"; gitnexus context createGatewayService --file server/gateway-service.js || true )
+    ( cd "$V2_DIR"; gitnexus impact createGatewayService --file server/gateway-service.js --direction upstream || true )
+
+    echo "[kz-gitnexus] === exact probe: gateway active ==="
+    ( cd "$V2_DIR"; gitnexus context active --file server/gateway-service.js || true )
+
+    echo "[kz-gitnexus] === exact probe: createIptvRelay ==="
+    ( cd "$V2_DIR"; gitnexus context createIptvRelay --file server/iptv-relay-core.js || true )
+    ( cd "$V2_DIR"; gitnexus impact createIptvRelay --file server/iptv-relay-core.js --direction upstream || true )
+
+    echo "[kz-gitnexus] === exact probe: relay handle/loadCatalog ==="
+    ( cd "$V2_DIR"; gitnexus context handle --file server/iptv-relay-core.js || true )
+    ( cd "$V2_DIR"; gitnexus context loadCatalog --file server/iptv-relay-core.js || true )
+
+    echo "[kz-gitnexus] === exact probe: runtime/catalog/channel registry ==="
+    ( cd "$V2_DIR"; gitnexus context createRuntime --file server/runtime-config.js || true )
+    ( cd "$V2_DIR"; gitnexus context createIptvCatalogClient --file server/iptv-catalog-client.js || true )
+    ( cd "$V2_DIR"; gitnexus context createChannelRegistry --file server/channel-registry.js || true )
+
+    echo "[kz-gitnexus] === exact probe: control channelFrom ==="
+    ( cd "$V2_DIR"; gitnexus context channelFrom --file server/control-server.js || true )
+    ( cd "$V2_DIR"; gitnexus impact channelFrom --file server/control-server.js --direction upstream || true )
+
+    touch "$GITNEXUS_HOME/.kz-dual-account-exact-probe-v1"
+    echo "[kz-gitnexus] === exact dual-account probe complete ==="
+  fi
+
   echo "[kz-gitnexus] sync complete"
 }
 
