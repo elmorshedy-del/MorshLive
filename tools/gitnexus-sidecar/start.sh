@@ -31,22 +31,42 @@ sync_repo() {
   gitnexus analyze "$dir" --skip-agents-md --skip-skills
 }
 
+repair_fts_once() {
+  local dir="$1"
+  local key="$2"
+  local marker="$GITNEXUS_HOME/.fts-repaired-$key"
+
+  if [ -f "$marker" ]; then
+    return 0
+  fi
+
+  echo "[kz-gitnexus] repairing FTS for $key"
+  if gitnexus analyze "$dir" --repair-fts --skip-agents-md --skip-skills; then
+    touch "$marker"
+    echo "[kz-gitnexus] FTS ready for $key"
+  else
+    echo "[kz-gitnexus] FTS repair failed for $key; graph tools remain available" >&2
+  fi
+}
+
 sync_once() {
   echo "[kz-gitnexus] syncing MorshLive/main"
   sync_repo "https://github.com/elmorshedy-del/MorshLive.git" "main" "$MORSH_DIR"
+  repair_fts_once "$MORSH_DIR" "MorshLive"
 
   echo "[kz-gitnexus] syncing KoraZero-StreamV2/feature/gateway-control"
   if ! sync_repo "https://github.com/elmorshedy-del/KoraZero-StreamV2.git" "feature/gateway-control" "$V2_DIR"; then
     echo "[kz-gitnexus] active V2 branch unavailable; falling back to main"
     sync_repo "https://github.com/elmorshedy-del/KoraZero-StreamV2.git" "main" "$V2_DIR"
   fi
+  repair_fts_once "$V2_DIR" "KoraZero-StreamV2"
 
   gitnexus group create korazero >/tmp/gitnexus-group-create.log 2>&1 || true
   gitnexus group add korazero website MorshLive >/tmp/gitnexus-group-add-website.log 2>&1 || true
   gitnexus group add korazero streaming KoraZero-StreamV2 >/tmp/gitnexus-group-add-streaming.log 2>&1 || true
   gitnexus group sync korazero || true
 
-  if [ ! -f "$GITNEXUS_HOME/.kz-bootstrap-verified" ]; then
+  if [ ! -f "$GITNEXUS_HOME/.kz-bootstrap-verified-v2" ]; then
     echo "[kz-gitnexus] === bootstrap verification ==="
     gitnexus list || true
     gitnexus group list korazero || true
@@ -63,10 +83,22 @@ sync_once() {
       gitnexus query "European national team audience filter shouldIncludeAudienceMatch" || true
     )
 
+    echo "[kz-gitnexus] === context: shouldIncludeAudienceMatch ==="
+    (
+      cd "$MORSH_DIR"
+      gitnexus context shouldIncludeAudienceMatch --file scripts/matches-lib.js || true
+    )
+
+    echo "[kz-gitnexus] === impact: shouldIncludeAudienceMatch upstream ==="
+    (
+      cd "$MORSH_DIR"
+      gitnexus impact shouldIncludeAudienceMatch --file scripts/matches-lib.js --direction upstream || true
+    )
+
     echo "[kz-gitnexus] === group query: controller / active channel / Mist ==="
     gitnexus group query korazero "V2 controller active channel stream plan Mist" || true
 
-    touch "$GITNEXUS_HOME/.kz-bootstrap-verified"
+    touch "$GITNEXUS_HOME/.kz-bootstrap-verified-v2"
     echo "[kz-gitnexus] === bootstrap verification complete ==="
   fi
 
