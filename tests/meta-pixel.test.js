@@ -13,7 +13,6 @@ describe("Meta Pixel wiring", () => {
 
   it.each([
     "index.html",
-    "watch.html",
     "highlights.html",
     "search.html",
     "tournament.html",
@@ -22,6 +21,12 @@ describe("Meta Pixel wiring", () => {
     "bein-lab.html",
   ])("loads the pixel on public page %s", (path) => {
     expect(read(path)).toContain(pixelSrc);
+  });
+
+  it("loads the pixel through the shared bootstrap used by the locked watch page", () => {
+    expect(read("assets/js/i18n.js")).toContain(pixelSrc);
+    expect(read("watch.html")).toContain("assets/js/i18n.js");
+    expect(read("watch.html")).not.toContain(pixelSrc);
   });
 
   it.each(["lib/seo-pages.js", "lib/seo-pages-core.js", "lib/match-seo-page.js"])(
