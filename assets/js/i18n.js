@@ -54,6 +54,7 @@
   }
 
   function writeSharedAssets() {
+    document.write(`<script src="/assets/js/meta-pixel.js?v=20260927"><\/script>`);
     document.write(`<link rel="stylesheet" href="/assets/css/dark-refresh.css?v=${stamp}">`);
     document.write(`<link rel="stylesheet" href="/assets/css/content-architecture.css?v=${stamp}">`);
     document.write(`<script src="/assets/js/i18n-core.js?v=${stamp}"><\/script>`);
