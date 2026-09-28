@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-09-27T21:36:40.266Z",
+  "generatedAt": "2026-09-28T14:27:53.082Z",
   "window": {
     "start": "2026-09-28",
     "end": "2026-10-01"
@@ -8,6 +8,20 @@
   "source": "filgoal",
   "variant": "Vega",
   "bindings": [
+    {
+      "matchId": "espn-uefa.nations-401861082",
+      "home": "Latvia",
+      "away": "Cyprus",
+      "kickoffUtc": "2026-09-28T16:00Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-3",
+      "channel": "beIN Sports 3",
+      "playbackChannelId": "v2-bein-sports-3",
+      "streamId": "3653",
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/378026/مباراة-لاتفيا-قبرص-في-دوري-الأمم-الأوروبية-المستوى-الثالث",
+      "expiresAt": "2026-09-28T18:45:00.000Z"
+    },
     {
       "matchId": "espn-uefa.nations-401861081",
       "home": "Belgium",
@@ -34,6 +48,34 @@
       "streamId": "3653",
       "observedLabel": "beIN SPORTS 3 HD",
       "sourceHref": "/matches/377794/مباراة-تركيا-إيطاليا-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-09-28T21:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861079",
+      "home": "Northern Ireland",
+      "away": "Hungary",
+      "kickoffUtc": "2026-09-28T18:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-5",
+      "channel": "beIN Sports 5",
+      "playbackChannelId": "v2-bein-sports-5",
+      "streamId": "3651",
+      "observedLabel": "beIN SPORTS 5 HD",
+      "sourceHref": "/matches/378074/مباراة-أيرلندا-الشمالية-المجر-في-دوري-الأمم-الأوروبية-المستوى-الثاني",
+      "expiresAt": "2026-09-28T21:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861080",
+      "home": "Sweden",
+      "away": "Poland",
+      "kickoffUtc": "2026-09-28T18:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-4",
+      "channel": "beIN Sports 4",
+      "playbackChannelId": "v2-bein-sports-4",
+      "streamId": "3652",
+      "observedLabel": "beIN SPORTS 4 HD",
+      "sourceHref": "/matches/378076/مباراة-السويد-بولندا-في-دوري-الأمم-الأوروبية-المستوى-الثاني",
       "expiresAt": "2026-09-28T21:30:00.000Z"
     },
     {
