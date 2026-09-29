@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-28T23:29:57.076Z",
+  "updatedAt": "2026-09-29T19:06:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1489,6 +1489,47 @@
           "expiresAt": "2026-09-29T18:45:00.000Z",
           "label": "beIN Sports 1 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 1 HD"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-uefa.nations-401861084",
+      "teams": [
+        [
+          "spain",
+          "españa",
+          "إسبانيا"
+        ],
+        [
+          "croatia",
+          "hrvatska",
+          "كرواتيا"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861084",
+      "kickoffUtc": "2026-09-29T18:45:00Z",
+      "status": "pending",
+      "verifiedAt": "2026-09-29T19:06:00.000Z",
+      "expiresAt": "2026-09-29T22:30:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3644",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3644/index.m3u8",
+          "contentKey": "match:espn-uefa.nations-401861084",
+          "status": "pending",
+          "verifiedAt": "2026-09-29T19:06:00.000Z",
+          "expiresAt": "2026-09-29T22:30:00.000Z",
+          "label": "beIN Sports 2 · V2",
+          "note": "Match-day exact binding for Spain vs Croatia; MENA listings identify beIN Sports 2 HD."
         }
       ]
     }
