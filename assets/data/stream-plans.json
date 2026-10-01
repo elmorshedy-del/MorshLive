@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-30T22:37:06.402Z",
+  "updatedAt": "2026-10-01T00:31:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1606,6 +1606,45 @@
           "expiresAt": "2026-10-02T21:30:00.000Z",
           "label": "beIN Sports 1 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 1 HD"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-fifa.friendly-401921545",
+      "teams": [
+        [
+          "argentina",
+          "الأرجنتين"
+        ],
+        [
+          "bolivia",
+          "بوليفيا"
+        ]
+      ],
+      "contentKey": "match:espn-fifa.friendly-401921545",
+      "kickoffUtc": "2026-10-01T00:00:00Z",
+      "status": "pending",
+      "verifiedAt": "2026-10-01T00:14:00.000Z",
+      "expiresAt": "2026-10-01T03:00:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-rabiaa-sport-hd",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-7038/index.m3u8",
+          "contentKey": "match:espn-fifa.friendly-401921545",
+          "status": "pending",
+          "verifiedAt": "2026-10-01T00:14:00.000Z",
+          "expiresAt": "2026-10-01T03:00:00.000Z",
+          "label": "Al Rabiaa Sport HD · V2",
+          "note": "Time-sensitive exact binding for Argentina vs Bolivia. User-supplied live screenshot shows Al Rabiaa Sports carrying the match; V2 catalog stream 7038 is Al Rabiaa Sport HD [IRAQ]."
         }
       ]
     }
