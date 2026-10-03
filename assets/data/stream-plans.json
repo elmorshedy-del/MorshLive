@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-03T12:01:24.684Z",
+  "updatedAt": "2026-10-03T18:59:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1607,6 +1607,48 @@
           "expiresAt": "2026-10-03T21:30:00.000Z",
           "label": "beIN Sports 2 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 2 HD"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-global.gulf_cup-401927873",
+      "teams": [
+        [
+          "united arab emirates",
+          "uae",
+          "emirates",
+          "الإمارات"
+        ],
+        [
+          "oman",
+          "عمان",
+          "عُمان"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401927873",
+      "kickoffUtc": "2026-10-03T18:30:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-10-03T18:59:00.000Z",
+      "expiresAt": "2026-10-03T22:30:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass2",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401927873",
+          "status": "operator",
+          "verifiedAt": "2026-10-03T18:59:00.000Z",
+          "expiresAt": "2026-10-03T22:30:00.000Z",
+          "label": "Al Kass 2 · V2",
+          "note": "Match-day exact binding for UAE vs Oman semifinal. Current V2 remote is live on 89779; current listings identify Al Kass 2 HD."
         }
       ]
     }
