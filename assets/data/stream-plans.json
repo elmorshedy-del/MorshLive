@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-04T12:50:50.020Z",
+  "updatedAt": "2026-10-04T17:55:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1649,6 +1649,45 @@
           "expiresAt": "2026-10-04T21:30:00.000Z",
           "label": "beIN Sports 2 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 2 HD"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-fifa.friendly-401916425",
+      "teams": [
+        [
+          "egypt",
+          "مصر"
+        ],
+        [
+          "south africa",
+          "south-africa",
+          "جنوب أفريقيا",
+          "جنوب افريقيا"
+        ]
+      ],
+      "contentKey": "match:espn-fifa.friendly-401916425",
+      "kickoffUtc": "2026-10-04T18:00:00Z",
+      "status": "pending",
+      "expiresAt": "2026-10-04T22:30:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-onsport-677",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-677/index.m3u8",
+          "contentKey": "match:espn-fifa.friendly-401916425",
+          "status": "pending",
+          "expiresAt": "2026-10-04T22:30:00.000Z",
+          "label": "ON Sport HD 1080 · V2",
+          "note": "Exact match-day binding for Egypt vs South Africa. Current broadcaster listings identify ON Sport 1; V2 catalog stream 677 is ON Sport HD 1080. Playback remains fail-closed until this V2 stream is active."
         }
       ]
     }
