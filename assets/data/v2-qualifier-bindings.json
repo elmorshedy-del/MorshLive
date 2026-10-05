@@ -1,11 +1,110 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-04T21:56:09.962Z",
+  "generatedAt": "2026-10-05T15:15:56.848Z",
   "window": {
     "start": "2026-10-05",
     "end": "2026-10-08"
   },
   "source": "filgoal",
   "variant": "Vega",
-  "bindings": []
+  "bindings": [
+    {
+      "matchId": "espn-uefa.nations-401861127",
+      "home": "Cyprus",
+      "away": "Latvia",
+      "kickoffUtc": "2026-10-05T16:00Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/378041/مباراة-قبرص-لاتفيا-في-دوري-الأمم-الأوروبية-المستوى-الثالث",
+      "expiresAt": "2026-10-05T18:45:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861129",
+      "home": "France",
+      "away": "Belgium",
+      "kickoffUtc": "2026-10-05T18:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/377797/مباراة-فرنسا-بلجيكا-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-10-05T21:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861131",
+      "home": "Italy",
+      "away": "Türkiye",
+      "kickoffUtc": "2026-10-05T18:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/377798/مباراة-إيطاليا-تركيا-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-10-05T21:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861133",
+      "home": "Bosnia-Herzegovina",
+      "away": "Poland",
+      "kickoffUtc": "2026-10-05T18:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-4",
+      "channel": "beIN Sports 4",
+      "playbackChannelId": "v2-bein-sports-4",
+      "streamId": "3652",
+      "observedLabel": "beIN SPORTS 4 HD",
+      "sourceHref": "/matches/378089/مباراة-البوسنة-والهرسك-بولندا-في-دوري-الأمم-الأوروبية-المستوى-الثاني",
+      "expiresAt": "2026-10-05T21:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861128",
+      "home": "Romania",
+      "away": "Sweden",
+      "kickoffUtc": "2026-10-05T18:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-3",
+      "channel": "beIN Sports 3",
+      "playbackChannelId": "v2-bein-sports-3",
+      "streamId": "3653",
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/378091/مباراة-رومانيا-السويد-في-دوري-الأمم-الأوروبية-المستوى-الثاني",
+      "expiresAt": "2026-10-05T21:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861132",
+      "home": "Northern Ireland",
+      "away": "Georgia",
+      "kickoffUtc": "2026-10-05T18:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-7",
+      "channel": "beIN Sports 7",
+      "playbackChannelId": "v2-bein-sports-7",
+      "streamId": "3649",
+      "observedLabel": "beIN SPORTS 7 HD",
+      "sourceHref": "/matches/378090/مباراة-أيرلندا-الشمالية-جورجيا-في-دوري-الأمم-الأوروبية-المستوى-الثاني",
+      "expiresAt": "2026-10-05T21:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861134",
+      "home": "Ukraine",
+      "away": "Hungary",
+      "kickoffUtc": "2026-10-05T18:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-6",
+      "channel": "beIN Sports 6",
+      "playbackChannelId": "v2-bein-sports-6",
+      "streamId": "3650",
+      "observedLabel": "beIN SPORTS 6 HD",
+      "sourceHref": "/matches/378092/مباراة-أوكرانيا-المجر-في-دوري-الأمم-الأوروبية-المستوى-الثاني",
+      "expiresAt": "2026-10-05T21:30:00.000Z"
+    }
+  ]
 }
