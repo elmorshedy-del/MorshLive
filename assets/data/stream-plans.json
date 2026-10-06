@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-06T00:19:50.304Z",
+  "updatedAt": "2026-10-06T16:58:00.000Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1650,6 +1650,46 @@
           "expiresAt": "2026-10-06T21:30:00.000Z",
           "label": "beIN Sports 3 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 3 HD"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-global.gulf_cup-401928263",
+      "teams": [
+        [
+          "saudi arabia",
+          "saudi",
+          "السعودية"
+        ],
+        [
+          "united arab emirates",
+          "uae",
+          "emirates",
+          "الإمارات"
+        ]
+      ],
+      "contentKey": "match:espn-global.gulf_cup-401928263",
+      "kickoffUtc": "2026-10-06T18:00:00Z",
+      "status": "pending",
+      "expiresAt": "2026-10-06T22:30:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-alkass1",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+          "contentKey": "match:espn-global.gulf_cup-401928263",
+          "status": "pending",
+          "expiresAt": "2026-10-06T22:30:00.000Z",
+          "label": "Al Kass 1 · V2",
+          "note": "Exact match-day binding for Saudi Arabia vs UAE Gulf Cup final. Current listings identify Al Kass 1 among the live broadcasters. Playback remains fail-closed until V2 stream 89778 is active."
         }
       ]
     }
