@@ -958,48 +958,6 @@
       "locked": false
     },
     {
-      "key": "alhazem~neomsc",
-      "home": "Al Hazem",
-      "away": "Neom SC",
-      "commentators": [],
-      "channel": "ثمانية 3",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-3",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
-      "key": "alettifaq~alkhaleej",
-      "home": "Al Ettifaq",
-      "away": "Al Khaleej",
-      "commentators": [],
-      "channel": "ثمانية 2",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-2",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
-      "key": "alhilal~alittihad",
-      "home": "Al Hilal",
-      "away": "Al Ittihad",
-      "commentators": [],
-      "channel": "ثمانية 1",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
       "key": "alfayha~alriyadh",
       "home": "Al Fayha",
       "away": "Al Riyadh",
@@ -1008,21 +966,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-2",
-        "source": "livefootballtv",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
-      "key": "abha~alfaisaly",
-      "home": "Abha",
-      "away": "Al Faisaly",
-      "commentators": [],
-      "channel": "ثمانية 1",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -1036,7 +980,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-1",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -1171,6 +1115,62 @@
       "key": "alfateh~alkhaleej",
       "home": "Al Fateh",
       "away": "Al Khaleej",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "alahli~alfayha",
+      "home": "Al Fayha",
+      "away": "Al Ahli",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "abha~alkholood",
+      "home": "Abha",
+      "away": "Al Kholood",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "alfaisaly~alshabab",
+      "home": "Al Shabab",
+      "away": "Al Faisaly",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "alhazem~alhilal",
+      "home": "Al Hilal",
+      "away": "Al Hazem",
       "commentators": [],
       "channel": "ثمانية",
       "broadcast": {
@@ -4417,56 +4417,8 @@
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
-  "broadcastUpdatedAt": "2026-10-11T05:42:52.008Z",
+  "broadcastUpdatedAt": "2026-10-12T00:31:03.022Z",
   "broadcastIndex": [
-    {
-      "id": "espn-ksa.1-401900910",
-      "key": "alhazem~neomsc",
-      "home": "Al Hazem",
-      "away": "Neom SC",
-      "kickoffUtc": "2026-10-10T13:50Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية 3",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-3",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "commentators": []
-    },
-    {
-      "id": "espn-ksa.1-401900913",
-      "key": "alettifaq~alkhaleej",
-      "home": "Al Ettifaq",
-      "away": "Al Khaleej",
-      "kickoffUtc": "2026-10-10T14:55Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية 2",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-2",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "commentators": []
-    },
-    {
-      "id": "espn-ksa.1-401900909",
-      "key": "alhilal~alittihad",
-      "home": "Al Hilal",
-      "away": "Al Ittihad",
-      "kickoffUtc": "2026-10-10T18:00Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية 1",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "commentators": []
-    },
     {
       "id": "espn-ksa.1-401900911",
       "key": "alfayha~alriyadh",
@@ -4478,23 +4430,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-2",
-        "source": "livefootballtv",
-        "confidence": "exact"
-      },
-      "commentators": []
-    },
-    {
-      "id": "espn-ksa.1-401900914",
-      "key": "abha~alfaisaly",
-      "home": "Abha",
-      "away": "Al Faisaly",
-      "kickoffUtc": "2026-10-11T15:25Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية 1",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "commentators": []
@@ -4510,7 +4446,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-1",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "commentators": []
@@ -4665,6 +4601,70 @@
       "home": "Al Fateh",
       "away": "Al Khaleej",
       "kickoffUtc": "2026-10-18T18:00Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900897",
+      "key": "alahli~alfayha",
+      "home": "Al Fayha",
+      "away": "Al Ahli",
+      "kickoffUtc": "2026-10-19T15:05Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900898",
+      "key": "abha~alkholood",
+      "home": "Abha",
+      "away": "Al Kholood",
+      "kickoffUtc": "2026-10-19T15:20Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900895",
+      "key": "alfaisaly~alshabab",
+      "home": "Al Shabab",
+      "away": "Al Faisaly",
+      "kickoffUtc": "2026-10-19T18:00Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900896",
+      "key": "alhazem~alhilal",
+      "home": "Al Hilal",
+      "away": "Al Hazem",
+      "kickoffUtc": "2026-10-19T18:00Z",
       "leagueSlug": "ksa.1",
       "channel": "ثمانية",
       "broadcast": {
