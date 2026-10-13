@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-06T22:52:00.000Z",
+  "updatedAt": "2026-10-13T18:34:34.072Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1575,6 +1575,76 @@
           "expiresAt": "2026-10-07T02:30:00.000Z",
           "label": "SHASHA SPORT 2 HD · V2",
           "note": "Exact match-day binding for Argentina vs Benin. User verified the live Shasha 2 feed; V2 catalog stream 244603 is SHASHA SPORT 2 HD."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-uefa.champions-401915435",
+      "teams": [
+        [
+          "Galatasaray"
+        ],
+        [
+          "Barcelona"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915435",
+      "kickoffUtc": "2026-10-13T19:00Z",
+      "status": "pending",
+      "expiresAt": "2026-10-13T23:00:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-3645",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
+          "contentKey": "match:espn-uefa.champions-401915435",
+          "status": "pending",
+          "expiresAt": "2026-10-13T23:00:00.000Z",
+          "label": "beIN Sports 1 · V2",
+          "note": "Exact fixture and confirmed numbered Arabic broadcaster. Existing V2 remote controls activation; no legacy fallback."
+        }
+      ]
+    },
+    {
+      "matchId": "espn-uefa.champions-401915414",
+      "teams": [
+        [
+          "AS Roma"
+        ],
+        [
+          "Real Madrid"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915414",
+      "kickoffUtc": "2026-10-14T19:00Z",
+      "status": "pending",
+      "expiresAt": "2026-10-14T23:00:00.000Z",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-3653",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3653/index.m3u8",
+          "contentKey": "match:espn-uefa.champions-401915414",
+          "status": "pending",
+          "expiresAt": "2026-10-14T23:00:00.000Z",
+          "label": "beIN Sports 3 · V2",
+          "note": "Exact fixture and confirmed numbered Arabic broadcaster. Existing V2 remote controls activation; no legacy fallback."
         }
       ]
     }

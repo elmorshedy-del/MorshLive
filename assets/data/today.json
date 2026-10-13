@@ -1,6 +1,6 @@
 {
-  "date": "2026-08-22",
-  "updatedAt": "2026-08-22T08:41:38.834Z",
+  "date": "2026-10-13",
+  "updatedAt": "2026-10-13T18:34:34.072Z",
   "source": "espn",
   "sourceLabel": "ESPN",
   "commentarySource": "almaghrebsport",
@@ -1082,6 +1082,34 @@
         "confidence": "network"
       },
       "locked": false
+    },
+    {
+      "key": "barcelona~galatasaray",
+      "home": "Galatasaray",
+      "away": "Barcelona",
+      "kickoffUtc": "2026-10-13T19:00Z",
+      "channel": "beIN Sports 1",
+      "commentators": [],
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-1",
+        "source": "match-day-confirmed-listing",
+        "confidence": "exact"
+      }
+    },
+    {
+      "key": "asroma~realmadrid",
+      "home": "AS Roma",
+      "away": "Real Madrid",
+      "kickoffUtc": "2026-10-14T19:00Z",
+      "channel": "beIN Sports 3",
+      "commentators": [],
+      "broadcast": {
+        "provider": "bein",
+        "channelId": "bein-sports-3",
+        "source": "match-day-confirmed-listing",
+        "confidence": "exact"
+      }
     }
   ],
   "highlightsIndex": [
@@ -4316,6 +4344,52 @@
           "own": false
         }
       ]
+    },
+    {
+      "id": "espn-uefa.champions-401915435",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Galatasaray",
+      "away": "Barcelona",
+      "homeAbbr": "GAL",
+      "awayAbbr": "BAR",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/432.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/83.png",
+      "score": "VS",
+      "time": "19:00",
+      "kickoffUtc": "2026-10-13T19:00Z",
+      "league": "UEFA Champions League",
+      "leagueAr": "دوري أبطال أوروبا",
+      "leagueSlug": "uefa.champions",
+      "competition": "ucl",
+      "venue": "RAMS Park · Istanbul · Türkiye",
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn"
+    },
+    {
+      "id": "espn-uefa.champions-401915414",
+      "status": "upcoming",
+      "minute": "",
+      "home": "AS Roma",
+      "away": "Real Madrid",
+      "homeAbbr": "ROMA",
+      "awayAbbr": "RMA",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/104.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/86.png",
+      "score": "VS",
+      "time": "19:00",
+      "kickoffUtc": "2026-10-14T19:00Z",
+      "league": "UEFA Champions League",
+      "leagueAr": "دوري أبطال أوروبا",
+      "leagueSlug": "uefa.champions",
+      "competition": "ucl",
+      "venue": "Olimpico · Roma · Italy",
+      "channel": "beIN Sports 3",
+      "channelId": "bein-sports-3",
+      "commentator": null,
+      "source": "espn"
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
