@@ -969,7 +969,8 @@
         "channelId": "bein-sports-1",
         "source": "match-day-confirmed-listing",
         "confidence": "exact"
-      }
+      },
+      "locked": true
     },
     {
       "key": "asroma~realmadrid",
@@ -983,7 +984,8 @@
         "channelId": "bein-sports-3",
         "source": "match-day-confirmed-listing",
         "confidence": "exact"
-      }
+      },
+      "locked": false
     },
     {
       "key": "alfaisaly~alkholood",
@@ -4810,5 +4812,5 @@
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-09-14T22:02:56.310Z"
+  "commentaryUpdatedAt": "2026-10-13T23:07:14.155Z"
 }
