@@ -985,7 +985,7 @@
         "source": "match-day-confirmed-listing",
         "confidence": "exact"
       },
-      "locked": false
+      "locked": true
     },
     {
       "key": "alfaisaly~alkholood",
@@ -4812,5 +4812,5 @@
       "commentators": []
     }
   ],
-  "commentaryUpdatedAt": "2026-10-13T23:07:14.155Z"
+  "commentaryUpdatedAt": "2026-10-14T21:55:54.821Z"
 }
