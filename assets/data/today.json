@@ -1238,6 +1238,48 @@
         "confidence": "network"
       },
       "locked": false
+    },
+    {
+      "key": "alfaisaly~alnassr",
+      "home": "Al Faisaly",
+      "away": "Al Nassr",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "aldiriyah~alittihad",
+      "home": "Al Ittihad",
+      "away": "Al Diriyah",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
+    },
+    {
+      "key": "alhilal~alqadsiah",
+      "home": "Al Qadsiah",
+      "away": "Al Hilal",
+      "commentators": [],
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "locked": false
     }
   ],
   "highlightsIndex": [
@@ -4521,7 +4563,7 @@
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
-  "broadcastUpdatedAt": "2026-10-15T16:57:50.353Z",
+  "broadcastUpdatedAt": "2026-10-15T21:20:18.873Z",
   "broadcastIndex": [
     {
       "id": "espn-ksa.1-401900450",
@@ -4801,6 +4843,54 @@
       "home": "Al Ahli",
       "away": "Al Khaleej",
       "kickoffUtc": "2026-10-22T18:00Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900444",
+      "key": "alfaisaly~alnassr",
+      "home": "Al Faisaly",
+      "away": "Al Nassr",
+      "kickoffUtc": "2026-10-23T13:30Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900890",
+      "key": "aldiriyah~alittihad",
+      "home": "Al Ittihad",
+      "away": "Al Diriyah",
+      "kickoffUtc": "2026-10-23T15:30Z",
+      "leagueSlug": "ksa.1",
+      "channel": "ثمانية",
+      "broadcast": {
+        "provider": "thmanyah",
+        "channelId": "thmanyah",
+        "source": "spl-rights-holder",
+        "confidence": "network"
+      },
+      "commentators": []
+    },
+    {
+      "id": "espn-ksa.1-401900888",
+      "key": "alhilal~alqadsiah",
+      "home": "Al Qadsiah",
+      "away": "Al Hilal",
+      "kickoffUtc": "2026-10-23T18:00Z",
       "leagueSlug": "ksa.1",
       "channel": "ثمانية",
       "broadcast": {
