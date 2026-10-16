@@ -996,7 +996,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-1",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -4563,7 +4563,7 @@
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
-  "broadcastUpdatedAt": "2026-10-16T21:04:42.558Z",
+  "broadcastUpdatedAt": "2026-10-16T23:33:48.811Z",
   "broadcastIndex": [
     {
       "id": "espn-ksa.1-401900901",
@@ -4576,7 +4576,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-1",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "commentators": []
