@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-17T12:54:03.403Z",
+  "updatedAt": "2026-10-17T15:56:03.206Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1649,82 +1649,6 @@
       ]
     },
     {
-      "matchId": "espn-eng.1-401878771",
-      "teams": [
-        [
-          "Everton"
-        ],
-        [
-          "Chelsea"
-        ]
-      ],
-      "contentKey": "match:espn-eng.1-401878771",
-      "kickoffUtc": "2026-10-17T11:30Z",
-      "status": "operator",
-      "verifiedAt": "2026-10-17T12:34:47.086Z",
-      "expiresAt": "2026-10-17T13:30:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3645",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-eng.1-401878771",
-          "status": "operator",
-          "verifiedAt": "2026-10-17T12:34:47.086Z",
-          "expiresAt": "2026-10-17T13:30:00.000Z",
-          "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-esp.1-401882843",
-      "teams": [
-        [
-          "Espanyol"
-        ],
-        [
-          "Atlético Madrid"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882843",
-      "kickoffUtc": "2026-10-17T12:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-10-17T12:34:47.086Z",
-      "expiresAt": "2026-10-17T14:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3644",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3644/index.m3u8",
-          "contentKey": "match:espn-esp.1-401882843",
-          "status": "operator",
-          "verifiedAt": "2026-10-17T12:34:47.086Z",
-          "expiresAt": "2026-10-17T14:45:00.000Z",
-          "label": "beIN Sports 2 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 2 HD"
-        }
-      ]
-    },
-    {
       "matchId": "espn-eng.1-401879259",
       "teams": [
         [
@@ -1797,6 +1721,44 @@
           "expiresAt": "2026-10-17T16:00:00.000Z",
           "label": "beIN Sports 3 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 3 HD"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401878770",
+      "teams": [
+        [
+          "Fulham"
+        ],
+        [
+          "Hull City"
+        ]
+      ],
+      "contentKey": "match:espn-eng.1-401878770",
+      "kickoffUtc": "2026-10-17T14:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-10-17T15:56:03.206Z",
+      "expiresAt": "2026-10-17T16:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3652",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3652/index.m3u8",
+          "contentKey": "match:espn-eng.1-401878770",
+          "status": "operator",
+          "verifiedAt": "2026-10-17T15:56:03.206Z",
+          "expiresAt": "2026-10-17T16:45:00.000Z",
+          "label": "beIN Sports 4 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 4 HD"
         }
       ]
     },
@@ -1887,9 +1849,9 @@
         ]
       ],
       "contentKey": "match:espn-esp.1-401882846",
-      "kickoffUtc": "2026-10-17T16:30:00.000Z",
+      "kickoffUtc": "2026-10-17T16:30Z",
       "status": "operator",
-      "verifiedAt": "2026-10-17T12:54:03.403Z",
+      "verifiedAt": "2026-10-17T15:56:03.206Z",
       "expiresAt": "2026-10-17T19:15:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
@@ -1907,7 +1869,7 @@
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
           "contentKey": "match:espn-esp.1-401882846",
           "status": "operator",
-          "verifiedAt": "2026-10-17T12:54:03.403Z",
+          "verifiedAt": "2026-10-17T15:56:03.206Z",
           "expiresAt": "2026-10-17T19:15:00.000Z",
           "label": "beIN Sports 1 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 1 HD"
@@ -2293,29 +2255,6 @@
           "note": "Published broadcaster binding: beIN SPORTS 3 HD"
         }
       ]
-    },
-    {
-      "matchId": "espn-eng.1-401878770",
-      "teams": [
-        [
-          "Fulham"
-        ],
-        [
-          "Hull City"
-        ]
-      ],
-      "contentKey": "match:espn-eng.1-401878770",
-      "kickoffUtc": "2026-10-17T14:00Z",
-      "expiresAt": "2026-10-17T16:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": []
     },
     {
       "matchId": "espn-esp.1-401882845",
