@@ -52,6 +52,58 @@ function matchBlock({ href, home, away, channel, time }) {
 }
 
 describe("V2 beIN qualifier bindings", () => {
+  it("retains an exact two-team channel listing with a bounded kickoff discrepancy", () => {
+    const fixture = {
+      id: "barca",
+      competition: "laliga",
+      home: "Real Betis",
+      away: "Barcelona",
+      kickoffUtc: "2026-10-17T16:00Z",
+    };
+    const row = {
+      competition: "laliga",
+      homeAr: "ريال بيتيس",
+      awayAr: "برشلونة",
+      kickoffUtc: "2026-10-17T16:30Z",
+      channelKey: "bein-sports-2",
+      channelLabel: "beIN SPORTS 2 HD",
+    };
+    const bindings = buildBindings([fixture], [row], VEGA, Date.parse("2026-10-17T12:00Z"));
+    expect(bindings).toMatchObject([
+      {
+        matchId: "barca",
+        streamId: "3644",
+        kickoffDifferenceMinutes: 30,
+        broadcastKickoffUtc: row.kickoffUtc,
+      },
+    ]);
+    const plans = mergeGeneratedPlans({ plans: [] }, bindings, VEGA, Date.parse("2026-10-17T12:00Z"));
+    expect(plans.plans[0].kickoffUtc).toBe(row.kickoffUtc);
+    expect(bindings[0].expiresAt).toBe("2026-10-17T19:15:00.000Z");
+    expect(
+      buildBindings(
+        [fixture],
+        [{ ...row, kickoffUtc: "2026-10-17T17:00Z" }],
+        VEGA,
+        Date.parse("2026-10-17T12:00Z"),
+      )[0].expiresAt,
+    ).toBe("2026-10-17T19:45:00.000Z");
+    expect(
+      buildBindings([fixture], [{ ...row, awayAr: "بارشلونا" }], VEGA, Date.parse("2026-10-17T12:00Z")),
+    ).toEqual([]);
+    expect(
+      buildBindings(
+        [fixture],
+        [{ ...row, kickoffUtc: "2026-10-17T18:00Z" }],
+        VEGA,
+        Date.parse("2026-10-17T12:00Z"),
+      ),
+    ).toEqual([]);
+    expect(
+      buildBindings([fixture, { ...fixture, id: "ambiguous" }], [row], VEGA, Date.parse("2026-10-17T12:00Z")),
+    ).toEqual([]);
+  });
+
   it("uses the existing exact matcher for club broadcasts too", () => {
     const rows = parseFilGoalBroadcasts(
       matchBlock({

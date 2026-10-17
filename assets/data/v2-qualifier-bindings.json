@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-17T12:34:47.086Z",
+  "generatedAt": "2026-10-17T12:53:00.539Z",
   "window": {
     "start": "2026-10-17",
     "end": "2026-10-20"
@@ -48,7 +48,7 @@
       "streamId": "3645",
       "observedLabel": "beIN SPORTS 1 HD",
       "sourceHref": "/matches/375425/مباراة-مانشستر-سيتي-إبسويتش-تاون-في-الدوري-الإنجليزي-الممتاز",
-      "expiresAt": "2026-10-17T16:45:00.000Z"
+      "expiresAt": "2026-10-17T16:00:00.000Z"
     },
     {
       "matchId": "espn-eng.1-401879262",
@@ -91,6 +91,22 @@
       "observedLabel": "beIN SPORTS 2 HD",
       "sourceHref": "/matches/377849/مباراة-ستراسبورج-باريس-سان-جيرمان-في-الدوري-الفرنسي",
       "expiresAt": "2026-10-17T18:00:00.000Z"
+    },
+    {
+      "matchId": "espn-esp.1-401882846",
+      "home": "Real Betis",
+      "away": "Barcelona",
+      "kickoffUtc": "2026-10-17T16:00Z",
+      "competition": "laliga",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/375076/مباراة-ريال-بيتيس-برشلونة-في-الدوري-الإسباني",
+      "expiresAt": "2026-10-17T19:15:00.000Z",
+      "broadcastKickoffUtc": "2026-10-17T16:30:00.000Z",
+      "kickoffDifferenceMinutes": 30
     },
     {
       "matchId": "espn-eng.1-401879258",

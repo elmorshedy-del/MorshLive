@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-17T12:34:47.086Z",
+  "updatedAt": "2026-10-17T12:54:03.403Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1737,8 +1737,8 @@
       "contentKey": "match:espn-eng.1-401879259",
       "kickoffUtc": "2026-10-17T14:00Z",
       "status": "operator",
-      "verifiedAt": "2026-10-17T12:34:47.086Z",
-      "expiresAt": "2026-10-17T16:45:00.000Z",
+      "verifiedAt": "2026-10-17T12:53:00.541Z",
+      "expiresAt": "2026-10-17T16:00:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
         "sameContentOnly": true,
@@ -1755,8 +1755,8 @@
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
           "contentKey": "match:espn-eng.1-401879259",
           "status": "operator",
-          "verifiedAt": "2026-10-17T12:34:47.086Z",
-          "expiresAt": "2026-10-17T16:45:00.000Z",
+          "verifiedAt": "2026-10-17T12:53:00.541Z",
+          "expiresAt": "2026-10-17T16:00:00.000Z",
           "label": "beIN Sports 1 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 1 HD"
         }
@@ -1873,6 +1873,44 @@
           "expiresAt": "2026-10-17T18:00:00.000Z",
           "label": "beIN Sports 2 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 2 HD"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882846",
+      "teams": [
+        [
+          "Real Betis"
+        ],
+        [
+          "Barcelona"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882846",
+      "kickoffUtc": "2026-10-17T16:30:00.000Z",
+      "status": "operator",
+      "verifiedAt": "2026-10-17T12:54:03.403Z",
+      "expiresAt": "2026-10-17T19:15:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3645",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
+          "contentKey": "match:espn-esp.1-401882846",
+          "status": "operator",
+          "verifiedAt": "2026-10-17T12:54:03.403Z",
+          "expiresAt": "2026-10-17T19:15:00.000Z",
+          "label": "beIN Sports 1 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 1 HD"
         }
       ]
     },
@@ -2269,29 +2307,6 @@
       "contentKey": "match:espn-eng.1-401878770",
       "kickoffUtc": "2026-10-17T14:00Z",
       "expiresAt": "2026-10-17T16:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": []
-    },
-    {
-      "matchId": "espn-esp.1-401882846",
-      "teams": [
-        [
-          "Real Betis"
-        ],
-        [
-          "Barcelona"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882846",
-      "kickoffUtc": "2026-10-17T16:00Z",
-      "expiresAt": "2026-10-17T18:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {

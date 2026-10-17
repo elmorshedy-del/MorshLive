@@ -95,8 +95,13 @@ function matchRowToFixture(row, fixtures) {
   const target = Date.parse(row.kickoffUtc);
   const ranked = (fixtures || [])
     .filter((m) => m.competition === row.competition)
-    .filter((m) => Math.abs(Date.parse(m.kickoffUtc) - target) <= 20 * 60000)
     .map((m) => ({ m, score: pairScore(row, m) }))
+    .filter(({ m, score }) => {
+      const gap = Math.abs(Date.parse(m.kickoffUtc) - target);
+      if (gap <= 20 * 60000) return true;
+      return score === 0 && gap <= 60 * 60000 &&
+        String(m.kickoffUtc).slice(0, 10) === String(row.kickoffUtc).slice(0, 10);
+    })
     .sort((a, b) => a.score - b.score);
   if (!ranked.length || ranked[0].score > 0.65) return null;
   if (ranked[1] && ranked[1].score - ranked[0].score < 0.1) return null;
@@ -118,7 +123,9 @@ function buildBindings(fixtures, rows, vegaCatalog, now = Date.now(), excludedMa
       }
       continue;
     }
-    const expiresAt = Date.parse(fixture.kickoffUtc) + 165 * 60000;
+    const kickoffDifference = Date.parse(row.kickoffUtc) - Date.parse(fixture.kickoffUtc);
+    const broadcastKickoffUtc = Math.abs(kickoffDifference) > 20 * 60000 ? row.kickoffUtc : null;
+    const expiresAt = Date.parse(broadcastKickoffUtc || fixture.kickoffUtc) + 165 * 60000;
     if (expiresAt <= now) continue;
     seen.add(fixture.id);
     out.push({
@@ -134,6 +141,10 @@ function buildBindings(fixtures, rows, vegaCatalog, now = Date.now(), excludedMa
       observedLabel: row.channelLabel,
       sourceHref: row.sourceHref,
       expiresAt: new Date(expiresAt).toISOString(),
+      ...(broadcastKickoffUtc ? {
+        broadcastKickoffUtc,
+        kickoffDifferenceMinutes: kickoffDifference / 60000,
+      } : {}),
     });
   }
   for (const id of conflicts) excludedMatchIds.add(String(id));
@@ -144,18 +155,19 @@ function normalizeChannelWindows(bindings, excludedMatchIds) {
   const out = bindings.filter((binding) => !excludedMatchIds.has(String(binding.matchId)))
     .map((binding) => ({ ...binding }));
   const conflicts = new Set();
+  const kickoff = (binding) => Date.parse(binding.broadcastKickoffUtc || binding.kickoffUtc);
   for (const first of out) {
     const later = out.filter((binding) => binding.matchId !== first.matchId &&
-      binding.streamId === first.streamId && Date.parse(binding.kickoffUtc) >= Date.parse(first.kickoffUtc))
-      .sort((a, b) => Date.parse(a.kickoffUtc) - Date.parse(b.kickoffUtc))[0];
+      binding.streamId === first.streamId && kickoff(binding) >= kickoff(first))
+      .sort((a, b) => kickoff(a) - kickoff(b))[0];
     if (!later) continue;
-    const gap = Date.parse(later.kickoffUtc) - Date.parse(first.kickoffUtc);
+    const gap = kickoff(later) - kickoff(first);
     if (gap < 120 * 60000) {
       conflicts.add(first.matchId);
       conflicts.add(later.matchId);
     } else {
       first.expiresAt = new Date(Math.min(Date.parse(first.expiresAt),
-        Date.parse(later.kickoffUtc) - 30 * 60000)).toISOString();
+        kickoff(later) - 30 * 60000)).toISOString();
     }
   }
   for (const id of conflicts) excludedMatchIds.add(String(id));
@@ -223,7 +235,7 @@ function generatedPlan(binding, baseUrl, nowIso) {
     matchId: binding.matchId,
     teams: [[binding.home], [binding.away]],
     contentKey,
-    kickoffUtc: binding.kickoffUtc,
+    kickoffUtc: binding.broadcastKickoffUtc || binding.kickoffUtc,
     status: "operator",
     verifiedAt: nowIso,
     expiresAt: binding.expiresAt,
