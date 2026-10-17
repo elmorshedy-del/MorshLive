@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { runInNewContext } from "node:vm";
 import { describe, expect, it } from "vitest";
 
 describe("V2 playback path isolation", () => {
@@ -6,6 +7,32 @@ describe("V2 playback path isolation", () => {
   const catalog = JSON.parse(readFileSync("assets/data/stream-plans.json", "utf8"));
   const matchId = "espn-global.gulf_cup-401922495";
   const v2Host = "https://v2-mist-production.up.railway.app/hls/iptv-89779/index.m3u8";
+
+  it.each([
+    null,
+    { catalog: true, status: "waiting", policy: { allowLegacy: false } },
+  ])("never opens a Lab connection while a match plan is unavailable or unresolved (%j)", async (activePlan) => {
+    const start = watch.indexOf("async function mountLabChannel()");
+    const end = watch.indexOf("async function loadPlayer()", start);
+    const source = watch.slice(start, end).trim();
+    let calls = 0;
+    const result = await runInNewContext(`(${source})()`, {
+      shell: {},
+      window: { mpegts: { isSupported: () => true } },
+      activePlan,
+      params: new URLSearchParams("match=waiting"),
+      v2MatchdaySelected: () => false,
+      match: { channelId: "bein-sports-1" },
+      channel: {},
+      labChannelAlreadyHealthy: () => false,
+      fetchLabChannel: async () => {
+        calls++;
+        return null;
+      },
+    });
+    expect(result).toBe(false);
+    expect(calls).toBe(0);
+  });
 
   it("mounts a ready stream plan before any IPTV Lab lookup", () => {
     const loadStart = watch.indexOf("async function loadPlayer()");

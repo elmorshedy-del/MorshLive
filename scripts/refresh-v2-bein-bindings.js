@@ -6,10 +6,13 @@ const {
   fetchEspnScoreboardWindow,
   filterDisplayMatches,
   normalizeEspnEvent,
+  COMPETITIONS,
 } = require("./matches-lib");
 const {
   buildBindings,
+  BEIN_COMPETITIONS,
   mergeActiveBindings,
+  mergeFixtureChannels,
   mergeGeneratedPlans,
   parseFilGoalBroadcasts,
 } = require("./v2-bein-bindings-lib");
@@ -18,7 +21,10 @@ const ROOT = path.resolve(__dirname, "..");
 const VEGA_PATH = path.join(ROOT, "assets", "data", "v2-bein-vega.json");
 const OUT_PATH = path.join(ROOT, "assets", "data", "v2-qualifier-bindings.json");
 const PLANS_PATH = path.join(ROOT, "assets", "data", "stream-plans.json");
-const ESPN_SLUGS = ["uefa.nations", "caf.nations_qual"];
+const TODAY_PATH = path.join(ROOT, "assets", "data", "today.json");
+const OVERRIDES_PATH = path.join(ROOT, "assets", "data", "manual-channel-overrides.json");
+const ESPN_SLUGS = COMPETITIONS.filter((competition) => BEIN_COMPETITIONS.has(competition.key))
+  .flatMap((competition) => competition.espnSlugs);
 const LOOKAHEAD_DAYS = 3;
 
 function shiftDate(iso, days) {
@@ -52,7 +58,7 @@ async function getText(url) {
 }
 
 function relevantFixtures(fixtures) {
-  return filterDisplayMatches(fixtures).filter((m) => m.competition === "unl" || m.competition === "afconq");
+  return filterDisplayMatches(fixtures).filter((m) => BEIN_COMPETITIONS.has(m.competition));
 }
 
 async function fetchFixtures(startIso, endIso) {
@@ -67,7 +73,8 @@ async function fetchFixtures(startIso, endIso) {
     for (const event of events) direct.push(normalizeEspnEvent(event, league));
   }
   const directRelevant = relevantFixtures(direct);
-  if (directRelevant.length) return directRelevant;
+  const directSlugs = new Set(directRelevant.map((match) => match.leagueSlug));
+  if (ESPN_SLUGS.every((slug) => directSlugs.has(slug))) return directRelevant;
 
   // GitHub-hosted runners are occasionally blocked/empty at ESPN even while
   // KoraZero's production football proxy has the same fixtures. Use that
@@ -81,10 +88,12 @@ async function fetchFixtures(startIso, endIso) {
       const league = { ...(row?.data?.leagues?.[0] || {}), slug: row.slug };
       for (const event of row?.data?.events || []) fallback.push(normalizeEspnEvent(event, league));
     }
-    return relevantFixtures(fallback);
+    const byId = new Map(relevantFixtures(fallback).map((match) => [match.id, match]));
+    for (const match of directRelevant) byId.set(match.id, match);
+    return [...byId.values()];
   } catch (error) {
     console.warn(`V2 beIN bindings: production fixture fallback skipped: ${error.message}`);
-    return [];
+    return directRelevant;
   }
 }
 
@@ -122,7 +131,13 @@ async function main() {
   ]);
 
   const vega = JSON.parse(fs.readFileSync(VEGA_PATH, "utf8"));
-  const freshBindings = buildBindings(fixtures, rows, vega);
+  const overrides = JSON.parse(fs.readFileSync(OVERRIDES_PATH, "utf8"));
+  const catalog = JSON.parse(fs.readFileSync(PLANS_PATH, "utf8"));
+  const excludedMatchIds = new Set([
+    ...Object.keys(overrides),
+    ...catalog.plans.filter((plan) => plan.generatedBy !== "v2-bein-qualifiers").map((plan) => String(plan.matchId)),
+  ]);
+  const freshBindings = buildBindings(fixtures, rows, vega, Date.now(), excludedMatchIds);
   const previousSnapshot = fs.existsSync(OUT_PATH)
     ? JSON.parse(fs.readFileSync(OUT_PATH, "utf8"))
     : null;
@@ -133,6 +148,8 @@ async function main() {
     previousSnapshot?.bindings || [],
     freshBindings,
     fixtures,
+    Date.now(),
+    excludedMatchIds,
   );
 
   const bindingsUnchanged =
@@ -151,16 +168,20 @@ async function main() {
     bindings,
   };
 
-  const catalog = JSON.parse(fs.readFileSync(PLANS_PATH, "utf8"));
-  const mergedPlans = bindingsUnchanged ? catalog : mergeGeneratedPlans(catalog, bindings, vega);
+  const mergedPlans = mergeGeneratedPlans(catalog, bindings, vega, Date.now(),
+    fixtures.filter((fixture) => !overrides[String(fixture.id)]));
+  const today = JSON.parse(fs.readFileSync(TODAY_PATH, "utf8"));
+  const todayChanged = writeIfChanged(TODAY_PATH, mergeFixtureChannels(today, bindings, fixtures, overrides,
+    Date.now(), excludedMatchIds));
 
   const bindingsChanged = writeIfChanged(OUT_PATH, snapshot);
-  const plansChanged = bindingsUnchanged ? false : writeIfChanged(PLANS_PATH, mergedPlans);
+  const plansChanged = writeIfChanged(PLANS_PATH, mergedPlans);
   console.log(
-    `V2 beIN qualifier bindings: ${bindings.length} exact Arabic Vega bindings ` +
+    `V2 beIN bindings: ${bindings.length} exact Arabic Vega bindings ` +
     `(${fixtures.length} fixtures, ${rows.length} broadcaster rows; ` +
     `${bindingsChanged ? "bindings updated" : "bindings unchanged"}, ` +
-    `${plansChanged ? "plans updated" : "plans unchanged"})`,
+    `${plansChanged ? "plans updated" : "plans unchanged"}, ` +
+    `${todayChanged ? "cards updated" : "cards unchanged"})`,
   );
 }
 
