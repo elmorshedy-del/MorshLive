@@ -15,6 +15,7 @@ const {
   mergeFixtureChannels,
   mergeGeneratedPlans,
   parseFilGoalBroadcasts,
+  matchRowToFixture,
 } = require("./v2-bein-bindings-lib");
 
 const ROOT = path.resolve(__dirname, "..");
@@ -137,6 +138,14 @@ async function main() {
     ...Object.keys(overrides),
     ...catalog.plans.filter((plan) => plan.generatedBy !== "v2-bein-qualifiers").map((plan) => String(plan.matchId)),
   ]);
+  for (const row of rows) {
+    if (!matchRowToFixture(row, fixtures)) {
+      console.warn(
+        `V2 beIN bindings: unmatched row ${row.homeAr} v ${row.awayAr} ${row.channelLabel}`,
+      );
+    }
+  }
+
   const freshBindings = buildBindings(fixtures, rows, vega, Date.now(), excludedMatchIds);
   const previousSnapshot = fs.existsSync(OUT_PATH)
     ? JSON.parse(fs.readFileSync(OUT_PATH, "utf8"))
