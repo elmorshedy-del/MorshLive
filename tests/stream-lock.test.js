@@ -12,7 +12,8 @@ describe("production stream lock", () => {
       encoding: "utf8",
     });
     expect(output).toContain("STREAM LOCK OK");
-    expect(output).toContain("8fe04a34");
+    const baseline = read("scripts/verify-stream-lock.mjs").match(/const BASELINE_COMMIT = "([a-f0-9]+)"/)[1];
+    expect(output).toContain(baseline.slice(0, 8));
   });
 
   it("pins both the Claude-fix-1 Lab and KoraZero watch continuity files", () => {

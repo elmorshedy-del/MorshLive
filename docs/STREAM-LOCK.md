@@ -3,7 +3,9 @@
 <!-- CHATGPT-STAMP 2026-09-06T14:33-04:00 — PRODUCTION-STREAM-LOCK-1 -->
 
 Production playback is frozen at the known-good state established by commit
-`8fe04a34667a75637d20bb46c4072a9925ab573c`.
+`dd06ac0d7e2c888e53b1e26d47ff767fc6b971d3`.
+
+The October 17 channel-binding guard adds fixture-window and expiry checks to the V2 remote gate, and prevents an unresolved authoritative plan from opening the legacy Lab rail. Player transport, mounting, recovery, and single-socket control retain their previous behavior. All 34 protected files remain fingerprinted.
 
 This does **not** freeze the repository. Content, SEO, match data, editorial work,
 styles, and unrelated application work can continue normally. The lock only

@@ -3,6 +3,7 @@ const { normalizeArabic, levenshtein } = require("./arabic-team-resolver.js");
 
 const GENERATED_BY = "v2-bein-qualifiers";
 const QUALIFIER_COMPETITIONS = new Set(["unl", "afconq"]);
+const BEIN_COMPETITIONS = new Set(["epl", "laliga", "ucl", "ligue1", ...QUALIFIER_COMPETITIONS]);
 
 function stripHtml(value) {
   return String(value || "")
@@ -32,6 +33,10 @@ function competitionHint(href) {
   const text = decodeURIComponent(String(href || ""));
   if (/دوري-الأمم-الأوروبية/.test(text)) return "unl";
   if (/تصفيات-كأس-الأمم-الإفريقية/.test(text)) return "afconq";
+  if (/الدوري-الإنجليزي-الممتاز/.test(text)) return "epl";
+  if (/الدوري-الإسباني/.test(text)) return "laliga";
+  if (/دوري-أبطال-أوروبا/.test(text)) return "ucl";
+  if (/الدوري-الفرنسي/.test(text)) return "ligue1";
   return "";
 }
 
@@ -80,8 +85,9 @@ function distance(left, right) {
 function pairScore(row, fixture) {
   const home = TeamNames.arabicFor(fixture.home) || fixture.home;
   const away = TeamNames.arabicFor(fixture.away) || fixture.away;
-  const direct = distance(row.homeAr, home) + distance(row.awayAr, away);
-  const swapped = distance(row.homeAr, away) + distance(row.awayAr, home);
+  const score = (a, b) => a <= 0.35 && b <= 0.35 ? a + b : Infinity;
+  const direct = score(distance(row.homeAr, home), distance(row.awayAr, away));
+  const swapped = score(distance(row.homeAr, away), distance(row.awayAr, home));
   return Math.min(direct, swapped);
 }
 
@@ -97,14 +103,21 @@ function matchRowToFixture(row, fixtures) {
   return ranked[0].m;
 }
 
-function buildBindings(fixtures, rows, vegaCatalog, now = Date.now()) {
+function buildBindings(fixtures, rows, vegaCatalog, now = Date.now(), excludedMatchIds = new Set()) {
   const channels = vegaCatalog?.channels || {};
   const out = [];
   const seen = new Set();
+  const conflicts = new Set();
   for (const row of rows || []) {
     const fixture = matchRowToFixture(row, fixtures);
     const channel = channels[row.channelKey];
-    if (!fixture?.id || !channel?.streamId || seen.has(fixture.id)) continue;
+    if (!fixture?.id || !channel?.streamId) continue;
+    if (seen.has(fixture.id)) {
+      if (out.find((binding) => binding.matchId === fixture.id)?.streamId !== String(channel.streamId)) {
+        conflicts.add(fixture.id);
+      }
+      continue;
+    }
     const expiresAt = Date.parse(fixture.kickoffUtc) + 165 * 60000;
     if (expiresAt <= now) continue;
     seen.add(fixture.id);
@@ -123,22 +136,85 @@ function buildBindings(fixtures, rows, vegaCatalog, now = Date.now()) {
       expiresAt: new Date(expiresAt).toISOString(),
     });
   }
-  return out.sort((a, b) => Date.parse(a.kickoffUtc) - Date.parse(b.kickoffUtc));
+  for (const id of conflicts) excludedMatchIds.add(String(id));
+  return normalizeChannelWindows(out, excludedMatchIds);
 }
 
-function mergeActiveBindings(previous, fresh, fixtures, now = Date.now()) {
+function normalizeChannelWindows(bindings, excludedMatchIds) {
+  const out = bindings.filter((binding) => !excludedMatchIds.has(String(binding.matchId)))
+    .map((binding) => ({ ...binding }));
+  const conflicts = new Set();
+  for (const first of out) {
+    const later = out.filter((binding) => binding.matchId !== first.matchId &&
+      binding.streamId === first.streamId && Date.parse(binding.kickoffUtc) >= Date.parse(first.kickoffUtc))
+      .sort((a, b) => Date.parse(a.kickoffUtc) - Date.parse(b.kickoffUtc))[0];
+    if (!later) continue;
+    const gap = Date.parse(later.kickoffUtc) - Date.parse(first.kickoffUtc);
+    if (gap < 120 * 60000) {
+      conflicts.add(first.matchId);
+      conflicts.add(later.matchId);
+    } else {
+      first.expiresAt = new Date(Math.min(Date.parse(first.expiresAt),
+        Date.parse(later.kickoffUtc) - 30 * 60000)).toISOString();
+    }
+  }
+  for (const id of conflicts) excludedMatchIds.add(String(id));
+  return out.filter((binding) => !excludedMatchIds.has(String(binding.matchId)))
+    .sort((a, b) => Date.parse(a.kickoffUtc) - Date.parse(b.kickoffUtc));
+}
+
+// Join by ESPN identity, never by a recurring team pair. Preserve every archive
+// field and all operator overrides; this only supplies broadcaster metadata.
+function mergeFixtureChannels(payload, bindings, fixtures, overrides = {}, now = Date.now(), excludedMatchIds = new Set()) {
+  const byId = new Map((payload?.matches || []).map((match) => [String(match.id), match]));
+  const fixtureById = new Map((fixtures || []).map((match) => [String(match.id), match]));
+  let changed = false;
+  for (const [id, match] of byId) {
+    if (overrides[id]) {
+      const next = { ...match, ...overrides[id], channelSource: "manual" };
+      delete next.channelExpiresAt;
+      if (JSON.stringify(next) === JSON.stringify(match)) continue;
+      byId.set(id, next);
+      changed = true;
+      continue;
+    }
+    if (match.channelSource !== GENERATED_BY) continue;
+    if (!excludedMatchIds.has(id) && !(Date.parse(match.channelExpiresAt) <= now)) continue;
+    const next = { ...match };
+    for (const field of ["channelId", "channel", "channelSource", "channelExpiresAt"]) delete next[field];
+    byId.set(id, next);
+    changed = true;
+  }
+  for (const binding of bindings || []) {
+    const id = String(binding.matchId);
+    const fixture = fixtureById.get(id);
+    if (!fixture || overrides[id] || Date.parse(binding.expiresAt) <= now) continue;
+    const previous = byId.get(id) || fixture;
+    const next = { ...previous, kickoffUtc: fixture.kickoffUtc, channelId: binding.broadcastChannelId,
+      channel: binding.channel, channelSource: GENERATED_BY, channelExpiresAt: binding.expiresAt };
+    if (JSON.stringify(previous) === JSON.stringify(next) && byId.has(id)) continue;
+    byId.set(id, next);
+    changed = true;
+  }
+  return changed ? { ...payload, matches: [...byId.values()] } : payload;
+}
+
+function mergeActiveBindings(previous, fresh, fixtures, now = Date.now(), excludedMatchIds = new Set()) {
   const liveFixtureIds = new Set((fixtures || []).map((match) => String(match?.id || "")));
   const fixtureFeedAvailable = liveFixtureIds.size > 0;
   const byMatch = new Map(
     (previous || [])
       .filter((binding) => Date.parse(binding?.expiresAt || "") > now)
+      .filter((binding) => !excludedMatchIds.has(String(binding?.matchId)))
       .filter((binding) =>
         fixtureFeedAvailable ? liveFixtureIds.has(String(binding?.matchId || "")) : true
       )
       .map((binding) => [String(binding.matchId), binding]),
   );
-  for (const binding of fresh || []) byMatch.set(String(binding.matchId), binding);
-  return [...byMatch.values()].sort((a, b) => Date.parse(a.kickoffUtc) - Date.parse(b.kickoffUtc));
+  for (const binding of fresh || []) {
+    if (!excludedMatchIds.has(String(binding.matchId))) byMatch.set(String(binding.matchId), binding);
+  }
+  return normalizeChannelWindows([...byMatch.values()], excludedMatchIds);
 }
 
 function generatedPlan(binding, baseUrl, nowIso) {
@@ -174,27 +250,53 @@ function generatedPlan(binding, baseUrl, nowIso) {
   };
 }
 
-function mergeGeneratedPlans(catalog, bindings, vegaCatalog, now = Date.now()) {
+function mergeGeneratedPlans(catalog, bindings, vegaCatalog, now = Date.now(), fixtures = []) {
   const nowIso = new Date(now).toISOString();
   const existing = Array.isArray(catalog?.plans) ? catalog.plans : [];
   const retained = existing.filter((p) => p?.generatedBy !== GENERATED_BY);
   const occupied = new Set(retained.map((p) => String(p?.matchId || "")));
   const generated = bindings
     .filter((b) => !occupied.has(String(b.matchId)))
-    .map((b) => generatedPlan(b, vegaCatalog.baseUrl, nowIso));
+    .map((b) => {
+      const old = existing.find((plan) => plan.generatedBy === GENERATED_BY && plan.matchId === b.matchId);
+      const next = generatedPlan(b, vegaCatalog.baseUrl, old?.verifiedAt || nowIso);
+      return old && JSON.stringify(old) === JSON.stringify(next)
+        ? old : generatedPlan(b, vegaCatalog.baseUrl, nowIso);
+    });
+  const assigned = new Set([...occupied, ...generated.map((plan) => String(plan.matchId))]);
+  for (const fixture of fixtures) {
+    if (assigned.has(String(fixture.id))) continue;
+    const expires = Date.parse(fixture.kickoffUtc) + 165 * 60000;
+    if (!Number.isFinite(expires) || expires <= now) continue;
+    generated.push({
+      matchId: fixture.id,
+      teams: [[fixture.home], [fixture.away]],
+      contentKey: `match:${fixture.id}`,
+      kickoffUtc: fixture.kickoffUtc,
+      expiresAt: new Date(expires).toISOString(),
+      generatedBy: GENERATED_BY,
+      status: "pending",
+      policy: { sameContentOnly: true, allowAutoHeal: false, allowUnverifiedFallback: false, allowLegacy: false },
+      sources: [],
+    });
+  }
+  const plans = retained.concat(generated);
+  if (JSON.stringify(existing) === JSON.stringify(plans)) return catalog;
   return {
     ...(catalog || {}),
     version: Number(catalog?.version) || 1,
     updatedAt: nowIso,
-    plans: retained.concat(generated),
+    plans,
   };
 }
 
 module.exports = {
   GENERATED_BY,
   QUALIFIER_COMPETITIONS,
+  BEIN_COMPETITIONS,
   buildBindings,
   mergeGeneratedPlans,
+  mergeFixtureChannels,
   parseBeinChannel,
   parseFilGoalBroadcasts,
   parseFilGoalKickoff,

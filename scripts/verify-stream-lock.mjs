@@ -4,7 +4,7 @@
  *
  * Freeze the known-good production playback implementation without freezing the
  * rest of the repository. Every file below must remain byte-for-byte identical
- * to the approved 8fe04a34 state unless an explicit, short-lived stream-change
+ * to the approved checkpoint state unless an explicit, short-lived stream-change
  * plan is present AND the deploy environment carries the manual approval flag.
  *
  * This guard runs before and after Cloudflare's refresh build and from the local
@@ -14,14 +14,14 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const BASELINE_COMMIT = "8fe04a34667a75637d20bb46c4072a9925ab573c";
+const BASELINE_COMMIT = "dd06ac0d7e2c888e53b1e26d47ff767fc6b971d3";
 const APPROVAL_VALUE = "YES_I_INTEND_TO_CHANGE_PRODUCTION_STREAMING";
 const PLAN_PATH = resolve("config/stream-change-plan.json");
 const MAX_PLAN_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 const LOCKED_FILES = Object.freeze({
   "iptv-lab.html": "67ace9fbc5e58c6dc08c532a5169fe294518e3f9",
-  "watch.html": "7e96ee38a4d568d798270db8c4d4732e2adb57c2",
+  "watch.html": "32dd468bc22295336a13e79c730be7dceb952fe1",
   "watch-embed.html": "c236f654fd4071f475c05d9e3086fe75c63217a1",
   "assets/js/iptv-lab.js": "5ff9896cc315258753cf23a76b506f32d75ffd1a",
   "assets/js/iptv-quality.js": "1c0de8794befded840bed10eae179a39ff936925",
@@ -31,10 +31,10 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/stream-routes.js": "686bff614789077b9151ecf0a6f6c48510769d60",
   "assets/js/watch-embed.js": "3a648bb59889c70f54673faff0690549d7d44c24",
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
-  "assets/js/watch-loader.js": "ca98cd5da8fa4e02eb74c5f1119b4fce5d072953",
+  "assets/js/watch-loader.js": "3402b1f4a5001fc9c8ee35c39358725f9274f1dc",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
   // V2 single-socket healthy same-URL remount guard.
-  "assets/js/watch.js": "4ffaf21adfd0aefaa2674f32302491dc3c27dbd2",
+  "assets/js/watch.js": "7b20b06c4672a56c5ea274f1aba81bcfbe5e71ca",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
@@ -43,7 +43,7 @@ const LOCKED_FILES = Object.freeze({
   "backend/routes/stream-plan.js": "9383c53caa67085b2dd26a0f41e44cb6b5d54fff",
   "backend/routes/xtream.js": "443cfaed838dcdc6d0dc397793a1487c92a51d2a",
   "backend/services/iptv-lab.js": "ffe3967558222b8ebae55b0411defcc02524f9eb",
-  "backend/services/stream-plan.js": "425f725470d8f378e9f3df3832add5bd3d9e610c",
+  "backend/services/stream-plan.js": "883e34059ac50ec8ab149abe18479bfbfab1a32d",
   "backend/services/xtream.js": "82e481766d2b87a17a33a88d41185931c3cfaa97",
   "lib/hls-cache.js": "7df783457d4600318b1bf0f0b674a43a8bd2fb5b",
   "lib/hls-recover.js": "4772633e75ee2d80f01035d55e26e8747aec0cf5",

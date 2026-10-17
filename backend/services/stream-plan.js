@@ -2,6 +2,7 @@ import bundledCatalog from "../../assets/data/stream-plans.json" with { type: "j
 import {
   applyConflicts,
   emptyCatalog,
+  findCatalogPlan,
   liveContentConflicts,
   preferNewerCatalog,
   resolveStreamPlan,
@@ -47,12 +48,25 @@ async function loadActiveV2State(env) {
   }
 }
 
-function gateV2Plan(plan, state) {
+function gateV2Plan(plan, state, timing = {}) {
   const sources = v2Sources(plan);
   if (!sources.length || plan?.status === "conflict") return plan;
 
   const activeChannelId = state?.activeChannelId || null;
-  const activeSource = sources.find((source) => v2ChannelId(source) === activeChannelId) || null;
+  const now = Date.now();
+  const kickoff = Date.parse(timing.kickoffUtc || "");
+  const expires = Date.parse(timing.expiresAt || "");
+  const beforeWindow = Number.isFinite(kickoff) && now < kickoff - 30 * 60000;
+  const expired = Number.isFinite(expires) && now >= expires;
+  const activeSource =
+    !beforeWindow && !expired
+      ? sources.find(
+          (source) =>
+            v2ChannelId(source) === activeChannelId &&
+            source.status !== "failed" &&
+            !(Date.parse(source.expiresAt || "") <= now),
+        ) || null
+      : null;
 
   if (activeSource) {
     const selected = {
@@ -87,12 +101,15 @@ function gateV2Plan(plan, state) {
       playbackUrl: undefined,
     })),
     profile: null,
-    reason:
-      state === null
-        ? "v2-remote-unavailable"
-        : activeChannelId
-          ? `v2-remote-other:${activeChannelId}`
-          : "v2-remote-off",
+    reason: beforeWindow
+      ? "v2-before-match-window"
+      : expired
+        ? "v2-match-expired"
+        : state === null
+          ? "v2-remote-unavailable"
+          : activeChannelId
+            ? `v2-remote-other:${activeChannelId}`
+            : "v2-remote-off",
     v2Remote: { active: activeChannelId },
   };
 }
@@ -167,5 +184,9 @@ export async function getStreamPlan(env, origin, params) {
 
   if (!v2Sources(resolved).length) return resolved;
   const activeState = await loadActiveV2State(env);
-  return gateV2Plan(resolved, activeState);
+  const catalogPlan = findCatalogPlan(catalog, match);
+  return gateV2Plan(resolved, activeState, {
+    kickoffUtc: catalogPlan?.kickoffUtc || match.kickoffUtc,
+    expiresAt: catalogPlan?.expiresAt,
+  });
 }

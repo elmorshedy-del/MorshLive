@@ -22,6 +22,52 @@ afterEach(() => {
 });
 
 describe("stream plan route", () => {
+  it.each([
+    "future",
+    "expired",
+    "failed",
+  ])("keeps an active V2 channel closed for a %s match source", async (mode) => {
+    const now = Date.now();
+    const kickoffUtc = new Date(now + (mode === "future" ? 86400000 : -3600000)).toISOString();
+    const expiresAt = new Date(now + (mode === "expired" ? -60000 : 7200000)).toISOString();
+    vi.stubGlobal(
+      "fetch",
+      async () => new Response(JSON.stringify({ active: { channelId: "iptv-3645" }, conflict: false })),
+    );
+    const env = assetEnv({
+      "/assets/data/today.json": { matches: [{ id: "guarded", home: "Home", away: "Away", kickoffUtc }] },
+      "/assets/data/stream-plans.json": {
+        version: 1,
+        updatedAt: "2099-01-01T00:00Z",
+        plans: [
+          {
+            matchId: "guarded",
+            kickoffUtc,
+            expiresAt,
+            policy: { allowLegacy: false },
+            sources: [
+              {
+                id: "vega",
+                role: "primary",
+                kind: "hls",
+                status: mode === "failed" ? "failed" : "operator",
+                url: "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
+                expiresAt,
+              },
+            ],
+          },
+        ],
+      },
+    });
+    const response = await dispatchBackendRoutes(
+      [streamPlanRoute],
+      new Request("https://korazero.com/api/stream-plan?match=guarded"),
+      env,
+      {},
+    );
+    expect(await response.json()).toMatchObject({ status: "waiting", selected: null });
+  });
+
   it("rejects requests without a match identity", async () => {
     const res = await dispatchBackendRoutes(
       [streamPlanRoute],
