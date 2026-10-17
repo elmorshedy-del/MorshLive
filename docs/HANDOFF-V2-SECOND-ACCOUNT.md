@@ -109,17 +109,17 @@ has overridden a slot.
    (`V2_IPTV_CATALOG_MODE`, `V2_IPTV_MAX_ACTIVE_PULLS`, `V2_IPTV_ALLOWED_STREAM_IDS`,
    `V2_IPTV_AUDIO_DELAY_MS_BY_STREAM` if set). Never in git, never in chat logs,
    never in a MorshLive file.
-2. **Same provider or a different one?** Compare the catalogues. This is metadata
-   only (`player_api.php`), so it is safe while someone is watching:
-   `GET /catalog` on relay A and relay B, then check that every `streamId` in
-   `assets/data/v2-bein-vega.json` has the **same channel name** on B.
-   - **Same IDs** → Case S: the Mist stream `iptv-3645` can be pulled through either account.
-   - **Different IDs** → Case D: account B needs a mapping from the canonical
-     (Vega / account A) id to B's id, `V2_ACCOUNT_STREAM_MAP_JSON` on `v2-control`, e.g.
-     `{"b":{"3645":"77812"}}`. The public name stays `iptv-3645` (canonical). Only
-     the relay URL uses `77812`. **Never** expose B's ids in a public URL.
-     If a Vega channel has no counterpart on B, account B cannot carry it, and the
-     allocator must know (section 7, `accountsFor`).
+2. **Decided (owner, Oct 17 2026): account B is on the same provider as A.** Stream IDs
+   are therefore shared: `iptv-3645` (beIN 1) can be pulled through either account with
+   the same `<id>.ts`, and any slot can carry any channel. **Do not build an ID-mapping
+   layer** (no `V2_ACCOUNT_STREAM_MAP_JSON`, no per-account channel filter).
+   Still run one cheap sanity check before going live, because it is metadata only
+   (`player_api.php`) and safe while someone is watching: `GET /catalog` on relay A and relay B,
+   and confirm every `streamId` in `assets/data/v2-bein-vega.json` has the same channel name on B.
+   If any differ, stop and tell the owner instead of adding a mapping.
+   Same provider also means the **same portal URL**, so the two accounts differ only by
+   username. The fingerprint guard in 5.1 / 5.2 is what stops "two accounts" that are
+   accidentally one.
 3. Confirm account B's `max_connections` from relay B `/account`. Design for one
    connection per account. Do not try to multiplex two channels through one account.
    Per `AGENTS.md`, that limit is the owner's call: mention it once and build.
@@ -147,10 +147,10 @@ One small relay change (needed for a guardrail):
 
 | File | Change |
 |------|--------|
-| `server/runtime-config.js` | Parse new optional `V2_IPTV_ACCOUNTS_JSON` = `[{"id":"a","relayBase":"http://v2-iptv-relay.railway.internal:8080"},{"id":"b","relayBase":"http://v2-iptv-relay-b.railway.internal:8080"}]`. Validate: ids match `/^[a-z]$/`, unique; relayBase is `http(s)` and **must** end in `.railway.internal:<port>` or be localhost in tests; 1–2 entries. **When unset, build exactly one account `a` from `V2_IPTV_RELAY_BASE`, i.e. today's behaviour.** Parse optional `V2_ACCOUNT_STREAM_MAP_JSON` (Case D). Create one `catalogClient` per account. |
+| `server/runtime-config.js` | Parse new optional `V2_IPTV_ACCOUNTS_JSON` = `[{"id":"a","relayBase":"http://v2-iptv-relay.railway.internal:8080"},{"id":"b","relayBase":"http://v2-iptv-relay-b.railway.internal:8080"}]`. Validate: ids match `/^[a-z]$/`, unique; relayBase is `http(s)` and **must** end in `.railway.internal:<port>` or be localhost in tests; 1–2 entries. **When unset, build exactly one account `a` from `V2_IPTV_RELAY_BASE`, i.e. today's behaviour.** Create one `catalogClient` per account. |
 | `server/iptv-catalog-client.js` | Expose `accountFingerprint` from `/account`. No behaviour change otherwise. |
 | `server/gateway-service.js` | The main work, see 5.3. |
-| `server/control-server.js` | `POST /operator/switch/<streamId>?slot=a\|b` (slot optional, auto-pick a free slot); `POST /operator/off?slot=a\|b` (when 2 accounts are configured, a missing slot is **400**, never "all"; with 1 account the legacy behaviour stays); `GET /operator/catalog?account=b` (PIN-gated). Map the new errors: `all_slots_busy` → **409**, `stream_not_on_account` → **409**. Keep `/api/active` public and read-only. |
+| `server/control-server.js` | `POST /operator/switch/<streamId>?slot=a\|b` (slot optional, auto-pick a free slot); `POST /operator/off?slot=a\|b` (when 2 accounts are configured, a missing slot is **400**, never "all"; with 1 account the legacy behaviour stays); `GET /operator/catalog?account=b` (PIN-gated). Map the new error `all_slots_busy` → **409**. Keep `/api/active` public and read-only. |
 | `server/app.js` | At bootstrap, read each account's `/account`. If two fingerprints are equal, log loudly and **run single-slot** (account `a` only). Do not throw, because a crash takes V2 down entirely. |
 | `src/remote.html` | Two slot cards (Slot A / Slot B). Each shows channel, viewers, inputs, mode (`manual` / `auto`), and has its own "Off" button. The channel button opens a slot chooser. If both slots are busy, ask which to replace. **Never replace silently.** |
 | `docs/gateway-contract.md` | Document the new `/api/active` shape and the operator endpoints. |
@@ -172,15 +172,15 @@ Replace the module-global single-slot state (`activeCatalogChannel`, `switchTail
      and open **no** second pull. One channel never occupies two slots.
   2. Choose the slot: the requested one, else a free one, else throw `all_slots_busy`.
      **Never evict automatically.**
-  3. Case D: map to the account's own stream id. If there is no mapping, throw `stream_not_on_account`.
-  4. Stop **only this slot's** current stream: nuke + delete + `observeMistInputExit`
+  3. Stop **only this slot's** current stream: nuke + delete + `observeMistInputExit`
      for that one name. `cleanDynamicMistStreams()` must not be called on a
      multi-slot switch. Keep it only for the legacy single-account path, or delete it
      and make the single-account path use the per-slot stop too.
-  5. `waitForFreeSlot()` on **this account's** client only.
-  6. `mist.addStream("iptv-<canonicalId>", "<thisRelay>/live/<accountStreamId>.ts", {always_on:true})`.
-  7. Verify HLS with `playbackProbeFn` exactly as today. On failure, clean up only this stream.
-  8. Superseding: a newer selection on the **same slot** aborts the older one (today's
+  4. `waitForFreeSlot()` on **this account's** client only.
+  5. `mist.addStream("iptv-<streamId>", "<thisRelay>/live/<streamId>.ts", {always_on:true})`
+     (same id on both accounts, same provider).
+  6. Verify HLS with `playbackProbeFn` exactly as today. On failure, clean up only this stream.
+  7. Superseding: a newer selection on the **same slot** aborts the older one (today's
      `queueCatalogSwitch` semantics, per slot). Selections on different slots run
      concurrently and never abort each other.
 - **`active()` response (additive; old fields keep their meaning for one slot):**
@@ -297,8 +297,8 @@ and `endAt = expiresAt` from the binding.
 3. **Order the rest** by `score` desc, then earlier `startAt`, then `matchId` ascending,
    so equal inputs always produce equal output.
 4. **Greedy placement:** a match is placed on the first slot (`a` before `b`) whose
-   existing entries do not overlap its window. It must also be a slot whose account
-   can carry the stream (Case D: `accountsFor(streamId)`). If no slot is free for the
+   existing entries do not overlap its window. Both accounts are on the same provider, so
+   either slot can carry any channel. If no slot is free for the
    **whole** window, the match is **unassigned**. A match is aired in full or not at all.
    Never schedule a match you would have to cut halfway.
 5. **Same channel, back to back:** prefer the slot that already carries that `streamId`
@@ -413,7 +413,7 @@ The watch page needs no change for unassigned matches: the gate already returns
 | `backend/adapters/xtream*.js`, `backend/services/xtream.js`, `backend/services/iptv-lab.js`, `backend/routes/*`, `backend/router.js`, `lib/iptv-lab.js`, `lib/xtream-*.js` | The old Xtream/Lab line, which is a different system |
 | `worker.js`, `wrangler.toml` | Locked. No new secret is needed: `V2_CONTROL_ACTIVE_URL` already exists as an optional override |
 | `scripts/v2-bein-bindings-lib.js` (`buildBindings`, `normalizeChannelWindows`, `mergeGeneratedPlans`) | Binding correctness is already tested. Consume its output, do not reshape it |
-| `assets/data/v2-bein-vega.json` | Channel → streamId truth for account A / canonical ids |
+| `assets/data/v2-bein-vega.json` | Channel → streamId truth for both accounts (same provider) |
 | `lib/refresh-for-deploy.js`, `.github/workflows/*` | Not needed. Workflow changes need the owner's approval |
 | `assets/data/stream-plans.json` by hand | Generated; the gate already handles losers |
 
@@ -467,8 +467,7 @@ pins the same property.
 6. `"must"` pin beats a higher score. `"never"` pin is never placed.
 7. Back-to-back on the same `streamId` stays on the same slot.
 8. No `streamId` on two slots at overlapping times (property check over random fixtures).
-9. Case D: a stream that only account `a` can carry is never placed on `b`.
-10. Empty bindings → empty schedule. Expired bindings are ignored.
+9. Empty bindings → empty schedule. Expired bindings are ignored.
 
 `tests/v2-match-priority.test.js`: the JSON parses; every team in `tier1`, `tier2` and
 `rivalries` resolves via `TeamNames.arabicFor` (note: ESPN says **"Inter Milan"**, not
@@ -484,7 +483,7 @@ re-baseline), `v2-path-isolation.test.js`, `v2-bein-bindings.test.js`,
 
 `tests/runtime-config.test.js`: unset `V2_IPTV_ACCOUNTS_JSON` gives exactly one account
 from `V2_IPTV_RELAY_BASE`; a valid two-account JSON is accepted; duplicate ids,
-non-internal hosts, more than 2 accounts or bad JSON throw; Case D map parsing.
+non-internal hosts, more than 2 accounts or bad JSON throw.
 
 `tests/gateway-service.test.js`: these are the regression tests that matter:
 
@@ -499,7 +498,7 @@ non-internal hosts, more than 2 accounts or bad JSON throw; Case D map parsing.
 7. Restart: a fresh service with Mist already holding `iptv-3645@relay-a` and
    `iptv-3644@relay-b` reports both slots correctly (derived from Mist, not memory).
 8. Superseding on slot `a` aborts only `a`'s pending switch. A concurrent `b` switch completes.
-9. Case D: the Mist stream is named with the canonical id and the source URL uses the mapped id.
+9. A switch on slot `b` adds `iptv-<id>` with source `<relay-b>/live/<id>.ts`, the same id as on `a`.
 10. All existing single-slot tests pass unchanged with `V2_IPTV_ACCOUNTS_JSON` unset.
 
 `tests/control-server.test.js`: `?slot=` routing, 401 without PIN, 409 mapping for
@@ -549,11 +548,16 @@ Order (each step is independently safe):
 2. **StreamV2 control multi-slot code**, deployed with `V2_IPTV_ACCOUNTS_JSON` **unset**.
    Run the single-slot regression on the remote: one switch, one off.
 3. **Create `v2-iptv-relay-b`**, set account B. Check `/account` through the control
-   logs: fingerprints differ, `maxConnections` known.
+   logs: fingerprints differ, `maxConnections` known, and run the catalogue sanity check
+   from section 4.2.
 4. **Set `V2_IPTV_ACCOUNTS_JSON`** on `v2-control`, redeploy. On the remote, put a channel
    on slot B while slot A is idle. Confirm `GET /api/active` shows
    `capacity:2`, `conflict:false`. Then put a different channel on A and confirm both match
    pages play. Do this **outside a live match window** for account A.
+   Same-provider check: while both slots run, confirm neither relay logs an auth failure
+   and account A's `/account` still shows its own session. If the provider rejects two
+   accounts from one Railway egress IP, stop and tell the owner (per-service static
+   outbound IPs on Railway are the likely remedy). Don't work around it in code.
 5. **MorshLive allocator** PR: merged, schedule file live at
    `https://korazero.com/assets/data/v2-slot-schedule.json`. Have the owner read the
    `reasons` for the coming weekend.
@@ -568,8 +572,8 @@ gate needs no rollback because it is backward compatible with a single-slot cont
 
 ## 12. Open questions for the owner (ask once, then build with the defaults)
 
-1. Is account B the **same provider/panel** as A? This decides Case S vs Case D.
-   Default: verify by catalogue comparison (section 4).
+1. ~~Is account B the same provider as A?~~ **Answered Oct 17: yes, same provider.**
+   Shared stream IDs, no mapping layer (section 4.2).
 2. Are the starter team tiers and rivalries right for your audience? Default: ship the
    list in 7.3, since it is a data file and easy to change.
 3. Auto mode on from day one, or remote-only for the first weekend? Default:
