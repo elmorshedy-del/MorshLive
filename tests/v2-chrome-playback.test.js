@@ -11,7 +11,7 @@ describe("V2 Chrome playback recovery wiring", () => {
     const watchLoader = html.indexOf("assets/js/watch-loader.js");
     expect(policy).toBeGreaterThanOrEqual(0);
     expect(watchLoader).toBeGreaterThan(policy);
-    expect(loader).toContain('assets/js/watch.js?v=20261017channelguard1');
+    expect(loader).toContain("assets/js/watch.js?v=20261017channelguard1");
   });
 
   it("uses hls.js policy for V2 on non-Apple browsers", () => {
