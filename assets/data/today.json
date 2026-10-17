@@ -4621,12 +4621,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Etihad Stadium · Manchester · England",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-17T16:00:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401879262",
@@ -4646,12 +4642,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Gtech Community Stadium · Brentford · England",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-17T16:00:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882837",
@@ -4671,12 +4663,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Estadio de la Cerámica · Villarreal · Spain",
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-17T17:00:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-fra.1-401876432",
@@ -4696,12 +4684,8 @@
       "leagueSlug": "fra.1",
       "competition": "ligue1",
       "venue": "Stade de la Meinau · Strasbourg · France",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-17T18:00:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401879258",
@@ -4721,12 +4705,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "St. James' Park · Newcastle-upon-Tyne · England",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-17T19:15:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882838",
@@ -4971,12 +4951,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Estadio La Cartuja · Sevilla · Spain",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-17T19:15:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401878770",
@@ -4996,12 +4972,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Craven Cottage · London · England",
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-17T16:45:00.000Z"
+      "source": "espn"
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
