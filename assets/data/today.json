@@ -4634,7 +4634,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-17T16:45:00.000Z"
+      "channelExpiresAt": "2026-10-17T16:00:00.000Z"
     },
     {
       "id": "espn-eng.1-401879262",
@@ -4960,6 +4960,31 @@
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
       "channelExpiresAt": "2026-10-19T21:45:00.000Z"
+    },
+    {
+      "id": "espn-esp.1-401882846",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Real Betis",
+      "away": "Barcelona",
+      "homeAbbr": "BET",
+      "awayAbbr": "BAR",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/244.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/83.png",
+      "score": "VS",
+      "time": "16:00",
+      "kickoffUtc": "2026-10-17T16:00Z",
+      "league": "Spanish LALIGA",
+      "leagueAr": "الدوري الإسباني",
+      "leagueSlug": "esp.1",
+      "competition": "laliga",
+      "venue": "Estadio La Cartuja · Sevilla · Spain",
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn",
+      "channelSource": "v2-bein-qualifiers",
+      "channelExpiresAt": "2026-10-17T19:15:00.000Z"
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
