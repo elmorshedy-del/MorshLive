@@ -21,7 +21,8 @@ const MAX_PLAN_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 const LOCKED_FILES = Object.freeze({
   "iptv-lab.html": "67ace9fbc5e58c6dc08c532a5169fe294518e3f9",
-  "watch.html": "32dd468bc22295336a13e79c730be7dceb952fe1",
+  // CLAUDE-STAMP 2026-10-17 — V2-CHROME-HLS-1
+  "watch.html": "79dd6e24d8286edfe1b63383db9e824b218328f7",
   "watch-embed.html": "c236f654fd4071f475c05d9e3086fe75c63217a1",
   "assets/js/iptv-lab.js": "5ff9896cc315258753cf23a76b506f32d75ffd1a",
   "assets/js/iptv-quality.js": "1c0de8794befded840bed10eae179a39ff936925",
@@ -33,8 +34,9 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
   "assets/js/watch-loader.js": "3402b1f4a5001fc9c8ee35c39358725f9274f1dc",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
-  // V2 single-socket healthy same-URL remount guard.
-  "assets/js/watch.js": "7b20b06c4672a56c5ea274f1aba81bcfbe5e71ca",
+  // V2 Chrome recovery policy + lifecycle guard.
+  "assets/js/v2-hls-policy.js": "ee807023085a190516d39d19b9f323e84ae22490",
+  "assets/js/watch.js": "32987131658b6d2990f88923b239f586ae20bf6e",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
