@@ -120,7 +120,16 @@ has overridden a slot.
    Same provider also means the **same portal URL**, so the two accounts differ only by
    username. The fingerprint guard in 5.1 / 5.2 is what stops "two accounts" that are
    accidentally one.
-3. Confirm account B's `max_connections` from relay B `/account`. Design for one
+3. **Name coverage (prerequisite, found on Oct 14 replay):** a match gets a V2 binding only
+   if FilGoal's Arabic team names match the ESPN fixture via `TeamNames.arabicFor` in
+   `assets/js/team-names.js`. On Oct 14, 2026, **4 of 9** Champions League matches got
+   no binding because these ESPN names have no Arabic entry: `AS Roma` (روما),
+   `Feyenoord Rotterdam` (فيينورد), `Como` (كومو), `Shakhtar Donetsk` (شاختار دونتسك),
+   `VfB Stuttgart` (شتوتجارت). Roma–Real Madrid had no automatic V2 stream at all. Add those
+   names, and make `scripts/refresh-v2-bein-bindings.js` log every FilGoal beIN row that matched
+   no fixture (`V2 beIN bindings: unmatched row <homeAr> v <awayAr> <channel>`), so the next
+   gap is visible. Do not loosen the fuzzy-match thresholds in `matchRowToFixture` instead.
+4. Confirm account B's `max_connections` from relay B `/account`. Design for one
    connection per account. Do not try to multiplex two channels through one account.
    Per `AGENTS.md`, that limit is the owner's call: mention it once and build.
 
@@ -211,7 +220,12 @@ New file `server/slot-scheduler.js`, started from `server/index.js` **only when
   (env `V2_SLOT_SCHEDULE_URL`). On fetch/parse failure **do nothing**: keep the current
   slots, never turn anything off because the schedule is unreachable.
 - For each slot whose mode is `auto`: at an entry's `startAt`, `activate(streamId, {slot})`;
-  after `endAt`, if that entry still owns the slot, stop it.
+  after `endAt`, if that entry still owns the slot and no later entry follows on it, stop it.
+- **Handover on a busy slot** (the previous match is still on it when the next entry's
+  `startAt` arrives): wait until the previous match is finished (its `status` in
+  `https://korazero.com/assets/data/today.json` is no longer `live`), **or** until the next
+  entry's kickoff, whichever comes first. Then switch. A slow-finishing early match keeps its
+  last minutes, and the next match never misses kickoff.
 - **Manual wins:** any `/operator/switch` or `/operator/off` on a slot sets
   `mode: "manual"` and `manualUntil` = the end of the scheduled window covering now, or
   now + 3h if there is none. A "Resume auto" button on the remote clears it.
@@ -286,9 +300,18 @@ entry" rule.
 
 ### 7.2 Allocation rule (deterministic, explainable)
 
-Each binding becomes a window `[startAt, endAt]` with
-`startAt = (broadcastKickoffUtc || kickoffUtc) − 30 min` (matches the gate's T-30 window)
-and `endAt = expiresAt` from the binding.
+Each binding becomes an **occupancy window** `[startAt, endAt)` (half-open, so back-to-back
+windows that touch do not overlap), with `ko = broadcastKickoffUtc || kickoffUtc`:
+
+- `startAt = ko − 15 min`
+- `endAt = ko + 120 min` (a normal match plus half-time and stoppage time)
+
+**Do not use the binding's `expiresAt` (ko + 165 min) or the gate's T-30 here.** Those are
+expiry / visibility windows, not slot occupancy. Replaying Oct 14, 2026 with
+`[ko − 30, expiresAt]` left LASK–Liverpool (16:45) holding slot b until 19:30. That made
+Roma–Real Madrid (19:00) unassignable while slot b then sat idle from 19:30. With
+`[ko − 15, ko + 120)` both fit. See the regression test in section 9. The runtime
+scheduler (5.4) handles a match that overruns.
 
 1. **Frozen entries first:** every entry in `previous` whose `startAt <= now < endAt`
    is kept on its slot, unchanged, if its match still has a binding with the same
@@ -468,6 +491,15 @@ pins the same property.
 7. Back-to-back on the same `streamId` stays on the same slot.
 8. No `streamId` on two slots at overlapping times (property check over random fixtures).
 9. Empty bindings → empty schedule. Expired bindings are ignored.
+10. **Oct 14, 2026 regression** (store the 9 inputs in `tests/fixtures/v2-allocator-2026-10-14.json`:
+    matchId, home, away, competition `ucl`, kickoffUtc, streamId):
+    16:45 LASK–Liverpool (beIN 2), Feyenoord–Como (beIN 4); 19:00 Man City–PSG (beIN 1),
+    Roma–Real Madrid (beIN 3), Bodø/Glimt–Dortmund (beIN 6), Aston Villa–Fenerbahçe (beIN 4),
+    Real Betis–Porto (beIN 5), Shakhtar–AEK (beIN Xtra 1), Slovan–Stuttgart (beIN 8).
+    Expected with the starter priority file: **16:45 both matches placed; 19:00 Man City–PSG
+    (130) and Roma–Real Madrid (80) placed**; Dortmund (65), Villa (65), Betis–Porto,
+    Shakhtar–AEK and Slovan–Stuttgart (50) unassigned with `by` naming the two winners.
+    Assert by set per kickoff, not by slot letter.
 
 `tests/v2-match-priority.test.js`: the JSON parses; every team in `tier1`, `tier2` and
 `rivalries` resolves via `TeamNames.arabicFor` (note: ESPN says **"Inter Milan"**, not
