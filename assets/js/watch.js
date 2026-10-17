@@ -298,6 +298,9 @@
   const shell = document.getElementById("player-shell");
   let loadedUrl = "";
   let activeHls = null;
+  let v2MountGeneration = 0;
+  let v2LastProgressAt = 0;
+  const v2RemountedAtByUrl = new Map();
   let activeMpegTs = null;
   let activeXtreamChannel = null;
   let xtreamRecoveryCount = 0;
@@ -327,6 +330,8 @@
   }
 
   function destroyInlineHls() {
+    v2MountGeneration += 1;
+    v2LastProgressAt = 0;
     if (activeHls) {
       try {
         activeHls.destroy();
@@ -972,13 +977,27 @@
   // V2 is one provider socket. The 20s plan refresh may update metadata, but
   // it must not destroy a healthy HLS player when the V2 URL did not change.
   const V2_MIST_HLS_RE = /^https:\/\/v2-mist-production\.up\.railway\.app\/hls\/iptv-\d+\/index\.m3u8(?:[?#].*)?$/i;
+  const V2_REMOUNT_WINDOW_MS = 60_000;
+
+  function v2ResumePosition(video) {
+    const position = Number(video?.currentTime);
+    const seekable = video?.seekable;
+    if (!Number.isFinite(position) || !seekable) return -1;
+    for (let index = 0; index < seekable.length; index += 1) {
+      if (position >= seekable.start(index) && position <= seekable.end(index)) return position;
+    }
+    return -1;
+  }
+
   function v2PinnedMirrorAlreadyHealthy(url) {
     const href = String(url || "");
     if (!V2_MIST_HLS_RE.test(href)) return false;
     const currentUrl = String(loadedUrl || "").replace(/^(?:pinned-mirror|plan-hls):/, "");
     if (currentUrl !== href) return false;
     const video = shell && shell.querySelector(".kz-main-video");
-    return !!(video && video.readyState >= 2 && !video.error && !video.ended);
+    if (!video || video.error || video.ended) return false;
+    if (activeHls && Date.now() - v2LastProgressAt < 20_000) return true;
+    return video.readyState >= 2;
   }
 
   function mountPinnedMainMirror(url, fallbackUrl, isIframe) {
@@ -997,7 +1016,9 @@
     if (!video) return;
 
     const mount = (src, isFallbackAttempt) => {
+      const generation = v2MountGeneration;
       const onError = () => {
+        if (generation !== v2MountGeneration) return;
         destroyInlineHls();
         if (!isFallbackAttempt && fallbackUrl) {
           mount(fallbackUrl, true);
@@ -1006,7 +1027,72 @@
         shell.innerHTML = `<div class="manual-mirror-error">${escapeHtml(t("watch.manualMirrorFailed"))}</div>`;
       };
 
-      if (video.canPlayType("application/vnd.apple.mpegurl")) {
+      const isV2 = V2_MIST_HLS_RE.test(src);
+      const useV2Hls =
+        isV2 &&
+        window.Hls &&
+        window.Hls.isSupported() &&
+        !String(navigator.vendor || "").startsWith("Apple") &&
+        window.KZ_V2_HLS_CONFIG &&
+        window.KZV2Recovery;
+
+      if (useV2Hls) {
+        const tracker = window.KZV2Recovery.create({ now: Date.now });
+        const hls = new window.Hls(window.KZ_V2_HLS_CONFIG);
+        activeHls = hls;
+
+        video.addEventListener("timeupdate", () => {
+          if (generation !== v2MountGeneration || activeHls !== hls) return;
+          tracker.noteProgress();
+          v2LastProgressAt = Date.now();
+        });
+
+        hls.on(window.Hls.Events.ERROR, (_event, data) => {
+          if (generation !== v2MountGeneration || activeHls !== hls || !data) return;
+          const decision = tracker.decide(data);
+          console.warn("[KZ-V2]", data.type, data.details, data.fatal, decision.action);
+
+          if (decision.action === "ignore") return;
+
+          if (decision.action === "resume-load") {
+            setTimeout(() => {
+              if (generation !== v2MountGeneration || activeHls !== hls) return;
+              hls.startLoad(v2ResumePosition(video));
+            }, decision.delayMs);
+            return;
+          }
+
+          if (decision.action === "recover-media") {
+            hls.recoverMediaError();
+            return;
+          }
+
+          if (decision.action === "swap-audio-and-recover") {
+            hls.swapAudioCodec();
+            hls.recoverMediaError();
+            return;
+          }
+
+          if (decision.action === "remount") {
+            const now = Date.now();
+            const previousRemount = v2RemountedAtByUrl.get(src);
+            if (Number.isFinite(previousRemount) && now - previousRemount < V2_REMOUNT_WINDOW_MS) {
+              onError();
+              return;
+            }
+            v2RemountedAtByUrl.set(src, now);
+            loadedUrl = "";
+            destroyInlineHls();
+            mountPinnedMainMirror(src, isFallbackAttempt ? "" : fallbackUrl, false);
+            return;
+          }
+
+          onError();
+        });
+        forceHighestHlsLevel(hls);
+        hls.loadSource(src);
+        hls.attachMedia(video);
+      } else if (video.canPlayType("application/vnd.apple.mpegurl")) {
         video.src = src;
         video.addEventListener("error", onError, { once: true });
       } else if (window.Hls && window.Hls.isSupported()) {
