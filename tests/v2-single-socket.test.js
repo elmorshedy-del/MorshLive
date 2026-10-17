@@ -27,10 +27,11 @@ describe("V2 plan single-socket policy", () => {
     expect(v2Plans.length).toBeGreaterThan(0);
   });
 
-  it("uses controller state as the runtime authority for the one active V2 socket", () => {
+  it("uses controller state as the runtime authority for configured V2 slots", () => {
     expect(service).toContain("https://v2-control-production.up.railway.app/api/active");
     expect(service).toContain("function gateV2Plan(plan, state, timing = {})");
-    expect(service).toContain("const activeChannelId = state?.activeChannelId || null");
+    expect(service).toContain("activeChannelIds.includes(v2ChannelId(source))");
+    expect(service).toContain("activeChannelIds.length > capacity");
     expect(service).toContain("selected: null");
     expect(service).toContain("v2-remote-other:");
     expect(service).toContain("v2-remote-off");

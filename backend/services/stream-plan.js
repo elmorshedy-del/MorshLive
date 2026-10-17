@@ -38,9 +38,18 @@ async function loadActiveV2State(env) {
     });
     if (!response.ok) return null;
     const body = await response.json().catch(() => null);
-    if (!body || body.conflict) return { activeChannelId: null, conflict: Boolean(body?.conflict) };
-    const activeChannelId = String(body.active?.channelId || "").toLowerCase();
-    return { activeChannelId: /^iptv-\d+$/.test(activeChannelId) ? activeChannelId : null, conflict: false };
+    if (!body || body.conflict) return { activeChannelIds: [], conflict: Boolean(body?.conflict) };
+    const capacity =
+      Number.isInteger(body.capacity) && body.capacity >= 1 && body.capacity <= 4 ? body.capacity : 1;
+    const normalizeId = (id) => (typeof id === "string" && /^iptv-\d+$/i.test(id) ? id.toLowerCase() : null);
+    const candidates =
+      Array.isArray(body.live) && body.live.length
+        ? body.live.map((entry) => entry?.channelId)
+        : [body.active?.channelId];
+    const activeChannelIds = [...new Set(candidates.map(normalizeId).filter(Boolean))];
+    return activeChannelIds.length > capacity
+      ? { activeChannelIds: [], conflict: true }
+      : { activeChannelIds, conflict: false };
   } catch {
     return null;
   } finally {
@@ -52,7 +61,8 @@ function gateV2Plan(plan, state, timing = {}) {
   const sources = v2Sources(plan);
   if (!sources.length || plan?.status === "conflict") return plan;
 
-  const activeChannelId = state?.activeChannelId || null;
+  const activeChannelIds = state?.conflict ? [] : state?.activeChannelIds || [];
+  const firstActiveId = activeChannelIds[0] || null;
   const now = Date.now();
   const kickoff = Date.parse(timing.kickoffUtc || "");
   const expires = Date.parse(timing.expiresAt || "");
@@ -62,13 +72,14 @@ function gateV2Plan(plan, state, timing = {}) {
     !beforeWindow && !expired
       ? sources.find(
           (source) =>
-            v2ChannelId(source) === activeChannelId &&
+            activeChannelIds.includes(v2ChannelId(source)) &&
             source.status !== "failed" &&
             !(Date.parse(source.expiresAt || "") <= now),
         ) || null
       : null;
 
   if (activeSource) {
+    const activeChannelId = v2ChannelId(activeSource);
     const selected = {
       ...activeSource,
       role: "primary",
@@ -85,7 +96,7 @@ function gateV2Plan(plan, state, timing = {}) {
         .map((source) => ({ ...source, role: "alternate", status: "pending", effectiveStatus: "pending" })),
       profile: plan.selected?.id === activeSource.id ? plan.profile : null,
       reason: `remote-active:${activeChannelId}`,
-      v2Remote: { active: activeChannelId },
+      v2Remote: { active: activeChannelId, activeIds: activeChannelIds },
     };
   }
 
@@ -107,10 +118,10 @@ function gateV2Plan(plan, state, timing = {}) {
         ? "v2-match-expired"
         : state === null
           ? "v2-remote-unavailable"
-          : activeChannelId
-            ? `v2-remote-other:${activeChannelId}`
+          : firstActiveId
+            ? `v2-remote-other:${activeChannelIds.join(",")}`
             : "v2-remote-off",
-    v2Remote: { active: activeChannelId },
+    v2Remote: { active: firstActiveId, activeIds: activeChannelIds },
   };
 }
 
