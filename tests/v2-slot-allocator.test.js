@@ -16,14 +16,7 @@ function binding({
   return { matchId, home, away, competition, kickoffUtc, streamId: String(streamId) };
 }
 
-function previousEntry({
-  slot,
-  matchId,
-  streamId,
-  startAt,
-  endAt,
-  score = 0,
-}) {
+function previousEntry({ slot, matchId, streamId, startAt, endAt, score = 0 }) {
   return {
     slot,
     matchId,
@@ -337,12 +330,14 @@ describe("allocateSlots", () => {
     const bindings = [];
     for (let index = 0; index < 30; index += 1) {
       const minute = Math.floor(random() * 360);
-      bindings.push(binding({
-        matchId: `r-${index}`,
-        kickoffUtc: new Date(Date.parse("2026-10-18T10:00:00Z") + minute * 60_000).toISOString(),
-        streamId: String(500 + index),
-        competition: "none",
-      }));
+      bindings.push(
+        binding({
+          matchId: `r-${index}`,
+          kickoffUtc: new Date(Date.parse("2026-10-18T10:00:00Z") + minute * 60_000).toISOString(),
+          streamId: String(500 + index),
+          competition: "none",
+        }),
+      );
     }
 
     const result = allocateSlots({
@@ -357,8 +352,9 @@ describe("allocateSlots", () => {
         const left = result.entries[i];
         const right = result.entries[j];
         if (left.streamId !== right.streamId) continue;
-        const overlaps = Date.parse(left.startAt) < Date.parse(right.endAt)
-          && Date.parse(right.startAt) < Date.parse(left.endAt);
+        const overlaps =
+          Date.parse(left.startAt) < Date.parse(right.endAt) &&
+          Date.parse(right.startAt) < Date.parse(left.endAt);
         expect(overlaps).toBe(false);
       }
     }
@@ -415,13 +411,15 @@ describe("allocateSlots", () => {
         .map((entry) => entry.matchId)
         .filter((id) => !["oct14-lask-liverpool", "oct14-feyenoord-como"].includes(id)),
     );
-    expect(unassigned1900).toEqual(new Set([
-      "oct14-bodo-dortmund",
-      "oct14-villa-fenerbahce",
-      "oct14-betis-porto",
-      "oct14-shakhtar-aek",
-      "oct14-slovan-stuttgart",
-    ]));
+    expect(unassigned1900).toEqual(
+      new Set([
+        "oct14-bodo-dortmund",
+        "oct14-villa-fenerbahce",
+        "oct14-betis-porto",
+        "oct14-shakhtar-aek",
+        "oct14-slovan-stuttgart",
+      ]),
+    );
     for (const loser of result.unassigned.filter((entry) => unassigned1900.has(entry.matchId))) {
       expect(new Set(loser.by)).toEqual(new Set(["oct14-city-psg", "oct14-roma-real"]));
     }
