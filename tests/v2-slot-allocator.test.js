@@ -305,7 +305,7 @@ describe("allocateSlots", () => {
           competition: "none",
         }),
         binding({
-          matchId: "other",
+          matchId: "z-other",
           kickoffUtc: "2026-10-18T12:15:00Z",
           streamId: "401",
           competition: "none",
