@@ -1076,6 +1076,8 @@
   async function mountLabChannel() {
     if (!shell || !window.mpegts?.isSupported?.()) return false;
     if (v2MatchdaySelected()) return false;
+    if (params.get("match") && !activePlan) return false;
+    if (activePlan?.catalog && activePlan.policy?.allowLegacy === false) return false;
     const channelId = (match && match.channelId) || channel.id;
     // CHATGPT-STAMP 2026-09-05T08:08-04:00 — the 20s/90s metadata ticks must
     // not become playback ticks. Same channel + healthy media = leave it alone.
