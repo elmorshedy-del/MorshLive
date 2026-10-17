@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "competition": {
+    "ucl": 50,
+    "epl": 40,
+    "laliga": 40,
+    "afconq": 30,
+    "unl": 25,
+    "ligue1": 20
+  },
+  "tier1": 30,
+  "tier2": 15,
+  "rivalryBonus": 40,
+  "bigGameBonus": 20,
+  "teams": {
+    "tier1": [
+      "Real Madrid",
+      "Barcelona",
+      "Liverpool",
+      "Manchester City",
+      "Manchester United",
+      "Arsenal",
+      "Chelsea",
+      "Paris Saint-Germain",
+      "Bayern Munich",
+      "Egypt",
+      "Morocco",
+      "Algeria",
+      "Tunisia",
+      "Saudi Arabia"
+    ],
+    "tier2": [
+      "Atlético Madrid",
+      "Tottenham Hotspur",
+      "Newcastle United",
+      "Aston Villa",
+      "Juventus",
+      "Inter Milan",
+      "AC Milan",
+      "Borussia Dortmund",
+      "Marseille",
+      "Portugal",
+      "Spain",
+      "France",
+      "England",
+      "Germany",
+      "Italy"
+    ]
+  },
+  "rivalries": [
+    ["Real Madrid", "Barcelona"],
+    ["Real Madrid", "Atlético Madrid"],
+    ["Barcelona", "Atlético Madrid"],
+    ["Manchester United", "Manchester City"],
+    ["Manchester United", "Liverpool"],
+    ["Liverpool", "Everton"],
+    ["Arsenal", "Tottenham Hotspur"],
+    ["Arsenal", "Chelsea"],
+    ["Chelsea", "Tottenham Hotspur"],
+    ["Liverpool", "Manchester City"],
+    ["Paris Saint-Germain", "Marseille"],
+    ["Sevilla", "Real Betis"],
+    ["Morocco", "Algeria"],
+    ["Egypt", "Algeria"],
+    ["Egypt", "Tunisia"]
+  ]
+}
