@@ -1,0 +1,11 @@
+[
+  {"matchId":"oct14-lask-liverpool","home":"LASK Linz","away":"Liverpool","competition":"ucl","kickoffUtc":"2026-10-14T16:45:00Z","streamId":"3644"},
+  {"matchId":"oct14-feyenoord-como","home":"Feyenoord Rotterdam","away":"Como","competition":"ucl","kickoffUtc":"2026-10-14T16:45:00Z","streamId":"3652"},
+  {"matchId":"oct14-city-psg","home":"Manchester City","away":"Paris Saint-Germain","competition":"ucl","kickoffUtc":"2026-10-14T19:00:00Z","streamId":"3645"},
+  {"matchId":"oct14-roma-real","home":"AS Roma","away":"Real Madrid","competition":"ucl","kickoffUtc":"2026-10-14T19:00:00Z","streamId":"3653"},
+  {"matchId":"oct14-bodo-dortmund","home":"Bodo/Glimt","away":"Borussia Dortmund","competition":"ucl","kickoffUtc":"2026-10-14T19:00:00Z","streamId":"3650"},
+  {"matchId":"oct14-villa-fenerbahce","home":"Aston Villa","away":"Fenerbahce","competition":"ucl","kickoffUtc":"2026-10-14T19:00:00Z","streamId":"3652"},
+  {"matchId":"oct14-betis-porto","home":"Real Betis","away":"FC Porto","competition":"ucl","kickoffUtc":"2026-10-14T19:00:00Z","streamId":"3651"},
+  {"matchId":"oct14-shakhtar-aek","home":"Shakhtar Donetsk","away":"AEK Athens","competition":"ucl","kickoffUtc":"2026-10-14T19:00:00Z","streamId":"3844"},
+  {"matchId":"oct14-slovan-stuttgart","home":"Slovan Bratislava","away":"VfB Stuttgart","competition":"ucl","kickoffUtc":"2026-10-14T19:00:00Z","streamId":"3648"}
+]
