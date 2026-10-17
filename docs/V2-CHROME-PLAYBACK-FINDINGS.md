@@ -81,34 +81,10 @@ others watch. Do not use the remote's switch/off buttons for testing.
   `https://v2-mist-production.up.railway.app/hls/iptv-<id>/index.m3u8` → variant playlist every 2 s
   and `ffprobe` the segments around a restart.
 
-## 5. Fixes, in order of value
+## 5. Fixes
 
-**A. Relay resilience** (KoraZero-StreamV2, not locked; affects every browser):
-`server/provider-hls-source.js`: on a segment 404, refetch the playlist and jump to the
-newest segment instead of throwing. On 5xx / `fetch failed` / `terminated`, retry with
-backoff for up to ~2 × targetDuration before giving up. Keep the TS body open meanwhile; the
-relay's null-burst keepalive in `iptv-relay-core.js` already exists for this. Tests in
-`tests/iptv-relay.test.js`: a 404 mid-stream does not end the body; a 522 then 200 does not end
-the body; 3 consecutive failures past the budget do end it. (The second-account handoff lists
-this file as do-not-touch **for that work**. This is a separate, focused fix.)
-
-**B. Chrome player config** (MorshLive `assets/js/watch.js`, **locked**: needs the
-`config/stream-change-plan.json` + `KZ_STREAM_CHANGE_APPROVED` flow in `docs/STREAM-LOCK.md`,
-re-baseline only `watch.js`). V2 mount only (`V2_MIST_HLS_RE` matches):
-- hls.js config `{ enableWorker: true, liveSyncDuration: 12, liveMaxLatencyDuration: 30, maxBufferHole: 1 }`
-  (12 s = two provider bursts; costs ~6 s extra latency);
-- on fatal `NETWORK_ERROR` → `hls.startLoad()` (bounded, e.g. 3 tries in 30 s); on fatal
-  `MEDIA_ERROR` → `recoverMediaError()`, then `swapAudioCodec()` + `recoverMediaError()`; only then
-  `onError`;
-- in `v2PinnedMirrorAlreadyHealthy`, treat the same URL with a live hls instance and no fatal
-  error as healthy for up to ~15 s of `readyState < 2`, so the 20 s refresh never restarts a
-  player that is only stalling;
-- log hls.js `ERROR` events as `[KZ-V2] type/details/fatal` to the console, so the next report
-  has evidence.
-
-**C. Optional:** smooth the relay's output (pace each 6 s provider segment over ~6 s instead
-of a 1.2 s burst) to reduce Mist jitter. Only consider it after A and B are measured.
-
-`tests/v2-path-isolation.test.js` and `tests/psg-v2-matchday-stability.test.js` pin parts of
-this mount path. Keep them green, and extend them for the new recovery behaviour rather than
-loosening them.
+The step-by-step fix (files, exact behaviour, tests, guardrails, verification) is in
+**`docs/HANDOFF-V2-CHROME-FIX.md`**. In short: A) the relay retries or skips failed provider
+segments instead of ending Mist's input (KoraZero-StreamV2, not locked); B) the V2 hls.js
+player sits 14 s behind live, recovers from fatal errors, and isn't restarted mid-stall by the
+20 s refresh (locked `watch.js` / `watch.html`, via the stream-change plan).

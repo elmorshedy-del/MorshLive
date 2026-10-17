@@ -80,7 +80,7 @@ Do not treat an in-flight `main` Workers Build as “good enough” while koraze
 
 For adding a second IPTV account to V2 (Mist on Railway), running two channels at
 once, or auto-assigning channels to matches with a priority rule for collisions,
-follow `docs/HANDOFF-V2-SECOND-ACCOUNT.md` (Chrome playback issues: `docs/V2-CHROME-PLAYBACK-FINDINGS.md`). It spans this repo and
+follow `docs/HANDOFF-V2-SECOND-ACCOUNT.md` (Chrome playback: findings `docs/V2-CHROME-PLAYBACK-FINDINGS.md`, fix `docs/HANDOFF-V2-CHROME-FIX.md`). It spans this repo and
 `elmorshedy-del/KoraZero-StreamV2` (`feature/gateway-control`), and names the one
 locked file it changes.
 
