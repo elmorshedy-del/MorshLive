@@ -1,9 +1,0 @@
-{
-  "baseline": "dd06ac0d7e2c888e53b1e26d47ff767fc6b971d3",
-  "reason": "Stage V2 Chrome HLS recovery without changing non-V2 playback paths.",
-  "expiresAt": "2026-10-18T15:00:00Z",
-  "allowedFiles": [
-    "assets/js/watch.js",
-    "watch.html"
-  ]
-}
