@@ -76,6 +76,14 @@ After merging user-facing HTML/JS/CSS to `main`:
 
 Do not treat an in-flight `main` Workers Build as “good enough” while korazero.com is still serving the previous `?v=`.
 
+## Second V2 (Mist) account / automatic slots
+
+For adding a second IPTV account to V2 (Mist on Railway), running two channels at
+once, or auto-assigning channels to matches with a priority rule for collisions,
+follow `docs/HANDOFF-V2-SECOND-ACCOUNT.md`. It spans this repo and
+`elmorshedy-del/KoraZero-StreamV2` (`feature/gateway-control`), and names the one
+locked file it changes.
+
 ## Hero images (`assets/img/*.jpg`)
 
 The homepage heroes are **artwork the owner supplies**. They are not yours to
