@@ -988,34 +988,6 @@
       "locked": true
     },
     {
-      "key": "alettifaq~neomsc",
-      "home": "Neom SC",
-      "away": "Al Ettifaq",
-      "commentators": [],
-      "channel": "ثمانية 2",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-2",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
-      "key": "aldiriyah~altaawoun",
-      "home": "Al Diriyah",
-      "away": "Al Taawoun",
-      "commentators": [],
-      "channel": "ثمانية 1",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "locked": false
-    },
-    {
       "key": "alfateh~alkhaleej",
       "home": "Al Fateh",
       "away": "Al Khaleej",
@@ -1024,7 +996,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-2",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -4925,40 +4897,8 @@
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
-  "broadcastUpdatedAt": "2026-10-18T15:49:59.965Z",
+  "broadcastUpdatedAt": "2026-10-18T23:09:25.436Z",
   "broadcastIndex": [
-    {
-      "id": "espn-ksa.1-401900899",
-      "key": "alettifaq~neomsc",
-      "home": "Neom SC",
-      "away": "Al Ettifaq",
-      "kickoffUtc": "2026-10-17T15:40Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية 2",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-2",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "commentators": []
-    },
-    {
-      "id": "espn-ksa.1-401900449",
-      "key": "aldiriyah~altaawoun",
-      "home": "Al Diriyah",
-      "away": "Al Taawoun",
-      "kickoffUtc": "2026-10-17T18:00Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية 1",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah-1",
-        "source": "livefootballtv:pinned",
-        "confidence": "exact"
-      },
-      "commentators": []
-    },
     {
       "id": "espn-ksa.1-401900447",
       "key": "alfateh~alkhaleej",
@@ -4970,7 +4910,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-2",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "commentators": []
