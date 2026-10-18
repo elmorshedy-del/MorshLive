@@ -1,27 +1,13 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-17T20:57:35.277Z",
+  "generatedAt": "2026-10-18T05:07:56.403Z",
   "window": {
-    "start": "2026-10-17",
-    "end": "2026-10-20"
+    "start": "2026-10-18",
+    "end": "2026-10-21"
   },
   "source": "filgoal",
   "variant": "Vega",
   "bindings": [
-    {
-      "matchId": "espn-esp.1-401882838",
-      "home": "Valencia",
-      "away": "Athletic Club",
-      "kickoffUtc": "2026-10-17T19:00Z",
-      "competition": "laliga",
-      "broadcastChannelId": "bein-sports-2",
-      "channel": "beIN Sports 2",
-      "playbackChannelId": "v2-bein-sports-2",
-      "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2 HD",
-      "sourceHref": "/matches/375078/مباراة-فالنسيا-أتليتك-بلباو-في-الدوري-الإسباني",
-      "expiresAt": "2026-10-17T21:45:00.000Z"
-    },
     {
       "matchId": "espn-esp.1-401882840",
       "home": "Osasuna",

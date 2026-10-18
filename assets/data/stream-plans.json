@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-17T20:57:35.277Z",
+  "updatedAt": "2026-10-18T05:07:56.403Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1649,44 +1649,6 @@
       ]
     },
     {
-      "matchId": "espn-esp.1-401882838",
-      "teams": [
-        [
-          "Valencia"
-        ],
-        [
-          "Athletic Club"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882838",
-      "kickoffUtc": "2026-10-17T19:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-10-17T12:34:47.086Z",
-      "expiresAt": "2026-10-17T21:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3644",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3644/index.m3u8",
-          "contentKey": "match:espn-esp.1-401882838",
-          "status": "operator",
-          "verifiedAt": "2026-10-17T12:34:47.086Z",
-          "expiresAt": "2026-10-17T21:45:00.000Z",
-          "label": "beIN Sports 2 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 2 HD"
-        }
-      ]
-    },
-    {
       "matchId": "espn-esp.1-401882840",
       "teams": [
         [
@@ -2037,6 +1999,29 @@
       "sources": []
     },
     {
+      "matchId": "espn-esp.1-401882870",
+      "teams": [
+        [
+          "Levante"
+        ],
+        [
+          "Athletic Club"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882870",
+      "kickoffUtc": "2026-10-21T18:00Z",
+      "expiresAt": "2026-10-21T20:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
       "matchId": "espn-uefa.champions-401915403",
       "teams": [
         [
@@ -2233,6 +2218,213 @@
       "contentKey": "match:espn-uefa.champions-401915392",
       "kickoffUtc": "2026-10-20T19:00Z",
       "expiresAt": "2026-10-20T21:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.champions-401915395",
+      "teams": [
+        [
+          "Como"
+        ],
+        [
+          "Manchester United"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915395",
+      "kickoffUtc": "2026-10-21T16:45Z",
+      "expiresAt": "2026-10-21T19:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.champions-401915396",
+      "teams": [
+        [
+          "Lille"
+        ],
+        [
+          "Galatasaray"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915396",
+      "kickoffUtc": "2026-10-21T16:45Z",
+      "expiresAt": "2026-10-21T19:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.champions-401915394",
+      "teams": [
+        [
+          "Aston Villa"
+        ],
+        [
+          "VIKING FK"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915394",
+      "kickoffUtc": "2026-10-21T19:00Z",
+      "expiresAt": "2026-10-21T21:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.champions-401915312",
+      "teams": [
+        [
+          "Bayern Munich"
+        ],
+        [
+          "Arsenal"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915312",
+      "kickoffUtc": "2026-10-21T19:00Z",
+      "expiresAt": "2026-10-21T21:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.champions-401915388",
+      "teams": [
+        [
+          "Club Brugge"
+        ],
+        [
+          "Lens"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915388",
+      "kickoffUtc": "2026-10-21T19:00Z",
+      "expiresAt": "2026-10-21T21:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.champions-401915390",
+      "teams": [
+        [
+          "Internazionale"
+        ],
+        [
+          "Shakhtar Donetsk"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915390",
+      "kickoffUtc": "2026-10-21T19:00Z",
+      "expiresAt": "2026-10-21T21:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.champions-401915389",
+      "teams": [
+        [
+          "Real Betis"
+        ],
+        [
+          "Feyenoord Rotterdam"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915389",
+      "kickoffUtc": "2026-10-21T19:00Z",
+      "expiresAt": "2026-10-21T21:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.champions-401915313",
+      "teams": [
+        [
+          "Real Madrid"
+        ],
+        [
+          "RB Leipzig"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915313",
+      "kickoffUtc": "2026-10-21T19:00Z",
+      "expiresAt": "2026-10-21T21:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.champions-401915391",
+      "teams": [
+        [
+          "Sporting CP"
+        ],
+        [
+          "LASK Linz"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915391",
+      "kickoffUtc": "2026-10-21T19:00Z",
+      "expiresAt": "2026-10-21T21:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
