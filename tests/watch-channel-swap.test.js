@@ -47,9 +47,6 @@ const switchRow = (selection) =>
 const SAUDI = "espn-ksa.1-401900363";
 const EURO = "espn-uefa.champions-401915452";
 
-const matchSelection = (match, query = "") =>
-  window.resolveWatchSelection([match], CHANNELS, new URLSearchParams(query || `match=${match.id}`));
-
 const actualSwitchRow = (selection) => {
   const siblings = CHANNELS.filter((c) => c.group === selection.channel.group);
   return siblings.length > 1 ? siblings.map((c) => c.name) : [];
