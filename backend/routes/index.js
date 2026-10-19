@@ -2,6 +2,7 @@ import { assetsDataRoute } from "./assets-data.js";
 import { footballRoute } from "./football.js";
 import { healthRoute } from "./health.js";
 import { iptvLabRoute } from "./iptv-lab.js";
+import { matchIntelligenceRoute } from "./match-intelligence.js";
 import { matchSeoRoute } from "./match-seo.js";
 import { streamPlanRoute } from "./stream-plan.js";
 import { tournamentSeoRoute } from "./tournament-seo.js";
@@ -13,6 +14,7 @@ export const backendRoutes = [
   tournamentSeoRoute,
   healthRoute,
   footballRoute,
+  matchIntelligenceRoute,
   streamPlanRoute,
   iptvLabRoute,
   xtreamRoute,
