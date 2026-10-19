@@ -9,8 +9,10 @@ const {
   COMPETITIONS,
 } = require("./matches-lib");
 const {
+  arabicVariantsForTeam,
   buildBindings,
   BEIN_COMPETITIONS,
+  matchRowToFixture,
   mergeActiveBindings,
   mergeFixtureChannels,
   mergeGeneratedPlans,
@@ -129,6 +131,27 @@ async function main() {
     fetchFixtures(startIso, endIso),
     fetchBroadcastRows(startIso, endIso),
   ]);
+
+  const missingArabic = new Map();
+  for (const fixture of fixtures) {
+    for (const team of [fixture.home, fixture.away]) {
+      if (arabicVariantsForTeam(team).length) continue;
+      if (!missingArabic.has(team)) missingArabic.set(team, new Set());
+      missingArabic.get(team).add(fixture.competition);
+    }
+  }
+  for (const [team, competitions] of [...missingArabic].sort(([a], [b]) => a.localeCompare(b))) {
+    console.warn(
+      `V2 beIN bindings: missing Arabic team ${team} (${[...competitions].sort().join(",")})`,
+    );
+  }
+  for (const row of rows) {
+    if (!matchRowToFixture(row, fixtures)) {
+      console.warn(
+        `V2 beIN bindings: unmatched row ${row.homeAr} v ${row.awayAr} ${row.channelLabel}`,
+      );
+    }
+  }
 
   const vega = JSON.parse(fs.readFileSync(VEGA_PATH, "utf8"));
   const overrides = JSON.parse(fs.readFileSync(OVERRIDES_PATH, "utf8"));
