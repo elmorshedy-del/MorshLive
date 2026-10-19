@@ -43,12 +43,14 @@ describe("V2 Goal broadcaster fallback", () => {
   it("extracts Goal fixtures and requires a unique exact teams + kickoff match", () => {
     const payload = {
       pageProps: {
-        blocks: [{
-          link: { pageType: "MATCH", id: "roma-slovan" },
-          startDate: "2026-10-20T19:00:00Z",
-          teamA: { name: "Roma" },
-          teamB: { name: "Slovan Bratislava" },
-        }],
+        blocks: [
+          {
+            link: { pageType: "MATCH", id: "roma-slovan" },
+            startDate: "2026-10-20T19:00:00Z",
+            teamA: { name: "Roma" },
+            teamB: { name: "Slovan Bratislava" },
+          },
+        ],
       },
     };
     const rows = collectGoalFixtures(nextData(nextHtml(payload)));
@@ -84,12 +86,14 @@ describe("V2 Goal broadcaster fallback", () => {
       kickoffUtc: "2026-10-20T19:00:00Z",
     };
     expect(
-      findGoalFixture(fixture, [{
-        id: "youth",
-        start: "2026-10-20T19:00:00Z",
-        home: "Roma U19",
-        away: "Slovan Bratislava U19",
-      }]),
+      findGoalFixture(fixture, [
+        {
+          id: "youth",
+          start: "2026-10-20T19:00:00Z",
+          home: "Roma U19",
+          away: "Slovan Bratislava U19",
+        },
+      ]),
     ).toBeNull();
   });
 
@@ -97,11 +101,7 @@ describe("V2 Goal broadcaster fallback", () => {
     const detail = {
       pageProps: {
         match: {
-          tvChannels: [
-            { name: "beIN SPORTS EN 1" },
-            { name: "beIN Sports FR 2" },
-            { name: "beIN SPORTS 6" },
-          ],
+          tvChannels: [{ name: "beIN SPORTS EN 1" }, { name: "beIN Sports FR 2" }, { name: "beIN SPORTS 6" }],
         },
       },
     };
@@ -147,20 +147,22 @@ describe("V2 Goal broadcaster fallback", () => {
         sourceHref: "goal:porto-psv",
       },
     ];
-    expect(buildExactFixtureBindings(fixtures, rows, VEGA, Date.parse("2026-10-19T12:00:00Z"))).toMatchObject([
-      {
-        matchId: fixtures[0].id,
-        broadcastChannelId: "bein-sports-6",
-        playbackChannelId: "v2-bein-sports-6",
-        streamId: "3650",
-      },
-      {
-        matchId: fixtures[1].id,
-        broadcastChannelId: "bein-sports-9",
-        playbackChannelId: "v2-bein-sports-9",
-        streamId: "3647",
-      },
-    ]);
+    expect(buildExactFixtureBindings(fixtures, rows, VEGA, Date.parse("2026-10-19T12:00:00Z"))).toMatchObject(
+      [
+        {
+          matchId: fixtures[0].id,
+          broadcastChannelId: "bein-sports-6",
+          playbackChannelId: "v2-bein-sports-6",
+          streamId: "3650",
+        },
+        {
+          matchId: fixtures[1].id,
+          broadcastChannelId: "bein-sports-9",
+          playbackChannelId: "v2-bein-sports-9",
+          streamId: "3647",
+        },
+      ],
+    );
   });
 
   it("refuses contradictory channels for the same exact fixture id", () => {
