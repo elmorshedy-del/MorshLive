@@ -37,6 +37,7 @@
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/styles.css?v=20260830scorers" />
   <link rel="stylesheet" href="assets/css/home-showdown.css?v=20260921fourheroes" />
+  <link rel="stylesheet" href="assets/css/comeback-lab.css?v=20261019a" />
   <!-- i18n must run before paint so dir/lang is correct with no flash -->
   <script src="assets/js/i18n.js?v=20260923khaleeji2"></script>
   <!-- GSAP 3 — industry-standard animation engine -->
@@ -465,6 +466,121 @@
     </div>
   </section>
 
+  <!-- Optional, self-contained interactive: no match feed, stream, or worker calls. -->
+  <section class="section cb-section" id="comeback-lab" aria-labelledby="cb-title">
+    <div class="container">
+      <div class="cb-widget">
+        <div class="cb-header">
+          <div class="cb-eyebrow" data-cb-i18n="eyebrow">KORAZERO / WHAT IF?</div>
+          <h2 class="cb-title" id="cb-title" data-cb-i18n="title">هل يقدر يرجع في النتيجة؟</h2>
+          <p class="cb-subtitle" data-cb-i18n="subtitle">غيّر الدقيقة والنتيجة، وشوف كم هدف يحتاج فريقك — وتيرة الأهداف المطلوبة تتغير أمامك.</p>
+        </div>
+        <div class="cb-grid">
+          <div class="cb-visual">
+            <div class="cb-visual-top">
+              <span class="cb-demo" data-cb-i18n="demo">محاكاة افتراضية · ليست مباراة مباشرة</span>
+              <span class="cb-time" id="cb-minute-readout">80′</span>
+            </div>
+            <div class="cb-scoreboard" aria-label="لوحة نتيجة السيناريو">
+              <div class="cb-team">
+                <span class="cb-team-label" data-cb-i18n="yours">فريقك</span>
+                <strong id="cb-ours">0</strong>
+              </div>
+              <span class="cb-separator" aria-hidden="true">:</span>
+              <div class="cb-team">
+                <span class="cb-team-label" data-cb-i18n="rivals">الخصم</span>
+                <strong id="cb-theirs">2</strong>
+              </div>
+            </div>
+            <div class="cb-pitch" id="cb-pitch" aria-hidden="true">
+              <div class="cb-pitch-glow"></div>
+              <svg viewBox="0 0 600 180" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                <g fill="none" stroke="rgba(226,255,242,.68)" stroke-width="1.6">
+                  <rect x="9" y="8" width="582" height="164" rx="2"/>
+                  <path d="M300 8V172M9 51H85V129H9M9 67H45V113H9M591 51H515V129H591M591 67H555V113H591"/>
+                  <circle cx="300" cy="90" r="35"/>
+                  <path d="M85 66A29 29 0 0 1 85 114M515 66A29 29 0 0 0 515 114"/>
+                  <circle cx="300" cy="90" r="2" fill="#fff"/>
+                </g>
+                <g fill="#91e6e4" stroke="#0a3e39" stroke-width="3">
+                  <circle cx="95" cy="91" r="9"/><circle cx="201" cy="48" r="9"/><circle cx="220" cy="137" r="9"/>
+                  <circle cx="360" cy="60" r="9"/><circle cx="352" cy="129" r="9"/>
+                </g>
+                <g fill="#ffc99b" stroke="#60342a" stroke-width="3">
+                  <circle cx="505" cy="90" r="9"/><circle cx="428" cy="48" r="9"/><circle cx="428" cy="129" r="9"/>
+                  <circle cx="285" cy="40" r="9"/><circle cx="285" cy="142" r="9"/>
+                </g>
+                <path d="M360 94Q450 114 546 90" fill="none" stroke="#d8f76a" stroke-width="3.2" stroke-dasharray="7 8" opacity=".9"/>
+                <path d="M539 82L550 90L539 99" fill="none" stroke="#d8f76a" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+                <g class="cb-ball">
+                  <circle cx="551" cy="90" r="9" fill="#fff" stroke="#152332" stroke-width="2.1"/>
+                  <path d="M550 84l5 4-2 6-6 0-2-6z" fill="#152332"/>
+                </g>
+              </svg>
+            </div>
+            <div class="cb-timeline-top">
+              <span data-cb-i18n="remaining">المتبقي من الوقت الأصلي</span>
+              <b id="cb-remaining">10′</b>
+            </div>
+            <div class="cb-timeline-track" aria-label="خط زمن المباراة من الدقيقة صفر إلى تسعين">
+              <div class="cb-indicator" id="cb-indicator"></div>
+              <div class="cb-goal-markers" id="cb-goal-markers"></div>
+            </div>
+            <div class="cb-timeline-scale" aria-hidden="true"><span>0′</span><span>45′</span><span>90′</span></div>
+            <div class="cb-readouts">
+              <div class="cb-readout"><strong id="cb-draw">2</strong><span data-cb-i18n="draw">للتعادل</span></div>
+              <div class="cb-readout"><strong id="cb-win">3</strong><span data-cb-i18n="win">للفوز</span></div>
+              <div class="cb-readout"><strong id="cb-minute-remaining" aria-hidden="true">90′</strong><span data-cb-i18n="minute">الدقيقة</span></div>
+            </div>
+            <p class="cb-rhythm"><span data-cb-i18n="rhythm">معدل التسجيل المطلوب للفوز</span><strong id="cb-rhythm">3.3 دقيقة / هدف</strong></p>
+          </div>
+          <div class="cb-controls">
+            <h3 data-cb-i18n="change">اصنع سيناريوك</h3>
+            <div class="cb-presets" role="group" aria-label="سيناريوهات جاهزة">
+              <button class="cb-preset is-active" type="button" data-cb-scenario="0" aria-pressed="true" data-cb-i18n="sample1">ريمونتادا</button>
+              <button class="cb-preset" type="button" data-cb-scenario="1" aria-pressed="false" data-cb-i18n="sample2">هدف قاتل</button>
+              <button class="cb-preset" type="button" data-cb-scenario="2" aria-pressed="false" data-cb-i18n="sample3">تحدي صعب</button>
+            </div>
+            <div>
+              <label class="cb-field-label" for="cb-minute">
+                <span data-cb-i18n="currentMinute">دقيقة المباراة</span>
+                <output for="cb-minute" id="cb-minute-label">80′</output>
+              </label>
+              <input class="cb-minute" type="range" id="cb-minute" min="0" max="90" step="1" value="80" dir="ltr" />
+            </div>
+            <div class="cb-score-controls">
+              <div class="cb-score-control">
+                <span data-cb-i18n="yourScore">أهداف فريقك</span>
+                <div class="cb-stepper">
+                  <button type="button" data-cb-adjust="ours:-1" aria-label="تقليل أهداف فريقك">−</button>
+                  <strong id="cb-ours-control">0</strong>
+                  <button type="button" data-cb-adjust="ours:1" aria-label="زيادة أهداف فريقك">+</button>
+                </div>
+              </div>
+              <div class="cb-score-control">
+                <span data-cb-i18n="theirScore">أهداف الخصم</span>
+                <div class="cb-stepper">
+                  <button type="button" data-cb-adjust="theirs:-1" aria-label="تقليل أهداف الخصم">−</button>
+                  <strong id="cb-theirs-control">2</strong>
+                  <button type="button" data-cb-adjust="theirs:1" aria-label="زيادة أهداف الخصم">+</button>
+                </div>
+              </div>
+            </div>
+            <div class="cb-sim-actions">
+              <button class="cb-goal-action" type="button" data-cb-adjust="ours:1" data-cb-i18n="goalForUs">⚽ هدف لفريقك</button>
+              <button class="cb-goal-action cb-goal-action--other" type="button" data-cb-adjust="theirs:1" data-cb-i18n="goalForThem">⚽ هدف للخصم</button>
+            </div>
+            <p class="cb-story" id="cb-story" aria-live="polite">يحتاج فريقك إلى هدفين للتعادل، أو ثلاثة للفوز، خلال 10 دقائق من الوقت الأصلي.</p>
+            <div class="cb-footer">
+              <button class="cb-share" id="cb-share" type="button" data-cb-i18n="share">نسخ رابط السيناريو</button>
+              <p class="cb-disclaimer" data-cb-i18n="disclaimer">حساب حسابي توضيحي، وليس توقعاً أو احتمال فوز. لا يشمل وقت بدل الضائع ولا أهداف الخصم المقبلة.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <!-- FAQ (SEO) -->
   <section class="section" id="faq">
     <div class="container">
@@ -551,6 +667,7 @@
   <script src="assets/js/tweet-cards.js?v=20260717xtrend"></script>
   <script src="assets/js/match-memes.js?v=20260708play"></script>
   <script src="assets/js/recent-tweets.js?v=20260822stream"></script>
+  <script src="assets/js/comeback-lab.js?v=20261019a"></script>
   <script src="assets/js/app.js?v=20260913freeze1"></script>
   <script src="assets/js/animations.js?v=20260625c"></script>
 </body>
