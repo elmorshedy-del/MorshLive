@@ -71,7 +71,8 @@
     line("line",{x1:24+552*state.minute/max,y1:12,x2:24+552*state.minute/max,y2:138,stroke:"#eaf4ff","stroke-dasharray":"5 5"});
     g.forEach(goal=>line("circle",{cx:24+552*goal.minute/max,cy:goal.side==="home"?17:33,r:5,fill:goal.side==="home"?"#61ddc1":"#f4ad6b"}));
     const h=g.filter(x=>x.minute<=state.minute&&x.side==="home").length,a=g.filter(x=>x.minute<=state.minute&&x.side==="away").length;
-    node.score.textContent=g.length?h+" : "+a:state.minute===max?String(m.score||"—"):"—";
+    const liveAt=m.status==="live"?min(m.minute):null;
+    node.score.textContent=g.length?h+" : "+a:(m.status==="ended"||(liveAt!==null&&state.minute>=liveAt))?String(m.score||"—"):"—";
     node.events.replaceChildren();
     const list=(state.provider?.events?.length?state.provider.events:g.map(x=>({...x,type:"goal"})))
       .filter(x=>x.minute<=state.minute).slice(-7).reverse();
@@ -126,10 +127,10 @@
   function update(matches){
     state.matches=(Array.isArray(matches)?matches:[]).filter(m=>m&&(m.status==="live"||m.status==="ended")&&(m.stats||m.goals?.length))
       .sort((a,b)=>(a.status==="live"?0:1)-(b.status==="live"?0:1)).slice(0,10);
-    if(!state.matches.some(m=>m.id===state.id)){state.id=state.matches[0]?.id||"";state.minute=90;state.provider=null;state.providerKey="";}
+    if(!state.matches.some(m=>m.id===state.id)){state.id=state.matches[0]?.id||"";const current=state.matches[0];state.minute=current?.status==="live"?(min(current.minute)??45):90;state.provider=null;state.providerKey="";}
     render();const m=selected();if(m)loadProvider(m);
   }
-  node.select.addEventListener("change",()=>{state.id=node.select.value;state.minute=90;state.provider=null;state.providerKey="";render();const m=selected();if(m)loadProvider(m);});
+  node.select.addEventListener("change",()=>{state.id=node.select.value;const m=selected();state.minute=m?.status==="live"?(min(m.minute)??45):90;state.provider=null;state.providerKey="";render();if(m)loadProvider(m);});
   node.minute.addEventListener("input",()=>{state.minute=Number(node.minute.value);const m=selected();if(m)graph(m);});
   window.KZMatchIntelligence={update};
   if(typeof MutationObserver!=="undefined")new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:["lang"]});
