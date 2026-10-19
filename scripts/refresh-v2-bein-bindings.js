@@ -9,8 +9,10 @@ const {
   COMPETITIONS,
 } = require("./matches-lib");
 const {
+  arabicVariantsForTeam,
   buildBindings,
   BEIN_COMPETITIONS,
+  matchRowToFixture,
   mergeActiveBindings,
   mergeFixtureChannels,
   mergeGeneratedPlans,
@@ -23,6 +25,9 @@ const OUT_PATH = path.join(ROOT, "assets", "data", "v2-qualifier-bindings.json")
 const PLANS_PATH = path.join(ROOT, "assets", "data", "stream-plans.json");
 const TODAY_PATH = path.join(ROOT, "assets", "data", "today.json");
 const OVERRIDES_PATH = path.join(ROOT, "assets", "data", "manual-channel-overrides.json");
+const PRIORITY_PATH = path.join(ROOT, "assets", "data", "v2-match-priority.json");
+const PINS_PATH = path.join(ROOT, "assets", "data", "v2-slot-pins.json");
+const SCHEDULE_PATH = path.join(ROOT, "assets", "data", "v2-slot-schedule.json");
 const ESPN_SLUGS = COMPETITIONS.filter((competition) => BEIN_COMPETITIONS.has(competition.key))
   .flatMap((competition) => competition.espnSlugs);
 const LOOKAHEAD_DAYS = 3;
@@ -130,6 +135,27 @@ async function main() {
     fetchBroadcastRows(startIso, endIso),
   ]);
 
+  const missingArabic = new Map();
+  for (const fixture of fixtures) {
+    for (const team of [fixture.home, fixture.away]) {
+      if (arabicVariantsForTeam(team).length) continue;
+      if (!missingArabic.has(team)) missingArabic.set(team, new Set());
+      missingArabic.get(team).add(fixture.competition);
+    }
+  }
+  for (const [team, competitions] of [...missingArabic].sort(([a], [b]) => a.localeCompare(b))) {
+    console.warn(
+      `V2 beIN bindings: missing Arabic team ${team} (${[...competitions].sort().join(",")})`,
+    );
+  }
+  for (const row of rows) {
+    if (!matchRowToFixture(row, fixtures)) {
+      console.warn(
+        `V2 beIN bindings: unmatched row ${row.homeAr} v ${row.awayAr} ${row.channelLabel}`,
+      );
+    }
+  }
+
   const vega = JSON.parse(fs.readFileSync(VEGA_PATH, "utf8"));
   const overrides = JSON.parse(fs.readFileSync(OVERRIDES_PATH, "utf8"));
   const catalog = JSON.parse(fs.readFileSync(PLANS_PATH, "utf8"));
@@ -176,12 +202,43 @@ async function main() {
 
   const bindingsChanged = writeIfChanged(OUT_PATH, snapshot);
   const plansChanged = writeIfChanged(PLANS_PATH, mergedPlans);
+
+  const [{ allocateSlots }, priority, pins] = await Promise.all([
+    import("../lib/v2-slot-allocator.js"),
+    Promise.resolve(JSON.parse(fs.readFileSync(PRIORITY_PATH, "utf8"))),
+    Promise.resolve(JSON.parse(fs.readFileSync(PINS_PATH, "utf8"))),
+  ]);
+  const previousSchedule = fs.existsSync(SCHEDULE_PATH)
+    ? JSON.parse(fs.readFileSync(SCHEDULE_PATH, "utf8"))
+    : null;
+  const allocated = allocateSlots({
+    bindings,
+    slots: ["a", "b"],
+    priority,
+    pins,
+    previous: previousSchedule,
+    now: Date.now(),
+  });
+  const previousComparable = previousSchedule
+    ? { ...previousSchedule, generatedAt: null }
+    : null;
+  const nextComparable = { ...allocated, generatedAt: null };
+  const schedule = previousComparable
+    && JSON.stringify(previousComparable) === JSON.stringify(nextComparable)
+    ? { ...allocated, generatedAt: previousSchedule.generatedAt }
+    : allocated;
+  const scheduleChanged = writeIfChanged(SCHEDULE_PATH, schedule);
+
   console.log(
     `V2 beIN bindings: ${bindings.length} exact Arabic Vega bindings ` +
     `(${fixtures.length} fixtures, ${rows.length} broadcaster rows; ` +
     `${bindingsChanged ? "bindings updated" : "bindings unchanged"}, ` +
     `${plansChanged ? "plans updated" : "plans unchanged"}, ` +
     `${todayChanged ? "cards updated" : "cards unchanged"})`,
+  );
+  console.log(
+    `V2 slots: ${schedule.entries.length} scheduled, ${schedule.unassigned.length} unassigned ` +
+    `(${scheduleChanged ? "schedule updated" : "schedule unchanged"})`,
   );
 }
 

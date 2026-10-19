@@ -1,4 +1,5 @@
 const { TeamNames } = require("../assets/js/team-names.js");
+const ARABIC_TEAM_ALIASES = require("../assets/data/v2-arabic-team-aliases.json");
 const { normalizeArabic, levenshtein } = require("./arabic-team-resolver.js");
 
 const GENERATED_BY = "v2-bein-qualifiers";
@@ -75,19 +76,93 @@ function parseFilGoalBroadcasts(html) {
   return rows;
 }
 
+function normalizeArabicWords(value) {
+  return String(value || "")
+    .replace(/[\u064B-\u0652\u0670\u0640]/g, "")
+    .replace(/[أإآٱ]/g, "ا")
+    .replace(/ى/g, "ي")
+    .replace(/ة/g, "ه")
+    .replace(/ؤ/g, "و")
+    .replace(/ئ/g, "ي")
+    .replace(/ء/g, "")
+    .replace(/[^\u0621-\u064A]+/g, " ")
+    .trim()
+    .replace(/\s+/g, " ");
+}
+
+function stripSafeClubDecorators(value) {
+  let text = normalizeArabicWords(value);
+  let previous = "";
+  while (text && text !== previous) {
+    previous = text;
+    text = text
+      .replace(/^(?:نادي|اولمبيك|ستاد)\s+/, "")
+      .replace(/\s+(?:اف\s*سي|ف\s*سي)$/, "")
+      .trim();
+  }
+  return text;
+}
+
+function normalizedArabicForms(value) {
+  const forms = new Set();
+  const raw = normalizeArabic(value);
+  if (raw) forms.add(raw);
+  const stripped = normalizeArabic(stripSafeClubDecorators(value));
+  if (stripped) forms.add(stripped);
+  return [...forms];
+}
+
 function distance(left, right) {
-  const a = normalizeArabic(left);
-  const b = normalizeArabic(right);
-  if (!a || !b) return 1;
-  return levenshtein(a, b) / Math.max(a.length, b.length, 1);
+  const leftForms = normalizedArabicForms(left);
+  const rightForms = normalizedArabicForms(right);
+  if (!leftForms.length || !rightForms.length) return 1;
+  let best = 1;
+  for (const a of leftForms) {
+    for (const b of rightForms) {
+      best = Math.min(best, levenshtein(a, b) / Math.max(a.length, b.length, 1));
+    }
+  }
+  return best;
+}
+
+function arabicVariantsForTeam(team) {
+  const values = [
+    TeamNames.arabicFor(team),
+    ...(Array.isArray(ARABIC_TEAM_ALIASES[team]) ? ARABIC_TEAM_ALIASES[team] : []),
+  ];
+  return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+}
+
+function teamDistance(rowArabic, fixtureTeam) {
+  const variants = arabicVariantsForTeam(fixtureTeam);
+  if (!variants.length) return { known: false, distance: Infinity };
+  return {
+    known: true,
+    distance: Math.min(...variants.map((variant) => distance(rowArabic, variant))),
+  };
+}
+
+function orientedPairScore(rowHome, rowAway, fixtureHome, fixtureAway) {
+  const home = teamDistance(rowHome, fixtureHome);
+  const away = teamDistance(rowAway, fixtureAway);
+
+  if (home.known && home.distance > 0.35) return Infinity;
+  if (away.known && away.distance > 0.35) return Infinity;
+
+  if (home.known && away.known) return home.distance + away.distance;
+
+  const known = home.known ? home : away.known ? away : null;
+  if (!known || known.distance > 0.12) return Infinity;
+
+  // One unmapped club is allowed only with a near-exact counterpart. The
+  // 0.50 penalty keeps a fully-known pair ahead, while the normal ambiguity
+  // guard rejects two equally plausible one-sided candidates.
+  return 0.5 + known.distance;
 }
 
 function pairScore(row, fixture) {
-  const home = TeamNames.arabicFor(fixture.home) || fixture.home;
-  const away = TeamNames.arabicFor(fixture.away) || fixture.away;
-  const score = (a, b) => a <= 0.35 && b <= 0.35 ? a + b : Infinity;
-  const direct = score(distance(row.homeAr, home), distance(row.awayAr, away));
-  const swapped = score(distance(row.homeAr, away), distance(row.awayAr, home));
+  const direct = orientedPairScore(row.homeAr, row.awayAr, fixture.home, fixture.away);
+  const swapped = orientedPairScore(row.homeAr, row.awayAr, fixture.away, fixture.home);
   return Math.min(direct, swapped);
 }
 
@@ -314,4 +389,5 @@ module.exports = {
   parseFilGoalKickoff,
   matchRowToFixture,
   mergeActiveBindings,
+  arabicVariantsForTeam,
 };
