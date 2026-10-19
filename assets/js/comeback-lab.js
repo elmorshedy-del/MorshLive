@@ -119,8 +119,12 @@
   const elements = {
     minute: get("cb-minute"),
     minuteReadout: get("cb-minute-readout"),
+    minuteControlReadout: get("cb-minute-label"),
+    minuteStat: get("cb-minute-remaining"),
     ours: get("cb-ours"),
+    oursControl: get("cb-ours-control"),
     theirs: get("cb-theirs"),
+    theirsControl: get("cb-theirs-control"),
     remaining: get("cb-remaining"),
     draw: get("cb-draw"),
     win: get("cb-win"),
@@ -185,8 +189,12 @@
     const result = calculate(state.minute, state.ours, state.theirs);
     elements.minute.value = String(result.minute);
     elements.minuteReadout.textContent = label(result.minute) + "′";
+    elements.minuteControlReadout.textContent = label(result.minute) + "′";
+    elements.minuteStat.textContent = label(result.minute) + "′";
     elements.ours.textContent = label(result.ours);
+    elements.oursControl.textContent = label(result.ours);
     elements.theirs.textContent = label(result.theirs);
+    elements.theirsControl.textContent = label(result.theirs);
     elements.remaining.textContent = label(result.remaining) + "′";
     elements.draw.textContent = label(result.drawGoals);
     elements.win.textContent = label(result.winGoals);
