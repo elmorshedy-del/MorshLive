@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 
 const require = createRequire(import.meta.url);
 const {
+  arabicVariantsForTeam,
   buildBindings,
+  matchRowToFixture,
   mergeActiveBindings,
   mergeGeneratedPlans,
   mergeFixtureChannels,
@@ -170,6 +172,197 @@ describe("V2 beIN qualifier bindings", () => {
       kickoffUtc: fixture.kickoffUtc,
     };
     expect(buildBindings([fixture], [row], VEGA, Date.parse("2026-09-25T12:00:00Z"))).toEqual([]);
+  });
+
+  it("matches safe long-form FilGoal club names without widening fuzzy thresholds", () => {
+    const fixtures = [
+      {
+        id: "lyon-psg",
+        competition: "ligue1",
+        home: "Lyon",
+        away: "Paris Saint-Germain",
+        kickoffUtc: "2026-10-10T19:00:00Z",
+      },
+      {
+        id: "rennes-lille",
+        competition: "ligue1",
+        home: "Rennes",
+        away: "Lille",
+        kickoffUtc: "2026-10-10T19:00:00Z",
+      },
+    ];
+    expect(
+      matchRowToFixture(
+        {
+          competition: "ligue1",
+          homeAr: "أولمبيك ليون",
+          awayAr: "باريس سان جيرمان",
+          kickoffUtc: "2026-10-10T19:00:00Z",
+        },
+        fixtures,
+      )?.id,
+    ).toBe("lyon-psg");
+    expect(
+      matchRowToFixture(
+        {
+          competition: "ligue1",
+          homeAr: "ستاد رين",
+          awayAr: "ليل",
+          kickoffUtc: "2026-10-10T19:00:00Z",
+        },
+        fixtures,
+      )?.id,
+    ).toBe("rennes-lille");
+  });
+
+  it("matches explicit FilGoal spelling aliases that are not generic decorators", () => {
+    const fixtures = [
+      {
+        id: "malaga-athletic",
+        competition: "laliga",
+        home: "Málaga",
+        away: "Athletic Club",
+        kickoffUtc: "2026-10-11T18:00:00Z",
+      },
+      {
+        id: "espanyol-alaves",
+        competition: "laliga",
+        home: "Espanyol",
+        away: "Alavés",
+        kickoffUtc: "2026-10-11T18:00:00Z",
+      },
+    ];
+    expect(
+      matchRowToFixture(
+        {
+          competition: "laliga",
+          homeAr: "مالاجا",
+          awayAr: "أتليتك بلباو",
+          kickoffUtc: "2026-10-11T18:00:00Z",
+        },
+        fixtures,
+      )?.id,
+    ).toBe("malaga-athletic");
+    expect(
+      matchRowToFixture(
+        {
+          competition: "laliga",
+          homeAr: "إسبانيول برشلونة",
+          awayAr: "ديبورتيفو ألافيس",
+          kickoffUtc: "2026-10-11T18:00:00Z",
+        },
+        fixtures,
+      )?.id,
+    ).toBe("espanyol-alaves");
+  });
+
+  it("can recover one unmapped club only when the mapped opponent is near-exact and unique", () => {
+    const fixtures = [
+      {
+        id: "unknown-real",
+        competition: "ucl",
+        home: "Future Club",
+        away: "Real Madrid",
+        kickoffUtc: "2026-10-20T19:00:00Z",
+      },
+      {
+        id: "barca-celtic",
+        competition: "ucl",
+        home: "Barcelona",
+        away: "Celtic",
+        kickoffUtc: "2026-10-20T19:00:00Z",
+      },
+    ];
+    expect(
+      matchRowToFixture(
+        {
+          competition: "ucl",
+          homeAr: "فريق مستقبلي",
+          awayAr: "ريال مدريد",
+          kickoffUtc: "2026-10-20T19:00:00Z",
+        },
+        fixtures,
+      )?.id,
+    ).toBe("unknown-real");
+  });
+
+  it("rejects one-sided fallback when two fixtures are equally plausible", () => {
+    const fixtures = [
+      {
+        id: "unknown-a-real",
+        competition: "ucl",
+        home: "Future Club A",
+        away: "Real Madrid",
+        kickoffUtc: "2026-10-20T19:00:00Z",
+      },
+      {
+        id: "unknown-b-real",
+        competition: "ucl",
+        home: "Future Club B",
+        away: "Real Madrid",
+        kickoffUtc: "2026-10-20T19:00:00Z",
+      },
+    ];
+    expect(
+      matchRowToFixture(
+        {
+          competition: "ucl",
+          homeAr: "فريق غير معروف",
+          awayAr: "ريال مدريد",
+          kickoffUtc: "2026-10-20T19:00:00Z",
+        },
+        fixtures,
+      ),
+    ).toBeNull();
+  });
+
+  it("still rejects rows when neither fixture team has Arabic evidence", () => {
+    const fixtures = [
+      {
+        id: "two-unknown",
+        competition: "ucl",
+        home: "Future Club A",
+        away: "Future Club B",
+        kickoffUtc: "2026-10-20T19:00:00Z",
+      },
+    ];
+    expect(
+      matchRowToFixture(
+        {
+          competition: "ucl",
+          homeAr: "فريق ألف",
+          awayAr: "فريق باء",
+          kickoffUtc: "2026-10-20T19:00:00Z",
+        },
+        fixtures,
+      ),
+    ).toBeNull();
+  });
+
+  it("ships Arabic coverage for the club gaps found during the historical audit", () => {
+    for (const team of [
+      "AS Roma",
+      "Feyenoord Rotterdam",
+      "Como",
+      "Shakhtar Donetsk",
+      "VfB Stuttgart",
+      "Nantes",
+      "Metz",
+      "Montpellier",
+      "Saint-Étienne",
+      "Reims",
+      "Girona",
+      "Real Mallorca",
+      "Las Palmas",
+      "Real Valladolid",
+      "Leganés",
+      "Granada",
+      "Cádiz",
+      "Almería",
+      "Real Oviedo",
+    ]) {
+      expect(arabicVariantsForTeam(team).length, team).toBeGreaterThan(0);
+    }
   });
 
   it("hydrates only exact fixture ids while preserving highlights and manual channel pins", () => {
