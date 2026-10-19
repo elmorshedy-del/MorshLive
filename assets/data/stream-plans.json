@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-19T11:39:00.000Z",
+  "updatedAt": "2026-10-19T22:38:25.949Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1087,82 +1087,6 @@
       ]
     },
     {
-      "matchId": "espn-eng.1-401879257",
-      "teams": [
-        [
-          "Tottenham Hotspur"
-        ],
-        [
-          "Coventry City"
-        ]
-      ],
-      "contentKey": "match:espn-eng.1-401879257",
-      "kickoffUtc": "2026-10-19T19:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-10-17T12:34:47.086Z",
-      "expiresAt": "2026-10-19T21:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3645",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-eng.1-401879257",
-          "status": "operator",
-          "verifiedAt": "2026-10-17T12:34:47.086Z",
-          "expiresAt": "2026-10-19T21:45:00.000Z",
-          "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-esp.1-401882842",
-      "teams": [
-        [
-          "Getafe"
-        ],
-        [
-          "Rayo Vallecano"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882842",
-      "kickoffUtc": "2026-10-19T19:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-10-17T12:34:47.086Z",
-      "expiresAt": "2026-10-19T21:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3653",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://v2-mist-production.up.railway.app/hls/iptv-3653/index.m3u8",
-          "contentKey": "match:espn-esp.1-401882842",
-          "status": "operator",
-          "verifiedAt": "2026-10-17T12:34:47.086Z",
-          "expiresAt": "2026-10-19T21:45:00.000Z",
-          "label": "beIN Sports 3 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 3 HD"
-        }
-      ]
-    },
-    {
       "matchId": "espn-uefa.champions-401915403",
       "teams": [
         [
@@ -1807,6 +1731,52 @@
           "note": "Published broadcaster binding: beIN SPORTS 9"
         }
       ]
+    },
+    {
+      "matchId": "espn-eng.1-401879253",
+      "teams": [
+        [
+          "Ipswich Town"
+        ],
+        [
+          "Nottingham Forest"
+        ]
+      ],
+      "contentKey": "match:espn-eng.1-401879253",
+      "kickoffUtc": "2026-10-23T19:00Z",
+      "expiresAt": "2026-10-23T21:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-esp.1-401882836",
+      "teams": [
+        [
+          "Alavés"
+        ],
+        [
+          "Málaga"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882836",
+      "kickoffUtc": "2026-10-23T19:00Z",
+      "expiresAt": "2026-10-23T21:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
     },
     {
       "matchId": "espn-uefa.champions-401915400",

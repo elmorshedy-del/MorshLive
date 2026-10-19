@@ -4817,12 +4817,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Tottenham Hotspur Stadium · London · England",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-19T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882842",
@@ -4842,12 +4838,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Estadio Coliseum · Getafe · Spain",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-19T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882846",

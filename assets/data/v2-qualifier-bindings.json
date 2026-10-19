@@ -1,41 +1,13 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-19T11:07:00.631Z",
+  "generatedAt": "2026-10-19T22:38:25.949Z",
   "window": {
-    "start": "2026-10-19",
-    "end": "2026-10-22"
+    "start": "2026-10-20",
+    "end": "2026-10-23"
   },
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
   "bindings": [
-    {
-      "matchId": "espn-eng.1-401879257",
-      "home": "Tottenham Hotspur",
-      "away": "Coventry City",
-      "kickoffUtc": "2026-10-19T19:00Z",
-      "competition": "epl",
-      "broadcastChannelId": "bein-sports-1",
-      "channel": "beIN Sports 1",
-      "playbackChannelId": "v2-bein-sports-1",
-      "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1 HD",
-      "sourceHref": "/matches/375428/مباراة-توتنام-هوتسبر-كوفنتري-سيتي-في-الدوري-الإنجليزي-الممتاز",
-      "expiresAt": "2026-10-19T21:45:00.000Z"
-    },
-    {
-      "matchId": "espn-esp.1-401882842",
-      "home": "Getafe",
-      "away": "Rayo Vallecano",
-      "kickoffUtc": "2026-10-19T19:00Z",
-      "competition": "laliga",
-      "broadcastChannelId": "bein-sports-3",
-      "channel": "beIN Sports 3",
-      "playbackChannelId": "v2-bein-sports-3",
-      "streamId": "3653",
-      "observedLabel": "beIN SPORTS 3 HD",
-      "sourceHref": "/matches/375073/مباراة-خيتافي-رايو-فايكانو-في-الدوري-الإسباني",
-      "expiresAt": "2026-10-19T21:45:00.000Z"
-    },
     {
       "matchId": "espn-uefa.champions-401915403",
       "home": "Fenerbahce",
