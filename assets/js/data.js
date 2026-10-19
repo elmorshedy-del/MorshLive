@@ -295,7 +295,7 @@ window.isRecentlyEndedMatch = isRecentlyEndedMatch;
 window.keepDisplayMatch = keepDisplayMatch;
 
 /**
- * Source-bound proof for the pre-mapped Khaleeji 27 V2 handoff.
+ * Source-bound proof for a pre-mapped V2 matchday handoff.
  *
  * The badge appears
  * only after the mounted video itself points at the V2 HLS origin (native HLS)
