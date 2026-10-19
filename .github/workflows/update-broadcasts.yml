@@ -29,6 +29,7 @@ on:
       - "scripts/refresh-broadcasts.js"
       - "scripts/refresh-v2-bein-bindings.js"
       - "scripts/v2-bein-bindings-lib.js"
+      - "scripts/v2-goal-broadcasts-lib.js"
       - "assets/data/v2-bein-vega.json"
       - "tests/refresh-broadcasts.test.js"
       - ".github/workflows/update-broadcasts.yml"

@@ -11,6 +11,7 @@ const {
 const {
   arabicVariantsForTeam,
   buildBindings,
+  buildExactFixtureBindings,
   BEIN_COMPETITIONS,
   matchRowToFixture,
   mergeActiveBindings,
@@ -18,6 +19,13 @@ const {
   mergeGeneratedPlans,
   parseFilGoalBroadcasts,
 } = require("./v2-bein-bindings-lib");
+const {
+  collectGoalFixtures,
+  collectGoalTvChannels,
+  findGoalFixture,
+  nextData,
+  pickGoalBeinChannel,
+} = require("./v2-goal-broadcasts-lib");
 
 const ROOT = path.resolve(__dirname, "..");
 const VEGA_PATH = path.join(ROOT, "assets", "data", "v2-bein-vega.json");
@@ -31,6 +39,12 @@ const SCHEDULE_PATH = path.join(ROOT, "assets", "data", "v2-slot-schedule.json")
 const ESPN_SLUGS = COMPETITIONS.filter((competition) => BEIN_COMPETITIONS.has(competition.key))
   .flatMap((competition) => competition.espnSlugs);
 const LOOKAHEAD_DAYS = 3;
+const GOAL_MATCH_SEGMENT = encodeURIComponent("المباراة");
+const GOAL_HEADERS = {
+  "CF-IPCountry": "SA",
+  "X-Forwarded-For": "188.55.0.1",
+  "Accept-Language": "ar,en;q=0.8",
+};
 
 function shiftDate(iso, days) {
   const ms = Date.parse(`${iso}T00:00:00Z`);
@@ -50,13 +64,14 @@ async function getJson(url) {
   return res.json();
 }
 
-async function getText(url) {
+async function getText(url, extraHeaders = {}) {
   const res = await fetch(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (KoraZero broadcast refresh)",
       "Accept-Language": "ar,en;q=0.8",
+      ...extraHeaders,
     },
-    signal: AbortSignal.timeout(12000),
+    signal: AbortSignal.timeout(20000),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
   return res.text();
@@ -115,6 +130,66 @@ async function fetchBroadcastRows(startIso, endIso) {
   return rows;
 }
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function fetchGoalFallbackRows(fixtures, vegaCatalog) {
+  if (!(fixtures || []).length) return [];
+
+  const listingById = new Map();
+  const days = [...new Set(fixtures.map((fixture) => String(fixture.kickoffUtc || "").slice(0, 10)).filter(Boolean))];
+  for (const day of days) {
+    try {
+      const html = await getText(`https://www.goal.com/en-ae/fixtures/${day}`, GOAL_HEADERS);
+      for (const row of collectGoalFixtures(nextData(html) || {})) {
+        if (row.id && !listingById.has(row.id)) listingById.set(row.id, row);
+      }
+    } catch (error) {
+      console.warn(`V2 beIN bindings: Goal listing ${day} skipped: ${error.message}`);
+    }
+  }
+
+  const listing = [...listingById.values()];
+  const rows = [];
+  for (const fixture of fixtures) {
+    const hit = findGoalFixture(fixture, listing);
+    if (!hit?.id) continue;
+    try {
+      const html = await getText(
+        `https://www.goal.com/ar-sa/${GOAL_MATCH_SEGMENT}/x/${hit.id}`,
+        GOAL_HEADERS,
+      );
+      const channel = pickGoalBeinChannel(collectGoalTvChannels(nextData(html) || {}), vegaCatalog);
+      if (!channel) continue;
+      rows.push({
+        matchId: fixture.id,
+        home: fixture.home,
+        away: fixture.away,
+        competition: fixture.competition,
+        kickoffUtc: hit.start,
+        channelKey: channel.key,
+        channelLabel: channel.label,
+        sourceHref: `https://www.goal.com/ar-sa/${GOAL_MATCH_SEGMENT}/x/${hit.id}`,
+      });
+    } catch (error) {
+      console.warn(
+        `V2 beIN bindings: Goal detail ${fixture.home} v ${fixture.away} skipped: ${error.message}`,
+      );
+    }
+    await sleep(500);
+  }
+  return rows;
+}
+
+function fallbackConflictsWithPrimary(primary, fallback) {
+  const fallbackAt = Date.parse(fallback?.kickoffUtc || "");
+  if (!Number.isFinite(fallbackAt)) return true;
+  return (primary || []).some((binding) => {
+    if (String(binding.streamId) !== String(fallback.streamId)) return false;
+    const primaryAt = Date.parse(binding?.broadcastKickoffUtc || binding?.kickoffUtc || "");
+    return Number.isFinite(primaryAt) && Math.abs(primaryAt - fallbackAt) < 120 * 60000;
+  });
+}
+
 function stableJson(value) {
   return JSON.stringify(value, null, 2) + "\n";
 }
@@ -163,7 +238,31 @@ async function main() {
     ...Object.keys(overrides),
     ...catalog.plans.filter((plan) => plan.generatedBy !== "v2-bein-qualifiers").map((plan) => String(plan.matchId)),
   ]);
-  const freshBindings = buildBindings(fixtures, rows, vega, Date.now(), excludedMatchIds);
+
+  // FilGoal is authoritative when it publishes a concrete Arabic beIN channel.
+  // Goal is queried only for fixtures left unresolved by that primary pass.
+  const filGoalBindings = buildBindings(fixtures, rows, vega, Date.now(), excludedMatchIds);
+  const filGoalMatchIds = new Set(filGoalBindings.map((binding) => String(binding.matchId)));
+  const goalCandidates = fixtures.filter((fixture) =>
+    !filGoalMatchIds.has(String(fixture.id)) && !excludedMatchIds.has(String(fixture.id))
+  );
+  const goalRows = await fetchGoalFallbackRows(goalCandidates, vega);
+  const goalBindings = buildExactFixtureBindings(
+    fixtures,
+    goalRows,
+    vega,
+    Date.now(),
+    excludedMatchIds,
+  ).filter((binding) => {
+    if (!fallbackConflictsWithPrimary(filGoalBindings, binding)) return true;
+    excludedMatchIds.add(String(binding.matchId));
+    console.warn(
+      `V2 beIN bindings: Goal fallback rejected channel collision for ${binding.home} v ${binding.away}`,
+    );
+    return false;
+  });
+  const freshBindings = [...filGoalBindings, ...goalBindings];
+
   const previousSnapshot = fs.existsSync(OUT_PATH)
     ? JSON.parse(fs.readFileSync(OUT_PATH, "utf8"))
     : null;
@@ -189,7 +288,7 @@ async function main() {
     window: bindingsUnchanged && previousSnapshot?.window
       ? previousSnapshot.window
       : { start: startIso, end: endIso },
-    source: "filgoal",
+    source: "filgoal+goal-fallback",
     variant: vega.variant,
     bindings,
   };
@@ -230,8 +329,8 @@ async function main() {
   const scheduleChanged = writeIfChanged(SCHEDULE_PATH, schedule);
 
   console.log(
-    `V2 beIN bindings: ${bindings.length} exact Arabic Vega bindings ` +
-    `(${fixtures.length} fixtures, ${rows.length} broadcaster rows; ` +
+    `V2 beIN bindings: ${bindings.length} exact Vega bindings ` +
+    `(${fixtures.length} fixtures, ${rows.length} FilGoal rows, ${goalRows.length} Goal fallback rows; ` +
     `${bindingsChanged ? "bindings updated" : "bindings unchanged"}, ` +
     `${plansChanged ? "plans updated" : "plans unchanged"}, ` +
     `${todayChanged ? "cards updated" : "cards unchanged"})`,

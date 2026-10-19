@@ -226,6 +226,55 @@ function buildBindings(fixtures, rows, vegaCatalog, now = Date.now(), excludedMa
   return normalizeChannelWindows(out, excludedMatchIds);
 }
 
+function buildExactFixtureBindings(fixtures, rows, vegaCatalog, now = Date.now(), excludedMatchIds = new Set()) {
+  const channels = vegaCatalog?.channels || {};
+  const fixtureById = new Map((fixtures || []).map((fixture) => [String(fixture?.id || ""), fixture]));
+  const out = [];
+  const seen = new Set();
+  const conflicts = new Set();
+
+  for (const row of rows || []) {
+    const id = String(row?.matchId || "");
+    if (!id || excludedMatchIds.has(id)) continue;
+    const fixture = fixtureById.get(id);
+    const channel = channels[row?.channelKey];
+    if (!fixture?.id || !channel?.streamId) continue;
+
+    const fixtureKickoff = Date.parse(fixture.kickoffUtc || "");
+    const observedKickoff = Date.parse(row.kickoffUtc || "");
+    if (!Number.isFinite(fixtureKickoff) || !Number.isFinite(observedKickoff)) continue;
+    if (Math.abs(observedKickoff - fixtureKickoff) > 15 * 60000) continue;
+
+    if (seen.has(id)) {
+      if (out.find((binding) => String(binding.matchId) === id)?.streamId !== String(channel.streamId)) {
+        conflicts.add(id);
+      }
+      continue;
+    }
+
+    const expiresAt = fixtureKickoff + 165 * 60000;
+    if (expiresAt <= now) continue;
+    seen.add(id);
+    out.push({
+      matchId: fixture.id,
+      home: fixture.home,
+      away: fixture.away,
+      kickoffUtc: fixture.kickoffUtc,
+      competition: fixture.competition,
+      broadcastChannelId: row.channelKey,
+      channel: channel.name,
+      playbackChannelId: channel.playbackChannelId,
+      streamId: String(channel.streamId),
+      observedLabel: row.channelLabel,
+      sourceHref: row.sourceHref,
+      expiresAt: new Date(expiresAt).toISOString(),
+    });
+  }
+
+  for (const id of conflicts) excludedMatchIds.add(String(id));
+  return normalizeChannelWindows(out, excludedMatchIds);
+}
+
 function normalizeChannelWindows(bindings, excludedMatchIds) {
   const out = bindings.filter((binding) => !excludedMatchIds.has(String(binding.matchId)))
     .map((binding) => ({ ...binding }));
@@ -382,6 +431,7 @@ module.exports = {
   QUALIFIER_COMPETITIONS,
   BEIN_COMPETITIONS,
   buildBindings,
+  buildExactFixtureBindings,
   mergeGeneratedPlans,
   mergeFixtureChannels,
   parseBeinChannel,
