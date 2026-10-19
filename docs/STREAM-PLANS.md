@@ -94,6 +94,29 @@ worked.
 Expired `verified` / `operator` rows (`expiresAt` in the past) demote to
 `pending` automatically.
 
+## V2 automatic slot schedule
+
+V2 match plans keep the same public playback URL shape:
+`/hls/iptv-<streamId>/index.m3u8`. The account/slot behind a channel is never
+encoded in the plan or browser URL.
+
+`scripts/refresh-v2-bein-bindings.js` now also writes
+`assets/data/v2-slot-schedule.json` from the exact published beIN bindings.
+The allocator is pure code in `lib/v2-slot-allocator.js`; its owner-tunable
+weights live in `assets/data/v2-match-priority.json`, and explicit
+`must`/`never` overrides live in `assets/data/v2-slot-pins.json`.
+
+Each scheduled match occupies `[kickoff - 15 minutes, kickoff + 120 minutes)`.
+When more matches overlap than the two V2 slots can carry, allocation is
+deterministic: frozen already-started entries first, then `must` pins, then
+editorial score, earlier start, and match id. A match must fit one slot for its
+whole window; it is never split or cut halfway. Back-to-back matches using the
+same stream prefer the same slot.
+
+Every unassigned match records the blocking match ids and every scored match
+records its reasons. This is schedule metadata only: StreamV2 automation remains
+off unless its separate `V2_AUTO_SCHEDULE=true` flag is explicitly enabled.
+
 ## Provider profiles (sandbox + referrer)
 
 These used to be guessed in `watch.js` per incident. They now live in
