@@ -411,6 +411,7 @@
       if (idx >= 0) MATCHES[idx] = enriched;
       renderFeaturedLive();
       renderLiveDetail();
+      if (window.KZMatchIntelligence) window.KZMatchIntelligence.update(MATCHES);
     } catch (e) {
       console.warn("Live detail refresh failed:", e.message);
     }
@@ -422,6 +423,7 @@
     showUpdated(meta);
     renderFeaturedLive();
     renderLiveDetail();
+    if (window.KZMatchIntelligence) window.KZMatchIntelligence.update(MATCHES);
     renderMatches(activeStatusFilter);
     renderSaved();
     const defer = window.requestIdleCallback || ((cb) => setTimeout(cb, 150));
@@ -433,6 +435,7 @@
     MATCHES = matches;
     renderFeaturedLive();
     renderLiveDetail();
+    if (window.KZMatchIntelligence) window.KZMatchIntelligence.update(MATCHES);
     renderMatches(activeStatusFilter);
   };
 
