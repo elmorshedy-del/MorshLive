@@ -59,5 +59,4 @@ describe("V2 playback path isolation", () => {
   it("fails closed if a V2 HLS plan points anywhere except V2 Mist", () => {
     expect(watch).toContain("if (v2MatchdaySelected() && !V2_MIST_HLS_RE.test(href)) return false;");
   });
-
 });
