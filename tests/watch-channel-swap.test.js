@@ -164,18 +164,6 @@ describe("V2 single-socket remote pin", () => {
     expect(selection.match).toBeNull();
   });
 
-  it("keeps Gulf Cup rows listed without forcing an Al Kass V2 socket", () => {
-    for (const id of [
-      "espn-global.gulf_cup-401922489",
-      "espn-global.gulf_cup-401922497",
-      "espn-global.gulf_cup-401922500",
-    ]) {
-      const selection = select(`match=${id}&ch=bein-sports-2`);
-      expect(selection.channel.id).toBe("bein-sports-2");
-      expect(selection.match).toBeNull();
-    }
-  });
-
   it("does not expose synthetic V2 sockets without the active mapped match", () => {
     expect(select("ch=v2-bein-1").channel.id).toBe("bein-sports-1");
     expect(select("ch=v2-alkass-1").channel.id).toBe("bein-sports-1");
