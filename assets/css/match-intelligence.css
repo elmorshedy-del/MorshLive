@@ -1,0 +1,47 @@
+/* Isolated Match Intelligence UI; never styles video, cards or streaming controls. */
+.kz-mi-section{padding:20px 0 38px;scroll-margin-top:80px}
+#kz-match-intelligence[hidden]{display:none}
+.mi-shell{color:#f3f8ff;background:radial-gradient(circle at 10% 0%,rgba(64,135,135,.27),transparent 43%),linear-gradient(155deg,#0c1726,#122035 70%,#121d2b);border:1px solid #314258;border-radius:25px;padding:clamp(18px,3.5vw,35px);box-shadow:0 22px 56px rgba(10,20,34,.16);font-family:"IBM Plex Sans Arabic",system-ui,sans-serif;line-height:1.6}
+.mi-shell *{box-sizing:border-box}
+.mi-header{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}
+.mi-kicker{font-family:"Space Grotesk",sans-serif;font-size:11px;font-weight:700;letter-spacing:.17em;color:#61ddc1;direction:ltr}
+.mi-title{color:#fff;font-size:clamp(26px,3vw,36px);font-weight:700;line-height:1.35;margin:8px 0 4px}
+.mi-lead{font-size:13px;color:#bacbda;max-width:750px}
+.mi-source{border:1px solid #385669;border-radius:40px;padding:6px 11px;color:#b3ccdf;background:#1e35454a;white-space:nowrap;font-size:11px}
+.mi-chooser{margin:22px 0 15px;display:flex;gap:10px}
+.mi-select{max-width:100%;min-width:210px;flex:1;border:1px solid #496177;border-radius:12px;color:#eef9ff;background:#1b3143;padding:11px 13px;font:600 14px "IBM Plex Sans Arabic",system-ui;cursor:pointer}
+.mi-scoreboard{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;text-align:center;padding:17px 15px;margin:0 0 20px;gap:12px;background:linear-gradient(90deg,rgba(93,221,193,.08),rgba(15,23,43,.35),rgba(244,173,107,.08));border:1px solid #3a4d5b;border-radius:16px;direction:ltr}
+.mi-team{font-size:clamp(15px,2vw,20px);font-weight:700;overflow-wrap:anywhere}
+.mi-team:first-child{color:#7de6d0}.mi-team:last-child{color:#f6ba80}
+.mi-score{font:700 clamp(29px,4vw,49px)/1.2 "Space Grotesk",system-ui;letter-spacing:-.04em;color:#fff;font-variant-numeric:tabular-nums}
+.mi-columns{display:grid;grid-template-columns:1.1fr .9fr;gap:13px}
+.mi-panel{background:rgba(6,14,27,.47);border:1px solid #33465c;border-radius:17px;padding:18px;min-width:0}
+.mi-panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.mi-heading{font-size:17px;line-height:1.4;color:#fff;font-weight:700;margin:0 0 14px}
+.mi-panel-head .mi-heading{margin:0}
+.mi-minute{color:#c6f7e5;font:700 14px "Space Grotesk",sans-serif;direction:ltr}
+.mi-flow{width:100%;height:150px;margin:12px 0 0;display:block;background:linear-gradient(to top,rgba(110,213,193,.05),transparent);border-radius:11px}
+.mi-scale{display:flex;justify-content:space-between;color:#93abbc;font:600 11px "Space Grotesk",sans-serif;direction:ltr;padding:0 18px 0 11px}
+.mi-slider{display:block;width:100%;appearance:none;-webkit-appearance:none;height:6px;border-radius:5px;margin:17px 0;background:linear-gradient(90deg,#58cbbb,#c4f5b0);cursor:pointer;direction:ltr}
+.mi-slider::-webkit-slider-thumb{appearance:none;-webkit-appearance:none;width:19px;height:19px;border-radius:50%;border:4px solid #67d9b3;background:#fff;box-shadow:0 0 0 4px #67d9b328}
+.mi-slider::-moz-range-thumb{width:13px;height:13px;border-radius:50%;border:4px solid #67d9b3;background:#fff}
+.mi-subtitle{font-size:12px;color:#a9bacd;margin:7px 0 8px}
+.mi-events{display:flex;flex-direction:column;gap:6px;max-height:202px;overflow:auto}
+.mi-event{display:flex;align-items:center;gap:9px;background:#ffffff0c;border:1px solid #ffffff11;border-radius:9px;padding:6px 9px;font-size:12px;min-width:0}
+.mi-event span:nth-child(2){flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mi-event-icon{width:21px;flex:0 0 auto;text-align:center}
+.mi-event b{color:#90dec4;direction:ltr;font-size:12px}
+.mi-stats{display:grid;gap:15px;padding-top:9px}
+.mi-stat-head{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:12px;color:#bdcde0;direction:ltr}
+.mi-stat-head span{font-weight:600}.mi-stat-head b{font:700 16px "Space Grotesk",system-ui;color:#fff;font-variant-numeric:tabular-nums}
+.mi-stat-track{height:8px;background:#c38a604c;border-radius:5px;overflow:hidden;margin-top:7px;direction:ltr}
+.mi-stat-fill{height:100%;background:#62d6bd;border-radius:5px;transition:width .25s ease}
+.mi-hint{font-size:12px;color:#9caec3;line-height:1.8;margin:12px 0 0}
+.mi-bottom{display:grid;grid-template-columns:1.1fr .9fr;gap:13px;margin-top:13px}
+.mi-momentum{min-height:100px;display:grid;align-items:center}
+.mi-momentum-graph{display:block;width:100%;height:145px}
+.mi-momentum-label{font-size:11px;color:#9fbea9;padding:3px 0}
+.mi-shell .mi-select:focus-visible,.mi-shell .mi-slider:focus-visible{outline:2px solid #61ddc1;outline-offset:3px}
+@media(max-width:820px){.mi-columns,.mi-bottom{grid-template-columns:1fr}.mi-header{flex-direction:column}.mi-shell{border-radius:18px}.mi-chooser{margin-top:16px}.mi-panel{padding:15px}}
+@media(max-width:440px){.mi-team{font-size:14px}.mi-scoreboard{padding:14px 10px;gap:8px}.mi-score{font-size:31px}.mi-kicker{font-size:10px}.mi-title{font-size:26px}}
+@media(prefers-reduced-motion:reduce){.mi-shell *{transition:none!important}}
