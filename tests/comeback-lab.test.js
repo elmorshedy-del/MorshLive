@@ -9,7 +9,11 @@ const css = readFileSync("assets/css/comeback-lab.css", "utf8");
 // A homepage without the widget is a valid context; startup should be inert.
 const context = {
   window: {},
-  document: { getElementById() { return null; } },
+  document: {
+    getElementById() {
+      return null;
+    },
+  },
 };
 runInNewContext(source, context);
 const calculate = context.window.KZComebackLab.calculate;
