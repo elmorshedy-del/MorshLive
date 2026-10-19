@@ -174,7 +174,6 @@ describe("V2 beIN qualifier bindings", () => {
     expect(buildBindings([fixture], [row], VEGA, Date.parse("2026-09-25T12:00:00Z"))).toEqual([]);
   });
 
-
   it("matches safe long-form FilGoal club names without widening fuzzy thresholds", () => {
     const fixtures = [
       {
