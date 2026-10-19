@@ -485,42 +485,6 @@ describe("today's stream-plans catalog", () => {
     expect(shouldHoldPlayer(resolved)).toBe(false);
   });
 
-  it("keeps non-active V2 match rows pending instead of mounting them", () => {
-    const expected = new Map([
-      ["espn-global.gulf_cup-401922489", "89778"],
-      ["espn-global.gulf_cup-401922497", "89779"],
-      ["espn-global.gulf_cup-401922500", "89778"],
-    ]);
-
-    for (const [matchId, streamId] of expected) {
-      const plan = catalogJson.plans.find((item) => item.matchId === matchId);
-      expect(plan).toBeTruthy();
-      const match = {
-        id: matchId,
-        home: plan.teams[0][0],
-        away: plan.teams[1][0],
-        channelId: streamId === "89779" ? "v2-alkass-2" : "v2-alkass-1",
-        status: "upcoming",
-        kickoffUtc: plan.kickoffUtc,
-      };
-      const resolved = resolveStreamPlan({
-        match,
-        catalog: catalogJson,
-        legacyEmbedKey: "koraplus",
-        now: Date.parse("2026-09-26T13:00:00Z"),
-      });
-      expect(resolved.catalog).toBe(true);
-      expect(resolved.status).toBe("waiting");
-      expect(resolved.selected).toBeNull();
-      expect(resolved.reason).toBe("no-playable-same-content-source");
-      expect(resolved.policy.allowLegacy).toBe(false);
-      expect(plan.sources[0].url).toBe(
-        `https://v2-mist-production.up.railway.app/hls/iptv-${streamId}/index.m3u8`,
-      );
-      expect(plan.sources[0].status).toBe("pending");
-    }
-  });
-
   it("plays Madrid through the ad-free operator proxy instead of a raw koralive iframe", () => {
     const match = {
       id: "espn-esp.1-401882919",

@@ -22,22 +22,6 @@
   const epgMatcher = () => window.KZIptvEpgMatcherCore;
   const OVERRIDE_URL = "/assets/data/manual-channel-overrides.json?v=20260904deterministic1";
   const REFRESH_MS = 45 * 1000;
-  // MATCHDAY PATCH: this exact ESPN fixture is routed by the V2 stream plan.
-  // Do not let the normal Lab router rewrite its card to source=xtream.
-  const V2_MATCHDAY_BYPASS_IDS = new Set([
-    "espn-global.gulf_cup-401922489",
-    "espn-global.gulf_cup-401922490",
-    "espn-global.gulf_cup-401922491",
-    "espn-global.gulf_cup-401922492",
-    "espn-global.gulf_cup-401922493",
-    "espn-global.gulf_cup-401922494",
-    "espn-global.gulf_cup-401922495",
-    "espn-global.gulf_cup-401922496",
-    "espn-global.gulf_cup-401922497",
-    "espn-global.gulf_cup-401922498",
-    "espn-global.gulf_cup-401922499",
-    "espn-global.gulf_cup-401922500",
-  ]);
   const SUPPORTED_COMPETITIONS = new Set(["epl", "laliga", "spl", "ucl"]);
   const SUPPORTED_SLUGS = new Set([
     "eng.1",
@@ -467,11 +451,6 @@
     const match = state.matches.get(String(url.searchParams.get("match") || ""));
     if (!match) return;
 
-    if (V2_MATCHDAY_BYPASS_IDS.has(String(match.id))) {
-      clearAuto(original);
-      normalizeStageCopy(original, match);
-      return;
-    }
 
     if (!supportedMatch(match)) return;
 

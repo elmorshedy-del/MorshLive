@@ -503,21 +503,20 @@ No. Merge with green checks, then verify live production.
 
 ## Current known-good example
 
-As of the Gulf Cup + Nations League change, KoraZero uses four static homepage heroes:
+After the Khaleeji 27 campaign was retired, KoraZero uses three static homepage heroes:
 
 ```text
-assets/img/korazero-khaleeji27.jpg
 assets/img/korazero-nations-league-2026.jpg
 assets/img/korazero-saudi.jpg
 assets/img/korazero-showdown.jpg
 ```
 
-Known-good four-slide CSS:
+Known-good three-slide CSS:
 
 ```text
-track width: 400%
-each slide: 25%
-cycle: 20s
+track width: 300%
+each slide: 33.333333%
+cycle: 15s
 ```
 
 Do not treat this count as permanent. Always recount the current `index.html` before editing.

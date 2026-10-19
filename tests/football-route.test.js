@@ -40,7 +40,6 @@ describe("football routes", () => {
       "fifa.worldq.uefa",
       "fifa.friendly",
       "fifa.worldq.conmebol",
-      "global.gulf_cup",
     ]);
     const requestedUrls = upstream.mock.calls.map(([url]) => String(url));
     const friendlyUrls = requestedUrls.filter((url) => url.includes("/fifa.friendly/scoreboard"));
@@ -48,7 +47,7 @@ describe("football routes", () => {
     expect(friendlyUrls.some((url) => url.includes("dates=202608"))).toBe(true);
     expect(friendlyUrls.some((url) => url.includes("dates=202609"))).toBe(true);
     expect(premierLeagueUrls).toHaveLength(1);
-    expect(upstream).toHaveBeenCalledTimes(15);
+    expect(upstream).toHaveBeenCalledTimes(14);
   });
 
   it("proxies an allowlisted ESPN match summary for live detail", async () => {

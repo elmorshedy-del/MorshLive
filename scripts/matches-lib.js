@@ -104,13 +104,6 @@ const COMPETITIONS = Object.freeze([
     leagueNames: ["FIFA World Cup Qualifying - CONMEBOL"],
     audienceGroups: ["priority_latam"],
   },
-  {
-    key: "gulfcup",
-    name: "Arabian Gulf Cup",
-    nameAr: "كأس الخليج العربي",
-    espnSlugs: ["global.gulf_cup"],
-    leagueNames: ["Arabian Gulf Cup", "Gulf Cup of Nations"],
-  },
 ]);
 const ESPN_LEAGUES = Object.freeze(COMPETITIONS.flatMap((competition) => competition.espnSlugs));
 

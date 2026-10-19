@@ -14,7 +14,6 @@ export const FOOTBALL_LEAGUES = Object.freeze([
   "fifa.worldq.uefa",
   "fifa.friendly",
   "fifa.worldq.conmebol",
-  "global.gulf_cup",
 ]);
 
 function defaultDateRange(now = Date.now()) {

@@ -94,12 +94,6 @@
       leagueNames: ["FIFA World Cup Qualifying - CONMEBOL"],
       audienceGroups: ["priority_latam"],
     },
-    {
-      key: "gulfcup",
-      nameAr: "كأس الخليج العربي",
-      espnSlugs: ["global.gulf_cup"],
-      leagueNames: ["Arabian Gulf Cup", "Gulf Cup of Nations"],
-    },
   ];
   const ESPN_LEAGUES = COMPETITIONS.flatMap((competition) => competition.espnSlugs);
   const SCHEDULE_DAYS_AHEAD = 7;

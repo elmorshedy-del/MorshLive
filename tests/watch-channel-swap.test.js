@@ -47,9 +47,6 @@ const switchRow = (selection) =>
 const SAUDI = "espn-ksa.1-401900363";
 const EURO = "espn-uefa.champions-401915452";
 
-const matchSelection = (match, query = "") =>
-  window.resolveWatchSelection([match], CHANNELS, new URLSearchParams(query || `match=${match.id}`));
-
 const actualSwitchRow = (selection) => {
   const siblings = CHANNELS.filter((c) => c.group === selection.channel.group);
   return siblings.length > 1 ? siblings.map((c) => c.name) : [];
@@ -162,18 +159,6 @@ describe("V2 single-socket remote pin", () => {
     const selection = select(`match=${EGYPT}&ch=bein-sports-1`);
     expect(selection.channel.id).toBe("bein-sports-1");
     expect(selection.match).toBeNull();
-  });
-
-  it("keeps Gulf Cup rows listed without forcing an Al Kass V2 socket", () => {
-    for (const id of [
-      "espn-global.gulf_cup-401922489",
-      "espn-global.gulf_cup-401922497",
-      "espn-global.gulf_cup-401922500",
-    ]) {
-      const selection = select(`match=${id}&ch=bein-sports-2`);
-      expect(selection.channel.id).toBe("bein-sports-2");
-      expect(selection.match).toBeNull();
-    }
   });
 
   it("does not expose synthetic V2 sockets without the active mapped match", () => {
