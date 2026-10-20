@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-19T22:38:25.949Z",
+  "generatedAt": "2026-10-20T12:12:01.721Z",
   "window": {
     "start": "2026-10-20",
     "end": "2026-10-23"
@@ -18,8 +18,8 @@
       "channel": "beIN Sports 3",
       "playbackChannelId": "v2-bein-sports-3",
       "streamId": "3653",
-      "observedLabel": "beIN SPORTS 3",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/lPbnNLMfECCc7GnjOBOTL",
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/377186/مباراة-فنربخشة-سلافيا-براج-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-20T18:30:00.000Z"
     },
     {
@@ -46,8 +46,8 @@
       "channel": "beIN Sports 6",
       "playbackChannelId": "v2-bein-sports-6",
       "streamId": "3650",
-      "observedLabel": "beIN SPORTS 6",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/_REzB-KGFWGMLEFWnAkbt",
+      "observedLabel": "beIN SPORTS 6 HD",
+      "sourceHref": "/matches/377188/مباراة-روما-سلوفان-براتيسلافا-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-20T21:45:00.000Z"
     },
     {
@@ -60,8 +60,8 @@
       "channel": "beIN Sports 9",
       "playbackChannelId": "v2-bein-sports-9",
       "streamId": "3647",
-      "observedLabel": "beIN SPORTS 9",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/bSQqZk0drZcZdEO6Pz8oZ",
+      "observedLabel": "beIN SPORTS 9 HD",
+      "sourceHref": "/matches/377189/مباراة-بورتو-إيندهوفن-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-20T21:45:00.000Z"
     },
     {
@@ -74,8 +74,8 @@
       "channel": "beIN Sports 2",
       "playbackChannelId": "v2-bein-sports-2",
       "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/uc6hdlMHrujH3gepSLxwA",
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/377190/مباراة-ليفربول-فياريال-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-20T21:45:00.000Z"
     },
     {
@@ -88,8 +88,8 @@
       "channel": "beIN Sports 3",
       "playbackChannelId": "v2-bein-sports-3",
       "streamId": "3653",
-      "observedLabel": "beIN SPORTS 3",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/HVsYKo1hL7rGTWs5NwvEX",
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/377191/مباراة-مانشستر-سيتي-آيك-أثينا-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-20T21:45:00.000Z"
     },
     {
@@ -102,8 +102,8 @@
       "channel": "beIN Sports 1",
       "playbackChannelId": "v2-bein-sports-1",
       "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/p5qSwYXAtxFw4tfzdmg-1",
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/377193/مباراة-باريس-سان-جيرمان-برشلونة-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-20T21:45:00.000Z"
     },
     {
@@ -116,8 +116,22 @@
       "channel": "beIN Sports 5",
       "playbackChannelId": "v2-bein-sports-5",
       "streamId": "3651",
-      "observedLabel": "beIN SPORTS 5",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/RTW_wFdh6EAfgLyTmEin-",
+      "observedLabel": "beIN SPORTS 5 HD",
+      "sourceHref": "/matches/377194/مباراة-شتوتجارت-أتلتيكو-مدريد-في-دوري-أبطال-أوروبا",
+      "expiresAt": "2026-10-20T21:45:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.champions-401915400",
+      "home": "Napoli",
+      "away": "Bodo/Glimt",
+      "kickoffUtc": "2026-10-20T19:00Z",
+      "competition": "ucl",
+      "broadcastChannelId": "bein-sports-4",
+      "channel": "beIN Sports 4",
+      "playbackChannelId": "v2-bein-sports-4",
+      "streamId": "3652",
+      "observedLabel": "beIN SPORTS 4 HD",
+      "sourceHref": "/matches/377192/مباراة-نابولي-بودو-جليمت-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-20T21:45:00.000Z"
     },
     {

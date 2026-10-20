@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-19T22:38:25.957Z",
+  "generatedAt": "2026-10-20T12:12:01.729Z",
   "capacity": 2,
   "slots": [
     "a",
@@ -136,6 +136,16 @@
     {
       "matchId": "espn-uefa.champions-401915398",
       "streamId": "3647",
+      "score": 50,
+      "reason": "outranked",
+      "by": [
+        "espn-uefa.champions-401915397",
+        "espn-uefa.champions-401915399"
+      ]
+    },
+    {
+      "matchId": "espn-uefa.champions-401915400",
+      "streamId": "3652",
       "score": 50,
       "reason": "outranked",
       "by": [
