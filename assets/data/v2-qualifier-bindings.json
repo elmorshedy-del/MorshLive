@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-20T12:12:01.721Z",
+  "generatedAt": "2026-10-20T17:31:13.292Z",
   "window": {
     "start": "2026-10-20",
     "end": "2026-10-23"
@@ -144,8 +144,8 @@
       "channel": "beIN Sports 2",
       "playbackChannelId": "v2-bein-sports-2",
       "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/vW89Y-GHAwsfeP6Z8UcX9",
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/377195/مباراة-كومو-مانشستر-يونايتد-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-21T18:30:00.000Z"
     },
     {
@@ -160,7 +160,7 @@
       "streamId": "3653",
       "observedLabel": "beIN SPORTS 3",
       "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/c7Eb4s-qgwokd3PDDjo7v",
-      "expiresAt": "2026-10-21T19:30:00.000Z"
+      "expiresAt": "2026-10-21T18:30:00.000Z"
     },
     {
       "matchId": "espn-esp.1-401882870",
@@ -186,8 +186,8 @@
       "channel": "beIN Sports 4",
       "playbackChannelId": "v2-bein-sports-4",
       "streamId": "3652",
-      "observedLabel": "beIN SPORTS 4",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/yNRPx9PcdHcB59DGs_B3t",
+      "observedLabel": "beIN SPORTS 4 HD",
+      "sourceHref": "/matches/377197/مباراة-أستون-فيلا-فايكينج-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-21T21:45:00.000Z"
     },
     {
@@ -200,8 +200,8 @@
       "channel": "beIN Sports 1",
       "playbackChannelId": "v2-bein-sports-1",
       "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/8yDS7nnq8kbP4c2sBoiBd",
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/377198/مباراة-بايرن-ميونيخ-أرسنال-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-21T21:45:00.000Z"
     },
     {
@@ -214,8 +214,8 @@
       "channel": "beIN Sports 8",
       "playbackChannelId": "v2-bein-sports-8",
       "streamId": "3648",
-      "observedLabel": "beIN SPORTS 8",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/Vx3icYASohobo26_eX1gC",
+      "observedLabel": "beIN SPORTS 8 HD",
+      "sourceHref": "/matches/377200/مباراة-كلوب-بروج-لانس-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-21T21:45:00.000Z"
     },
     {
@@ -228,8 +228,8 @@
       "channel": "beIN Sports 5",
       "playbackChannelId": "v2-bein-sports-5",
       "streamId": "3651",
-      "observedLabel": "beIN SPORTS 5",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/mco7DiFWnp_smt9E1jApA",
+      "observedLabel": "beIN SPORTS 5 HD",
+      "sourceHref": "/matches/377199/مباراة-ريال-بيتيس-فيينورد-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-21T21:45:00.000Z"
     },
     {
@@ -242,8 +242,8 @@
       "channel": "beIN Sports 2",
       "playbackChannelId": "v2-bein-sports-2",
       "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/rrLQsvhec_4gi1bfBIYGF",
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/377202/مباراة-ريال-مدريد-لايبزج-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-21T21:45:00.000Z"
     },
     {
@@ -256,8 +256,22 @@
       "channel": "beIN Sports 9",
       "playbackChannelId": "v2-bein-sports-9",
       "streamId": "3647",
-      "observedLabel": "beIN SPORTS 9",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/ZPXSGPMonJRjQ_z3hUXrI",
+      "observedLabel": "beIN SPORTS 9 HD",
+      "sourceHref": "/matches/377203/مباراة-سبورتنج-لشبونة-لاسك-لينز-في-دوري-أبطال-أوروبا",
+      "expiresAt": "2026-10-21T21:45:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.champions-401915390",
+      "home": "Internazionale",
+      "away": "Shakhtar Donetsk",
+      "kickoffUtc": "2026-10-21T19:00Z",
+      "competition": "ucl",
+      "broadcastChannelId": "bein-sports-3",
+      "channel": "beIN Sports 3",
+      "playbackChannelId": "v2-bein-sports-3",
+      "streamId": "3653",
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/377201/مباراة-إنتر-شاختار-دونتسك-في-دوري-أبطال-أوروبا",
       "expiresAt": "2026-10-21T21:45:00.000Z"
     }
   ]

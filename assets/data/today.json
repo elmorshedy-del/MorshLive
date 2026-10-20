@@ -5131,7 +5131,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-21T19:30:00.000Z"
+      "channelExpiresAt": "2026-10-21T18:30:00.000Z"
     },
     {
       "id": "espn-esp.1-401882870",
@@ -5332,6 +5332,31 @@
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
       "channelExpiresAt": "2026-10-20T21:45:00.000Z"
+    },
+    {
+      "id": "espn-uefa.champions-401915390",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Internazionale",
+      "away": "Shakhtar Donetsk",
+      "homeAbbr": "INT",
+      "awayAbbr": "SHK",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/110.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/493.png",
+      "score": "VS",
+      "time": "19:00",
+      "kickoffUtc": "2026-10-21T19:00Z",
+      "league": "UEFA Champions League",
+      "leagueAr": "دوري أبطال أوروبا",
+      "leagueSlug": "uefa.champions",
+      "competition": "ucl",
+      "venue": "San Siro · Milano · Italy",
+      "channel": "beIN Sports 3",
+      "channelId": "bein-sports-3",
+      "commentator": null,
+      "source": "espn",
+      "channelSource": "v2-bein-qualifiers",
+      "channelExpiresAt": "2026-10-21T21:45:00.000Z"
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
