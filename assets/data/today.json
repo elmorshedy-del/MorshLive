@@ -4901,12 +4901,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Şükrü Saracoğlu Stadium · Istanbul · Türkiye",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-20T18:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915404",
@@ -4926,12 +4922,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Baku Olympic Stadium · Baku · Azerbaijan",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-20T18:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915402",
@@ -4951,12 +4943,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Olimpico · Roma · Italy",
-      "channel": "beIN Sports 6",
-      "channelId": "bein-sports-6",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-20T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915398",
@@ -4976,12 +4964,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Estádio do Dragão · Porto · Portugal",
-      "channel": "beIN Sports 9",
-      "channelId": "bein-sports-9",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-20T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915397",
@@ -5001,12 +4985,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Anfield · Liverpool · England",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-20T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915401",
@@ -5026,12 +5006,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Etihad Stadium · Manchester · England",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-20T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915399",
@@ -5051,12 +5027,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Parc des Princes · Paris · France",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-20T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915392",
@@ -5076,12 +5048,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "MHPArena · Stuttgart · Germany",
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-20T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915395",
@@ -5326,12 +5294,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Stadio Diego Armando Maradona · Napoli · Italy",
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-20T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915390",
@@ -5357,6 +5321,56 @@
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
       "channelExpiresAt": "2026-10-21T21:45:00.000Z"
+    },
+    {
+      "id": "espn-eng.1-401879253",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Ipswich Town",
+      "away": "Nottingham Forest",
+      "homeAbbr": "IPS",
+      "awayAbbr": "NFO",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/373.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/393.png",
+      "score": "VS",
+      "time": "19:00",
+      "kickoffUtc": "2026-10-23T19:00Z",
+      "league": "English Premier League",
+      "leagueAr": "الدوري الإنجليزي الممتاز",
+      "leagueSlug": "eng.1",
+      "competition": "epl",
+      "venue": "Portman Road · Ipswich · England",
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn",
+      "channelSource": "v2-bein-qualifiers",
+      "channelExpiresAt": "2026-10-23T21:45:00.000Z"
+    },
+    {
+      "id": "espn-esp.1-401882836",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Alavés",
+      "away": "Málaga",
+      "homeAbbr": "ALA",
+      "awayAbbr": "MCF",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/96.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/99.png",
+      "score": "VS",
+      "time": "19:00",
+      "kickoffUtc": "2026-10-23T19:00Z",
+      "league": "Spanish LALIGA",
+      "leagueAr": "الدوري الإسباني",
+      "leagueSlug": "esp.1",
+      "competition": "laliga",
+      "venue": "Mendizorrotza · Vitoria-Gasteiz · Spain",
+      "channel": "beIN Sports 3",
+      "channelId": "bein-sports-3",
+      "commentator": null,
+      "source": "espn",
+      "channelSource": "v2-bein-qualifiers",
+      "channelExpiresAt": "2026-10-23T21:45:00.000Z"
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",

@@ -1,69 +1,12 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-20T17:31:13.301Z",
+  "generatedAt": "2026-10-20T21:52:43.592Z",
   "capacity": 2,
   "slots": [
     "a",
     "b"
   ],
   "entries": [
-    {
-      "slot": "a",
-      "matchId": "espn-uefa.champions-401915403",
-      "streamId": "3653",
-      "channelId": "iptv-3653",
-      "startAt": "2026-10-20T16:30:00.000Z",
-      "endAt": "2026-10-20T18:45:00.000Z",
-      "score": 50,
-      "reasons": [
-        "competition:ucl+50"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "b",
-      "matchId": "espn-uefa.champions-401915404",
-      "streamId": "3644",
-      "channelId": "iptv-3644",
-      "startAt": "2026-10-20T16:30:00.000Z",
-      "endAt": "2026-10-20T18:45:00.000Z",
-      "score": 65,
-      "reasons": [
-        "competition:ucl+50",
-        "tier2:Borussia Dortmund+15"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "a",
-      "matchId": "espn-uefa.champions-401915399",
-      "streamId": "3645",
-      "channelId": "iptv-3645",
-      "startAt": "2026-10-20T18:45:00.000Z",
-      "endAt": "2026-10-20T21:00:00.000Z",
-      "score": 130,
-      "reasons": [
-        "competition:ucl+50",
-        "tier1:Paris Saint-Germain+30",
-        "tier1:Barcelona+30",
-        "big-game+20"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "b",
-      "matchId": "espn-uefa.champions-401915397",
-      "streamId": "3644",
-      "channelId": "iptv-3644",
-      "startAt": "2026-10-20T18:45:00.000Z",
-      "endAt": "2026-10-20T21:00:00.000Z",
-      "score": 80,
-      "reasons": [
-        "competition:ucl+50",
-        "tier1:Liverpool+30"
-      ],
-      "pinned": false
-    },
     {
       "slot": "a",
       "matchId": "espn-uefa.champions-401915395",
@@ -120,59 +63,35 @@
         "tier1:Real Madrid+30"
       ],
       "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-eng.1-401879253",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-10-23T18:45:00.000Z",
+      "endAt": "2026-10-23T21:00:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:epl+40"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-esp.1-401882836",
+      "streamId": "3653",
+      "channelId": "iptv-3653",
+      "startAt": "2026-10-23T18:45:00.000Z",
+      "endAt": "2026-10-23T21:00:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:laliga+40"
+      ],
+      "pinned": false
     }
   ],
   "unassigned": [
-    {
-      "matchId": "espn-uefa.champions-401915392",
-      "streamId": "3651",
-      "score": 65,
-      "reason": "outranked",
-      "by": [
-        "espn-uefa.champions-401915397",
-        "espn-uefa.champions-401915399"
-      ]
-    },
-    {
-      "matchId": "espn-uefa.champions-401915398",
-      "streamId": "3647",
-      "score": 50,
-      "reason": "outranked",
-      "by": [
-        "espn-uefa.champions-401915397",
-        "espn-uefa.champions-401915399"
-      ]
-    },
-    {
-      "matchId": "espn-uefa.champions-401915400",
-      "streamId": "3652",
-      "score": 50,
-      "reason": "outranked",
-      "by": [
-        "espn-uefa.champions-401915397",
-        "espn-uefa.champions-401915399"
-      ]
-    },
-    {
-      "matchId": "espn-uefa.champions-401915401",
-      "streamId": "3653",
-      "score": 80,
-      "reason": "outranked",
-      "by": [
-        "espn-uefa.champions-401915397",
-        "espn-uefa.champions-401915399"
-      ]
-    },
-    {
-      "matchId": "espn-uefa.champions-401915402",
-      "streamId": "3650",
-      "score": 50,
-      "reason": "outranked",
-      "by": [
-        "espn-uefa.champions-401915397",
-        "espn-uefa.champions-401915399"
-      ]
-    },
     {
       "matchId": "espn-esp.1-401882870",
       "streamId": "3844",
