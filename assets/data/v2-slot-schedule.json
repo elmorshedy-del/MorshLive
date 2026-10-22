@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-22T12:25:11.997Z",
+  "generatedAt": "2026-10-22T21:56:04.497Z",
   "capacity": 2,
   "slots": [
     "a",
@@ -130,6 +130,91 @@
         "tier2:Atlético Madrid+15"
       ],
       "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-eng.1-401878765",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-10-25T13:45:00.000Z",
+      "endAt": "2026-10-25T16:00:00.000Z",
+      "score": 70,
+      "reasons": [
+        "competition:epl+40",
+        "tier1:Liverpool+30"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-eng.1-401879252",
+      "streamId": "3644",
+      "channelId": "iptv-3644",
+      "startAt": "2026-10-25T13:45:00.000Z",
+      "endAt": "2026-10-25T16:00:00.000Z",
+      "score": 70,
+      "reasons": [
+        "competition:epl+40",
+        "tier1:Manchester United+30"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-eng.1-401878764",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-10-25T16:15:00.000Z",
+      "endAt": "2026-10-25T18:30:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:epl+40"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-esp.1-401882829",
+      "streamId": "3653",
+      "channelId": "iptv-3653",
+      "startAt": "2026-10-25T17:15:00.000Z",
+      "endAt": "2026-10-25T19:30:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:laliga+40"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-fra.1-401876422",
+      "streamId": "3644",
+      "channelId": "iptv-3644",
+      "startAt": "2026-10-25T19:30:00.000Z",
+      "endAt": "2026-10-25T21:45:00.000Z",
+      "score": 50,
+      "reasons": [
+        "competition:ligue1+20",
+        "tier1:Paris Saint-Germain+30"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-esp.1-401882832",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-10-25T19:45:00.000Z",
+      "endAt": "2026-10-25T22:00:00.000Z",
+      "score": 160,
+      "reasons": [
+        "competition:laliga+40",
+        "tier1:Barcelona+30",
+        "tier1:Real Madrid+30",
+        "rivalry+40",
+        "big-game+20"
+      ],
+      "pinned": false
     }
   ],
   "unassigned": [
@@ -141,6 +226,46 @@
       "by": [
         "espn-eng.1-401878768",
         "espn-esp.1-401882830"
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882835",
+      "streamId": "3650",
+      "score": 40,
+      "reason": "outranked",
+      "by": [
+        "espn-eng.1-401878765",
+        "espn-eng.1-401879252"
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401878766",
+      "streamId": "3652",
+      "score": 40,
+      "reason": "outranked",
+      "by": [
+        "espn-eng.1-401878765",
+        "espn-eng.1-401879252"
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879254",
+      "streamId": "3653",
+      "score": 55,
+      "reason": "outranked",
+      "by": [
+        "espn-eng.1-401878765",
+        "espn-eng.1-401879252"
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882833",
+      "streamId": "3650",
+      "score": 40,
+      "reason": "outranked",
+      "by": [
+        "espn-eng.1-401878765",
+        "espn-eng.1-401879252"
       ]
     }
   ]
