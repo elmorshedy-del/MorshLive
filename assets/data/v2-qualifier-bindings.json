@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-21T21:59:04.224Z",
+  "generatedAt": "2026-10-22T12:25:11.987Z",
   "window": {
     "start": "2026-10-22",
     "end": "2026-10-25"
@@ -35,6 +35,118 @@
       "observedLabel": "beIN SPORTS 3",
       "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/8rBqMjwf7uRy4FYApx8g-",
       "expiresAt": "2026-10-23T21:45:00.000Z"
+    },
+    {
+      "matchId": "espn-eng.1-401879256",
+      "home": "Aston Villa",
+      "away": "Manchester City",
+      "kickoffUtc": "2026-10-24T11:30Z",
+      "competition": "epl",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/o-2QIk2xFr5aYvZ2qK6jk",
+      "expiresAt": "2026-10-24T13:30:00.000Z"
+    },
+    {
+      "matchId": "espn-esp.1-401882830",
+      "home": "Rayo Vallecano",
+      "away": "Elche",
+      "kickoffUtc": "2026-10-24T12:00Z",
+      "competition": "laliga",
+      "broadcastChannelId": "bein-sports-4",
+      "channel": "beIN Sports 4",
+      "playbackChannelId": "v2-bein-sports-4",
+      "streamId": "3652",
+      "observedLabel": "beIN SPORTS 4",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/dlEgRb0b2IPNTRwCgJ7rN",
+      "expiresAt": "2026-10-24T13:45:00.000Z"
+    },
+    {
+      "matchId": "espn-eng.1-401878768",
+      "home": "Arsenal",
+      "away": "Everton",
+      "kickoffUtc": "2026-10-24T14:00Z",
+      "competition": "epl",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/b3JISydwy-UnvFnDsunKD",
+      "expiresAt": "2026-10-24T16:00:00.000Z"
+    },
+    {
+      "matchId": "espn-eng.1-401879255",
+      "home": "Coventry City",
+      "away": "Fulham",
+      "kickoffUtc": "2026-10-24T14:00Z",
+      "competition": "epl",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/iX9t1k7T23CYb_5_FX1OB",
+      "expiresAt": "2026-10-24T16:00:00.000Z"
+    },
+    {
+      "matchId": "espn-esp.1-401882831",
+      "home": "Racing Santander",
+      "away": "Espanyol",
+      "kickoffUtc": "2026-10-24T14:15Z",
+      "competition": "laliga",
+      "broadcastChannelId": "bein-sports-4",
+      "channel": "beIN Sports 4",
+      "playbackChannelId": "v2-bein-sports-4",
+      "streamId": "3652",
+      "observedLabel": "beIN SPORTS 4",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/iLsAK7ukc88C4G5vk5SJ3",
+      "expiresAt": "2026-10-24T17:00:00.000Z"
+    },
+    {
+      "matchId": "espn-eng.1-401878767",
+      "home": "Chelsea",
+      "away": "Tottenham Hotspur",
+      "kickoffUtc": "2026-10-24T16:30Z",
+      "competition": "epl",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/j8pKWBYo51tygqD_m28DE",
+      "expiresAt": "2026-10-24T19:15:00.000Z"
+    },
+    {
+      "matchId": "espn-esp.1-401882827",
+      "home": "Valencia",
+      "away": "Villarreal",
+      "kickoffUtc": "2026-10-24T16:30Z",
+      "competition": "laliga",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/-GTrd06QO0PJoxXqwt-Dc",
+      "expiresAt": "2026-10-24T18:30:00.000Z"
+    },
+    {
+      "matchId": "espn-esp.1-401882834",
+      "home": "Atlético Madrid",
+      "away": "Deportivo",
+      "kickoffUtc": "2026-10-24T19:00Z",
+      "competition": "laliga",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/ZtZ227Z56omxfOYjq67Vk",
+      "expiresAt": "2026-10-24T21:45:00.000Z"
     }
   ]
 }
