@@ -5625,12 +5625,12 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Anfield · Liverpool · England",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-25T16:00:00.000Z"
+      "channelExpiresAt": "2026-10-25T16:45:00.000Z"
     },
     {
       "id": "espn-eng.1-401879252",
@@ -5650,12 +5650,12 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Old Trafford · Manchester · England",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-25T16:45:00.000Z"
+      "channelExpiresAt": "2026-10-25T16:00:00.000Z"
     },
     {
       "id": "espn-esp.1-401882833",
@@ -5755,7 +5755,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-25T22:30:00.000Z"
+      "channelExpiresAt": "2026-10-26T22:15:00.000Z"
     },
     {
       "id": "espn-esp.1-401882832",
@@ -5781,6 +5781,31 @@
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
       "channelExpiresAt": "2026-10-25T22:45:00.000Z"
+    },
+    {
+      "id": "espn-esp.1-401882828",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Sevilla",
+      "away": "Osasuna",
+      "homeAbbr": "SEV",
+      "awayAbbr": "OSA",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/243.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/97.png",
+      "score": "VS",
+      "time": "20:00",
+      "kickoffUtc": "2026-10-26T20:00Z",
+      "league": "Spanish LALIGA",
+      "leagueAr": "الدوري الإسباني",
+      "leagueSlug": "esp.1",
+      "competition": "laliga",
+      "venue": "Ramón Sánchez Pizjuán Stadium · Sevilla · Spain",
+      "channel": "beIN Sports 5",
+      "channelId": "bein-sports-5",
+      "commentator": null,
+      "source": "espn",
+      "channelSource": "v2-bein-qualifiers",
+      "channelExpiresAt": "2026-10-26T22:45:00.000Z"
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
