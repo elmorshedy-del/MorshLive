@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-22T21:56:04.487Z",
+  "updatedAt": "2026-10-23T12:06:59.094Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1099,7 +1099,7 @@
       "contentKey": "match:espn-eng.1-401879253",
       "kickoffUtc": "2026-10-23T19:00Z",
       "status": "operator",
-      "verifiedAt": "2026-10-20T21:52:43.583Z",
+      "verifiedAt": "2026-10-23T12:06:59.094Z",
       "expiresAt": "2026-10-23T21:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
@@ -1117,10 +1117,10 @@
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
           "contentKey": "match:espn-eng.1-401879253",
           "status": "operator",
-          "verifiedAt": "2026-10-20T21:52:43.583Z",
+          "verifiedAt": "2026-10-23T12:06:59.094Z",
           "expiresAt": "2026-10-23T21:45:00.000Z",
           "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1"
+          "note": "Published broadcaster binding: beIN SPORTS 1 HD"
         }
       ]
     },
@@ -1137,7 +1137,7 @@
       "contentKey": "match:espn-esp.1-401882836",
       "kickoffUtc": "2026-10-23T19:00Z",
       "status": "operator",
-      "verifiedAt": "2026-10-20T21:52:43.583Z",
+      "verifiedAt": "2026-10-23T12:06:59.094Z",
       "expiresAt": "2026-10-23T21:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
@@ -1155,10 +1155,10 @@
           "url": "https://v2-mist-production.up.railway.app/hls/iptv-3653/index.m3u8",
           "contentKey": "match:espn-esp.1-401882836",
           "status": "operator",
-          "verifiedAt": "2026-10-20T21:52:43.583Z",
+          "verifiedAt": "2026-10-23T12:06:59.094Z",
           "expiresAt": "2026-10-23T21:45:00.000Z",
           "label": "beIN Sports 3 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 3"
+          "note": "Published broadcaster binding: beIN SPORTS 3 HD"
         }
       ]
     },

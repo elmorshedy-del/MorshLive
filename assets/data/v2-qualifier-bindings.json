@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-22T21:56:04.487Z",
+  "generatedAt": "2026-10-23T12:06:59.094Z",
   "window": {
     "start": "2026-10-23",
     "end": "2026-10-26"
@@ -18,8 +18,8 @@
       "channel": "beIN Sports 1",
       "playbackChannelId": "v2-bein-sports-1",
       "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/ntyfsF8j3nbkyyLFI5h_U",
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/375438/مباراة-إبسويتش-تاون-نوتنجهام-فورست-في-الدوري-الإنجليزي-الممتاز",
       "expiresAt": "2026-10-23T21:45:00.000Z"
     },
     {
@@ -32,8 +32,8 @@
       "channel": "beIN Sports 3",
       "playbackChannelId": "v2-bein-sports-3",
       "streamId": "3653",
-      "observedLabel": "beIN SPORTS 3",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/8rBqMjwf7uRy4FYApx8g-",
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/375083/مباراة-ديبورتيفو-ألافيس-مالاجا-في-الدوري-الإسباني",
       "expiresAt": "2026-10-23T21:45:00.000Z"
     },
     {
