@@ -5426,12 +5426,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "El Sardineros · Santander · Spain",
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-24T17:00:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401878767",
@@ -5451,12 +5447,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Stamford Bridge · London · England",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-24T19:15:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882827",
@@ -5476,12 +5468,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Mestalla Stadium · Manises · Spain",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-24T18:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882834",
