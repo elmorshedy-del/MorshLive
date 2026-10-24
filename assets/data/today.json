@@ -5300,12 +5300,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Portman Road · Ipswich · England",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-23T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882836",
@@ -5325,12 +5321,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Mendizorrotza · Vitoria-Gasteiz · Spain",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-23T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401879256",
