@@ -14,7 +14,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-const BASELINE_COMMIT = "dd06ac0d7e2c888e53b1e26d47ff767fc6b971d3";
+const BASELINE_COMMIT = "737919a6fab364fa11966ca0162b8d8bcff9f4c6";
 const APPROVAL_VALUE = "YES_I_INTEND_TO_CHANGE_PRODUCTION_STREAMING";
 const PLAN_PATH = resolve("config/stream-change-plan.json");
 const MAX_PLAN_WINDOW_MS = 24 * 60 * 60 * 1000;
@@ -34,7 +34,7 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/watch-loader.js": "3402b1f4a5001fc9c8ee35c39358725f9274f1dc",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
   // V2 single-socket healthy same-URL remount guard.
-  "assets/js/watch.js": "7b20b06c4672a56c5ea274f1aba81bcfbe5e71ca",
+  "assets/js/watch.js": "291bf8faf34292600ea997120d04ecd669b0b44d",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",
@@ -44,7 +44,7 @@ const LOCKED_FILES = Object.freeze({
   "backend/routes/xtream.js": "443cfaed838dcdc6d0dc397793a1487c92a51d2a",
   "backend/services/iptv-lab.js": "ffe3967558222b8ebae55b0411defcc02524f9eb",
   // CLAUDE-STAMP 2026-10-17 — V2-MULTI-SLOT-GATE-1
-  "backend/services/stream-plan.js": "4219ae55d64a53f5d64473207c6e42922e2d94c4",
+  "backend/services/stream-plan.js": "8ee7ae135eb455572543b454fec21f7b5e5aa11e",
   "backend/services/xtream.js": "82e481766d2b87a17a33a88d41185931c3cfaa97",
   "lib/hls-cache.js": "7df783457d4600318b1bf0f0b674a43a8bd2fb5b",
   "lib/hls-recover.js": "4772633e75ee2d80f01035d55e26e8747aec0cf5",

@@ -3,9 +3,9 @@
 <!-- CHATGPT-STAMP 2026-09-06T14:33-04:00 — PRODUCTION-STREAM-LOCK-1 -->
 
 Production playback is frozen at the known-good state established by commit
-`dd06ac0d7e2c888e53b1e26d47ff767fc6b971d3`.
+`737919a6fab364fa11966ca0162b8d8bcff9f4c6`.
 
-The October 17 channel-binding guard adds fixture-window and expiry checks to the V2 remote gate, and prevents an unresolved authoritative plan from opening the legacy Lab rail. Player transport, mounting, recovery, and single-socket control retain their previous behavior. All 34 protected files remain fingerprinted.
+The October 25 DigitalOcean V2 cutover updates only the locked KoraZero V2 control/HLS endpoint validation to the verified `v2.korazero.com` and `mist-v2.korazero.com` hosts. The standalone DigitalOcean relay → Mist → HLS path was validated with one upstream provider pull, advancing HLS media sequence, H.264 video, and AAC audio before this baseline was promoted. Player transport, mounting, recovery, and single-socket control retain their previous behavior. All 34 protected files remain fingerprinted.
 
 This does **not** freeze the repository. Content, SEO, match data, editorial work,
 styles, and unrelated application work can continue normally. The lock only
