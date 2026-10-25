@@ -1,0 +1,9 @@
+{
+  "reason": "Move the locked V2 control and Mist HLS hostname validation from the retired Railway endpoints to the verified DigitalOcean V2 endpoints while preserving existing playback behavior.",
+  "baseline": "dd06ac0d7e2c888e53b1e26d47ff767fc6b971d3",
+  "expiresAt": "2026-10-26T02:00:00.000Z",
+  "allowedFiles": [
+    "assets/js/watch.js",
+    "backend/services/stream-plan.js"
+  ]
+}
