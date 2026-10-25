@@ -5559,12 +5559,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Balaidos · Vigo · Spain",
-      "channel": "beIN Sports 6",
-      "channelId": "bein-sports-6",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-25T18:00:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401878764",
@@ -5584,12 +5580,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Stadium of Light · Sunderland · England",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-25T19:15:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882829",
@@ -5609,12 +5601,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Reale Arena · San Sebastian · Spain",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-25T20:15:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-fra.1-401876422",
