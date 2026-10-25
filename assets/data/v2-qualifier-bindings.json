@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-24T21:11:00.792Z",
+  "generatedAt": "2026-10-25T16:48:52.280Z",
   "window": {
     "start": "2026-10-25",
     "end": "2026-10-28"
@@ -8,76 +8,6 @@
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
   "bindings": [
-    {
-      "matchId": "espn-esp.1-401882835",
-      "home": "Athletic Club",
-      "away": "Getafe",
-      "kickoffUtc": "2026-10-25T13:00Z",
-      "competition": "laliga",
-      "broadcastChannelId": "bein-sports-6",
-      "channel": "beIN Sports 6",
-      "playbackChannelId": "v2-bein-sports-6",
-      "streamId": "3650",
-      "observedLabel": "beIN SPORTS 6 HD",
-      "sourceHref": "/matches/375080/مباراة-أتليتك-بلباو-خيتافي-في-الدوري-الإسباني",
-      "expiresAt": "2026-10-25T14:45:00.000Z"
-    },
-    {
-      "matchId": "espn-eng.1-401879254",
-      "home": "Crystal Palace",
-      "away": "Newcastle United",
-      "kickoffUtc": "2026-10-25T14:00Z",
-      "competition": "epl",
-      "broadcastChannelId": "bein-sports-3",
-      "channel": "beIN Sports 3",
-      "playbackChannelId": "v2-bein-sports-3",
-      "streamId": "3653",
-      "observedLabel": "beIN SPORTS 3 HD",
-      "sourceHref": "/matches/375433/مباراة-كريستال-بالاس-نيوكاسل-يونايتد-في-الدوري-الإنجليزي-الممتاز",
-      "expiresAt": "2026-10-25T16:45:00.000Z"
-    },
-    {
-      "matchId": "espn-eng.1-401878766",
-      "home": "Hull City",
-      "away": "Brentford",
-      "kickoffUtc": "2026-10-25T14:00Z",
-      "competition": "epl",
-      "broadcastChannelId": "bein-sports-4",
-      "channel": "beIN Sports 4",
-      "playbackChannelId": "v2-bein-sports-4",
-      "streamId": "3652",
-      "observedLabel": "beIN SPORTS 4 HD",
-      "sourceHref": "/matches/375434/مباراة-هال-سيتي-برينتفورد-في-الدوري-الإنجليزي-الممتاز",
-      "expiresAt": "2026-10-25T16:45:00.000Z"
-    },
-    {
-      "matchId": "espn-eng.1-401878765",
-      "home": "Liverpool",
-      "away": "Brighton & Hove Albion",
-      "kickoffUtc": "2026-10-25T14:00Z",
-      "competition": "epl",
-      "broadcastChannelId": "bein-sports-2",
-      "channel": "beIN Sports 2",
-      "playbackChannelId": "v2-bein-sports-2",
-      "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2 HD",
-      "sourceHref": "/matches/375435/مباراة-ليفربول-برايتون-في-الدوري-الإنجليزي-الممتاز",
-      "expiresAt": "2026-10-25T16:45:00.000Z"
-    },
-    {
-      "matchId": "espn-eng.1-401879252",
-      "home": "Manchester United",
-      "away": "AFC Bournemouth",
-      "kickoffUtc": "2026-10-25T14:00Z",
-      "competition": "epl",
-      "broadcastChannelId": "bein-sports-1",
-      "channel": "beIN Sports 1",
-      "playbackChannelId": "v2-bein-sports-1",
-      "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1 HD",
-      "sourceHref": "/matches/375436/مباراة-مانشستر-يونايتد-بورنموث-في-الدوري-الإنجليزي-الممتاز",
-      "expiresAt": "2026-10-25T16:00:00.000Z"
-    },
     {
       "matchId": "espn-esp.1-401882833",
       "home": "Celta Vigo",

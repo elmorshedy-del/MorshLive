@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-25T15:25:12.834Z",
+  "generatedAt": "2026-10-25T16:48:52.287Z",
   "capacity": 2,
   "slots": [
     "a",
@@ -8,30 +8,15 @@
   ],
   "entries": [
     {
-      "slot": "a",
-      "matchId": "espn-eng.1-401878765",
-      "streamId": "3644",
-      "channelId": "iptv-3644",
-      "startAt": "2026-10-25T13:45:00.000Z",
-      "endAt": "2026-10-25T16:00:00.000Z",
-      "score": 70,
-      "reasons": [
-        "competition:epl+40",
-        "tier1:Liverpool+30"
-      ],
-      "pinned": false
-    },
-    {
       "slot": "b",
-      "matchId": "espn-eng.1-401879252",
-      "streamId": "3645",
-      "channelId": "iptv-3645",
-      "startAt": "2026-10-25T13:45:00.000Z",
-      "endAt": "2026-10-25T16:00:00.000Z",
-      "score": 70,
+      "matchId": "espn-esp.1-401882833",
+      "streamId": "3650",
+      "channelId": "iptv-3650",
+      "startAt": "2026-10-25T15:00:00.000Z",
+      "endAt": "2026-10-25T17:15:00.000Z",
+      "score": 40,
       "reasons": [
-        "competition:epl+40",
-        "tier1:Manchester United+30"
+        "competition:laliga+40"
       ],
       "pinned": false
     },
@@ -106,36 +91,5 @@
       "pinned": false
     }
   ],
-  "unassigned": [
-    {
-      "matchId": "espn-eng.1-401878766",
-      "streamId": "3652",
-      "score": 40,
-      "reason": "outranked",
-      "by": [
-        "espn-eng.1-401878765",
-        "espn-eng.1-401879252"
-      ]
-    },
-    {
-      "matchId": "espn-eng.1-401879254",
-      "streamId": "3653",
-      "score": 55,
-      "reason": "outranked",
-      "by": [
-        "espn-eng.1-401878765",
-        "espn-eng.1-401879252"
-      ]
-    },
-    {
-      "matchId": "espn-esp.1-401882833",
-      "streamId": "3650",
-      "score": 40,
-      "reason": "outranked",
-      "by": [
-        "espn-eng.1-401878765",
-        "espn-eng.1-401879252"
-      ]
-    }
-  ]
+  "unassigned": []
 }

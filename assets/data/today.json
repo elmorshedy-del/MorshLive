@@ -5475,12 +5475,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Selhurst Park · London · England",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-25T16:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401878766",
@@ -5500,12 +5496,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "The MKM Stadium · Hull · England",
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-25T16:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401878765",
@@ -5525,12 +5517,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Anfield · Liverpool · England",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-25T16:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401879252",
@@ -5550,12 +5538,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Old Trafford · Manchester · England",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-25T16:00:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882833",
