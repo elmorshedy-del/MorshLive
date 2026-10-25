@@ -15,7 +15,7 @@ const {
 
 const VEGA = {
   variant: "Vega",
-  baseUrl: "https://v2-mist-production.up.railway.app/hls",
+  baseUrl: "https://mist-v2.korazero.com/hls",
   channels: {
     "bein-sports-2": {
       playbackChannelId: "v2-bein-sports-2",
@@ -682,9 +682,7 @@ describe("V2 beIN qualifier bindings", () => {
     expect(merged.plans.some((plan) => plan.matchId === "manual")).toBe(true);
     expect(merged.plans.some((plan) => plan.matchId === "old-auto")).toBe(false);
     const auto = merged.plans.find((plan) => plan.matchId === "espn-uefa.nations-1");
-    expect(auto?.sources?.[0]?.url).toBe(
-      "https://v2-mist-production.up.railway.app/hls/iptv-3650/index.m3u8",
-    );
+    expect(auto?.sources?.[0]?.url).toBe("https://mist-v2.korazero.com/hls/iptv-3650/index.m3u8");
     expect(auto?.policy?.allowLegacy).toBe(false);
   });
 });

@@ -22,7 +22,7 @@ async function resolve(body, channel = "iptv-3645", timing = {}) {
               kind: "hls",
               role: "primary",
               status: "pending",
-              url: `https://v2-mist-production.up.railway.app/hls/${channel}/index.m3u8`,
+              url: `https://mist-v2.korazero.com/hls/${channel}/index.m3u8`,
             },
           ],
         },

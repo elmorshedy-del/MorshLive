@@ -51,7 +51,7 @@ describe("stream plan route", () => {
                 role: "primary",
                 kind: "hls",
                 status: mode === "failed" ? "failed" : "operator",
-                url: "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
+                url: "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
                 expiresAt,
               },
             ],
@@ -204,7 +204,7 @@ describe("stream plan route", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn(async (url) => {
-        expect(String(url)).toBe("https://v2-control-production.up.railway.app/api/active");
+        expect(String(url)).toBe("https://v2.korazero.com/api/active");
         return new Response(
           JSON.stringify({
             active: { channelId: "iptv-89778", streamId: "89778", inputs: 1 },
@@ -232,7 +232,7 @@ describe("stream plan route", () => {
                 id: "v2-alkass1",
                 role: "alternate",
                 kind: "hls",
-                url: "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+                url: "https://mist-v2.korazero.com/hls/iptv-89778/index.m3u8",
                 contentKey: "match:iraq",
                 status: "pending",
               },
@@ -254,7 +254,7 @@ describe("stream plan route", () => {
       selected: {
         id: "v2-alkass1",
         status: "operator",
-        playbackUrl: "https://v2-mist-production.up.railway.app/hls/iptv-89778/index.m3u8",
+        playbackUrl: "https://mist-v2.korazero.com/hls/iptv-89778/index.m3u8",
       },
       reason: "remote-active:iptv-89778",
       v2Remote: { active: "iptv-89778" },
@@ -293,7 +293,7 @@ describe("stream plan route", () => {
                 id: "v2-bein-3645",
                 role: "primary",
                 kind: "hls",
-                url: "https://v2-mist-production.up.railway.app/hls/iptv-3645/index.m3u8",
+                url: "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
                 contentKey: "match:england",
                 status: "operator",
               },

@@ -1,7 +1,7 @@
 {
   "version": 1,
   "variant": "Vega",
-  "baseUrl": "https://v2-mist-production.up.railway.app/hls",
+  "baseUrl": "https://mist-v2.korazero.com/hls",
   "channels": {
     "bein-sports-1": {
       "playbackChannelId": "v2-bein-sports-1",
