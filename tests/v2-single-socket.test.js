@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 describe("V2 plan single-socket policy", () => {
   const catalog = JSON.parse(readFileSync("assets/data/stream-plans.json", "utf8"));
   const service = readFileSync("backend/services/stream-plan.js", "utf8");
-  const v2Prefix = "https://v2-mist-production.up.railway.app/hls/iptv-";
+  const v2Prefix = "https://mist-v2.korazero.com/hls/iptv-";
 
   it("keeps every static V2 match mapping fail-closed and single-source", () => {
     const v2Plans = [];
@@ -28,7 +28,7 @@ describe("V2 plan single-socket policy", () => {
   });
 
   it("uses controller state as the runtime authority for configured V2 slots", () => {
-    expect(service).toContain("https://v2-control-production.up.railway.app/api/active");
+    expect(service).toContain("https://v2.korazero.com/api/active");
     expect(service).toContain("function gateV2Plan(plan, state, timing = {})");
     expect(service).toContain("activeChannelIds.includes(v2ChannelId(source))");
     expect(service).toContain("activeChannelIds.length > capacity");
