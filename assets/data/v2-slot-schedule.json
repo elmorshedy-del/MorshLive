@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-24T21:11:00.802Z",
+  "generatedAt": "2026-10-25T15:25:12.834Z",
   "capacity": 2,
   "slots": [
     "a",
@@ -107,16 +107,6 @@
     }
   ],
   "unassigned": [
-    {
-      "matchId": "espn-esp.1-401882835",
-      "streamId": "3650",
-      "score": 40,
-      "reason": "outranked",
-      "by": [
-        "espn-eng.1-401878765",
-        "espn-eng.1-401879252"
-      ]
-    },
     {
       "matchId": "espn-eng.1-401878766",
       "streamId": "3652",

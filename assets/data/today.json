@@ -5454,12 +5454,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "San Mamés · Bilbao · Spain",
-      "channel": "beIN Sports 6",
-      "channelId": "bein-sports-6",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-25T14:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401879254",
