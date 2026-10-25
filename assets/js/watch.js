@@ -971,7 +971,7 @@
   //
   // V2 is one provider socket. The 20s plan refresh may update metadata, but
   // it must not destroy a healthy HLS player when the V2 URL did not change.
-  const V2_MIST_HLS_RE = /^https:\/\/v2-mist-production\.up\.railway\.app\/hls\/iptv-\d+\/index\.m3u8(?:[?#].*)?$/i;
+  const V2_MIST_HLS_RE = /^https:\/\/mist-v2\.korazero\.com\/hls\/iptv-\d+\/index\.m3u8(?:[?#].*)?$/i;
   function v2PinnedMirrorAlreadyHealthy(url) {
     const href = String(url || "");
     if (!V2_MIST_HLS_RE.test(href)) return false;
