@@ -5580,12 +5580,8 @@
       "leagueSlug": "fra.1",
       "competition": "ligue1",
       "venue": "Parc des Princes · Paris · France",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-26T22:15:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882832",
@@ -5626,12 +5622,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Ramón Sánchez Pizjuán Stadium · Sevilla · Spain",
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-10-26T22:45:00.000Z"
+      "source": "espn"
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",

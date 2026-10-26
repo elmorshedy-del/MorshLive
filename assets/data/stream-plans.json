@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-25T21:14:09.277Z",
+  "updatedAt": "2026-10-26T22:52:21.157Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1087,80 +1087,50 @@
       ]
     },
     {
-      "matchId": "espn-fra.1-401876422",
+      "matchId": "espn-esp.1-401882817",
       "teams": [
         [
-          "Paris Saint-Germain"
+          "Villarreal"
         ],
         [
-          "Lyon"
+          "Espanyol"
         ]
       ],
-      "contentKey": "match:espn-fra.1-401876422",
-      "kickoffUtc": "2026-10-26T19:30Z",
-      "status": "operator",
-      "verifiedAt": "2026-10-23T21:40:33.372Z",
-      "expiresAt": "2026-10-26T22:15:00.000Z",
+      "contentKey": "match:espn-esp.1-401882817",
+      "kickoffUtc": "2026-10-30T20:00Z",
+      "expiresAt": "2026-10-30T22:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": [
-        {
-          "id": "v2-bein-3644",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3644/index.m3u8",
-          "contentKey": "match:espn-fra.1-401876422",
-          "status": "operator",
-          "verifiedAt": "2026-10-23T21:40:33.372Z",
-          "expiresAt": "2026-10-26T22:15:00.000Z",
-          "label": "beIN Sports 2 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 2 HD"
-        }
-      ]
+      "sources": []
     },
     {
-      "matchId": "espn-esp.1-401882828",
+      "matchId": "espn-fra.1-401876421",
       "teams": [
         [
-          "Sevilla"
+          "Le Havre AC"
         ],
         [
-          "Osasuna"
+          "Paris Saint-Germain"
         ]
       ],
-      "contentKey": "match:espn-esp.1-401882828",
-      "kickoffUtc": "2026-10-26T20:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-10-23T21:40:33.372Z",
-      "expiresAt": "2026-10-26T22:45:00.000Z",
+      "contentKey": "match:espn-fra.1-401876421",
+      "kickoffUtc": "2026-10-30T18:00Z",
+      "expiresAt": "2026-10-30T20:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": [
-        {
-          "id": "v2-bein-3651",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3651/index.m3u8",
-          "contentKey": "match:espn-esp.1-401882828",
-          "status": "operator",
-          "verifiedAt": "2026-10-23T21:40:33.372Z",
-          "expiresAt": "2026-10-26T22:45:00.000Z",
-          "label": "beIN Sports 5 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 5 HD"
-        }
-      ]
+      "sources": []
     }
   ]
 }

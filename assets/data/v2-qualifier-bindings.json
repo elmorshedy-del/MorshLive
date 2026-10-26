@@ -1,40 +1,11 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-25T21:14:09.277Z",
+  "generatedAt": "2026-10-26T22:52:21.157Z",
   "window": {
-    "start": "2026-10-26",
-    "end": "2026-10-29"
+    "start": "2026-10-27",
+    "end": "2026-10-30"
   },
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
-  "bindings": [
-    {
-      "matchId": "espn-fra.1-401876422",
-      "home": "Paris Saint-Germain",
-      "away": "Lyon",
-      "kickoffUtc": "2026-10-26T19:30Z",
-      "competition": "ligue1",
-      "broadcastChannelId": "bein-sports-2",
-      "channel": "beIN Sports 2",
-      "playbackChannelId": "v2-bein-sports-2",
-      "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2 HD",
-      "sourceHref": "/matches/377865/مباراة-باريس-سان-جيرمان-أولمبيك-ليون-في-الدوري-الفرنسي",
-      "expiresAt": "2026-10-26T22:15:00.000Z"
-    },
-    {
-      "matchId": "espn-esp.1-401882828",
-      "home": "Sevilla",
-      "away": "Osasuna",
-      "kickoffUtc": "2026-10-26T20:00Z",
-      "competition": "laliga",
-      "broadcastChannelId": "bein-sports-5",
-      "channel": "beIN Sports 5",
-      "playbackChannelId": "v2-bein-sports-5",
-      "streamId": "3651",
-      "observedLabel": "beIN SPORTS 5 HD",
-      "sourceHref": "/matches/375088/مباراة-إشبيلية-أوساسونا-في-الدوري-الإسباني",
-      "expiresAt": "2026-10-26T22:45:00.000Z"
-    }
-  ]
+  "bindings": []
 }
