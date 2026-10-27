@@ -1,11 +1,39 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-26T22:52:21.162Z",
+  "generatedAt": "2026-10-27T18:17:01.625Z",
   "capacity": 2,
   "slots": [
     "a",
     "b"
   ],
-  "entries": [],
+  "entries": [
+    {
+      "slot": "a",
+      "matchId": "espn-fra.1-401876421",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-10-30T17:45:00.000Z",
+      "endAt": "2026-10-30T20:00:00.000Z",
+      "score": 50,
+      "reasons": [
+        "competition:ligue1+20",
+        "tier1:Paris Saint-Germain+30"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-esp.1-401882817",
+      "streamId": "3644",
+      "channelId": "iptv-3644",
+      "startAt": "2026-10-30T19:45:00.000Z",
+      "endAt": "2026-10-30T22:00:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:laliga+40"
+      ],
+      "pinned": false
+    }
+  ],
   "unassigned": []
 }

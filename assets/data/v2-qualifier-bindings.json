@@ -1,11 +1,40 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-26T22:52:21.157Z",
+  "generatedAt": "2026-10-27T18:17:01.617Z",
   "window": {
     "start": "2026-10-27",
     "end": "2026-10-30"
   },
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
-  "bindings": []
+  "bindings": [
+    {
+      "matchId": "espn-fra.1-401876421",
+      "home": "Le Havre AC",
+      "away": "Paris Saint-Germain",
+      "kickoffUtc": "2026-10-30T18:00Z",
+      "competition": "ligue1",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/6hs023ta15m-tFcawH95N",
+      "expiresAt": "2026-10-30T20:45:00.000Z"
+    },
+    {
+      "matchId": "espn-esp.1-401882817",
+      "home": "Villarreal",
+      "away": "Espanyol",
+      "kickoffUtc": "2026-10-30T20:00Z",
+      "competition": "laliga",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/FyJ5NhaeD8N8jUAPTsvqE",
+      "expiresAt": "2026-10-30T22:45:00.000Z"
+    }
+  ]
 }
