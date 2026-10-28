@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-27T18:17:01.625Z",
+  "generatedAt": "2026-10-28T06:17:07.199Z",
   "capacity": 2,
   "slots": [
     "a",
@@ -33,7 +33,160 @@
         "competition:laliga+40"
       ],
       "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-eng.1-401879248",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-10-31T12:15:00.000Z",
+      "endAt": "2026-10-31T14:30:00.000Z",
+      "score": 120,
+      "reasons": [
+        "competition:epl+40",
+        "tier1:Chelsea+30",
+        "tier1:Manchester United+30",
+        "big-game+20"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-esp.1-401882820",
+      "streamId": "3648",
+      "channelId": "iptv-3648",
+      "startAt": "2026-10-31T12:45:00.000Z",
+      "endAt": "2026-10-31T15:00:00.000Z",
+      "score": 55,
+      "reasons": [
+        "competition:laliga+40",
+        "tier2:Atlético Madrid+15"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-eng.1-401879245",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-10-31T14:45:00.000Z",
+      "endAt": "2026-10-31T17:00:00.000Z",
+      "score": 70,
+      "reasons": [
+        "competition:epl+40",
+        "tier1:Manchester City+30"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-esp.1-401882818",
+      "streamId": "3844",
+      "channelId": "iptv-3844",
+      "startAt": "2026-10-31T15:00:00.000Z",
+      "endAt": "2026-10-31T17:15:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:laliga+40"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-eng.1-401878761",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-10-31T17:15:00.000Z",
+      "endAt": "2026-10-31T19:30:00.000Z",
+      "score": 55,
+      "reasons": [
+        "competition:epl+40",
+        "tier2:Tottenham Hotspur+15"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-esp.1-401882825",
+      "streamId": "3644",
+      "channelId": "iptv-3644",
+      "startAt": "2026-10-31T17:15:00.000Z",
+      "endAt": "2026-10-31T19:30:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:laliga+40"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-esp.1-401882822",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-10-31T19:45:00.000Z",
+      "endAt": "2026-10-31T22:00:00.000Z",
+      "score": 70,
+      "reasons": [
+        "competition:laliga+40",
+        "tier1:Barcelona+30"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-eng.1-401879250",
+      "streamId": "3644",
+      "channelId": "iptv-3644",
+      "startAt": "2026-10-31T19:45:00.000Z",
+      "endAt": "2026-10-31T22:00:00.000Z",
+      "score": 55,
+      "reasons": [
+        "competition:epl+40",
+        "tier2:Aston Villa+15"
+      ],
+      "pinned": false
     }
   ],
-  "unassigned": []
+  "unassigned": [
+    {
+      "matchId": "espn-eng.1-401878763",
+      "streamId": "3653",
+      "score": 40,
+      "reason": "outranked",
+      "by": [
+        "espn-eng.1-401879245",
+        "espn-esp.1-401882820"
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879247",
+      "streamId": "3651",
+      "score": 40,
+      "reason": "outranked",
+      "by": [
+        "espn-eng.1-401879245",
+        "espn-esp.1-401882820"
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879249",
+      "streamId": "3644",
+      "score": 40,
+      "reason": "outranked",
+      "by": [
+        "espn-eng.1-401879245",
+        "espn-esp.1-401882820"
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879251",
+      "streamId": "3652",
+      "score": 40,
+      "reason": "outranked",
+      "by": [
+        "espn-eng.1-401879245",
+        "espn-esp.1-401882820"
+      ]
+    }
+  ]
 }
