@@ -171,6 +171,7 @@ function embedForKey(key) {
 // currently selected remote channel is exposed as a live V2 fixture.
 const V2_MATCHDAY_FIXTURES = Object.freeze({
   "espn-uefa.nations-401861066": Object.freeze({ channelId: "v2-bein-1", channel: "beIN Sports 1", hlsPrefix: "https://mist-v2.korazero.com/hls/iptv-3645/" }),
+  "espn-eng.league_cup-401921842": Object.freeze({ channelId: "v2-bein-1", channel: "beIN Sports 1", hlsPrefix: "https://mist-v2.korazero.com/hls/iptv-3645/" }),
 });
 const V2_MATCHDAY_CHANNEL_IDS = new Set(["v2-bein-1", "v2-alkass-1", "v2-alkass-2"]);
 
