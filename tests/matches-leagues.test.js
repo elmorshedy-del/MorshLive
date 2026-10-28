@@ -144,6 +144,7 @@ describe("major competition configuration", () => {
         home: homeName,
         away: awayName,
         kickoffUtc,
+        channelId: null,
       });
     }
   });

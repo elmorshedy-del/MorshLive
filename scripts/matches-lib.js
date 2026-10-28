@@ -15,6 +15,13 @@ const COMPETITIONS = Object.freeze([
     leagueNames: ["English Premier League"],
   },
   {
+    key: "eflcup",
+    name: "English Carabao Cup",
+    nameAr: "كأس الرابطة الإنجليزية",
+    espnSlugs: ["eng.league_cup"],
+    leagueNames: ["English Carabao Cup"],
+  },
+  {
     key: "laliga",
     name: "Spanish LALIGA",
     nameAr: "الدوري الإسباني",
@@ -289,9 +296,8 @@ function normalizeEspnEvent(e, league) {
       competition.venue && competition.venue.address && competition.venue.address.country,
     ].filter(Boolean).join(" · "),
     channel: null,
-    // Ligue 1 is display-only until existing broadcast hydration resolves a
-    // real channel. Do not invent a beIN route merely because PSG is shown.
-    channelId: competitionMeta?.key === "ligue1" ? null : "bein-sports-1",
+    // Ligue 1 and the English League Cup remain display-only until verified broadcast hydration.
+    channelId: ["ligue1", "eflcup"].includes(competitionMeta?.key) ? null : "bein-sports-1",
     commentator: null,
     source: "espn",
   };
