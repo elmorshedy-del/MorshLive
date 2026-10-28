@@ -21,11 +21,14 @@ describe("V2 single-socket stability guard", () => {
     expect(destroyCall).toBeGreaterThan(guardCall);
   });
 
-  it("pins only England-Spain as the current V2 matchday fixture", () => {
+  it("pins the verified Liverpool-Chelsea cup feed and preserves the existing V2 fixture", () => {
     const start = data.indexOf("const V2_MATCHDAY_FIXTURES");
     const end = data.indexOf("const V2_MATCHDAY_CHANNEL_IDS", start);
     const block = data.slice(start, end);
     expect(block).toContain('"espn-uefa.nations-401861066"');
+    expect(block).toContain('"espn-eng.league_cup-401921842"');
+    expect(block).toContain('channelId: "v2-bein-1"');
+    expect(block).toContain("mist-v2.korazero.com/hls/iptv-3645/");
     expect(block).toContain("iptv-3645");
     expect(block).not.toContain("espn-caf.nations_qual-401920038");
     expect(block).not.toContain("iptv-89778");
