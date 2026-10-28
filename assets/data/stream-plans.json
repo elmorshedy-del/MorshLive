@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-28T06:17:07.191Z",
+  "updatedAt": "2026-10-28T21:06:31.501Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1615,6 +1615,43 @@
           "expiresAt": "2026-10-31T22:45:00.000Z",
           "label": "beIN Sports 1 · V2 Vega",
           "note": "Published broadcaster binding: beIN SPORTS 1"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-eng.league_cup-401921842",
+      "teams": [
+        [
+          "Liverpool",
+          "LFC"
+        ],
+        [
+          "Chelsea",
+          "CFC"
+        ]
+      ],
+      "contentKey": "match:espn-eng.league_cup-401921842",
+      "kickoffUtc": "2026-10-28T20:00:00Z",
+      "expiresAt": "2026-10-29T00:30:00.000Z",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3645",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
+          "contentKey": "match:espn-eng.league_cup-401921842",
+          "status": "pending",
+          "expiresAt": "2026-10-29T00:30:00.000Z",
+          "label": "Liverpool vs Chelsea · beIN Sports 1 · V2",
+          "note": "English Carabao Cup 2026-10-28; broadcaster beIN Sports MENA 1. Operator gate permits playback only while V2 stream 3645 is active."
         }
       ]
     }
