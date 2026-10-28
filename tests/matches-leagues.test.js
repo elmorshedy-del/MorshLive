@@ -13,6 +13,7 @@ describe("major competition configuration", () => {
   it("covers the club competitions plus the selected international-break feeds", () => {
     expect(ESPN_LEAGUES).toEqual([
       "eng.1",
+      "eng.league_cup",
       "esp.1",
       "fra.1",
       "ksa.1",
@@ -27,6 +28,7 @@ describe("major competition configuration", () => {
       "fifa.worldq.conmebol",
     ]);
     expect(competitionForLeagueName("English Premier League")?.key).toBe("epl");
+    expect(competitionForLeagueName("English Carabao Cup")?.key).toBe("eflcup");
     expect(competitionForLeagueName("Spanish LALIGA")?.key).toBe("laliga");
     expect(competitionForLeagueName("French Ligue 1")?.key).toBe("ligue1");
     expect(competitionForLeagueName("Saudi Pro League")?.key).toBe("spl");
@@ -110,6 +112,40 @@ describe("major competition configuration", () => {
       home: "Brazil",
       away: "Bolivia",
     });
+  });
+
+
+  it("normalizes October 28 Carabao Cup fixtures with ESPN identity and Arabic competition name", () => {
+    for (const [eventId, homeName, awayName, kickoffUtc] of [
+      ["401921834", "Manchester City", "Brighton & Hove Albion", "2026-10-28T19:30Z"],
+      ["401921842", "Liverpool", "Chelsea", "2026-10-28T20:00Z"],
+    ]) {
+      const match = normalizeEspnEvent(
+        {
+          id: eventId,
+          date: kickoffUtc,
+          competitions: [{
+            date: kickoffUtc,
+            status: { type: { state: "pre" } },
+            competitors: [
+              { homeAway: "home", team: { displayName: homeName } },
+              { homeAway: "away", team: { displayName: awayName } },
+            ],
+          }],
+        },
+        { slug: "eng.league_cup", name: "English Carabao Cup" },
+      );
+      expect(match).toMatchObject({
+        id: `espn-eng.league_cup-${eventId}`,
+        competition: "eflcup",
+        league: "English Carabao Cup",
+        leagueAr: "كأس الرابطة الإنجليزية",
+        leagueSlug: "eng.league_cup",
+        home: homeName,
+        away: awayName,
+        kickoffUtc,
+      });
+    }
   });
 
   it("keeps the ESPN event identity required for lineups and stats", () => {

@@ -28,6 +28,7 @@ describe("football routes", () => {
     const body = await res.json();
     expect(body.leagues.map((row) => row.slug)).toEqual([
       "eng.1",
+      "eng.league_cup",
       "esp.1",
       "fra.1",
       "ksa.1",
@@ -47,7 +48,8 @@ describe("football routes", () => {
     expect(friendlyUrls.some((url) => url.includes("dates=202608"))).toBe(true);
     expect(friendlyUrls.some((url) => url.includes("dates=202609"))).toBe(true);
     expect(premierLeagueUrls).toHaveLength(1);
-    expect(upstream).toHaveBeenCalledTimes(14);
+    expect(requestedUrls.some((url) => url.includes("/eng.league_cup/scoreboard"))).toBe(true);
+    expect(upstream).toHaveBeenCalledTimes(15);
   });
 
   it("proxies an allowlisted ESPN match summary for live detail", async () => {
