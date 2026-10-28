@@ -16,6 +16,12 @@
       leagueNames: ["English Premier League"],
     },
     {
+      key: "eflcup",
+      nameAr: "كأس الرابطة الإنجليزية",
+      espnSlugs: ["eng.league_cup"],
+      leagueNames: ["English Carabao Cup"],
+    },
+    {
       key: "laliga",
       nameAr: "الدوري الإسباني",
       espnSlugs: ["esp.1"],
