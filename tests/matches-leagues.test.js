@@ -114,7 +114,6 @@ describe("major competition configuration", () => {
     });
   });
 
-
   it("normalizes October 28 Carabao Cup fixtures with ESPN identity and Arabic competition name", () => {
     for (const [eventId, homeName, awayName, kickoffUtc] of [
       ["401921834", "Manchester City", "Brighton & Hove Albion", "2026-10-28T19:30Z"],
@@ -124,14 +123,16 @@ describe("major competition configuration", () => {
         {
           id: eventId,
           date: kickoffUtc,
-          competitions: [{
-            date: kickoffUtc,
-            status: { type: { state: "pre" } },
-            competitors: [
-              { homeAway: "home", team: { displayName: homeName } },
-              { homeAway: "away", team: { displayName: awayName } },
-            ],
-          }],
+          competitions: [
+            {
+              date: kickoffUtc,
+              status: { type: { state: "pre" } },
+              competitors: [
+                { homeAway: "home", team: { displayName: homeName } },
+                { homeAway: "away", team: { displayName: awayName } },
+              ],
+            },
+          ],
         },
         { slug: "eng.league_cup", name: "English Carabao Cup" },
       );
