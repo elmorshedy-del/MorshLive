@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-29T13:43:48.913Z",
+  "updatedAt": "2026-10-29T22:58:57.917Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1844,6 +1844,52 @@
           "note": "Published broadcaster binding: beIN SPORTS 1"
         }
       ]
+    },
+    {
+      "matchId": "espn-eng.1-401878762",
+      "teams": [
+        [
+          "Newcastle United"
+        ],
+        [
+          "Everton"
+        ]
+      ],
+      "contentKey": "match:espn-eng.1-401878762",
+      "kickoffUtc": "2026-11-02T20:00Z",
+      "expiresAt": "2026-11-02T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-esp.1-401882824",
+      "teams": [
+        [
+          "Deportivo"
+        ],
+        [
+          "Osasuna"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882824",
+      "kickoffUtc": "2026-11-02T20:00Z",
+      "expiresAt": "2026-11-02T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
     }
   ]
 }
