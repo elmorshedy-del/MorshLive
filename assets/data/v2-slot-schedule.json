@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-29T13:43:48.925Z",
+  "generatedAt": "2026-10-30T13:34:30.486Z",
   "capacity": 2,
   "slots": [
     "a",
@@ -12,8 +12,8 @@
       "matchId": "espn-fra.1-401876421",
       "streamId": "3645",
       "channelId": "iptv-3645",
-      "startAt": "2026-10-30T17:45:00.000Z",
-      "endAt": "2026-10-30T20:00:00.000Z",
+      "startAt": "2026-10-30T16:45:00.000Z",
+      "endAt": "2026-10-30T19:00:00.000Z",
       "score": 50,
       "reasons": [
         "competition:ligue1+20",
@@ -26,8 +26,8 @@
       "matchId": "espn-esp.1-401882817",
       "streamId": "3644",
       "channelId": "iptv-3644",
-      "startAt": "2026-10-30T19:45:00.000Z",
-      "endAt": "2026-10-30T22:00:00.000Z",
+      "startAt": "2026-10-30T18:45:00.000Z",
+      "endAt": "2026-10-30T21:00:00.000Z",
       "score": 40,
       "reasons": [
         "competition:laliga+40"

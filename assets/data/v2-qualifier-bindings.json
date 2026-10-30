@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-29T13:43:48.913Z",
+  "generatedAt": "2026-10-30T13:34:30.480Z",
   "window": {
-    "start": "2026-10-29",
-    "end": "2026-11-01"
+    "start": "2026-10-30",
+    "end": "2026-11-02"
   },
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
@@ -18,9 +18,11 @@
       "channel": "beIN Sports 1",
       "playbackChannelId": "v2-bein-sports-1",
       "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/6hs023ta15m-tFcawH95N",
-      "expiresAt": "2026-10-30T20:45:00.000Z"
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/377866/مباراة-لو-هافر-باريس-سان-جيرمان-في-الدوري-الفرنسي",
+      "expiresAt": "2026-10-30T19:45:00.000Z",
+      "broadcastKickoffUtc": "2026-10-30T17:00:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-esp.1-401882817",
@@ -32,9 +34,11 @@
       "channel": "beIN Sports 2",
       "playbackChannelId": "v2-bein-sports-2",
       "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/FyJ5NhaeD8N8jUAPTsvqE",
-      "expiresAt": "2026-10-30T22:45:00.000Z"
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/375490/مباراة-فياريال-إسبانيول-في-الدوري-الإسباني",
+      "expiresAt": "2026-10-30T21:45:00.000Z",
+      "broadcastKickoffUtc": "2026-10-30T19:00:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-eng.1-401879248",
