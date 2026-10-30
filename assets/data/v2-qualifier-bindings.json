@@ -1,45 +1,13 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-30T13:34:30.480Z",
+  "generatedAt": "2026-10-30T22:39:17.975Z",
   "window": {
-    "start": "2026-10-30",
-    "end": "2026-11-02"
+    "start": "2026-10-31",
+    "end": "2026-11-03"
   },
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
   "bindings": [
-    {
-      "matchId": "espn-fra.1-401876421",
-      "home": "Le Havre AC",
-      "away": "Paris Saint-Germain",
-      "kickoffUtc": "2026-10-30T18:00Z",
-      "competition": "ligue1",
-      "broadcastChannelId": "bein-sports-1",
-      "channel": "beIN Sports 1",
-      "playbackChannelId": "v2-bein-sports-1",
-      "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1 HD",
-      "sourceHref": "/matches/377866/مباراة-لو-هافر-باريس-سان-جيرمان-في-الدوري-الفرنسي",
-      "expiresAt": "2026-10-30T19:45:00.000Z",
-      "broadcastKickoffUtc": "2026-10-30T17:00:00.000Z",
-      "kickoffDifferenceMinutes": -60
-    },
-    {
-      "matchId": "espn-esp.1-401882817",
-      "home": "Villarreal",
-      "away": "Espanyol",
-      "kickoffUtc": "2026-10-30T20:00Z",
-      "competition": "laliga",
-      "broadcastChannelId": "bein-sports-2",
-      "channel": "beIN Sports 2",
-      "playbackChannelId": "v2-bein-sports-2",
-      "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2 HD",
-      "sourceHref": "/matches/375490/مباراة-فياريال-إسبانيول-في-الدوري-الإسباني",
-      "expiresAt": "2026-10-30T21:45:00.000Z",
-      "broadcastKickoffUtc": "2026-10-30T19:00:00.000Z",
-      "kickoffDifferenceMinutes": -60
-    },
     {
       "matchId": "espn-eng.1-401879248",
       "home": "Chelsea",
@@ -50,9 +18,11 @@
       "channel": "beIN Sports 1",
       "playbackChannelId": "v2-bein-sports-1",
       "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/2xRiYeqWZLyjs8_kUQadJ",
-      "expiresAt": "2026-10-31T14:30:00.000Z"
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/375442/مباراة-تشيلسي-مانشستر-يونايتد-في-الدوري-الإنجليزي-الممتاز",
+      "expiresAt": "2026-10-31T13:30:00.000Z",
+      "broadcastKickoffUtc": "2026-10-31T11:30:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-esp.1-401882820",
@@ -64,9 +34,11 @@
       "channel": "beIN Sports 8",
       "playbackChannelId": "v2-bein-sports-8",
       "streamId": "3648",
-      "observedLabel": "beIN SPORTS 8",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/Aw_RnynoYShdX8Zp-1HS8",
-      "expiresAt": "2026-10-31T15:45:00.000Z"
+      "observedLabel": "beIN SPORTS 8 HD",
+      "sourceHref": "/matches/375486/مباراة-ليفانتي-أتلتيكو-مدريد-في-الدوري-الإسباني",
+      "expiresAt": "2026-10-31T14:45:00.000Z",
+      "broadcastKickoffUtc": "2026-10-31T12:00:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-eng.1-401879251",
@@ -78,23 +50,11 @@
       "channel": "beIN Sports 4",
       "playbackChannelId": "v2-bein-sports-4",
       "streamId": "3652",
-      "observedLabel": "beIN SPORTS 4",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/rRy3WmDKGMHXk9whgi8wK",
-      "expiresAt": "2026-10-31T17:45:00.000Z"
-    },
-    {
-      "matchId": "espn-eng.1-401879249",
-      "home": "Brentford",
-      "away": "Nottingham Forest",
-      "kickoffUtc": "2026-10-31T15:00Z",
-      "competition": "epl",
-      "broadcastChannelId": "bein-sports-2",
-      "channel": "beIN Sports 2",
-      "playbackChannelId": "v2-bein-sports-2",
-      "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/isQ-oYBh3ghO-9_bM_vE9",
-      "expiresAt": "2026-10-31T17:00:00.000Z"
+      "observedLabel": "beIN SPORTS 4 HD",
+      "sourceHref": "/matches/375440/مباراة-بورنموث-ليدز-يونايتد-في-الدوري-الإنجليزي-الممتاز",
+      "expiresAt": "2026-10-31T16:45:00.000Z",
+      "broadcastKickoffUtc": "2026-10-31T14:00:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-eng.1-401879247",
@@ -106,9 +66,11 @@
       "channel": "beIN Sports 5",
       "playbackChannelId": "v2-bein-sports-5",
       "streamId": "3651",
-      "observedLabel": "beIN SPORTS 5",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/nO76fat8Sqpwm0IdlsU5k",
-      "expiresAt": "2026-10-31T17:45:00.000Z"
+      "observedLabel": "beIN SPORTS 5 HD",
+      "sourceHref": "/matches/375443/مباراة-كوفنتري-سيتي-سندرلاند-في-الدوري-الإنجليزي-الممتاز",
+      "expiresAt": "2026-10-31T16:45:00.000Z",
+      "broadcastKickoffUtc": "2026-10-31T14:00:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-eng.1-401878763",
@@ -134,9 +96,11 @@
       "channel": "beIN Sports 1",
       "playbackChannelId": "v2-bein-sports-1",
       "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/Xmp0HX27lmiOkGWWu8Xyo",
-      "expiresAt": "2026-10-31T17:00:00.000Z"
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/375446/مباراة-مانشستر-سيتي-برايتون-في-الدوري-الإنجليزي-الممتاز",
+      "expiresAt": "2026-10-31T16:45:00.000Z",
+      "broadcastKickoffUtc": "2026-10-31T14:00:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-esp.1-401882818",
@@ -149,22 +113,10 @@
       "playbackChannelId": "v2-bein-xtra-1",
       "streamId": "3844",
       "observedLabel": "beIN SPORTS XTRA 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/BsugNOyeDEszeL_sM-fhK",
-      "expiresAt": "2026-10-31T18:00:00.000Z"
-    },
-    {
-      "matchId": "espn-eng.1-401878761",
-      "home": "Tottenham Hotspur",
-      "away": "Crystal Palace",
-      "kickoffUtc": "2026-10-31T17:30Z",
-      "competition": "epl",
-      "broadcastChannelId": "bein-sports-1",
-      "channel": "beIN Sports 1",
-      "playbackChannelId": "v2-bein-sports-1",
-      "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/CNHb7fWR9vf6TacYFEPXf",
-      "expiresAt": "2026-10-31T19:30:00.000Z"
+      "sourceHref": "/matches/375487/مباراة-رايو-فايكانو-سيلتا-فيجو-في-الدوري-الإسباني",
+      "expiresAt": "2026-10-31T17:00:00.000Z",
+      "broadcastKickoffUtc": "2026-10-31T14:15:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-esp.1-401882825",
@@ -176,9 +128,11 @@
       "channel": "beIN Sports 2",
       "playbackChannelId": "v2-bein-sports-2",
       "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/M_GYv_Z9lBtHbV8ihRtgv",
-      "expiresAt": "2026-10-31T19:30:00.000Z"
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/375488/مباراة-ريال-بيتيس-مالاجا-في-الدوري-الإسباني",
+      "expiresAt": "2026-10-31T19:15:00.000Z",
+      "broadcastKickoffUtc": "2026-10-31T16:30:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-eng.1-401879250",
@@ -204,9 +158,11 @@
       "channel": "beIN Sports 1",
       "playbackChannelId": "v2-bein-sports-1",
       "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/RRxEVFtVZua1epAHGO9A2",
-      "expiresAt": "2026-10-31T22:45:00.000Z"
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/375484/مباراة-برشلونة-ديبورتيفو-ألافيس-في-الدوري-الإسباني",
+      "expiresAt": "2026-10-31T21:45:00.000Z",
+      "broadcastKickoffUtc": "2026-10-31T19:00:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-esp.1-401882821",
@@ -218,9 +174,11 @@
       "channel": "beIN Sports 3",
       "playbackChannelId": "v2-bein-sports-3",
       "streamId": "3653",
-      "observedLabel": "beIN SPORTS 3",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/0x0ryoJQfJpZMMSCegkQd",
-      "expiresAt": "2026-11-01T15:45:00.000Z"
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/375485/مباراة-خيتافي-إشبيلية-في-الدوري-الإسباني",
+      "expiresAt": "2026-11-01T14:45:00.000Z",
+      "broadcastKickoffUtc": "2026-11-01T12:00:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-esp.1-401882819",
@@ -232,9 +190,11 @@
       "channel": "beIN Sports 2",
       "playbackChannelId": "v2-bein-sports-2",
       "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/vXZRSycEOlWpx8AgXcjeZ",
-      "expiresAt": "2026-11-01T18:00:00.000Z"
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/375489/مباراة-راسينج-سانتاندير-ريال-مدريد-في-الدوري-الإسباني",
+      "expiresAt": "2026-11-01T17:00:00.000Z",
+      "broadcastKickoffUtc": "2026-11-01T14:15:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-eng.1-401879246",
@@ -246,9 +206,11 @@
       "channel": "beIN Sports 1",
       "playbackChannelId": "v2-bein-sports-1",
       "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/7-02ecc1tK7_Dgg3QzPrC",
-      "expiresAt": "2026-11-01T19:15:00.000Z"
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/375445/مباراة-ليفربول-أرسنال-في-الدوري-الإنجليزي-الممتاز",
+      "expiresAt": "2026-11-01T18:15:00.000Z",
+      "broadcastKickoffUtc": "2026-11-01T15:30:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-esp.1-401882823",
@@ -260,9 +222,11 @@
       "channel": "beIN Sports 3",
       "playbackChannelId": "v2-bein-sports-3",
       "streamId": "3653",
-      "observedLabel": "beIN SPORTS 3",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/RtqvYhssSecWcEQOeQEpR",
-      "expiresAt": "2026-11-01T20:15:00.000Z"
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/375483/مباراة-إلتشي-فالنسيا-في-الدوري-الإسباني",
+      "expiresAt": "2026-11-01T19:15:00.000Z",
+      "broadcastKickoffUtc": "2026-11-01T16:30:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-esp.1-401882826",
@@ -274,9 +238,41 @@
       "channel": "beIN Sports 1",
       "playbackChannelId": "v2-bein-sports-1",
       "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/VL-8DNH6wtUMRKZqXvIhT",
-      "expiresAt": "2026-11-01T22:45:00.000Z"
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/375531/مباراة-أتليتك-بلباو-ريال-سوسيداد-في-الدوري-الإسباني",
+      "expiresAt": "2026-11-01T21:45:00.000Z",
+      "broadcastKickoffUtc": "2026-11-01T19:00:00.000Z",
+      "kickoffDifferenceMinutes": -60
+    },
+    {
+      "matchId": "espn-eng.1-401878762",
+      "home": "Newcastle United",
+      "away": "Everton",
+      "kickoffUtc": "2026-11-02T20:00Z",
+      "competition": "epl",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/375447/مباراة-نيوكاسل-يونايتد-إيفرتون-في-الدوري-الإنجليزي-الممتاز",
+      "expiresAt": "2026-11-02T21:45:00.000Z",
+      "broadcastKickoffUtc": "2026-11-02T19:00:00.000Z",
+      "kickoffDifferenceMinutes": -60
+    },
+    {
+      "matchId": "espn-esp.1-401882824",
+      "home": "Deportivo",
+      "away": "Osasuna",
+      "kickoffUtc": "2026-11-02T20:00Z",
+      "competition": "laliga",
+      "broadcastChannelId": "bein-sports-4",
+      "channel": "beIN Sports 4",
+      "playbackChannelId": "v2-bein-sports-4",
+      "streamId": "3652",
+      "observedLabel": "beIN SPORTS 4",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/rc10Kj50aYvDj3WvfGhcN",
+      "expiresAt": "2026-11-02T22:45:00.000Z"
     }
   ]
 }
