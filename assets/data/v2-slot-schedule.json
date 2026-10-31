@@ -1,110 +1,12 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-30T22:39:17.981Z",
+  "generatedAt": "2026-10-31T21:51:33.498Z",
   "capacity": 2,
   "slots": [
     "a",
     "b"
   ],
   "entries": [
-    {
-      "slot": "a",
-      "matchId": "espn-eng.1-401879248",
-      "streamId": "3645",
-      "channelId": "iptv-3645",
-      "startAt": "2026-10-31T11:15:00.000Z",
-      "endAt": "2026-10-31T13:30:00.000Z",
-      "score": 120,
-      "reasons": [
-        "competition:epl+40",
-        "tier1:Chelsea+30",
-        "tier1:Manchester United+30",
-        "big-game+20"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "b",
-      "matchId": "espn-esp.1-401882820",
-      "streamId": "3648",
-      "channelId": "iptv-3648",
-      "startAt": "2026-10-31T11:45:00.000Z",
-      "endAt": "2026-10-31T14:00:00.000Z",
-      "score": 55,
-      "reasons": [
-        "competition:laliga+40",
-        "tier2:Atlético Madrid+15"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "a",
-      "matchId": "espn-eng.1-401879245",
-      "streamId": "3645",
-      "channelId": "iptv-3645",
-      "startAt": "2026-10-31T13:45:00.000Z",
-      "endAt": "2026-10-31T16:00:00.000Z",
-      "score": 70,
-      "reasons": [
-        "competition:epl+40",
-        "tier1:Manchester City+30"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "b",
-      "matchId": "espn-esp.1-401882818",
-      "streamId": "3844",
-      "channelId": "iptv-3844",
-      "startAt": "2026-10-31T14:00:00.000Z",
-      "endAt": "2026-10-31T16:15:00.000Z",
-      "score": 40,
-      "reasons": [
-        "competition:laliga+40"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "a",
-      "matchId": "espn-esp.1-401882825",
-      "streamId": "3644",
-      "channelId": "iptv-3644",
-      "startAt": "2026-10-31T16:15:00.000Z",
-      "endAt": "2026-10-31T18:30:00.000Z",
-      "score": 40,
-      "reasons": [
-        "competition:laliga+40"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "a",
-      "matchId": "espn-esp.1-401882822",
-      "streamId": "3645",
-      "channelId": "iptv-3645",
-      "startAt": "2026-10-31T18:45:00.000Z",
-      "endAt": "2026-10-31T21:00:00.000Z",
-      "score": 70,
-      "reasons": [
-        "competition:laliga+40",
-        "tier1:Barcelona+30"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "b",
-      "matchId": "espn-eng.1-401879250",
-      "streamId": "3644",
-      "channelId": "iptv-3644",
-      "startAt": "2026-10-31T19:45:00.000Z",
-      "endAt": "2026-10-31T22:00:00.000Z",
-      "score": 55,
-      "reasons": [
-        "competition:epl+40",
-        "tier2:Aston Villa+15"
-      ],
-      "pinned": false
-    },
     {
       "slot": "a",
       "matchId": "espn-esp.1-401882821",
@@ -200,37 +102,93 @@
         "competition:laliga+40"
       ],
       "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-uefa.champions-401915310",
+      "streamId": "3652",
+      "channelId": "iptv-3652",
+      "startAt": "2026-11-03T17:30:00.000Z",
+      "endAt": "2026-11-03T19:45:00.000Z",
+      "score": 50,
+      "reasons": [
+        "competition:ucl+50"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-uefa.champions-401915311",
+      "streamId": "3653",
+      "channelId": "iptv-3653",
+      "startAt": "2026-11-03T17:30:00.000Z",
+      "endAt": "2026-11-03T19:45:00.000Z",
+      "score": 50,
+      "reasons": [
+        "competition:ucl+50"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-uefa.champions-401915386",
+      "streamId": "3651",
+      "channelId": "iptv-3651",
+      "startAt": "2026-11-03T19:45:00.000Z",
+      "endAt": "2026-11-03T22:00:00.000Z",
+      "score": 95,
+      "reasons": [
+        "competition:ucl+50",
+        "tier2:Atlético Madrid+15",
+        "tier1:Bayern Munich+30"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-uefa.champions-401915387",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-11-03T19:45:00.000Z",
+      "endAt": "2026-11-03T22:00:00.000Z",
+      "score": 95,
+      "reasons": [
+        "competition:ucl+50",
+        "tier1:Barcelona+30",
+        "tier2:Aston Villa+15"
+      ],
+      "pinned": false
     }
   ],
   "unassigned": [
     {
-      "matchId": "espn-eng.1-401879247",
-      "streamId": "3651",
-      "score": 40,
-      "reason": "outranked",
-      "by": [
-        "espn-eng.1-401879245",
-        "espn-esp.1-401882820"
-      ]
-    },
-    {
-      "matchId": "espn-eng.1-401879251",
+      "matchId": "espn-uefa.champions-401915308",
       "streamId": "3652",
-      "score": 40,
+      "score": 80,
       "reason": "outranked",
       "by": [
-        "espn-eng.1-401879245",
-        "espn-esp.1-401882820"
+        "espn-uefa.champions-401915386",
+        "espn-uefa.champions-401915387"
       ]
     },
     {
-      "matchId": "espn-eng.1-401878763",
+      "matchId": "espn-uefa.champions-401915309",
       "streamId": "3653",
-      "score": 40,
+      "score": 80,
       "reason": "outranked",
       "by": [
-        "espn-eng.1-401879245",
-        "espn-esp.1-401882818"
+        "espn-uefa.champions-401915386",
+        "espn-uefa.champions-401915387"
+      ]
+    },
+    {
+      "matchId": "espn-uefa.champions-401915385",
+      "streamId": "3844",
+      "score": 50,
+      "reason": "outranked",
+      "by": [
+        "espn-uefa.champions-401915386",
+        "espn-uefa.champions-401915387"
       ]
     }
   ]
