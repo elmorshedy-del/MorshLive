@@ -996,7 +996,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-2",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -1010,7 +1010,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-3",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -1024,7 +1024,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-1",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "locked": false
@@ -6206,7 +6206,7 @@
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
-  "broadcastUpdatedAt": "2026-10-30T22:15:42.064Z",
+  "broadcastUpdatedAt": "2026-10-31T05:36:27.236Z",
   "broadcastIndex": [
     {
       "id": "espn-ksa.1-401900885",
@@ -6219,7 +6219,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-2",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "commentators": []
@@ -6235,7 +6235,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-3",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "commentators": []
@@ -6251,7 +6251,7 @@
       "broadcast": {
         "provider": "thmanyah",
         "channelId": "thmanyah-1",
-        "source": "livefootballtv",
+        "source": "livefootballtv:pinned",
         "confidence": "exact"
       },
       "commentators": []
