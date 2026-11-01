@@ -5965,12 +5965,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Estadio Coliseum · Getafe · Spain",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-01T14:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882819",
@@ -5990,12 +5986,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "El Sardineros · Santander · Spain",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-01T17:00:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401879246",
