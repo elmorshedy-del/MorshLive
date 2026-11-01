@@ -978,7 +978,10 @@
     const currentUrl = String(loadedUrl || "").replace(/^(?:pinned-mirror|plan-hls):/, "");
     if (currentUrl !== href) return false;
     const video = shell && shell.querySelector(".kz-main-video");
-    return !!(video && video.readyState >= 2 && !video.error && !video.ended);
+    // A transient HLS buffer underrun can drop readyState below HAVE_CURRENT_DATA
+    // while the same live source is still valid. Treat that as buffering, not a
+    // reason to tear down and recreate the player on the 20s plan refresh.
+    return !!(video && video.isConnected && !video.error && !video.ended);
   }
 
   function mountPinnedMainMirror(url, fallbackUrl, isIframe) {
