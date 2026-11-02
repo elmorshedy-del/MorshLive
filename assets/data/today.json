@@ -6028,12 +6028,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "St. James' Park · Newcastle-upon-Tyne · England",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-02T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882824",
@@ -6078,12 +6074,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "RAMS Park · Istanbul · Türkiye",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-03T19:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915310",
@@ -6103,12 +6095,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Stamford Bridge · London · England",
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-03T19:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915386",
@@ -6158,7 +6146,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-03T22:45:00.000Z"
+      "channelExpiresAt": "2026-11-03T21:45:00.000Z"
     },
     {
       "id": "espn-uefa.champions-401915385",
@@ -6208,7 +6196,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-03T22:45:00.000Z"
+      "channelExpiresAt": "2026-11-03T21:45:00.000Z"
     },
     {
       "id": "espn-uefa.champions-401915309",
@@ -6233,7 +6221,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-03T22:45:00.000Z"
+      "channelExpiresAt": "2026-11-03T21:45:00.000Z"
     },
     {
       "id": "espn-uefa.champions-401915383",
