@@ -6049,12 +6049,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Riazor · La Coruña · Spain",
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-02T22:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915311",
