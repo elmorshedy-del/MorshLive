@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-02T21:56:05.358Z",
+  "updatedAt": "2026-11-03T19:48:28.358Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1174,7 +1174,7 @@
       "contentKey": "match:espn-uefa.champions-401915387",
       "kickoffUtc": "2026-11-03T19:00:00.000Z",
       "status": "operator",
-      "verifiedAt": "2026-11-02T21:56:05.358Z",
+      "verifiedAt": "2026-11-03T19:48:28.358Z",
       "expiresAt": "2026-11-03T21:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
@@ -1185,17 +1185,17 @@
       },
       "sources": [
         {
-          "id": "v2-bein-3645",
+          "id": "v2-bein-3653",
           "role": "primary",
           "kind": "hls",
           "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3653/index.m3u8",
           "contentKey": "match:espn-uefa.champions-401915387",
           "status": "operator",
-          "verifiedAt": "2026-11-02T21:56:05.358Z",
+          "verifiedAt": "2026-11-03T19:48:28.358Z",
           "expiresAt": "2026-11-03T21:45:00.000Z",
-          "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1 HD"
+          "label": "beIN Sports 3 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 3 HD"
         }
       ]
     },
@@ -1288,7 +1288,7 @@
       "contentKey": "match:espn-uefa.champions-401915309",
       "kickoffUtc": "2026-11-03T19:00:00.000Z",
       "status": "operator",
-      "verifiedAt": "2026-11-02T21:56:05.358Z",
+      "verifiedAt": "2026-11-03T19:48:28.358Z",
       "expiresAt": "2026-11-03T21:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
@@ -1299,17 +1299,17 @@
       },
       "sources": [
         {
-          "id": "v2-bein-3653",
+          "id": "v2-bein-3645",
           "role": "primary",
           "kind": "hls",
           "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3653/index.m3u8",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
           "contentKey": "match:espn-uefa.champions-401915309",
           "status": "operator",
-          "verifiedAt": "2026-11-02T21:56:05.358Z",
+          "verifiedAt": "2026-11-03T19:48:28.358Z",
           "expiresAt": "2026-11-03T21:45:00.000Z",
-          "label": "beIN Sports 3 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 3 HD"
+          "label": "beIN Sports 1 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 1 HD"
         }
       ]
     },
@@ -1324,10 +1324,10 @@
         ]
       ],
       "contentKey": "match:espn-uefa.champions-401915383",
-      "kickoffUtc": "2026-11-04T17:45Z",
+      "kickoffUtc": "2026-11-04T16:45:00.000Z",
       "status": "operator",
-      "verifiedAt": "2026-11-01T22:25:54.903Z",
-      "expiresAt": "2026-11-04T20:30:00.000Z",
+      "verifiedAt": "2026-11-03T19:48:28.358Z",
+      "expiresAt": "2026-11-04T19:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
         "sameContentOnly": true,
@@ -1344,10 +1344,10 @@
           "url": "https://mist-v2.korazero.com/hls/iptv-3644/index.m3u8",
           "contentKey": "match:espn-uefa.champions-401915383",
           "status": "operator",
-          "verifiedAt": "2026-11-01T22:25:54.903Z",
-          "expiresAt": "2026-11-04T20:30:00.000Z",
+          "verifiedAt": "2026-11-03T19:48:28.358Z",
+          "expiresAt": "2026-11-04T19:30:00.000Z",
           "label": "beIN Sports 2 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 2"
+          "note": "Published broadcaster binding: beIN SPORTS 2 HD"
         }
       ]
     },
@@ -1362,10 +1362,10 @@
         ]
       ],
       "contentKey": "match:espn-uefa.champions-401915382",
-      "kickoffUtc": "2026-11-04T17:45Z",
+      "kickoffUtc": "2026-11-04T16:45:00.000Z",
       "status": "operator",
-      "verifiedAt": "2026-11-01T22:25:54.903Z",
-      "expiresAt": "2026-11-04T19:30:00.000Z",
+      "verifiedAt": "2026-11-03T19:48:28.358Z",
+      "expiresAt": "2026-11-04T18:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
         "sameContentOnly": true,
@@ -1382,10 +1382,10 @@
           "url": "https://mist-v2.korazero.com/hls/iptv-3652/index.m3u8",
           "contentKey": "match:espn-uefa.champions-401915382",
           "status": "operator",
-          "verifiedAt": "2026-11-01T22:25:54.903Z",
-          "expiresAt": "2026-11-04T19:30:00.000Z",
+          "verifiedAt": "2026-11-03T19:48:28.358Z",
+          "expiresAt": "2026-11-04T18:30:00.000Z",
           "label": "beIN Sports 4 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 4"
+          "note": "Published broadcaster binding: beIN SPORTS 4 HD"
         }
       ]
     },
@@ -1400,10 +1400,10 @@
         ]
       ],
       "contentKey": "match:espn-uefa.champions-401915304",
-      "kickoffUtc": "2026-11-04T20:00Z",
+      "kickoffUtc": "2026-11-04T19:00:00.000Z",
       "status": "operator",
-      "verifiedAt": "2026-11-01T22:25:54.903Z",
-      "expiresAt": "2026-11-04T22:45:00.000Z",
+      "verifiedAt": "2026-11-03T19:48:28.358Z",
+      "expiresAt": "2026-11-04T21:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
         "sameContentOnly": true,
@@ -1420,10 +1420,10 @@
           "url": "https://mist-v2.korazero.com/hls/iptv-3651/index.m3u8",
           "contentKey": "match:espn-uefa.champions-401915304",
           "status": "operator",
-          "verifiedAt": "2026-11-01T22:25:54.903Z",
-          "expiresAt": "2026-11-04T22:45:00.000Z",
+          "verifiedAt": "2026-11-03T19:48:28.358Z",
+          "expiresAt": "2026-11-04T21:45:00.000Z",
           "label": "beIN Sports 5 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 5"
+          "note": "Published broadcaster binding: beIN SPORTS 5 HD"
         }
       ]
     },
@@ -1438,10 +1438,10 @@
         ]
       ],
       "contentKey": "match:espn-uefa.champions-401915301",
-      "kickoffUtc": "2026-11-04T20:00Z",
+      "kickoffUtc": "2026-11-04T19:00:00.000Z",
       "status": "operator",
-      "verifiedAt": "2026-11-01T22:25:54.903Z",
-      "expiresAt": "2026-11-04T22:45:00.000Z",
+      "verifiedAt": "2026-11-03T19:48:28.358Z",
+      "expiresAt": "2026-11-04T21:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
         "sameContentOnly": true,
@@ -1458,10 +1458,10 @@
           "url": "https://mist-v2.korazero.com/hls/iptv-3652/index.m3u8",
           "contentKey": "match:espn-uefa.champions-401915301",
           "status": "operator",
-          "verifiedAt": "2026-11-01T22:25:54.903Z",
-          "expiresAt": "2026-11-04T22:45:00.000Z",
+          "verifiedAt": "2026-11-03T19:48:28.358Z",
+          "expiresAt": "2026-11-04T21:45:00.000Z",
           "label": "beIN Sports 4 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 4"
+          "note": "Published broadcaster binding: beIN SPORTS 4 HD"
         }
       ]
     },
@@ -1476,10 +1476,10 @@
         ]
       ],
       "contentKey": "match:espn-uefa.champions-401915305",
-      "kickoffUtc": "2026-11-04T20:00Z",
+      "kickoffUtc": "2026-11-04T19:00:00.000Z",
       "status": "operator",
-      "verifiedAt": "2026-11-01T22:25:54.903Z",
-      "expiresAt": "2026-11-04T22:45:00.000Z",
+      "verifiedAt": "2026-11-03T19:48:28.358Z",
+      "expiresAt": "2026-11-04T21:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
         "sameContentOnly": true,
@@ -1496,10 +1496,10 @@
           "url": "https://mist-v2.korazero.com/hls/iptv-3647/index.m3u8",
           "contentKey": "match:espn-uefa.champions-401915305",
           "status": "operator",
-          "verifiedAt": "2026-11-01T22:25:54.903Z",
-          "expiresAt": "2026-11-04T22:45:00.000Z",
+          "verifiedAt": "2026-11-03T19:48:28.358Z",
+          "expiresAt": "2026-11-04T21:45:00.000Z",
           "label": "beIN Sports 9 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 9"
+          "note": "Published broadcaster binding: beIN SPORTS 9 HD"
         }
       ]
     },
@@ -1514,10 +1514,10 @@
         ]
       ],
       "contentKey": "match:espn-uefa.champions-401915303",
-      "kickoffUtc": "2026-11-04T20:00Z",
+      "kickoffUtc": "2026-11-04T19:00:00.000Z",
       "status": "operator",
-      "verifiedAt": "2026-11-01T22:25:54.903Z",
-      "expiresAt": "2026-11-04T22:45:00.000Z",
+      "verifiedAt": "2026-11-03T19:48:28.358Z",
+      "expiresAt": "2026-11-04T21:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
         "sameContentOnly": true,
@@ -1534,10 +1534,10 @@
           "url": "https://mist-v2.korazero.com/hls/iptv-3648/index.m3u8",
           "contentKey": "match:espn-uefa.champions-401915303",
           "status": "operator",
-          "verifiedAt": "2026-11-01T22:25:54.903Z",
-          "expiresAt": "2026-11-04T22:45:00.000Z",
+          "verifiedAt": "2026-11-03T19:48:28.358Z",
+          "expiresAt": "2026-11-04T21:45:00.000Z",
           "label": "beIN Sports 8 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 8"
+          "note": "Published broadcaster binding: beIN SPORTS 8 HD"
         }
       ]
     },
