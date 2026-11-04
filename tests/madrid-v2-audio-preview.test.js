@@ -78,12 +78,13 @@ describe("November 4 Madrid beIN 2 audio preview", () => {
     });
   });
 
-  it.each([{ active: null }, { active: "iptv-3645" }, { conflict: true }])(
-    "holds when the remote is off, different or conflicted: %j",
-    async (state) => {
-      expect(await preview(state)).toMatchObject({ selected: null });
-    },
-  );
+  it.each([
+    { active: null },
+    { active: "iptv-3645" },
+    { conflict: true },
+  ])("holds when the remote is off, different or conflicted: %j", async (state) => {
+    expect(await preview(state)).toMatchObject({ selected: null });
+  });
 
   it("does not preview another channel under the Madrid match id", async () => {
     expect(await preview({ active: "iptv-3645", channel: "iptv-3645" })).toMatchObject({
