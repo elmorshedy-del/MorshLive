@@ -1,42 +1,12 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-03T19:48:28.367Z",
+  "generatedAt": "2026-11-04T06:58:26.131Z",
   "capacity": 2,
   "slots": [
     "a",
     "b"
   ],
   "entries": [
-    {
-      "slot": "a",
-      "matchId": "espn-uefa.champions-401915387",
-      "streamId": "3653",
-      "channelId": "iptv-3653",
-      "startAt": "2026-11-03T18:45:00.000Z",
-      "endAt": "2026-11-03T21:00:00.000Z",
-      "score": 95,
-      "reasons": [
-        "competition:ucl+50",
-        "tier1:Barcelona+30",
-        "tier2:Aston Villa+15"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "b",
-      "matchId": "espn-uefa.champions-401915386",
-      "streamId": "3651",
-      "channelId": "iptv-3651",
-      "startAt": "2026-11-03T19:45:00.000Z",
-      "endAt": "2026-11-03T22:00:00.000Z",
-      "score": 95,
-      "reasons": [
-        "competition:ucl+50",
-        "tier2:Atlético Madrid+15",
-        "tier1:Bayern Munich+30"
-      ],
-      "pinned": false
-    },
     {
       "slot": "a",
       "matchId": "espn-uefa.champions-401915382",
@@ -92,39 +62,35 @@
         "tier1:Arsenal+30"
       ],
       "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-eng.1-401879242",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-11-06T19:45:00.000Z",
+      "endAt": "2026-11-06T22:00:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:epl+40"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-esp.1-401882809",
+      "streamId": "3653",
+      "channelId": "iptv-3653",
+      "startAt": "2026-11-06T19:45:00.000Z",
+      "endAt": "2026-11-06T22:00:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:laliga+40"
+      ],
+      "pinned": false
     }
   ],
   "unassigned": [
-    {
-      "matchId": "espn-uefa.champions-401915308",
-      "streamId": "3652",
-      "score": 80,
-      "reason": "outranked",
-      "by": [
-        "espn-uefa.champions-401915386",
-        "espn-uefa.champions-401915387"
-      ]
-    },
-    {
-      "matchId": "espn-uefa.champions-401915309",
-      "streamId": "3645",
-      "score": 80,
-      "reason": "outranked",
-      "by": [
-        "espn-uefa.champions-401915386",
-        "espn-uefa.champions-401915387"
-      ]
-    },
-    {
-      "matchId": "espn-uefa.champions-401915385",
-      "streamId": "3844",
-      "score": 50,
-      "reason": "outranked",
-      "by": [
-        "espn-uefa.champions-401915386",
-        "espn-uefa.champions-401915387"
-      ]
-    },
     {
       "matchId": "espn-uefa.champions-401915301",
       "streamId": "3652",
