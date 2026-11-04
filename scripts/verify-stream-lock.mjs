@@ -21,7 +21,7 @@ const MAX_PLAN_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 const LOCKED_FILES = Object.freeze({
   "iptv-lab.html": "67ace9fbc5e58c6dc08c532a5169fe294518e3f9",
-  "watch.html": "64c922ba9eea8785b82e3f2c145ad3b999704ede",
+  "watch.html": "32dd468bc22295336a13e79c730be7dceb952fe1",
   "watch-embed.html": "c236f654fd4071f475c05d9e3086fe75c63217a1",
   "assets/js/iptv-lab.js": "5ff9896cc315258753cf23a76b506f32d75ffd1a",
   "assets/js/iptv-quality.js": "1c0de8794befded840bed10eae179a39ff936925",
@@ -31,10 +31,10 @@ const LOCKED_FILES = Object.freeze({
   "assets/js/stream-routes.js": "686bff614789077b9151ecf0a6f6c48510769d60",
   "assets/js/watch-embed.js": "3a648bb59889c70f54673faff0690549d7d44c24",
   "assets/js/watch-lab-continuity-guard.js": "4e6242674c51d1926836dd62c216e772707b8346",
-  "assets/js/watch-loader.js": "40ccb20c521608c771e84976215802c6aeba85fa",
+  "assets/js/watch-loader.js": "3402b1f4a5001fc9c8ee35c39358725f9274f1dc",
   "assets/js/watch-xtream.js": "c2bb43f70f3264bd5e01adad35b349471a3371da",
-  // V2 single-socket same-URL guard: buffering is not a remount trigger.
-  "assets/js/watch.js": "810c67a8c05e5c8dc44dc3baa2234326cd5f9ff6",
+  // V2 single-socket healthy same-URL remount guard.
+  "assets/js/watch.js": "291bf8faf34292600ea997120d04ecd669b0b44d",
   "backend/adapters/xtream-media-safe.js": "8783bb87cbb1f24b3b08be7e12ec373b118f1532",
   "backend/adapters/xtream.js": "0fcd0222e9b357c086a6528d7dc645935b14e69f",
   "backend/router.js": "cd2deaedbec624863dd1fabb0dae0864bb3ec2fd",

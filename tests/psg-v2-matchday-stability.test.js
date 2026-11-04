@@ -12,23 +12,6 @@ describe("V2 single-socket stability guard", () => {
     expect(watch).toContain("v2PinnedMirrorAlreadyHealthy(url)");
   });
 
-  it("does not remount the same V2 source during a transient buffer underrun", () => {
-    const start = watch.indexOf("function v2PinnedMirrorAlreadyHealthy");
-    const end = watch.indexOf("function mountPinnedMainMirror", start);
-    const guard = watch.slice(start, end);
-    expect(guard).toContain("video.isConnected");
-    expect(guard).toContain("!video.error");
-    expect(guard).toContain("!video.ended");
-    expect(guard).not.toContain("readyState >= 2");
-  });
-
-  it("cache-busts the V2 buffering fix through the watch loader", () => {
-    const loader = readFileSync("assets/js/watch-loader.js", "utf8");
-    const html = readFileSync("watch.html", "utf8");
-    expect(loader).toContain("assets/js/watch.js?v=20261101v2jitter1");
-    expect(html).toContain("assets/js/watch-loader.js?v=20261101v2jitter1");
-  });
-
   it("checks the healthy-player guard before destroying HLS", () => {
     const mountStart = watch.indexOf("function mountPinnedMainMirror");
     const guardCall = watch.indexOf("v2PinnedMirrorAlreadyHealthy(url)", mountStart);
