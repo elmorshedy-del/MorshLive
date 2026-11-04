@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-04T06:58:26.120Z",
+  "generatedAt": "2026-11-04T20:02:03.677Z",
   "window": {
     "start": "2026-11-04",
     "end": "2026-11-07"
@@ -8,38 +8,6 @@
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
   "bindings": [
-    {
-      "matchId": "espn-uefa.champions-401915383",
-      "home": "AEK Athens",
-      "away": "Real Madrid",
-      "kickoffUtc": "2026-11-04T17:45Z",
-      "competition": "ucl",
-      "broadcastChannelId": "bein-sports-2",
-      "channel": "beIN Sports 2",
-      "playbackChannelId": "v2-bein-sports-2",
-      "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2 HD",
-      "sourceHref": "/matches/378941/مباراة-آيك-أثينا-ريال-مدريد-في-دوري-أبطال-أوروبا",
-      "expiresAt": "2026-11-04T19:30:00.000Z",
-      "broadcastKickoffUtc": "2026-11-04T16:45:00.000Z",
-      "kickoffDifferenceMinutes": -60
-    },
-    {
-      "matchId": "espn-uefa.champions-401915382",
-      "home": "Fenerbahce",
-      "away": "Liverpool",
-      "kickoffUtc": "2026-11-04T17:45Z",
-      "competition": "ucl",
-      "broadcastChannelId": "bein-sports-4",
-      "channel": "beIN Sports 4",
-      "playbackChannelId": "v2-bein-sports-4",
-      "streamId": "3652",
-      "observedLabel": "beIN SPORTS 4 HD",
-      "sourceHref": "/matches/378942/مباراة-فنربخشة-ليفربول-في-دوري-أبطال-أوروبا",
-      "expiresAt": "2026-11-04T18:30:00.000Z",
-      "broadcastKickoffUtc": "2026-11-04T16:45:00.000Z",
-      "kickoffDifferenceMinutes": -60
-    },
     {
       "matchId": "espn-uefa.champions-401915304",
       "home": "Borussia Dortmund",

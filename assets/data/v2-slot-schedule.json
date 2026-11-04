@@ -1,40 +1,12 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-04T06:58:26.131Z",
+  "generatedAt": "2026-11-04T20:02:03.684Z",
   "capacity": 2,
   "slots": [
     "a",
     "b"
   ],
   "entries": [
-    {
-      "slot": "a",
-      "matchId": "espn-uefa.champions-401915382",
-      "streamId": "3652",
-      "channelId": "iptv-3652",
-      "startAt": "2026-11-04T16:30:00.000Z",
-      "endAt": "2026-11-04T18:45:00.000Z",
-      "score": 80,
-      "reasons": [
-        "competition:ucl+50",
-        "tier1:Liverpool+30"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "b",
-      "matchId": "espn-uefa.champions-401915383",
-      "streamId": "3644",
-      "channelId": "iptv-3644",
-      "startAt": "2026-11-04T16:30:00.000Z",
-      "endAt": "2026-11-04T18:45:00.000Z",
-      "score": 80,
-      "reasons": [
-        "competition:ucl+50",
-        "tier1:Real Madrid+30"
-      ],
-      "pinned": false
-    },
     {
       "slot": "a",
       "matchId": "espn-uefa.champions-401915306",

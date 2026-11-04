@@ -6217,12 +6217,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "OPAP Arena · Athens · Greece",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-04T19:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915382",
@@ -6242,12 +6238,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Şükrü Saracoğlu Stadium · Istanbul · Türkiye",
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-04T18:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915304",
