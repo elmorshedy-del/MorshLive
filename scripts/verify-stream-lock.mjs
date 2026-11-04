@@ -44,7 +44,7 @@ const LOCKED_FILES = Object.freeze({
   "backend/routes/xtream.js": "443cfaed838dcdc6d0dc397793a1487c92a51d2a",
   "backend/services/iptv-lab.js": "ffe3967558222b8ebae55b0411defcc02524f9eb",
   // CLAUDE-STAMP 2026-10-17 — V2-MULTI-SLOT-GATE-1
-  "backend/services/stream-plan.js": "8ee7ae135eb455572543b454fec21f7b5e5aa11e",
+  "backend/services/stream-plan.js": "f67a2d52debafcc1f3db470de7a08f01a08a75ef",
   "backend/services/xtream.js": "82e481766d2b87a17a33a88d41185931c3cfaa97",
   "lib/hls-cache.js": "7df783457d4600318b1bf0f0b674a43a8bd2fb5b",
   "lib/hls-recover.js": "4772633e75ee2d80f01035d55e26e8747aec0cf5",
