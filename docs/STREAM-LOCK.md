@@ -5,7 +5,7 @@
 Production playback is frozen at the known-good state established by commit
 `737919a6fab364fa11966ca0162b8d8bcff9f4c6`.
 
-The October 25 DigitalOcean V2 cutover updates only the locked KoraZero V2 control/HLS endpoint validation to the verified `v2.korazero.com` and `mist-v2.korazero.com` hosts. The standalone DigitalOcean relay → Mist → HLS path was validated with one upstream provider pull, advancing HLS media sequence, H.264 video, and AAC audio before this baseline was promoted. On November 1, the same-source V2 guard was tightened so a transient HLS buffer underrun no longer causes the 20-second stream-plan refresh to destroy and recreate the same player. Fatal media errors still trigger the existing recovery path. All protected files remain fingerprinted.
+The October 25 DigitalOcean V2 cutover updates only the locked KoraZero V2 control/HLS endpoint validation to the verified `v2.korazero.com` and `mist-v2.korazero.com` hosts. The standalone DigitalOcean relay → Mist → HLS path was validated with one upstream provider pull, advancing HLS media sequence, H.264 video, and AAC audio before this baseline was promoted. Player transport, mounting, recovery, and single-socket control retain their previous behavior. All 34 protected files remain fingerprinted.
 
 This does **not** freeze the repository. Content, SEO, match data, editorial work,
 styles, and unrelated application work can continue normally. The lock only

@@ -65,7 +65,14 @@ function gateV2Plan(plan, state, timing = {}) {
   const now = Date.now();
   const kickoff = Date.parse(timing.kickoffUtc || "");
   const expires = Date.parse(timing.expiresAt || "");
-  const beforeWindow = Number.isFinite(kickoff) && now < kickoff - 30 * 60000;
+  // Owner-requested beIN 2 audio test; expires at this fixture's kickoff.
+  const madridAudioPreview =
+    timing.matchId === "espn-uefa.champions-401915383" &&
+    kickoff === Date.parse("2026-11-04T16:45:00Z") &&
+    now >= Date.parse("2026-11-04T00:00:00Z") &&
+    now < kickoff &&
+    sources.every((source) => v2ChannelId(source) === "iptv-3644");
+  const beforeWindow = Number.isFinite(kickoff) && now < kickoff - 30 * 60000 && !madridAudioPreview;
   const expired = Number.isFinite(expires) && now >= expires;
   const activeSource =
     !beforeWindow && !expired
@@ -196,6 +203,7 @@ export async function getStreamPlan(env, origin, params) {
   const activeState = await loadActiveV2State(env);
   const catalogPlan = findCatalogPlan(catalog, match);
   return gateV2Plan(resolved, activeState, {
+    matchId: match.id,
     kickoffUtc: catalogPlan?.kickoffUtc || match.kickoffUtc,
     expiresAt: catalogPlan?.expiresAt,
   });
