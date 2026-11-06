@@ -988,48 +988,6 @@
       "locked": true
     },
     {
-      "key": "abha~alshabab",
-      "home": "Abha",
-      "away": "Al Shabab",
-      "commentators": [],
-      "channel": "ثمانية",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah",
-        "source": "spl-rights-holder",
-        "confidence": "network"
-      },
-      "locked": false
-    },
-    {
-      "key": "alfayha~alqadsiah",
-      "home": "Al Qadsiah",
-      "away": "Al Fayha",
-      "commentators": [],
-      "channel": "ثمانية",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah",
-        "source": "spl-rights-holder",
-        "confidence": "network"
-      },
-      "locked": false
-    },
-    {
-      "key": "alkhaleej~alkholood",
-      "home": "Al Kholood",
-      "away": "Al Khaleej",
-      "commentators": [],
-      "channel": "ثمانية",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah",
-        "source": "spl-rights-holder",
-        "confidence": "network"
-      },
-      "locked": false
-    },
-    {
       "key": "alfateh~alriyadh",
       "home": "Al Fateh",
       "away": "Al Riyadh",
@@ -6878,56 +6836,8 @@
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
-  "broadcastUpdatedAt": "2026-11-04T14:29:19.051Z",
+  "broadcastUpdatedAt": "2026-11-06T23:05:41.853Z",
   "broadcastIndex": [
-    {
-      "id": "espn-ksa.1-401900443",
-      "key": "abha~alshabab",
-      "home": "Abha",
-      "away": "Al Shabab",
-      "kickoffUtc": "2026-11-05T20:00Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah",
-        "source": "spl-rights-holder",
-        "confidence": "network"
-      },
-      "commentators": []
-    },
-    {
-      "id": "espn-ksa.1-401900870",
-      "key": "alfayha~alqadsiah",
-      "home": "Al Qadsiah",
-      "away": "Al Fayha",
-      "kickoffUtc": "2026-11-05T20:00Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah",
-        "source": "spl-rights-holder",
-        "confidence": "network"
-      },
-      "commentators": []
-    },
-    {
-      "id": "espn-ksa.1-401900872",
-      "key": "alkhaleej~alkholood",
-      "home": "Al Kholood",
-      "away": "Al Khaleej",
-      "kickoffUtc": "2026-11-05T20:00Z",
-      "leagueSlug": "ksa.1",
-      "channel": "ثمانية",
-      "broadcast": {
-        "provider": "thmanyah",
-        "channelId": "thmanyah",
-        "source": "spl-rights-holder",
-        "confidence": "network"
-      },
-      "commentators": []
-    },
     {
       "id": "espn-ksa.1-401900874",
       "key": "alfateh~alriyadh",
