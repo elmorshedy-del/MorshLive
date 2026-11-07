@@ -1,94 +1,12 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-07T06:35:55.524Z",
+  "generatedAt": "2026-11-07T22:17:32.465Z",
   "capacity": 2,
   "slots": [
     "a",
     "b"
   ],
   "entries": [
-    {
-      "slot": "b",
-      "matchId": "espn-esp.1-401882812",
-      "streamId": "3653",
-      "channelId": "iptv-3653",
-      "startAt": "2026-11-07T11:45:00.000Z",
-      "endAt": "2026-11-07T14:00:00.000Z",
-      "score": 40,
-      "reasons": [
-        "competition:laliga+40"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "a",
-      "matchId": "espn-eng.1-401878760",
-      "streamId": "3645",
-      "channelId": "iptv-3645",
-      "startAt": "2026-11-07T13:45:00.000Z",
-      "endAt": "2026-11-07T16:00:00.000Z",
-      "score": 70,
-      "reasons": [
-        "competition:epl+40",
-        "tier1:Arsenal+30"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "b",
-      "matchId": "espn-eng.1-401879241",
-      "streamId": "3644",
-      "channelId": "iptv-3644",
-      "startAt": "2026-11-07T14:45:00.000Z",
-      "endAt": "2026-11-07T17:00:00.000Z",
-      "score": 55,
-      "reasons": [
-        "competition:epl+40",
-        "tier2:Newcastle United+15"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "a",
-      "matchId": "espn-esp.1-401882811",
-      "streamId": "3653",
-      "channelId": "iptv-3653",
-      "startAt": "2026-11-07T16:15:00.000Z",
-      "endAt": "2026-11-07T18:30:00.000Z",
-      "score": 40,
-      "reasons": [
-        "competition:laliga+40"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "a",
-      "matchId": "espn-esp.1-401882808",
-      "streamId": "3645",
-      "channelId": "iptv-3645",
-      "startAt": "2026-11-07T18:45:00.000Z",
-      "endAt": "2026-11-07T21:00:00.000Z",
-      "score": 70,
-      "reasons": [
-        "competition:laliga+40",
-        "tier1:Real Madrid+30"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "b",
-      "matchId": "espn-fra.1-401876407",
-      "streamId": "3644",
-      "channelId": "iptv-3644",
-      "startAt": "2026-11-07T19:50:00.000Z",
-      "endAt": "2026-11-07T22:05:00.000Z",
-      "score": 50,
-      "reasons": [
-        "competition:ligue1+20",
-        "tier1:Paris Saint-Germain+30"
-      ],
-      "pinned": false
-    },
     {
       "slot": "a",
       "matchId": "espn-eng.1-401879243",
