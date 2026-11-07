@@ -6364,12 +6364,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Hill Dickinson Stadium · Liverpool · England",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-06T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882809",
@@ -6389,12 +6385,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Ramón Sánchez Pizjuán Stadium · Sevilla · Spain",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-06T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401878758",

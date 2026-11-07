@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-06T19:41:39.269Z",
+  "updatedAt": "2026-11-07T06:35:55.514Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1120,82 +1120,6 @@
           "expiresAt": "2026-10-29T00:30:00.000Z",
           "label": "Liverpool vs Chelsea · beIN Sports 1 · V2",
           "note": "English Carabao Cup 2026-10-28; broadcaster beIN Sports MENA 1. Operator gate permits playback only while V2 stream 3645 is active."
-        }
-      ]
-    },
-    {
-      "matchId": "espn-eng.1-401879242",
-      "teams": [
-        [
-          "Everton"
-        ],
-        [
-          "Coventry City"
-        ]
-      ],
-      "contentKey": "match:espn-eng.1-401879242",
-      "kickoffUtc": "2026-11-06T19:00:00.000Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-06T19:41:39.269Z",
-      "expiresAt": "2026-11-06T21:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3645",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-eng.1-401879242",
-          "status": "operator",
-          "verifiedAt": "2026-11-06T19:41:39.269Z",
-          "expiresAt": "2026-11-06T21:45:00.000Z",
-          "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-esp.1-401882809",
-      "teams": [
-        [
-          "Sevilla"
-        ],
-        [
-          "Alavés"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882809",
-      "kickoffUtc": "2026-11-06T19:00:00.000Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-06T19:41:39.269Z",
-      "expiresAt": "2026-11-06T21:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3653",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3653/index.m3u8",
-          "contentKey": "match:espn-esp.1-401882809",
-          "status": "operator",
-          "verifiedAt": "2026-11-06T19:41:39.269Z",
-          "expiresAt": "2026-11-06T21:45:00.000Z",
-          "label": "beIN Sports 3 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 3 HD"
         }
       ]
     },
