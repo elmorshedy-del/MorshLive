@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-07T06:35:55.514Z",
+  "updatedAt": "2026-11-07T17:56:13.478Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1729,15 +1729,30 @@
       "contentKey": "match:espn-eng.1-401878757",
       "kickoffUtc": "2026-11-07T17:30Z",
       "expiresAt": "2026-11-07T20:15:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
+      "status": "operator",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": []
+      "sources": [
+        {
+          "id": "v2-bein-3645",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
+          "contentKey": "match:espn-eng.1-401878757",
+          "status": "operator",
+          "verifiedAt": "2026-11-07T17:56:13.478Z",
+          "expiresAt": "2026-11-07T20:15:00.000Z",
+          "label": "beIN Sports 1 · V2 Vega",
+          "note": "Official beIN SPORTS MENA preview confirms beIN SPORTS 1.",
+          "sourceHref": "https://www.beinsports.com/ar-mena/%D9%83%D8%B1%D8%A9-%D8%A7%D9%84%D9%82%D8%AF%D9%85/%D8%A7%D9%84%D8%AF%D9%88%D8%B1%D9%8A-%D8%A7%D9%84%D8%A5%D9%86%D8%AC%D9%84%D9%8A%D8%B2%D9%8A-%D8%A7%D9%84%D9%85%D9%85%D8%AA%D8%A7%D8%B2/%D8%A7%D9%84%D8%A3%D8%AE%D8%A8%D8%A7%D8%B1-%D8%A7%D9%84%D9%81%D9%8A%D8%AF%D9%8A%D9%88/%D9%86%D9%88%D8%AA%D9%86%D8%BA%D9%87%D8%A7%D9%85-%D9%81%D9%88%D8%B1%D8%B3%D8%AA-%D9%8A%D8%B3%D8%AA%D8%B6%D9%8A%D9%81-%D9%85%D8%A7%D9%86%D8%B4%D8%B3%D8%AA%D8%B1-%D8%B3%D9%8A%D8%AA%D9%8A-2026-11-06"
+        }
+      ],
+      "verifiedAt": "2026-11-07T17:56:13.478Z"
     },
     {
       "matchId": "espn-esp.1-401882813",
