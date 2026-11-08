@@ -6516,12 +6516,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Estadio Martínez Valero · Elche · Spain",
-      "channel": "beIN Sports 8",
-      "channelId": "bein-sports-8",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-08T14:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401879244",
@@ -6541,12 +6537,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "American Express Stadium · Falmer · England",
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-08T15:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401879243",
@@ -6566,12 +6558,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Selhurst Park · London · England",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-08T15:00:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401878759",
@@ -6591,12 +6579,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Portman Road · Ipswich · England",
-      "channel": "beIN Sports Xtra 1",
-      "channelId": "bein-xtra-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-08T16:00:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401879239",
@@ -6616,12 +6600,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Stadium of Light · Sunderland · England",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-08T15:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-eng.1-401879240",
@@ -6641,12 +6621,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Old Trafford · Manchester · England",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-08T18:15:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882815",
@@ -6666,12 +6642,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Balaidos · Vigo · Spain",
-      "channel": "beIN Sports Xtra 1",
-      "channelId": "bein-xtra-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-08T19:15:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882807",
@@ -6691,12 +6663,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Estadio de la Cerámica · Villarreal · Spain",
-      "channel": "beIN Sports 6",
-      "channelId": "bein-sports-6",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-08T19:15:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882816",
@@ -6716,12 +6684,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Riyadh Air Metropolitano · Madrid · Spain",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-08T21:45:00.000Z"
+      "source": "espn"
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
