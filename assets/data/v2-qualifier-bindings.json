@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-10T20:00:11.247Z",
+  "generatedAt": "2026-11-11T19:52:14.627Z",
   "window": {
-    "start": "2026-11-10",
-    "end": "2026-11-13"
+    "start": "2026-11-11",
+    "end": "2026-11-14"
   },
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
@@ -175,6 +175,104 @@
       "observedLabel": "beIN SPORTS 1",
       "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/e4GtEZ1R1N4ZMfmfS8ntK",
       "expiresAt": "2026-11-13T22:45:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861164",
+      "home": "Georgia",
+      "away": "Hungary",
+      "kickoffUtc": "2026-11-14T17:00Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-4",
+      "channel": "beIN Sports 4",
+      "playbackChannelId": "v2-bein-sports-4",
+      "streamId": "3652",
+      "observedLabel": "beIN SPORTS 4",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/3iiTJG2YsYvgd706PZIT9",
+      "expiresAt": "2026-11-14T19:15:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861165",
+      "home": "Norway",
+      "away": "Wales",
+      "kickoffUtc": "2026-11-14T17:00Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/CTidKFiLvlHayvVA0E0pP",
+      "expiresAt": "2026-11-14T19:15:00.000Z"
+    },
+    {
+      "matchId": "espn-caf.nations_qual-401927204",
+      "home": "Algeria",
+      "away": "Togo",
+      "kickoffUtc": "2026-11-14T19:00Z",
+      "competition": "afconq",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/azL0dqMoVs0eBXDsLQbIq",
+      "expiresAt": "2026-11-14T21:45:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861170",
+      "home": "Austria",
+      "away": "Republic of Ireland",
+      "kickoffUtc": "2026-11-14T19:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-4",
+      "channel": "beIN Sports 4",
+      "playbackChannelId": "v2-bein-sports-4",
+      "streamId": "3652",
+      "observedLabel": "beIN SPORTS 4",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/VZBgq32lyGx3s8y9upV7o",
+      "expiresAt": "2026-11-14T22:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861169",
+      "home": "Northern Ireland",
+      "away": "Ukraine",
+      "kickoffUtc": "2026-11-14T19:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-6",
+      "channel": "beIN Sports 6",
+      "playbackChannelId": "v2-bein-sports-6",
+      "streamId": "3650",
+      "observedLabel": "beIN SPORTS 6",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/oVRH3IOYWJF8xQ-E-0nWW",
+      "expiresAt": "2026-11-14T22:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861167",
+      "home": "Portugal",
+      "away": "Denmark",
+      "kickoffUtc": "2026-11-14T19:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/JZKq1LgY818E4NA6y9buk",
+      "expiresAt": "2026-11-14T22:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861168",
+      "home": "Romania",
+      "away": "Poland",
+      "kickoffUtc": "2026-11-14T19:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-5",
+      "channel": "beIN Sports 5",
+      "playbackChannelId": "v2-bein-sports-5",
+      "streamId": "3651",
+      "observedLabel": "beIN SPORTS 5",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/VqvXAe8k_CzTO3-Ykv9Ef",
+      "expiresAt": "2026-11-14T22:30:00.000Z"
     }
   ]
 }
