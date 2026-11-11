@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-10T20:00:11.247Z",
+  "updatedAt": "2026-11-11T07:07:42.913Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1630,6 +1630,190 @@
       "contentKey": "match:espn-caf.nations_qual-401927190",
       "kickoffUtc": "2026-11-13T19:00Z",
       "expiresAt": "2026-11-13T21:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-caf.nations_qual-401927204",
+      "teams": [
+        [
+          "Algeria"
+        ],
+        [
+          "Togo"
+        ]
+      ],
+      "contentKey": "match:espn-caf.nations_qual-401927204",
+      "kickoffUtc": "2026-11-14T19:00Z",
+      "expiresAt": "2026-11-14T21:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861164",
+      "teams": [
+        [
+          "Georgia"
+        ],
+        [
+          "Hungary"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861164",
+      "kickoffUtc": "2026-11-14T17:00Z",
+      "expiresAt": "2026-11-14T19:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861165",
+      "teams": [
+        [
+          "Norway"
+        ],
+        [
+          "Wales"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861165",
+      "kickoffUtc": "2026-11-14T17:00Z",
+      "expiresAt": "2026-11-14T19:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861170",
+      "teams": [
+        [
+          "Austria"
+        ],
+        [
+          "Republic of Ireland"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861170",
+      "kickoffUtc": "2026-11-14T19:45Z",
+      "expiresAt": "2026-11-14T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861169",
+      "teams": [
+        [
+          "Northern Ireland"
+        ],
+        [
+          "Ukraine"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861169",
+      "kickoffUtc": "2026-11-14T19:45Z",
+      "expiresAt": "2026-11-14T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861167",
+      "teams": [
+        [
+          "Portugal"
+        ],
+        [
+          "Denmark"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861167",
+      "kickoffUtc": "2026-11-14T19:45Z",
+      "expiresAt": "2026-11-14T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861168",
+      "teams": [
+        [
+          "Romania"
+        ],
+        [
+          "Poland"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861168",
+      "kickoffUtc": "2026-11-14T19:45Z",
+      "expiresAt": "2026-11-14T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861166",
+      "teams": [
+        [
+          "Sweden"
+        ],
+        [
+          "Bosnia-Herzegovina"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861166",
+      "kickoffUtc": "2026-11-14T19:45Z",
+      "expiresAt": "2026-11-14T22:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
