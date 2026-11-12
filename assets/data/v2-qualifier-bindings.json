@@ -1,41 +1,13 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-11T19:52:14.627Z",
+  "generatedAt": "2026-11-12T20:26:48.654Z",
   "window": {
-    "start": "2026-11-11",
-    "end": "2026-11-14"
+    "start": "2026-11-12",
+    "end": "2026-11-15"
   },
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
   "bindings": [
-    {
-      "matchId": "espn-uefa.nations-401861146",
-      "home": "Armenia",
-      "away": "Cyprus",
-      "kickoffUtc": "2026-11-12T17:00Z",
-      "competition": "unl",
-      "broadcastChannelId": "bein-sports-4",
-      "channel": "beIN Sports 4",
-      "playbackChannelId": "v2-bein-sports-4",
-      "streamId": "3652",
-      "observedLabel": "beIN SPORTS 4",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/zM3eSmNv9GZ7AWmULpqCt",
-      "expiresAt": "2026-11-12T19:15:00.000Z"
-    },
-    {
-      "matchId": "espn-uefa.nations-401861145",
-      "home": "Türkiye",
-      "away": "Belgium",
-      "kickoffUtc": "2026-11-12T17:00Z",
-      "competition": "unl",
-      "broadcastChannelId": "bein-sports-1",
-      "channel": "beIN Sports 1",
-      "playbackChannelId": "v2-bein-sports-1",
-      "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/jfzomGaYLSUahsi_U3-8B",
-      "expiresAt": "2026-11-12T19:15:00.000Z"
-    },
     {
       "matchId": "espn-uefa.nations-401861148",
       "home": "Czechia",
@@ -46,9 +18,11 @@
       "channel": "beIN Sports 4",
       "playbackChannelId": "v2-bein-sports-4",
       "streamId": "3652",
-      "observedLabel": "beIN SPORTS 4",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/inR4OcvVylnFIavib1GZ9",
-      "expiresAt": "2026-11-12T22:30:00.000Z"
+      "observedLabel": "beIN SPORTS 4 HD",
+      "sourceHref": "/matches/377823/مباراة-التشيك-إسبانيا-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-11-12T21:30:00.000Z",
+      "broadcastKickoffUtc": "2026-11-12T18:45:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-uefa.nations-401861150",
@@ -60,9 +34,11 @@
       "channel": "beIN Sports 3",
       "playbackChannelId": "v2-bein-sports-3",
       "streamId": "3653",
-      "observedLabel": "beIN SPORTS 3",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/thVjN_U0KO2Z2CPIuigvd",
-      "expiresAt": "2026-11-12T22:30:00.000Z"
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/377824/مباراة-إنجلترا-كرواتيا-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-11-12T21:30:00.000Z",
+      "broadcastKickoffUtc": "2026-11-12T18:45:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-uefa.nations-401861151",
@@ -74,9 +50,11 @@
       "channel": "beIN Sports 1",
       "playbackChannelId": "v2-bein-sports-1",
       "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/1AoF8T_ENXDj8Kb3AeqQA",
-      "expiresAt": "2026-11-12T22:30:00.000Z"
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/377800/مباراة-إيطاليا-فرنسا-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-11-12T21:30:00.000Z",
+      "broadcastKickoffUtc": "2026-11-12T18:45:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-caf.nations_qual-401927205",
@@ -91,6 +69,20 @@
       "observedLabel": "beIN SPORTS 1",
       "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/OvdmNhBe7Sai2hTy94w9B",
       "expiresAt": "2026-11-13T18:45:00.000Z"
+    },
+    {
+      "matchId": "espn-caf.nations_qual-401927190",
+      "home": "Egypt",
+      "away": "Malawi",
+      "kickoffUtc": "2026-11-13T19:00Z",
+      "competition": "afconq",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/SsSxT-MCbz6TashsUgpWj",
+      "expiresAt": "2026-11-13T21:45:00.000Z"
     },
     {
       "matchId": "espn-uefa.nations-401861157",
@@ -273,6 +265,76 @@
       "observedLabel": "beIN SPORTS 5",
       "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/VqvXAe8k_CzTO3-Ykv9Ef",
       "expiresAt": "2026-11-14T22:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861172",
+      "home": "Cyprus",
+      "away": "Montenegro",
+      "kickoffUtc": "2026-11-15T14:00Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/V2gqUBOY8lruCFV4vcwUf",
+      "expiresAt": "2026-11-15T16:45:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861176",
+      "home": "Belgium",
+      "away": "Italy",
+      "kickoffUtc": "2026-11-15T19:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-3",
+      "channel": "beIN Sports 3",
+      "playbackChannelId": "v2-bein-sports-3",
+      "streamId": "3653",
+      "observedLabel": "beIN SPORTS 3",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/-jnz68Pif0RbdNVpX-EOp",
+      "expiresAt": "2026-11-15T22:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861178",
+      "home": "Croatia",
+      "away": "Czechia",
+      "kickoffUtc": "2026-11-15T19:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-4",
+      "channel": "beIN Sports 4",
+      "playbackChannelId": "v2-bein-sports-4",
+      "streamId": "3652",
+      "observedLabel": "beIN SPORTS 4",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/gCZztn69z8uYZrzfPzLth",
+      "expiresAt": "2026-11-15T22:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861177",
+      "home": "France",
+      "away": "Türkiye",
+      "kickoffUtc": "2026-11-15T19:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-2",
+      "channel": "beIN Sports 2",
+      "playbackChannelId": "v2-bein-sports-2",
+      "streamId": "3644",
+      "observedLabel": "beIN SPORTS 2",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/CFIfyzGe1XBhNWtR8u18K",
+      "expiresAt": "2026-11-15T22:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.nations-401861175",
+      "home": "Spain",
+      "away": "England",
+      "kickoffUtc": "2026-11-15T19:45Z",
+      "competition": "unl",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/wRubewkczXfkw-OhOE3Nb",
+      "expiresAt": "2026-11-15T22:30:00.000Z"
     }
   ]
 }
