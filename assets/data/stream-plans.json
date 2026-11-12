@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-11T19:52:14.627Z",
+  "updatedAt": "2026-11-12T07:43:36.276Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1919,6 +1919,121 @@
       "contentKey": "match:espn-uefa.nations-401861166",
       "kickoffUtc": "2026-11-14T19:45Z",
       "expiresAt": "2026-11-14T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861172",
+      "teams": [
+        [
+          "Cyprus"
+        ],
+        [
+          "Montenegro"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861172",
+      "kickoffUtc": "2026-11-15T14:00Z",
+      "expiresAt": "2026-11-15T16:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861176",
+      "teams": [
+        [
+          "Belgium"
+        ],
+        [
+          "Italy"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861176",
+      "kickoffUtc": "2026-11-15T19:45Z",
+      "expiresAt": "2026-11-15T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861178",
+      "teams": [
+        [
+          "Croatia"
+        ],
+        [
+          "Czechia"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861178",
+      "kickoffUtc": "2026-11-15T19:45Z",
+      "expiresAt": "2026-11-15T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861177",
+      "teams": [
+        [
+          "France"
+        ],
+        [
+          "Türkiye"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861177",
+      "kickoffUtc": "2026-11-15T19:45Z",
+      "expiresAt": "2026-11-15T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861175",
+      "teams": [
+        [
+          "Spain"
+        ],
+        [
+          "England"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861175",
+      "kickoffUtc": "2026-11-15T19:45Z",
+      "expiresAt": "2026-11-15T22:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
