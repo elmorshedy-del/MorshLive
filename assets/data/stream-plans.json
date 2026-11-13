@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-13T14:30:45.627Z",
+  "updatedAt": "2026-11-13T14:32:13.578Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -2073,14 +2073,29 @@
       "contentKey": "match:espn-fifa.friendly-401931476",
       "kickoffUtc": "2026-11-13T14:30:00.000Z",
       "expiresAt": "2026-11-13T17:15:00.000Z",
-      "status": "pending",
+      "status": "operator",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": []
+      "sources": [
+        {
+          "id": "v2-stc-243882",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-243882/index.m3u8",
+          "contentKey": "match:espn-fifa.friendly-401931476",
+          "status": "operator",
+          "verifiedAt": "2026-11-13T14:32:13.578Z",
+          "expiresAt": "2026-11-13T17:15:00.000Z",
+          "label": "stc tv Sports 3",
+          "note": "Published broadcaster matched to Stc Sport 3 TV in the V2 catalog. Playback requires operator activation."
+        }
+      ],
+      "verifiedAt": "2026-11-13T14:32:13.578Z"
     }
   ]
 }
