@@ -1,26 +1,12 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-13T07:17:42.130Z",
+  "generatedAt": "2026-11-13T20:02:01.819Z",
   "capacity": 2,
   "slots": [
     "a",
     "b"
   ],
   "entries": [
-    {
-      "slot": "a",
-      "matchId": "espn-caf.nations_qual-401927205",
-      "streamId": "3645",
-      "channelId": "iptv-3645",
-      "startAt": "2026-11-13T15:45:00.000Z",
-      "endAt": "2026-11-13T18:00:00.000Z",
-      "score": 60,
-      "reasons": [
-        "competition:afconq+30",
-        "tier1:Tunisia+30"
-      ],
-      "pinned": false
-    },
     {
       "slot": "a",
       "matchId": "espn-caf.nations_qual-401927190",
@@ -131,6 +117,46 @@
         "tier2:Italy+15"
       ],
       "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-uefa.nations-401861183",
+      "streamId": "3648",
+      "channelId": "iptv-3648",
+      "startAt": "2026-11-16T16:45:00.000Z",
+      "endAt": "2026-11-16T19:00:00.000Z",
+      "score": 25,
+      "reasons": [
+        "competition:unl+25"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-uefa.nations-401861185",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-11-16T19:30:00.000Z",
+      "endAt": "2026-11-16T21:45:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:unl+25",
+        "tier2:Germany+15"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-uefa.nations-401861186",
+      "streamId": "3644",
+      "channelId": "iptv-3644",
+      "startAt": "2026-11-16T19:30:00.000Z",
+      "endAt": "2026-11-16T21:45:00.000Z",
+      "score": 25,
+      "reasons": [
+        "competition:unl+25"
+      ],
+      "pinned": false
     }
   ],
   "unassigned": [
@@ -146,7 +172,7 @@
     },
     {
       "matchId": "espn-uefa.nations-401861157",
-      "streamId": "3648",
+      "streamId": "3649",
       "score": 25,
       "reason": "outranked",
       "by": [
@@ -242,6 +268,26 @@
       "by": [
         "espn-uefa.nations-401861175",
         "espn-uefa.nations-401861176"
+      ]
+    },
+    {
+      "matchId": "espn-uefa.nations-401861187",
+      "streamId": "3653",
+      "score": 25,
+      "reason": "outranked",
+      "by": [
+        "espn-uefa.nations-401861185",
+        "espn-uefa.nations-401861186"
+      ]
+    },
+    {
+      "matchId": "espn-uefa.nations-401861188",
+      "streamId": "3652",
+      "score": 25,
+      "reason": "outranked",
+      "by": [
+        "espn-uefa.nations-401861185",
+        "espn-uefa.nations-401861186"
       ]
     }
   ]

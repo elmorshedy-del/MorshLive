@@ -6824,12 +6824,8 @@
       "leagueSlug": "caf.nations_qual",
       "competition": "afconq",
       "venue": "Stade Taieb Mhiri · Sfax · Tunisia",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T18:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861157",
@@ -6849,12 +6845,12 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Hristo Botev Stadium, Plovdiv · Plovdiv · Bulgaria",
-      "channel": "beIN Sports 8",
-      "channelId": "bein-sports-8",
+      "channel": "beIN Sports 7",
+      "channelId": "bein-sports-7",
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T22:30:00.000Z"
+      "channelExpiresAt": "2026-11-13T21:30:00.000Z"
     },
     {
       "id": "espn-uefa.nations-401861159",
@@ -6879,7 +6875,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T22:30:00.000Z"
+      "channelExpiresAt": "2026-11-13T21:30:00.000Z"
     },
     {
       "id": "espn-uefa.nations-401861161",
@@ -6904,7 +6900,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T22:30:00.000Z"
+      "channelExpiresAt": "2026-11-13T21:30:00.000Z"
     },
     {
       "id": "espn-uefa.nations-401861158",
@@ -6929,7 +6925,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T22:30:00.000Z"
+      "channelExpiresAt": "2026-11-13T21:30:00.000Z"
     },
     {
       "id": "espn-uefa.nations-401861156",
@@ -6954,7 +6950,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T22:30:00.000Z"
+      "channelExpiresAt": "2026-11-13T21:30:00.000Z"
     },
     {
       "id": "espn-caf.nations_qual-401927191",
@@ -6979,7 +6975,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T22:45:00.000Z"
+      "channelExpiresAt": "2026-11-13T21:45:00.000Z"
     },
     {
       "id": "espn-uefa.nations-401861164",
@@ -7329,6 +7325,131 @@
       "reason": "Published broadcaster listing",
       "sourceHref": "https://www.365scores.com/ar/news/magazine/%D8%A7%D9%84%D9%82%D9%86%D9%88%D8%A7%D8%AA-%D8%A7%D9%84%D9%86%D8%A7%D9%82%D9%84%D8%A9-%D8%A7%D9%84%D8%B3%D8%B9%D9%88%D8%AF%D9%8A%D8%A9-%D8%B6%D8%AF-%D9%83%D9%88%D8%B1%D9%8A%D8%A7/",
       "channelSource": "manual"
+    },
+    {
+      "id": "espn-uefa.nations-401861183",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Estonia",
+      "away": "Bulgaria",
+      "homeAbbr": "EST",
+      "awayAbbr": "BUL",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/est.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/bul.png",
+      "score": "VS",
+      "time": "17:00",
+      "kickoffUtc": "2026-11-16T17:00Z",
+      "league": "UEFA Nations League",
+      "leagueAr": "دوري الأمم الأوروبية",
+      "leagueSlug": "uefa.nations",
+      "competition": "unl",
+      "venue": "A. Le Coq Arena · Tallinn · Estonia",
+      "channel": "beIN Sports 8",
+      "channelId": "bein-sports-8",
+      "commentator": null,
+      "source": "espn",
+      "channelSource": "v2-bein-qualifiers",
+      "channelExpiresAt": "2026-11-16T19:45:00.000Z"
+    },
+    {
+      "id": "espn-uefa.nations-401861185",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Germany",
+      "away": "Netherlands",
+      "homeAbbr": "GER",
+      "awayAbbr": "NED",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/ger.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/ned.png",
+      "score": "VS",
+      "time": "19:45",
+      "kickoffUtc": "2026-11-16T19:45Z",
+      "league": "UEFA Nations League",
+      "leagueAr": "دوري الأمم الأوروبية",
+      "leagueSlug": "uefa.nations",
+      "competition": "unl",
+      "venue": "Olympic Stadium Berlin · Berlin · Germany",
+      "channel": "beIN Sports 1",
+      "channelId": "bein-sports-1",
+      "commentator": null,
+      "source": "espn",
+      "channelSource": "v2-bein-qualifiers",
+      "channelExpiresAt": "2026-11-16T22:30:00.000Z"
+    },
+    {
+      "id": "espn-uefa.nations-401861188",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Greece",
+      "away": "Serbia",
+      "homeAbbr": "GRE",
+      "awayAbbr": "SRB",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/gre.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/sba.png",
+      "score": "VS",
+      "time": "19:45",
+      "kickoffUtc": "2026-11-16T19:45Z",
+      "league": "UEFA Nations League",
+      "leagueAr": "دوري الأمم الأوروبية",
+      "leagueSlug": "uefa.nations",
+      "competition": "unl",
+      "venue": "Panthessaliko Stadium · Volos · Greece",
+      "channel": "beIN Sports 4",
+      "channelId": "bein-sports-4",
+      "commentator": null,
+      "source": "espn",
+      "channelSource": "v2-bein-qualifiers",
+      "channelExpiresAt": "2026-11-16T22:30:00.000Z"
+    },
+    {
+      "id": "espn-uefa.nations-401861187",
+      "status": "upcoming",
+      "minute": "",
+      "home": "North Macedonia",
+      "away": "Slovenia",
+      "homeAbbr": "MKD",
+      "awayAbbr": "SVN",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/mkd.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/svn.png",
+      "score": "VS",
+      "time": "19:45",
+      "kickoffUtc": "2026-11-16T19:45Z",
+      "league": "UEFA Nations League",
+      "leagueAr": "دوري الأمم الأوروبية",
+      "leagueSlug": "uefa.nations",
+      "competition": "unl",
+      "venue": "Toše Proeski Arena · Skopje · North Macedonia",
+      "channel": "beIN Sports 3",
+      "channelId": "bein-sports-3",
+      "commentator": null,
+      "source": "espn",
+      "channelSource": "v2-bein-qualifiers",
+      "channelExpiresAt": "2026-11-16T22:30:00.000Z"
+    },
+    {
+      "id": "espn-uefa.nations-401861186",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Switzerland",
+      "away": "Scotland",
+      "homeAbbr": "SUI",
+      "awayAbbr": "SCO",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/countries/500/sui.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/countries/500/sco.png",
+      "score": "VS",
+      "time": "19:45",
+      "kickoffUtc": "2026-11-16T19:45Z",
+      "league": "UEFA Nations League",
+      "leagueAr": "دوري الأمم الأوروبية",
+      "leagueSlug": "uefa.nations",
+      "competition": "unl",
+      "venue": "Kybunpark · St. Gallen · Switzerland",
+      "channel": "beIN Sports 2",
+      "channelId": "bein-sports-2",
+      "commentator": null,
+      "source": "espn",
+      "channelSource": "v2-bein-qualifiers",
+      "channelExpiresAt": "2026-11-16T22:30:00.000Z"
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
