@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-12T20:26:48.654Z",
+  "updatedAt": "2026-11-13T07:17:42.123Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1162,120 +1162,6 @@
       "verifiedAt": "2026-11-07T17:56:13.478Z"
     },
     {
-      "matchId": "espn-uefa.nations-401861148",
-      "teams": [
-        [
-          "Czechia"
-        ],
-        [
-          "Spain"
-        ]
-      ],
-      "contentKey": "match:espn-uefa.nations-401861148",
-      "kickoffUtc": "2026-11-12T18:45:00.000Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-12T20:26:48.654Z",
-      "expiresAt": "2026-11-12T21:30:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3652",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3652/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861148",
-          "status": "operator",
-          "verifiedAt": "2026-11-12T20:26:48.654Z",
-          "expiresAt": "2026-11-12T21:30:00.000Z",
-          "label": "beIN Sports 4 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 4 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-uefa.nations-401861150",
-      "teams": [
-        [
-          "England"
-        ],
-        [
-          "Croatia"
-        ]
-      ],
-      "contentKey": "match:espn-uefa.nations-401861150",
-      "kickoffUtc": "2026-11-12T18:45:00.000Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-12T20:26:48.654Z",
-      "expiresAt": "2026-11-12T21:30:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3653",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3653/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861150",
-          "status": "operator",
-          "verifiedAt": "2026-11-12T20:26:48.654Z",
-          "expiresAt": "2026-11-12T21:30:00.000Z",
-          "label": "beIN Sports 3 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 3 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-uefa.nations-401861151",
-      "teams": [
-        [
-          "Italy"
-        ],
-        [
-          "France"
-        ]
-      ],
-      "contentKey": "match:espn-uefa.nations-401861151",
-      "kickoffUtc": "2026-11-12T18:45:00.000Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-12T20:26:48.654Z",
-      "expiresAt": "2026-11-12T21:30:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3645",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861151",
-          "status": "operator",
-          "verifiedAt": "2026-11-12T20:26:48.654Z",
-          "expiresAt": "2026-11-12T21:30:00.000Z",
-          "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1 HD"
-        }
-      ]
-    },
-    {
       "matchId": "espn-caf.nations_qual-401927205",
       "teams": [
         [
@@ -2048,6 +1934,121 @@
       "contentKey": "match:espn-uefa.nations-401861166",
       "kickoffUtc": "2026-11-14T19:45Z",
       "expiresAt": "2026-11-14T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861183",
+      "teams": [
+        [
+          "Estonia"
+        ],
+        [
+          "Bulgaria"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861183",
+      "kickoffUtc": "2026-11-16T17:00Z",
+      "expiresAt": "2026-11-16T19:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861185",
+      "teams": [
+        [
+          "Germany"
+        ],
+        [
+          "Netherlands"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861185",
+      "kickoffUtc": "2026-11-16T19:45Z",
+      "expiresAt": "2026-11-16T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861188",
+      "teams": [
+        [
+          "Greece"
+        ],
+        [
+          "Serbia"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861188",
+      "kickoffUtc": "2026-11-16T19:45Z",
+      "expiresAt": "2026-11-16T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861187",
+      "teams": [
+        [
+          "North Macedonia"
+        ],
+        [
+          "Slovenia"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861187",
+      "kickoffUtc": "2026-11-16T19:45Z",
+      "expiresAt": "2026-11-16T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.nations-401861186",
+      "teams": [
+        [
+          "Switzerland"
+        ],
+        [
+          "Scotland"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.nations-401861186",
+      "kickoffUtc": "2026-11-16T19:45Z",
+      "expiresAt": "2026-11-16T22:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
