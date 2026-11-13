@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-13T07:17:42.123Z",
+  "updatedAt": "2026-11-13T14:30:45.627Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -2050,6 +2050,29 @@
       "kickoffUtc": "2026-11-16T19:45Z",
       "expiresAt": "2026-11-16T22:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-fifa.friendly-401931476",
+      "teams": [
+        [
+          "Saudi Arabia"
+        ],
+        [
+          "South Korea",
+          "Korea Republic"
+        ]
+      ],
+      "contentKey": "match:espn-fifa.friendly-401931476",
+      "kickoffUtc": "2026-11-13T14:30:00.000Z",
+      "expiresAt": "2026-11-13T17:15:00.000Z",
       "status": "pending",
       "policy": {
         "sameContentOnly": true,
