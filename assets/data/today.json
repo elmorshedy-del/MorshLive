@@ -6845,12 +6845,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Hristo Botev Stadium, Plovdiv · Plovdiv · Bulgaria",
-      "channel": "beIN Sports 7",
-      "channelId": "bein-sports-7",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T21:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861159",
@@ -6870,12 +6866,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Johan Cruijff Arena · Amsterdam · Netherlands",
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T21:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861161",
@@ -6895,12 +6887,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Hampden Park · Glasgow · Scotland",
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T21:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861158",
@@ -6920,12 +6908,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Rajko Mitic Stadium · Belgrade · Serbia",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T21:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861156",
@@ -6945,12 +6929,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Ljudski vrt · Maribor · Slovenia",
-      "channel": "beIN Sports 6",
-      "channelId": "bein-sports-6",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T21:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-caf.nations_qual-401927191",
@@ -6970,12 +6950,8 @@
       "leagueSlug": "caf.nations_qual",
       "competition": "afconq",
       "venue": "Mohamed V Stadium · Casablanca · Morocco",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861164",
@@ -7170,12 +7146,8 @@
       "leagueSlug": "caf.nations_qual",
       "competition": "afconq",
       "venue": "Cairo International Stadium · Cairo · Egypt",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-13T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861172",
