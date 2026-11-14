@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-14T07:01:33.628Z",
+  "updatedAt": "2026-11-14T18:29:23.618Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1248,10 +1248,10 @@
         ]
       ],
       "contentKey": "match:espn-uefa.nations-401861165",
-      "kickoffUtc": "2026-11-14T17:00Z",
+      "kickoffUtc": "2026-11-14T16:00:00.000Z",
       "status": "operator",
-      "verifiedAt": "2026-11-11T19:52:14.627Z",
-      "expiresAt": "2026-11-14T19:15:00.000Z",
+      "verifiedAt": "2026-11-14T18:29:23.618Z",
+      "expiresAt": "2026-11-14T18:15:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
         "sameContentOnly": true,
@@ -1268,10 +1268,10 @@
           "url": "https://mist-v2.korazero.com/hls/iptv-3644/index.m3u8",
           "contentKey": "match:espn-uefa.nations-401861165",
           "status": "operator",
-          "verifiedAt": "2026-11-11T19:52:14.627Z",
-          "expiresAt": "2026-11-14T19:15:00.000Z",
+          "verifiedAt": "2026-11-14T18:29:23.618Z",
+          "expiresAt": "2026-11-14T18:15:00.000Z",
           "label": "beIN Sports 2 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 2"
+          "note": "Published broadcaster binding: beIN SPORTS 2 HD"
         }
       ]
     },
@@ -1400,10 +1400,10 @@
         ]
       ],
       "contentKey": "match:espn-uefa.nations-401861167",
-      "kickoffUtc": "2026-11-14T19:45Z",
+      "kickoffUtc": "2026-11-14T18:45:00.000Z",
       "status": "operator",
-      "verifiedAt": "2026-11-11T19:52:14.627Z",
-      "expiresAt": "2026-11-14T22:30:00.000Z",
+      "verifiedAt": "2026-11-14T18:29:23.618Z",
+      "expiresAt": "2026-11-14T21:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
         "sameContentOnly": true,
@@ -1420,10 +1420,10 @@
           "url": "https://mist-v2.korazero.com/hls/iptv-3644/index.m3u8",
           "contentKey": "match:espn-uefa.nations-401861167",
           "status": "operator",
-          "verifiedAt": "2026-11-11T19:52:14.627Z",
-          "expiresAt": "2026-11-14T22:30:00.000Z",
+          "verifiedAt": "2026-11-14T18:29:23.618Z",
+          "expiresAt": "2026-11-14T21:30:00.000Z",
           "label": "beIN Sports 2 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 2"
+          "note": "Published broadcaster binding: beIN SPORTS 2 HD"
         }
       ]
     },

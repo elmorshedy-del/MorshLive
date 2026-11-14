@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-14T07:01:33.628Z",
+  "generatedAt": "2026-11-14T18:29:23.618Z",
   "window": {
     "start": "2026-11-14",
     "end": "2026-11-17"
@@ -32,9 +32,11 @@
       "channel": "beIN Sports 2",
       "playbackChannelId": "v2-bein-sports-2",
       "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/CTidKFiLvlHayvVA0E0pP",
-      "expiresAt": "2026-11-14T19:15:00.000Z"
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/377835/مباراة-النرويج-ويلز-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-11-14T18:15:00.000Z",
+      "broadcastKickoffUtc": "2026-11-14T16:00:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-caf.nations_qual-401927204",
@@ -88,9 +90,11 @@
       "channel": "beIN Sports 2",
       "playbackChannelId": "v2-bein-sports-2",
       "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/JZKq1LgY818E4NA6y9buk",
-      "expiresAt": "2026-11-14T22:30:00.000Z"
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/377836/مباراة-البرتغال-الدنمارك-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-11-14T21:30:00.000Z",
+      "broadcastKickoffUtc": "2026-11-14T18:45:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-uefa.nations-401861168",

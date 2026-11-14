@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-14T07:01:33.639Z",
+  "generatedAt": "2026-11-14T18:29:23.628Z",
   "capacity": 2,
   "slots": [
     "a",
@@ -36,15 +36,14 @@
     },
     {
       "slot": "b",
-      "matchId": "espn-uefa.nations-401861167",
-      "streamId": "3644",
-      "channelId": "iptv-3644",
+      "matchId": "espn-uefa.nations-401861168",
+      "streamId": "3651",
+      "channelId": "iptv-3651",
       "startAt": "2026-11-14T19:30:00.000Z",
       "endAt": "2026-11-14T21:45:00.000Z",
-      "score": 40,
+      "score": 25,
       "reasons": [
-        "competition:unl+25",
-        "tier2:Portugal+15"
+        "competition:unl+25"
       ],
       "pinned": false
     },
@@ -133,23 +132,13 @@
   ],
   "unassigned": [
     {
-      "matchId": "espn-uefa.nations-401861165",
+      "matchId": "espn-uefa.nations-401861167",
       "streamId": "3644",
-      "score": 25,
+      "score": 40,
       "reason": "outranked",
       "by": [
         "espn-caf.nations_qual-401927204",
         "espn-uefa.nations-401861164"
-      ]
-    },
-    {
-      "matchId": "espn-uefa.nations-401861168",
-      "streamId": "3651",
-      "score": 25,
-      "reason": "outranked",
-      "by": [
-        "espn-caf.nations_qual-401927204",
-        "espn-uefa.nations-401861167"
       ]
     },
     {
@@ -159,7 +148,7 @@
       "reason": "outranked",
       "by": [
         "espn-caf.nations_qual-401927204",
-        "espn-uefa.nations-401861167"
+        "espn-uefa.nations-401861168"
       ]
     },
     {
@@ -169,7 +158,7 @@
       "reason": "outranked",
       "by": [
         "espn-caf.nations_qual-401927204",
-        "espn-uefa.nations-401861167"
+        "espn-uefa.nations-401861168"
       ]
     },
     {
