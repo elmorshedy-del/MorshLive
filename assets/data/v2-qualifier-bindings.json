@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-14T22:44:40.727Z",
+  "generatedAt": "2026-11-15T07:11:38.596Z",
   "window": {
     "start": "2026-11-15",
     "end": "2026-11-18"
@@ -32,9 +32,11 @@
       "channel": "beIN Sports 3",
       "playbackChannelId": "v2-bein-sports-3",
       "streamId": "3653",
-      "observedLabel": "beIN SPORTS 3",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/-jnz68Pif0RbdNVpX-EOp",
-      "expiresAt": "2026-11-15T22:30:00.000Z"
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/377802/مباراة-بلجيكا-إيطاليا-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-11-15T21:30:00.000Z",
+      "broadcastKickoffUtc": "2026-11-15T18:45:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-uefa.nations-401861178",
@@ -60,9 +62,11 @@
       "channel": "beIN Sports 2",
       "playbackChannelId": "v2-bein-sports-2",
       "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/CFIfyzGe1XBhNWtR8u18K",
-      "expiresAt": "2026-11-15T22:30:00.000Z"
+      "observedLabel": "beIN SPORTS 2 HD",
+      "sourceHref": "/matches/377801/مباراة-فرنسا-تركيا-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-11-15T21:30:00.000Z",
+      "broadcastKickoffUtc": "2026-11-15T18:45:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-uefa.nations-401861175",
@@ -74,9 +78,11 @@
       "channel": "beIN Sports 1",
       "playbackChannelId": "v2-bein-sports-1",
       "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/wRubewkczXfkw-OhOE3Nb",
-      "expiresAt": "2026-11-15T22:30:00.000Z"
+      "observedLabel": "beIN SPORTS 1 HD",
+      "sourceHref": "/matches/377826/مباراة-إسبانيا-إنجلترا-في-دوري-الأمم-الأوروبية-المستوى-الأول",
+      "expiresAt": "2026-11-15T21:30:00.000Z",
+      "broadcastKickoffUtc": "2026-11-15T18:45:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-uefa.nations-401861183",
