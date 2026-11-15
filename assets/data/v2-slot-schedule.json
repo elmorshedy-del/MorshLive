@@ -1,25 +1,12 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T07:11:38.603Z",
+  "generatedAt": "2026-11-15T19:06:34.389Z",
   "capacity": 2,
   "slots": [
     "a",
     "b"
   ],
   "entries": [
-    {
-      "slot": "a",
-      "matchId": "espn-uefa.nations-401861172",
-      "streamId": "3644",
-      "channelId": "iptv-3644",
-      "startAt": "2026-11-15T13:45:00.000Z",
-      "endAt": "2026-11-15T16:00:00.000Z",
-      "score": 25,
-      "reasons": [
-        "competition:unl+25"
-      ],
-      "pinned": false
-    },
     {
       "slot": "a",
       "matchId": "espn-uefa.nations-401861175",

@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-15T07:11:38.596Z",
+  "updatedAt": "2026-11-15T19:06:34.381Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1200,44 +1200,6 @@
       "verifiedAt": "2026-11-13T14:32:13.578Z"
     },
     {
-      "matchId": "espn-uefa.nations-401861172",
-      "teams": [
-        [
-          "Cyprus"
-        ],
-        [
-          "Montenegro"
-        ]
-      ],
-      "contentKey": "match:espn-uefa.nations-401861172",
-      "kickoffUtc": "2026-11-15T14:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-12T20:26:48.654Z",
-      "expiresAt": "2026-11-15T16:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3644",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3644/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861172",
-          "status": "operator",
-          "verifiedAt": "2026-11-12T20:26:48.654Z",
-          "expiresAt": "2026-11-15T16:45:00.000Z",
-          "label": "beIN Sports 2 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 2"
-        }
-      ]
-    },
-    {
       "matchId": "espn-uefa.nations-401861176",
       "teams": [
         [
@@ -1286,10 +1248,10 @@
         ]
       ],
       "contentKey": "match:espn-uefa.nations-401861178",
-      "kickoffUtc": "2026-11-15T19:45Z",
+      "kickoffUtc": "2026-11-15T18:45:00.000Z",
       "status": "operator",
-      "verifiedAt": "2026-11-12T20:26:48.654Z",
-      "expiresAt": "2026-11-15T22:30:00.000Z",
+      "verifiedAt": "2026-11-15T19:06:34.381Z",
+      "expiresAt": "2026-11-15T21:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
         "sameContentOnly": true,
@@ -1306,10 +1268,10 @@
           "url": "https://mist-v2.korazero.com/hls/iptv-3652/index.m3u8",
           "contentKey": "match:espn-uefa.nations-401861178",
           "status": "operator",
-          "verifiedAt": "2026-11-12T20:26:48.654Z",
-          "expiresAt": "2026-11-15T22:30:00.000Z",
+          "verifiedAt": "2026-11-15T19:06:34.381Z",
+          "expiresAt": "2026-11-15T21:30:00.000Z",
           "label": "beIN Sports 4 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 4"
+          "note": "Published broadcaster binding: beIN SPORTS 4 HD"
         }
       ]
     },

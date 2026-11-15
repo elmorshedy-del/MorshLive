@@ -7139,12 +7139,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Alphamega Stadium · Kolossi · Cyprus",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-15T16:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861176",
@@ -7194,7 +7190,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-15T22:30:00.000Z"
+      "channelExpiresAt": "2026-11-15T21:30:00.000Z"
     },
     {
       "id": "espn-uefa.nations-401861177",
