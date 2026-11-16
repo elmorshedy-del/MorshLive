@@ -1,41 +1,12 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-15T19:06:34.389Z",
+  "generatedAt": "2026-11-16T07:16:25.310Z",
   "capacity": 2,
   "slots": [
     "a",
     "b"
   ],
   "entries": [
-    {
-      "slot": "a",
-      "matchId": "espn-uefa.nations-401861175",
-      "streamId": "3645",
-      "channelId": "iptv-3645",
-      "startAt": "2026-11-15T18:30:00.000Z",
-      "endAt": "2026-11-15T20:45:00.000Z",
-      "score": 55,
-      "reasons": [
-        "competition:unl+25",
-        "tier2:Spain+15",
-        "tier2:England+15"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "b",
-      "matchId": "espn-uefa.nations-401861176",
-      "streamId": "3653",
-      "channelId": "iptv-3653",
-      "startAt": "2026-11-15T18:30:00.000Z",
-      "endAt": "2026-11-15T20:45:00.000Z",
-      "score": 40,
-      "reasons": [
-        "competition:unl+25",
-        "tier2:Italy+15"
-      ],
-      "pinned": false
-    },
     {
       "slot": "a",
       "matchId": "espn-uefa.nations-401861183",
@@ -148,26 +119,6 @@
     }
   ],
   "unassigned": [
-    {
-      "matchId": "espn-uefa.nations-401861177",
-      "streamId": "3644",
-      "score": 40,
-      "reason": "outranked",
-      "by": [
-        "espn-uefa.nations-401861175",
-        "espn-uefa.nations-401861176"
-      ]
-    },
-    {
-      "matchId": "espn-uefa.nations-401861178",
-      "streamId": "3652",
-      "score": 25,
-      "reason": "outranked",
-      "by": [
-        "espn-uefa.nations-401861175",
-        "espn-uefa.nations-401861176"
-      ]
-    },
     {
       "matchId": "espn-uefa.nations-401861187",
       "streamId": "3653",

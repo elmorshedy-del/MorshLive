@@ -7160,12 +7160,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "King Baudouin Stadium · Brussels · Belgium",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-15T21:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861178",
@@ -7185,12 +7181,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Opus Arena · Osijek · Croatia",
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-15T21:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861177",
@@ -7210,12 +7202,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Stade Atlantique · Bordeaux · France",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-15T21:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861175",
@@ -7235,12 +7223,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Riyadh Air Metropolitano · Madrid · Spain",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-15T21:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-fifa.friendly-401931476",
