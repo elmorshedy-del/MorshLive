@@ -7373,12 +7373,8 @@
       "leagueSlug": "caf.nations_qual",
       "competition": "afconq",
       "venue": "Bingu National Stadium · Lilongwe · Malawi",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-17T15:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-caf.nations_qual-401927137",
@@ -7398,12 +7394,8 @@
       "leagueSlug": "caf.nations_qual",
       "competition": "afconq",
       "venue": "11 June Stadium · Tripoli · Libya",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-17T18:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-caf.nations_qual-401927136",
@@ -7423,12 +7415,8 @@
       "leagueSlug": "caf.nations_qual",
       "competition": "afconq",
       "venue": "Stade de Kégué · Stade de Kégué · Togo",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-17T18:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861194",

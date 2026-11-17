@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-16T22:30:26.567Z",
+  "updatedAt": "2026-11-17T21:19:56.292Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1200,346 +1200,165 @@
       "verifiedAt": "2026-11-13T14:32:13.578Z"
     },
     {
-      "matchId": "espn-caf.nations_qual-401927179",
+      "matchId": "espn-eng.1-401879233",
       "teams": [
         [
-          "Malawi"
+          "Manchester City"
         ],
         [
-          "Egypt"
+          "Fulham"
         ]
       ],
-      "contentKey": "match:espn-caf.nations_qual-401927179",
-      "kickoffUtc": "2026-11-17T13:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-14T22:44:40.727Z",
-      "expiresAt": "2026-11-17T15:30:00.000Z",
+      "contentKey": "match:espn-eng.1-401879233",
+      "kickoffUtc": "2026-11-21T12:30Z",
+      "expiresAt": "2026-11-21T15:15:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": [
-        {
-          "id": "v2-bein-3645",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-caf.nations_qual-401927179",
-          "status": "operator",
-          "verifiedAt": "2026-11-14T22:44:40.727Z",
-          "expiresAt": "2026-11-17T15:30:00.000Z",
-          "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1"
-        }
-      ]
+      "sources": []
     },
     {
-      "matchId": "espn-caf.nations_qual-401927137",
+      "matchId": "espn-eng.1-401879238",
       "teams": [
         [
-          "Libya"
+          "AFC Bournemouth"
         ],
         [
-          "Tunisia"
+          "Nottingham Forest"
         ]
       ],
-      "contentKey": "match:espn-caf.nations_qual-401927137",
-      "kickoffUtc": "2026-11-17T16:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-14T22:44:40.727Z",
-      "expiresAt": "2026-11-17T18:45:00.000Z",
+      "contentKey": "match:espn-eng.1-401879238",
+      "kickoffUtc": "2026-11-21T15:00Z",
+      "expiresAt": "2026-11-21T17:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": [
-        {
-          "id": "v2-bein-3645",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-caf.nations_qual-401927137",
-          "status": "operator",
-          "verifiedAt": "2026-11-14T22:44:40.727Z",
-          "expiresAt": "2026-11-17T18:45:00.000Z",
-          "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1"
-        }
-      ]
+      "sources": []
     },
     {
-      "matchId": "espn-caf.nations_qual-401927136",
+      "matchId": "espn-eng.1-401878756",
       "teams": [
         [
-          "Togo"
+          "Aston Villa"
         ],
         [
-          "Algeria"
+          "Sunderland"
         ]
       ],
-      "contentKey": "match:espn-caf.nations_qual-401927136",
-      "kickoffUtc": "2026-11-17T16:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-14T22:44:40.727Z",
-      "expiresAt": "2026-11-17T18:45:00.000Z",
+      "contentKey": "match:espn-eng.1-401878756",
+      "kickoffUtc": "2026-11-21T15:00Z",
+      "expiresAt": "2026-11-21T17:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": [
-        {
-          "id": "v2-bein-3644",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3644/index.m3u8",
-          "contentKey": "match:espn-caf.nations_qual-401927136",
-          "status": "operator",
-          "verifiedAt": "2026-11-14T22:44:40.727Z",
-          "expiresAt": "2026-11-17T18:45:00.000Z",
-          "label": "beIN Sports 2 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 2"
-        }
-      ]
+      "sources": []
     },
     {
-      "matchId": "espn-uefa.nations-401861194",
+      "matchId": "espn-eng.1-401879236",
       "teams": [
         [
-          "Denmark"
+          "Chelsea"
         ],
         [
-          "Norway"
+          "Leeds United"
         ]
       ],
-      "contentKey": "match:espn-uefa.nations-401861194",
-      "kickoffUtc": "2026-11-17T19:45Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-14T22:44:40.727Z",
-      "expiresAt": "2026-11-17T22:30:00.000Z",
+      "contentKey": "match:espn-eng.1-401879236",
+      "kickoffUtc": "2026-11-21T15:00Z",
+      "expiresAt": "2026-11-21T17:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": [
-        {
-          "id": "v2-bein-3653",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3653/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861194",
-          "status": "operator",
-          "verifiedAt": "2026-11-14T22:44:40.727Z",
-          "expiresAt": "2026-11-17T22:30:00.000Z",
-          "label": "beIN Sports 3 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 3"
-        }
-      ]
+      "sources": []
     },
     {
-      "matchId": "espn-uefa.nations-401861191",
+      "matchId": "espn-eng.1-401879235",
       "teams": [
         [
-          "Hungary"
+          "Coventry City"
         ],
         [
-          "Northern Ireland"
+          "Crystal Palace"
         ]
       ],
-      "contentKey": "match:espn-uefa.nations-401861191",
-      "kickoffUtc": "2026-11-17T19:45Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-14T22:44:40.727Z",
-      "expiresAt": "2026-11-17T22:30:00.000Z",
+      "contentKey": "match:espn-eng.1-401879235",
+      "kickoffUtc": "2026-11-21T15:00Z",
+      "expiresAt": "2026-11-21T17:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": [
-        {
-          "id": "v2-bein-3650",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3650/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861191",
-          "status": "operator",
-          "verifiedAt": "2026-11-14T22:44:40.727Z",
-          "expiresAt": "2026-11-17T22:30:00.000Z",
-          "label": "beIN Sports 6 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 6"
-        }
-      ]
+      "sources": []
     },
     {
-      "matchId": "espn-uefa.nations-401861195",
+      "matchId": "espn-eng.1-401878754",
       "teams": [
         [
-          "Poland"
+          "Tottenham Hotspur"
         ],
         [
-          "Sweden"
+          "Ipswich Town"
         ]
       ],
-      "contentKey": "match:espn-uefa.nations-401861195",
-      "kickoffUtc": "2026-11-17T19:45Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-14T22:44:40.727Z",
-      "expiresAt": "2026-11-17T22:30:00.000Z",
+      "contentKey": "match:espn-eng.1-401878754",
+      "kickoffUtc": "2026-11-21T15:00Z",
+      "expiresAt": "2026-11-21T17:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": [
-        {
-          "id": "v2-bein-3647",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3647/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861195",
-          "status": "operator",
-          "verifiedAt": "2026-11-14T22:44:40.727Z",
-          "expiresAt": "2026-11-17T22:30:00.000Z",
-          "label": "beIN Sports 9 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 9"
-        }
-      ]
+      "sources": []
     },
     {
-      "matchId": "espn-uefa.nations-401861192",
+      "matchId": "espn-eng.1-401879232",
       "teams": [
         [
-          "Republic of Ireland"
+          "Newcastle United"
         ],
         [
-          "Kosovo"
+          "Arsenal"
         ]
       ],
-      "contentKey": "match:espn-uefa.nations-401861192",
-      "kickoffUtc": "2026-11-17T19:45Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-14T22:44:40.727Z",
-      "expiresAt": "2026-11-17T22:30:00.000Z",
+      "contentKey": "match:espn-eng.1-401879232",
+      "kickoffUtc": "2026-11-21T17:30Z",
+      "expiresAt": "2026-11-21T20:15:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": [
-        {
-          "id": "v2-bein-115383",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-115383/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861192",
-          "status": "operator",
-          "verifiedAt": "2026-11-14T22:44:40.727Z",
-          "expiresAt": "2026-11-17T22:30:00.000Z",
-          "label": "beIN Sports Xtra 3 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS XTRA 3"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-uefa.nations-401861189",
-      "teams": [
-        [
-          "Wales"
-        ],
-        [
-          "Portugal"
-        ]
-      ],
-      "contentKey": "match:espn-uefa.nations-401861189",
-      "kickoffUtc": "2026-11-17T19:45Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-14T22:44:40.727Z",
-      "expiresAt": "2026-11-17T22:30:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3644",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3644/index.m3u8",
-          "contentKey": "match:espn-uefa.nations-401861189",
-          "status": "operator",
-          "verifiedAt": "2026-11-14T22:44:40.727Z",
-          "expiresAt": "2026-11-17T22:30:00.000Z",
-          "label": "beIN Sports 2 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 2"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-caf.nations_qual-401927180",
-      "teams": [
-        [
-          "Niger"
-        ],
-        [
-          "Morocco"
-        ]
-      ],
-      "contentKey": "match:espn-caf.nations_qual-401927180",
-      "kickoffUtc": "2026-11-17T20:00Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-14T22:44:40.727Z",
-      "expiresAt": "2026-11-17T22:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3645",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-caf.nations_qual-401927180",
-          "status": "operator",
-          "verifiedAt": "2026-11-14T22:44:40.727Z",
-          "expiresAt": "2026-11-17T22:45:00.000Z",
-          "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1"
-        }
-      ]
+      "sources": []
     },
     {
       "matchId": "espn-esp.1-401882805",
@@ -1554,6 +1373,121 @@
       "contentKey": "match:espn-esp.1-401882805",
       "kickoffUtc": "2026-11-20T20:00Z",
       "expiresAt": "2026-11-20T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-esp.1-401882806",
+      "teams": [
+        [
+          "Alavés"
+        ],
+        [
+          "Deportivo"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882806",
+      "kickoffUtc": "2026-11-21T13:00Z",
+      "expiresAt": "2026-11-21T15:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-esp.1-401882799",
+      "teams": [
+        [
+          "Rayo Vallecano"
+        ],
+        [
+          "Valencia"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882799",
+      "kickoffUtc": "2026-11-21T15:15Z",
+      "expiresAt": "2026-11-21T18:00:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-esp.1-401882797",
+      "teams": [
+        [
+          "Sevilla"
+        ],
+        [
+          "Real Betis"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882797",
+      "kickoffUtc": "2026-11-21T17:30Z",
+      "expiresAt": "2026-11-21T20:15:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-esp.1-401882798",
+      "teams": [
+        [
+          "Real Madrid"
+        ],
+        [
+          "Celta Vigo"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882798",
+      "kickoffUtc": "2026-11-21T20:00Z",
+      "expiresAt": "2026-11-21T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-fra.1-401876398",
+      "teams": [
+        [
+          "Nice"
+        ],
+        [
+          "Paris Saint-Germain"
+        ]
+      ],
+      "contentKey": "match:espn-fra.1-401876398",
+      "kickoffUtc": "2026-11-21T16:15Z",
+      "expiresAt": "2026-11-21T19:00:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
