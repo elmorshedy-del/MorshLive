@@ -1,11 +1,25 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-17T21:19:56.302Z",
+  "generatedAt": "2026-11-18T07:56:10.926Z",
   "capacity": 2,
   "slots": [
     "a",
     "b"
   ],
-  "entries": [],
+  "entries": [
+    {
+      "slot": "a",
+      "matchId": "espn-esp.1-401882805",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-11-20T19:45:00.000Z",
+      "endAt": "2026-11-20T22:00:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:laliga+40"
+      ],
+      "pinned": false
+    }
+  ],
   "unassigned": []
 }

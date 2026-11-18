@@ -1,11 +1,26 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-17T21:19:56.292Z",
+  "generatedAt": "2026-11-18T07:56:10.916Z",
   "window": {
     "start": "2026-11-18",
     "end": "2026-11-21"
   },
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
-  "bindings": []
+  "bindings": [
+    {
+      "matchId": "espn-esp.1-401882805",
+      "home": "Athletic Club",
+      "away": "Espanyol",
+      "kickoffUtc": "2026-11-20T20:00Z",
+      "competition": "laliga",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/TL02gGLMu0s3ytt5pxa5M",
+      "expiresAt": "2026-11-20T22:45:00.000Z"
+    }
+  ]
 }

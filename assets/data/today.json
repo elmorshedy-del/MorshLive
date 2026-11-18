@@ -7436,12 +7436,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Parken Stadium · Copenhagen · Denmark",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-17T22:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861191",
@@ -7461,12 +7457,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Puskás Aréna · Budapest · Hungary",
-      "channel": "beIN Sports 6",
-      "channelId": "bein-sports-6",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-17T22:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861195",
@@ -7486,12 +7478,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Municipal Stadium Wroclaw · Wroclaw · Poland",
-      "channel": "beIN Sports 9",
-      "channelId": "bein-sports-9",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-17T22:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861192",
@@ -7511,12 +7499,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Aviva Stadium · Dublin",
-      "channel": "beIN Sports Xtra 3",
-      "channelId": "bein-xtra-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-17T22:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.nations-401861189",
@@ -7536,12 +7520,8 @@
       "leagueSlug": "uefa.nations",
       "competition": "unl",
       "venue": "Cardiff City Stadium · Cardiff · Wales",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-17T22:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-caf.nations_qual-401927180",
@@ -7561,12 +7541,33 @@
       "leagueSlug": "caf.nations_qual",
       "competition": "afconq",
       "venue": "Stade Prince Moulay Abdallah · Rabat · Morocco",
+      "commentator": null,
+      "source": "espn"
+    },
+    {
+      "id": "espn-esp.1-401882805",
+      "status": "upcoming",
+      "minute": "",
+      "home": "Athletic Club",
+      "away": "Espanyol",
+      "homeAbbr": "ATH",
+      "awayAbbr": "ESP",
+      "homeBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/93.png",
+      "awayBadge": "https://a.espncdn.com/i/teamlogos/soccer/500/88.png",
+      "score": "VS",
+      "time": "20:00",
+      "kickoffUtc": "2026-11-20T20:00Z",
+      "league": "Spanish LALIGA",
+      "leagueAr": "الدوري الإسباني",
+      "leagueSlug": "esp.1",
+      "competition": "laliga",
+      "venue": "San Mamés · Bilbao · Spain",
       "channel": "beIN Sports 1",
       "channelId": "bein-sports-1",
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-17T22:45:00.000Z"
+      "channelExpiresAt": "2026-11-20T22:45:00.000Z"
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
