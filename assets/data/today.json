@@ -992,12 +992,12 @@
       "home": "Al Ahli",
       "away": "Al Nassr",
       "commentators": [],
-      "channel": "ثمانية",
+      "channel": "ثمانية 1",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah",
-        "source": "spl-rights-holder",
-        "confidence": "network"
+        "channelId": "thmanyah-1",
+        "source": "livefootballtv",
+        "confidence": "exact"
       },
       "locked": false
     },
@@ -7955,7 +7955,7 @@
     }
   ],
   "broadcastSource": "espn-ksa.1 + livefootballtv + thmanyah-rights",
-  "broadcastUpdatedAt": "2026-11-20T02:17:35.222Z",
+  "broadcastUpdatedAt": "2026-11-20T20:11:01.082Z",
   "broadcastIndex": [
     {
       "id": "espn-ksa.1-401900905",
@@ -7964,12 +7964,12 @@
       "away": "Al Nassr",
       "kickoffUtc": "2026-11-20T17:30Z",
       "leagueSlug": "ksa.1",
-      "channel": "ثمانية",
+      "channel": "ثمانية 1",
       "broadcast": {
         "provider": "thmanyah",
-        "channelId": "thmanyah",
-        "source": "spl-rights-holder",
-        "confidence": "network"
+        "channelId": "thmanyah-1",
+        "source": "livefootballtv",
+        "confidence": "exact"
       },
       "commentators": []
     },
