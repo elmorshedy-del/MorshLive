@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-19T07:56:07.864Z",
+  "updatedAt": "2026-11-20T07:45:16.808Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1740,6 +1740,29 @@
       "sources": []
     },
     {
+      "matchId": "espn-eng.1-401879237",
+      "teams": [
+        [
+          "Brentford"
+        ],
+        [
+          "Everton"
+        ]
+      ],
+      "contentKey": "match:espn-eng.1-401879237",
+      "kickoffUtc": "2026-11-23T20:00Z",
+      "expiresAt": "2026-11-23T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
       "matchId": "espn-esp.1-401882804",
       "teams": [
         [
@@ -1821,6 +1844,29 @@
       "contentKey": "match:espn-esp.1-401882803",
       "kickoffUtc": "2026-11-22T20:00Z",
       "expiresAt": "2026-11-22T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-esp.1-401882802",
+      "teams": [
+        [
+          "Levante"
+        ],
+        [
+          "Elche"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882802",
+      "kickoffUtc": "2026-11-23T20:00Z",
+      "expiresAt": "2026-11-23T22:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
