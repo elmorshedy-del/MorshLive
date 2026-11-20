@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-19T07:56:07.870Z",
+  "generatedAt": "2026-11-20T20:43:18.778Z",
   "capacity": 2,
   "slots": [
     "a",
@@ -22,25 +22,11 @@
     },
     {
       "slot": "a",
-      "matchId": "espn-eng.1-401879233",
-      "streamId": "3645",
-      "channelId": "iptv-3645",
-      "startAt": "2026-11-21T12:15:00.000Z",
-      "endAt": "2026-11-21T14:30:00.000Z",
-      "score": 70,
-      "reasons": [
-        "competition:epl+40",
-        "tier1:Manchester City+30"
-      ],
-      "pinned": false
-    },
-    {
-      "slot": "a",
       "matchId": "espn-eng.1-401879236",
       "streamId": "3645",
       "channelId": "iptv-3645",
-      "startAt": "2026-11-21T14:45:00.000Z",
-      "endAt": "2026-11-21T17:00:00.000Z",
+      "startAt": "2026-11-21T13:45:00.000Z",
+      "endAt": "2026-11-21T16:00:00.000Z",
       "score": 70,
       "reasons": [
         "competition:epl+40",
@@ -50,15 +36,15 @@
     },
     {
       "slot": "b",
-      "matchId": "espn-eng.1-401878754",
-      "streamId": "3653",
-      "channelId": "iptv-3653",
-      "startAt": "2026-11-21T14:45:00.000Z",
-      "endAt": "2026-11-21T17:00:00.000Z",
+      "matchId": "espn-eng.1-401878756",
+      "streamId": "3652",
+      "channelId": "iptv-3652",
+      "startAt": "2026-11-21T13:45:00.000Z",
+      "endAt": "2026-11-21T16:00:00.000Z",
       "score": 55,
       "reasons": [
         "competition:epl+40",
-        "tier2:Tottenham Hotspur+15"
+        "tier2:Aston Villa+15"
       ],
       "pinned": false
     },
@@ -67,8 +53,8 @@
       "matchId": "espn-eng.1-401879232",
       "streamId": "3645",
       "channelId": "iptv-3645",
-      "startAt": "2026-11-21T17:15:00.000Z",
-      "endAt": "2026-11-21T19:30:00.000Z",
+      "startAt": "2026-11-21T16:15:00.000Z",
+      "endAt": "2026-11-21T18:30:00.000Z",
       "score": 85,
       "reasons": [
         "competition:epl+40",
@@ -82,8 +68,8 @@
       "matchId": "espn-esp.1-401882797",
       "streamId": "3653",
       "channelId": "iptv-3653",
-      "startAt": "2026-11-21T17:15:00.000Z",
-      "endAt": "2026-11-21T19:30:00.000Z",
+      "startAt": "2026-11-21T16:15:00.000Z",
+      "endAt": "2026-11-21T18:30:00.000Z",
       "score": 80,
       "reasons": [
         "competition:laliga+40",
@@ -96,12 +82,109 @@
       "matchId": "espn-esp.1-401882798",
       "streamId": "3645",
       "channelId": "iptv-3645",
-      "startAt": "2026-11-21T19:45:00.000Z",
-      "endAt": "2026-11-21T22:00:00.000Z",
+      "startAt": "2026-11-21T18:45:00.000Z",
+      "endAt": "2026-11-21T21:00:00.000Z",
       "score": 70,
       "reasons": [
         "competition:laliga+40",
         "tier1:Real Madrid+30"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-esp.1-401882804",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-11-22T11:45:00.000Z",
+      "endAt": "2026-11-22T14:00:00.000Z",
+      "score": 70,
+      "reasons": [
+        "competition:laliga+40",
+        "tier1:Barcelona+30"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-eng.1-401879234",
+      "streamId": "3651",
+      "channelId": "iptv-3651",
+      "startAt": "2026-11-22T12:45:00.000Z",
+      "endAt": "2026-11-22T15:00:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:epl+40"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-eng.1-401878755",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-11-22T15:15:00.000Z",
+      "endAt": "2026-11-22T17:30:00.000Z",
+      "score": 160,
+      "reasons": [
+        "competition:epl+40",
+        "tier1:Liverpool+30",
+        "tier1:Manchester United+30",
+        "rivalry+40",
+        "big-game+20"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-esp.1-401882801",
+      "streamId": "3644",
+      "channelId": "iptv-3644",
+      "startAt": "2026-11-22T16:15:00.000Z",
+      "endAt": "2026-11-22T18:30:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:laliga+40"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-esp.1-401882803",
+      "streamId": "3645",
+      "channelId": "iptv-3645",
+      "startAt": "2026-11-22T18:45:00.000Z",
+      "endAt": "2026-11-22T21:00:00.000Z",
+      "score": 55,
+      "reasons": [
+        "competition:laliga+40",
+        "tier2:Atlético Madrid+15"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "a",
+      "matchId": "espn-eng.1-401879237",
+      "streamId": "3644",
+      "channelId": "iptv-3644",
+      "startAt": "2026-11-23T18:45:00.000Z",
+      "endAt": "2026-11-23T21:00:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:epl+40"
+      ],
+      "pinned": false
+    },
+    {
+      "slot": "b",
+      "matchId": "espn-esp.1-401882802",
+      "streamId": "3652",
+      "channelId": "iptv-3652",
+      "startAt": "2026-11-23T18:45:00.000Z",
+      "endAt": "2026-11-23T21:00:00.000Z",
+      "score": 40,
+      "reasons": [
+        "competition:laliga+40"
       ],
       "pinned": false
     }
@@ -113,38 +196,7 @@
       "score": 40,
       "reason": "outranked",
       "by": [
-        "espn-eng.1-401878754",
-        "espn-eng.1-401879233",
-        "espn-eng.1-401879236"
-      ]
-    },
-    {
-      "matchId": "espn-eng.1-401878756",
-      "streamId": "3652",
-      "score": 55,
-      "reason": "outranked",
-      "by": [
-        "espn-eng.1-401878754",
-        "espn-eng.1-401879236"
-      ]
-    },
-    {
-      "matchId": "espn-eng.1-401879235",
-      "streamId": "3650",
-      "score": 40,
-      "reason": "outranked",
-      "by": [
-        "espn-eng.1-401878754",
-        "espn-eng.1-401879236"
-      ]
-    },
-    {
-      "matchId": "espn-eng.1-401879238",
-      "streamId": "3651",
-      "score": 40,
-      "reason": "outranked",
-      "by": [
-        "espn-eng.1-401878754",
+        "espn-eng.1-401878756",
         "espn-eng.1-401879236"
       ]
     },
@@ -154,8 +206,32 @@
       "score": 40,
       "reason": "outranked",
       "by": [
-        "espn-eng.1-401878754",
+        "espn-eng.1-401878756",
         "espn-eng.1-401879236"
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879235",
+      "streamId": "3650",
+      "score": 40,
+      "reason": "outranked",
+      "by": [
+        "espn-eng.1-401878756",
+        "espn-eng.1-401879232",
+        "espn-eng.1-401879236",
+        "espn-esp.1-401882797"
+      ]
+    },
+    {
+      "matchId": "espn-eng.1-401879238",
+      "streamId": "3651",
+      "score": 40,
+      "reason": "outranked",
+      "by": [
+        "espn-eng.1-401878756",
+        "espn-eng.1-401879232",
+        "espn-eng.1-401879236",
+        "espn-esp.1-401882797"
       ]
     },
     {
@@ -164,10 +240,20 @@
       "score": 50,
       "reason": "outranked",
       "by": [
-        "espn-eng.1-401878754",
+        "espn-eng.1-401878756",
         "espn-eng.1-401879232",
         "espn-eng.1-401879236",
         "espn-esp.1-401882797"
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882800",
+      "streamId": "3644",
+      "score": 40,
+      "reason": "outranked",
+      "by": [
+        "espn-eng.1-401878755",
+        "espn-eng.1-401879234"
       ]
     }
   ]
