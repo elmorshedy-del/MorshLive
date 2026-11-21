@@ -1,29 +1,13 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-20T20:43:18.764Z",
+  "generatedAt": "2026-11-21T07:41:56.551Z",
   "window": {
-    "start": "2026-11-20",
-    "end": "2026-11-23"
+    "start": "2026-11-21",
+    "end": "2026-11-24"
   },
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
   "bindings": [
-    {
-      "matchId": "espn-esp.1-401882805",
-      "home": "Athletic Club",
-      "away": "Espanyol",
-      "kickoffUtc": "2026-11-20T20:00Z",
-      "competition": "laliga",
-      "broadcastChannelId": "bein-sports-1",
-      "channel": "beIN Sports 1",
-      "playbackChannelId": "v2-bein-sports-1",
-      "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1 HD",
-      "sourceHref": "/matches/375501/مباراة-أتليتك-بلباو-إسبانيول-في-الدوري-الإسباني",
-      "expiresAt": "2026-11-20T21:45:00.000Z",
-      "broadcastKickoffUtc": "2026-11-20T19:00:00.000Z",
-      "kickoffDifferenceMinutes": -60
-    },
     {
       "matchId": "espn-esp.1-401882806",
       "home": "Alavés",
