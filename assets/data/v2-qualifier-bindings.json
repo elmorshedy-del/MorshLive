@@ -1,29 +1,13 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-21T19:47:26.163Z",
+  "generatedAt": "2026-11-22T07:27:06.461Z",
   "window": {
-    "start": "2026-11-21",
-    "end": "2026-11-24"
+    "start": "2026-11-22",
+    "end": "2026-11-25"
   },
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
   "bindings": [
-    {
-      "matchId": "espn-esp.1-401882798",
-      "home": "Real Madrid",
-      "away": "Celta Vigo",
-      "kickoffUtc": "2026-11-21T20:00Z",
-      "competition": "laliga",
-      "broadcastChannelId": "bein-sports-1",
-      "channel": "beIN Sports 1",
-      "playbackChannelId": "v2-bein-sports-1",
-      "streamId": "3645",
-      "observedLabel": "beIN SPORTS 1 HD",
-      "sourceHref": "/matches/375508/مباراة-ريال-مدريد-سيلتا-فيجو-في-الدوري-الإسباني",
-      "expiresAt": "2026-11-21T21:45:00.000Z",
-      "broadcastKickoffUtc": "2026-11-21T19:00:00.000Z",
-      "kickoffDifferenceMinutes": -60
-    },
     {
       "matchId": "espn-esp.1-401882804",
       "home": "Barcelona",
@@ -151,6 +135,118 @@
       "expiresAt": "2026-11-23T21:45:00.000Z",
       "broadcastKickoffUtc": "2026-11-23T19:00:00.000Z",
       "kickoffDifferenceMinutes": -60
+    },
+    {
+      "matchId": "espn-uefa.champions-401915300",
+      "home": "Galatasaray",
+      "away": "Aston Villa",
+      "kickoffUtc": "2026-11-24T17:45Z",
+      "competition": "ucl",
+      "broadcastChannelId": "bein-sports-3",
+      "channel": "beIN Sports 3",
+      "playbackChannelId": "v2-bein-sports-3",
+      "streamId": "3653",
+      "observedLabel": "beIN SPORTS 3",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/nIsxGI5uk0Nim1bHL7WWX",
+      "expiresAt": "2026-11-24T19:30:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.champions-401915295",
+      "home": "Arsenal",
+      "away": "Borussia Dortmund",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "competition": "ucl",
+      "broadcastChannelId": "bein-sports-4",
+      "channel": "beIN Sports 4",
+      "playbackChannelId": "v2-bein-sports-4",
+      "streamId": "3652",
+      "observedLabel": "beIN SPORTS 4",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/K0omc99kdHySytuxxvurA",
+      "expiresAt": "2026-11-24T22:45:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.champions-401915296",
+      "home": "Como",
+      "away": "AEK Athens",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "competition": "ucl",
+      "broadcastChannelId": "bein-sports-5",
+      "channel": "beIN Sports 5",
+      "playbackChannelId": "v2-bein-sports-5",
+      "streamId": "3651",
+      "observedLabel": "beIN SPORTS 5",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/NbBm24WlUXwDwzVFOv6cC",
+      "expiresAt": "2026-11-24T22:45:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.champions-401915294",
+      "home": "Feyenoord Rotterdam",
+      "away": "FC Porto",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "competition": "ucl",
+      "broadcastChannelId": "bein-sports-6",
+      "channel": "beIN Sports 6",
+      "playbackChannelId": "v2-bein-sports-6",
+      "streamId": "3650",
+      "observedLabel": "beIN SPORTS 6",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/7msxRX_bCJWL94dC4ijUm",
+      "expiresAt": "2026-11-24T22:45:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.champions-401915379",
+      "home": "Manchester City",
+      "away": "Napoli",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "competition": "ucl",
+      "broadcastChannelId": "bein-sports-3",
+      "channel": "beIN Sports 3",
+      "playbackChannelId": "v2-bein-sports-3",
+      "streamId": "3653",
+      "observedLabel": "beIN SPORTS 3",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/CUI-i9q9QpDJPQwcAH2ZQ",
+      "expiresAt": "2026-11-24T22:45:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.champions-401915299",
+      "home": "RB Leipzig",
+      "away": "Lens",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "competition": "ucl",
+      "broadcastChannelId": "bein-sports-8",
+      "channel": "beIN Sports 8",
+      "playbackChannelId": "v2-bein-sports-8",
+      "streamId": "3648",
+      "observedLabel": "beIN SPORTS 8",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/eEgtAC9cUrFnWulDwkIoc",
+      "expiresAt": "2026-11-24T22:45:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.champions-401915298",
+      "home": "Real Madrid",
+      "away": "PSV Eindhoven",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "competition": "ucl",
+      "broadcastChannelId": "bein-sports-1",
+      "channel": "beIN Sports 1",
+      "playbackChannelId": "v2-bein-sports-1",
+      "streamId": "3645",
+      "observedLabel": "beIN SPORTS 1",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/e-OPkws5C9iuegsp0B_TO",
+      "expiresAt": "2026-11-24T22:45:00.000Z"
+    },
+    {
+      "matchId": "espn-uefa.champions-401915297",
+      "home": "Slovan Bratislava",
+      "away": "Real Betis",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "competition": "ucl",
+      "broadcastChannelId": "bein-sports-9",
+      "channel": "beIN Sports 9",
+      "playbackChannelId": "v2-bein-sports-9",
+      "streamId": "3647",
+      "observedLabel": "beIN SPORTS 9",
+      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/YWKYZFkghplVO3VyXTb2N",
+      "expiresAt": "2026-11-24T22:45:00.000Z"
     }
   ]
 }

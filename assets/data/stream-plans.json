@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-21T19:47:26.163Z",
+  "updatedAt": "2026-11-22T07:27:06.461Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1200,44 +1200,6 @@
       "verifiedAt": "2026-11-13T14:32:13.578Z"
     },
     {
-      "matchId": "espn-esp.1-401882798",
-      "teams": [
-        [
-          "Real Madrid"
-        ],
-        [
-          "Celta Vigo"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882798",
-      "kickoffUtc": "2026-11-21T19:00:00.000Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-20T20:43:18.764Z",
-      "expiresAt": "2026-11-21T21:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3645",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-esp.1-401882798",
-          "status": "operator",
-          "verifiedAt": "2026-11-20T20:43:18.764Z",
-          "expiresAt": "2026-11-21T21:45:00.000Z",
-          "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1 HD"
-        }
-      ]
-    },
-    {
       "matchId": "espn-esp.1-401882804",
       "teams": [
         [
@@ -1542,50 +1504,308 @@
       ]
     },
     {
-      "matchId": "espn-eng.1-401879232",
+      "matchId": "espn-uefa.champions-401915300",
       "teams": [
         [
-          "Newcastle United"
+          "Galatasaray"
         ],
         [
-          "Arsenal"
+          "Aston Villa"
         ]
       ],
-      "contentKey": "match:espn-eng.1-401879232",
-      "kickoffUtc": "2026-11-21T17:30Z",
-      "expiresAt": "2026-11-21T20:15:00.000Z",
+      "contentKey": "match:espn-uefa.champions-401915300",
+      "kickoffUtc": "2026-11-24T17:45Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-22T07:27:06.461Z",
+      "expiresAt": "2026-11-24T19:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": []
+      "sources": [
+        {
+          "id": "v2-bein-3653",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3653/index.m3u8",
+          "contentKey": "match:espn-uefa.champions-401915300",
+          "status": "operator",
+          "verifiedAt": "2026-11-22T07:27:06.461Z",
+          "expiresAt": "2026-11-24T19:30:00.000Z",
+          "label": "beIN Sports 3 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 3"
+        }
+      ]
     },
     {
-      "matchId": "espn-esp.1-401882797",
+      "matchId": "espn-uefa.champions-401915295",
       "teams": [
         [
-          "Sevilla"
+          "Arsenal"
+        ],
+        [
+          "Borussia Dortmund"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915295",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-22T07:27:06.461Z",
+      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3652",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3652/index.m3u8",
+          "contentKey": "match:espn-uefa.champions-401915295",
+          "status": "operator",
+          "verifiedAt": "2026-11-22T07:27:06.461Z",
+          "expiresAt": "2026-11-24T22:45:00.000Z",
+          "label": "beIN Sports 4 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 4"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-uefa.champions-401915296",
+      "teams": [
+        [
+          "Como"
+        ],
+        [
+          "AEK Athens"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915296",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-22T07:27:06.461Z",
+      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3651",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3651/index.m3u8",
+          "contentKey": "match:espn-uefa.champions-401915296",
+          "status": "operator",
+          "verifiedAt": "2026-11-22T07:27:06.461Z",
+          "expiresAt": "2026-11-24T22:45:00.000Z",
+          "label": "beIN Sports 5 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 5"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-uefa.champions-401915294",
+      "teams": [
+        [
+          "Feyenoord Rotterdam"
+        ],
+        [
+          "FC Porto"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915294",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-22T07:27:06.461Z",
+      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3650",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3650/index.m3u8",
+          "contentKey": "match:espn-uefa.champions-401915294",
+          "status": "operator",
+          "verifiedAt": "2026-11-22T07:27:06.461Z",
+          "expiresAt": "2026-11-24T22:45:00.000Z",
+          "label": "beIN Sports 6 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 6"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-uefa.champions-401915379",
+      "teams": [
+        [
+          "Manchester City"
+        ],
+        [
+          "Napoli"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915379",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-22T07:27:06.461Z",
+      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3653",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3653/index.m3u8",
+          "contentKey": "match:espn-uefa.champions-401915379",
+          "status": "operator",
+          "verifiedAt": "2026-11-22T07:27:06.461Z",
+          "expiresAt": "2026-11-24T22:45:00.000Z",
+          "label": "beIN Sports 3 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 3"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-uefa.champions-401915299",
+      "teams": [
+        [
+          "RB Leipzig"
+        ],
+        [
+          "Lens"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915299",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-22T07:27:06.461Z",
+      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3648",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3648/index.m3u8",
+          "contentKey": "match:espn-uefa.champions-401915299",
+          "status": "operator",
+          "verifiedAt": "2026-11-22T07:27:06.461Z",
+          "expiresAt": "2026-11-24T22:45:00.000Z",
+          "label": "beIN Sports 8 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 8"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-uefa.champions-401915298",
+      "teams": [
+        [
+          "Real Madrid"
+        ],
+        [
+          "PSV Eindhoven"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915298",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-22T07:27:06.461Z",
+      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3645",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
+          "contentKey": "match:espn-uefa.champions-401915298",
+          "status": "operator",
+          "verifiedAt": "2026-11-22T07:27:06.461Z",
+          "expiresAt": "2026-11-24T22:45:00.000Z",
+          "label": "beIN Sports 1 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 1"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-uefa.champions-401915297",
+      "teams": [
+        [
+          "Slovan Bratislava"
         ],
         [
           "Real Betis"
         ]
       ],
-      "contentKey": "match:espn-esp.1-401882797",
-      "kickoffUtc": "2026-11-21T17:30Z",
-      "expiresAt": "2026-11-21T20:15:00.000Z",
+      "contentKey": "match:espn-uefa.champions-401915297",
+      "kickoffUtc": "2026-11-24T20:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-22T07:27:06.461Z",
+      "expiresAt": "2026-11-24T22:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": []
+      "sources": [
+        {
+          "id": "v2-bein-3647",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3647/index.m3u8",
+          "contentKey": "match:espn-uefa.champions-401915297",
+          "status": "operator",
+          "verifiedAt": "2026-11-22T07:27:06.461Z",
+          "expiresAt": "2026-11-24T22:45:00.000Z",
+          "label": "beIN Sports 9 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 9"
+        }
+      ]
     },
     {
       "matchId": "espn-uefa.champions-401915380",
@@ -1611,18 +1831,18 @@
       "sources": []
     },
     {
-      "matchId": "espn-uefa.champions-401915300",
+      "matchId": "espn-uefa.champions-401915378",
       "teams": [
         [
-          "Galatasaray"
+          "Sabah FK"
         ],
         [
-          "Aston Villa"
+          "Barcelona"
         ]
       ],
-      "contentKey": "match:espn-uefa.champions-401915300",
-      "kickoffUtc": "2026-11-24T17:45Z",
-      "expiresAt": "2026-11-24T20:30:00.000Z",
+      "contentKey": "match:espn-uefa.champions-401915378",
+      "kickoffUtc": "2026-11-25T17:45Z",
+      "expiresAt": "2026-11-25T20:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
@@ -1634,18 +1854,18 @@
       "sources": []
     },
     {
-      "matchId": "espn-uefa.champions-401915295",
+      "matchId": "espn-uefa.champions-401915293",
       "teams": [
         [
-          "Arsenal"
+          "Slavia Prague"
         ],
         [
-          "Borussia Dortmund"
+          "Villarreal"
         ]
       ],
-      "contentKey": "match:espn-uefa.champions-401915295",
-      "kickoffUtc": "2026-11-24T20:00Z",
-      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "contentKey": "match:espn-uefa.champions-401915293",
+      "kickoffUtc": "2026-11-25T17:45Z",
+      "expiresAt": "2026-11-25T20:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
@@ -1657,18 +1877,18 @@
       "sources": []
     },
     {
-      "matchId": "espn-uefa.champions-401915296",
+      "matchId": "espn-uefa.champions-401915291",
       "teams": [
         [
-          "Como"
+          "Atlético Madrid"
         ],
         [
-          "AEK Athens"
+          "Viking FK"
         ]
       ],
-      "contentKey": "match:espn-uefa.champions-401915296",
-      "kickoffUtc": "2026-11-24T20:00Z",
-      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "contentKey": "match:espn-uefa.champions-401915291",
+      "kickoffUtc": "2026-11-25T20:00Z",
+      "expiresAt": "2026-11-25T22:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
@@ -1680,18 +1900,18 @@
       "sources": []
     },
     {
-      "matchId": "espn-uefa.champions-401915294",
+      "matchId": "espn-uefa.champions-401915292",
       "teams": [
         [
-          "Feyenoord Rotterdam"
+          "Club Brugge"
         ],
         [
-          "FC Porto"
+          "Liverpool"
         ]
       ],
-      "contentKey": "match:espn-uefa.champions-401915294",
-      "kickoffUtc": "2026-11-24T20:00Z",
-      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "contentKey": "match:espn-uefa.champions-401915292",
+      "kickoffUtc": "2026-11-25T20:00Z",
+      "expiresAt": "2026-11-25T22:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
@@ -1703,18 +1923,18 @@
       "sources": []
     },
     {
-      "matchId": "espn-uefa.champions-401915379",
+      "matchId": "espn-uefa.champions-401915376",
       "teams": [
         [
-          "Manchester City"
+          "Internazionale"
         ],
         [
-          "Napoli"
+          "VfB Stuttgart"
         ]
       ],
-      "contentKey": "match:espn-uefa.champions-401915379",
-      "kickoffUtc": "2026-11-24T20:00Z",
-      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "contentKey": "match:espn-uefa.champions-401915376",
+      "kickoffUtc": "2026-11-25T20:00Z",
+      "expiresAt": "2026-11-25T22:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
@@ -1726,18 +1946,18 @@
       "sources": []
     },
     {
-      "matchId": "espn-uefa.champions-401915299",
+      "matchId": "espn-uefa.champions-401915377",
       "teams": [
         [
-          "RB Leipzig"
+          "Lille"
         ],
         [
-          "Lens"
+          "Bayern Munich"
         ]
       ],
-      "contentKey": "match:espn-uefa.champions-401915299",
-      "kickoffUtc": "2026-11-24T20:00Z",
-      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "contentKey": "match:espn-uefa.champions-401915377",
+      "kickoffUtc": "2026-11-25T20:00Z",
+      "expiresAt": "2026-11-25T22:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
@@ -1749,18 +1969,18 @@
       "sources": []
     },
     {
-      "matchId": "espn-uefa.champions-401915298",
+      "matchId": "espn-uefa.champions-401915374",
       "teams": [
         [
-          "Real Madrid"
+          "Paris Saint-Germain"
         ],
         [
-          "PSV Eindhoven"
+          "AS Roma"
         ]
       ],
-      "contentKey": "match:espn-uefa.champions-401915298",
-      "kickoffUtc": "2026-11-24T20:00Z",
-      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "contentKey": "match:espn-uefa.champions-401915374",
+      "kickoffUtc": "2026-11-25T20:00Z",
+      "expiresAt": "2026-11-25T22:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
@@ -1772,18 +1992,41 @@
       "sources": []
     },
     {
-      "matchId": "espn-uefa.champions-401915297",
+      "matchId": "espn-uefa.champions-401915375",
       "teams": [
         [
-          "Slovan Bratislava"
+          "Shakhtar Donetsk"
         ],
         [
-          "Real Betis"
+          "Fenerbahce"
         ]
       ],
-      "contentKey": "match:espn-uefa.champions-401915297",
-      "kickoffUtc": "2026-11-24T20:00Z",
-      "expiresAt": "2026-11-24T22:45:00.000Z",
+      "contentKey": "match:espn-uefa.champions-401915375",
+      "kickoffUtc": "2026-11-25T20:00Z",
+      "expiresAt": "2026-11-25T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-uefa.champions-401915373",
+      "teams": [
+        [
+          "Sporting CP"
+        ],
+        [
+          "Manchester United"
+        ]
+      ],
+      "contentKey": "match:espn-uefa.champions-401915373",
+      "kickoffUtc": "2026-11-25T20:00Z",
+      "expiresAt": "2026-11-25T22:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
