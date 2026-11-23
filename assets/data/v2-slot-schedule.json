@@ -1,26 +1,12 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-22T19:58:19.469Z",
+  "generatedAt": "2026-11-23T08:13:38.906Z",
   "capacity": 2,
   "slots": [
     "a",
     "b"
   ],
   "entries": [
-    {
-      "slot": "a",
-      "matchId": "espn-esp.1-401882803",
-      "streamId": "3645",
-      "channelId": "iptv-3645",
-      "startAt": "2026-11-22T18:45:00.000Z",
-      "endAt": "2026-11-22T21:00:00.000Z",
-      "score": 55,
-      "reasons": [
-        "competition:laliga+40",
-        "tier2:Atlético Madrid+15"
-      ],
-      "pinned": false
-    },
     {
       "slot": "a",
       "matchId": "espn-eng.1-401879237",
