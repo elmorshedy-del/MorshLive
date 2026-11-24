@@ -8136,12 +8136,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Emirates Stadium · London · England",
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915296",
@@ -8161,12 +8157,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Giuseppe Sinigaglia · Como · Italy",
-      "channel": "beIN Sports 5",
-      "channelId": "bein-sports-5",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915294",
@@ -8186,12 +8178,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "De Kuip · Rotterdam · Netherlands",
-      "channel": "beIN Sports 6",
-      "channelId": "bein-sports-6",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915379",
@@ -8211,12 +8199,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Etihad Stadium · Manchester · England",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915299",
@@ -8236,12 +8220,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Red Bull Arena · Leipzig · Germany",
-      "channel": "beIN Sports 8",
-      "channelId": "bein-sports-8",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T22:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915298",
@@ -8261,12 +8241,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Santiago Bernabéu · Madrid · Spain",
-      "channel": "beIN Sports 1",
-      "channelId": "bein-sports-1",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915297",
@@ -8286,12 +8262,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "Národny Futbalovy Stadión · Bratislava · Slovakia",
-      "channel": "beIN Sports 9",
-      "channelId": "bein-sports-9",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T22:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915378",
