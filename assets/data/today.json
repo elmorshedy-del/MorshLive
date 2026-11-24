@@ -8073,12 +8073,8 @@
       "leagueSlug": "eng.1",
       "competition": "epl",
       "venue": "Gtech Community Stadium · Brentford · England",
-      "channel": "beIN Sports 2",
-      "channelId": "bein-sports-2",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-23T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-esp.1-401882802",
@@ -8098,12 +8094,8 @@
       "leagueSlug": "esp.1",
       "competition": "laliga",
       "venue": "Estadi Ciutat de València · Manises · Spain",
-      "channel": "beIN Sports 4",
-      "channelId": "bein-sports-4",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-23T21:45:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915300",

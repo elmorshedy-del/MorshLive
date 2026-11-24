@@ -1,45 +1,13 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-23T08:13:38.897Z",
+  "generatedAt": "2026-11-24T00:21:37.870Z",
   "window": {
-    "start": "2026-11-23",
-    "end": "2026-11-26"
+    "start": "2026-11-24",
+    "end": "2026-11-27"
   },
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
   "bindings": [
-    {
-      "matchId": "espn-eng.1-401879237",
-      "home": "Brentford",
-      "away": "Everton",
-      "kickoffUtc": "2026-11-23T20:00Z",
-      "competition": "epl",
-      "broadcastChannelId": "bein-sports-2",
-      "channel": "beIN Sports 2",
-      "playbackChannelId": "v2-bein-sports-2",
-      "streamId": "3644",
-      "observedLabel": "beIN SPORTS 2 HD",
-      "sourceHref": "/matches/375597/مباراة-برينتفورد-إيفرتون-في-الدوري-الإنجليزي-الممتاز",
-      "expiresAt": "2026-11-23T21:45:00.000Z",
-      "broadcastKickoffUtc": "2026-11-23T19:00:00.000Z",
-      "kickoffDifferenceMinutes": -60
-    },
-    {
-      "matchId": "espn-esp.1-401882802",
-      "home": "Levante",
-      "away": "Elche",
-      "kickoffUtc": "2026-11-23T20:00Z",
-      "competition": "laliga",
-      "broadcastChannelId": "bein-sports-4",
-      "channel": "beIN Sports 4",
-      "playbackChannelId": "v2-bein-sports-4",
-      "streamId": "3652",
-      "observedLabel": "beIN SPORTS 4 HD",
-      "sourceHref": "/matches/375505/مباراة-ليفانتي-إلتشي-في-الدوري-الإسباني",
-      "expiresAt": "2026-11-23T21:45:00.000Z",
-      "broadcastKickoffUtc": "2026-11-23T19:00:00.000Z",
-      "kickoffDifferenceMinutes": -60
-    },
     {
       "matchId": "espn-uefa.champions-401915300",
       "home": "Galatasaray",
