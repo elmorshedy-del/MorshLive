@@ -8115,12 +8115,8 @@
       "leagueSlug": "uefa.champions",
       "competition": "ucl",
       "venue": "RAMS Park · Istanbul · Türkiye",
-      "channel": "beIN Sports 3",
-      "channelId": "bein-sports-3",
       "commentator": null,
-      "source": "espn",
-      "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T19:30:00.000Z"
+      "source": "espn"
     },
     {
       "id": "espn-uefa.champions-401915295",
@@ -8145,7 +8141,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T22:45:00.000Z"
+      "channelExpiresAt": "2026-11-24T21:45:00.000Z"
     },
     {
       "id": "espn-uefa.champions-401915296",
@@ -8170,7 +8166,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T22:45:00.000Z"
+      "channelExpiresAt": "2026-11-24T21:45:00.000Z"
     },
     {
       "id": "espn-uefa.champions-401915294",
@@ -8195,7 +8191,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T22:45:00.000Z"
+      "channelExpiresAt": "2026-11-24T21:45:00.000Z"
     },
     {
       "id": "espn-uefa.champions-401915379",
@@ -8220,7 +8216,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T22:45:00.000Z"
+      "channelExpiresAt": "2026-11-24T21:45:00.000Z"
     },
     {
       "id": "espn-uefa.champions-401915299",
@@ -8270,7 +8266,7 @@
       "commentator": null,
       "source": "espn",
       "channelSource": "v2-bein-qualifiers",
-      "channelExpiresAt": "2026-11-24T22:45:00.000Z"
+      "channelExpiresAt": "2026-11-24T21:45:00.000Z"
     },
     {
       "id": "espn-uefa.champions-401915297",
