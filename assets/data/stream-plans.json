@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-25T21:58:57.107Z",
+  "updatedAt": "2026-11-26T08:54:09.787Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1276,6 +1276,44 @@
       ]
     },
     {
+      "matchId": "espn-esp.1-401882796",
+      "teams": [
+        [
+          "Real Betis"
+        ],
+        [
+          "Rayo Vallecano"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882796",
+      "kickoffUtc": "2026-11-28T13:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-26T08:54:09.787Z",
+      "expiresAt": "2026-11-28T14:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3651",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3651/index.m3u8",
+          "contentKey": "match:espn-esp.1-401882796",
+          "status": "operator",
+          "verifiedAt": "2026-11-26T08:54:09.787Z",
+          "expiresAt": "2026-11-28T14:45:00.000Z",
+          "label": "beIN Sports 5 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 5"
+        }
+      ]
+    },
+    {
       "matchId": "espn-eng.1-401879227",
       "teams": [
         [
@@ -1287,16 +1325,31 @@
       ],
       "contentKey": "match:espn-eng.1-401879227",
       "kickoffUtc": "2026-11-28T15:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-26T08:54:09.787Z",
       "expiresAt": "2026-11-28T17:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": []
+      "sources": [
+        {
+          "id": "v2-bein-3650",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3650/index.m3u8",
+          "contentKey": "match:espn-eng.1-401879227",
+          "status": "operator",
+          "verifiedAt": "2026-11-26T08:54:09.787Z",
+          "expiresAt": "2026-11-28T17:45:00.000Z",
+          "label": "beIN Sports 6 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 6"
+        }
+      ]
     },
     {
       "matchId": "espn-eng.1-401879226",
@@ -1310,16 +1363,69 @@
       ],
       "contentKey": "match:espn-eng.1-401879226",
       "kickoffUtc": "2026-11-28T15:00Z",
-      "expiresAt": "2026-11-28T17:45:00.000Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-26T08:54:09.787Z",
+      "expiresAt": "2026-11-28T17:00:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": []
+      "sources": [
+        {
+          "id": "v2-bein-3645",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
+          "contentKey": "match:espn-eng.1-401879226",
+          "status": "operator",
+          "verifiedAt": "2026-11-26T08:54:09.787Z",
+          "expiresAt": "2026-11-28T17:00:00.000Z",
+          "label": "beIN Sports 1 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 1"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882790",
+      "teams": [
+        [
+          "Málaga"
+        ],
+        [
+          "Athletic Club"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882790",
+      "kickoffUtc": "2026-11-28T15:15Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-26T08:54:09.787Z",
+      "expiresAt": "2026-11-28T17:00:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3651",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3651/index.m3u8",
+          "contentKey": "match:espn-esp.1-401882790",
+          "status": "operator",
+          "verifiedAt": "2026-11-26T08:54:09.787Z",
+          "expiresAt": "2026-11-28T17:00:00.000Z",
+          "label": "beIN Sports 5 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 5"
+        }
+      ]
     },
     {
       "matchId": "espn-eng.1-401878752",
@@ -1333,16 +1439,145 @@
       ],
       "contentKey": "match:espn-eng.1-401878752",
       "kickoffUtc": "2026-11-28T17:30Z",
-      "expiresAt": "2026-11-28T20:15:00.000Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-26T08:54:09.787Z",
+      "expiresAt": "2026-11-28T19:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": []
+      "sources": [
+        {
+          "id": "v2-bein-3645",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
+          "contentKey": "match:espn-eng.1-401878752",
+          "status": "operator",
+          "verifiedAt": "2026-11-26T08:54:09.787Z",
+          "expiresAt": "2026-11-28T19:30:00.000Z",
+          "label": "beIN Sports 1 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 1"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882793",
+      "teams": [
+        [
+          "Elche"
+        ],
+        [
+          "Atlético Madrid"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882793",
+      "kickoffUtc": "2026-11-28T17:30Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-26T08:54:09.787Z",
+      "expiresAt": "2026-11-28T20:15:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3651",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3651/index.m3u8",
+          "contentKey": "match:espn-esp.1-401882793",
+          "status": "operator",
+          "verifiedAt": "2026-11-26T08:54:09.787Z",
+          "expiresAt": "2026-11-28T20:15:00.000Z",
+          "label": "beIN Sports 5 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 5"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-fra.1-401876387",
+      "teams": [
+        [
+          "Paris Saint-Germain"
+        ],
+        [
+          "Lorient"
+        ]
+      ],
+      "contentKey": "match:espn-fra.1-401876387",
+      "kickoffUtc": "2026-11-28T19:45Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-26T08:54:09.787Z",
+      "expiresAt": "2026-11-28T22:30:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3653",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3653/index.m3u8",
+          "contentKey": "match:espn-fra.1-401876387",
+          "status": "operator",
+          "verifiedAt": "2026-11-26T08:54:09.787Z",
+          "expiresAt": "2026-11-28T22:30:00.000Z",
+          "label": "beIN Sports 3 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 3"
+        }
+      ]
+    },
+    {
+      "matchId": "espn-esp.1-401882789",
+      "teams": [
+        [
+          "Real Madrid"
+        ],
+        [
+          "Alavés"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882789",
+      "kickoffUtc": "2026-11-28T20:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-26T08:54:09.787Z",
+      "expiresAt": "2026-11-28T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": [
+        {
+          "id": "v2-bein-3645",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
+          "contentKey": "match:espn-esp.1-401882789",
+          "status": "operator",
+          "verifiedAt": "2026-11-26T08:54:09.787Z",
+          "expiresAt": "2026-11-28T22:45:00.000Z",
+          "label": "beIN Sports 1 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 1"
+        }
+      ]
     },
     {
       "matchId": "espn-eng.1-401879229",
@@ -1483,98 +1718,6 @@
       "sources": []
     },
     {
-      "matchId": "espn-esp.1-401882796",
-      "teams": [
-        [
-          "Real Betis"
-        ],
-        [
-          "Rayo Vallecano"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882796",
-      "kickoffUtc": "2026-11-28T13:00Z",
-      "expiresAt": "2026-11-28T15:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": []
-    },
-    {
-      "matchId": "espn-esp.1-401882790",
-      "teams": [
-        [
-          "Málaga"
-        ],
-        [
-          "Athletic Club"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882790",
-      "kickoffUtc": "2026-11-28T15:15Z",
-      "expiresAt": "2026-11-28T18:00:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": []
-    },
-    {
-      "matchId": "espn-esp.1-401882793",
-      "teams": [
-        [
-          "Elche"
-        ],
-        [
-          "Atlético Madrid"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882793",
-      "kickoffUtc": "2026-11-28T17:30Z",
-      "expiresAt": "2026-11-28T20:15:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": []
-    },
-    {
-      "matchId": "espn-esp.1-401882789",
-      "teams": [
-        [
-          "Real Madrid"
-        ],
-        [
-          "Alavés"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882789",
-      "kickoffUtc": "2026-11-28T20:00Z",
-      "expiresAt": "2026-11-28T22:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": []
-    },
-    {
       "matchId": "espn-esp.1-401882787",
       "teams": [
         [
@@ -1656,29 +1799,6 @@
       "contentKey": "match:espn-esp.1-401882788",
       "kickoffUtc": "2026-11-29T20:00Z",
       "expiresAt": "2026-11-29T22:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": []
-    },
-    {
-      "matchId": "espn-fra.1-401876387",
-      "teams": [
-        [
-          "Paris Saint-Germain"
-        ],
-        [
-          "Lorient"
-        ]
-      ],
-      "contentKey": "match:espn-fra.1-401876387",
-      "kickoffUtc": "2026-11-28T19:45Z",
-      "expiresAt": "2026-11-28T22:30:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
