@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-26T08:54:09.787Z",
+  "updatedAt": "2026-11-26T21:56:00.639Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1248,10 +1248,10 @@
         ]
       ],
       "contentKey": "match:espn-esp.1-401882791",
-      "kickoffUtc": "2026-11-27T20:00Z",
+      "kickoffUtc": "2026-11-27T19:00:00.000Z",
       "status": "operator",
-      "verifiedAt": "2026-11-25T21:58:57.107Z",
-      "expiresAt": "2026-11-27T22:45:00.000Z",
+      "verifiedAt": "2026-11-26T21:56:00.639Z",
+      "expiresAt": "2026-11-27T21:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "policy": {
         "sameContentOnly": true,
@@ -1268,10 +1268,10 @@
           "url": "https://mist-v2.korazero.com/hls/iptv-3653/index.m3u8",
           "contentKey": "match:espn-esp.1-401882791",
           "status": "operator",
-          "verifiedAt": "2026-11-25T21:58:57.107Z",
-          "expiresAt": "2026-11-27T22:45:00.000Z",
+          "verifiedAt": "2026-11-26T21:56:00.639Z",
+          "expiresAt": "2026-11-27T21:45:00.000Z",
           "label": "beIN Sports 3 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 3"
+          "note": "Published broadcaster binding: beIN SPORTS 3 HD"
         }
       ]
     },
@@ -1799,6 +1799,29 @@
       "contentKey": "match:espn-esp.1-401882788",
       "kickoffUtc": "2026-11-29T20:00Z",
       "expiresAt": "2026-11-29T22:45:00.000Z",
+      "generatedBy": "v2-bein-qualifiers",
+      "status": "pending",
+      "policy": {
+        "sameContentOnly": true,
+        "allowAutoHeal": false,
+        "allowUnverifiedFallback": false,
+        "allowLegacy": false
+      },
+      "sources": []
+    },
+    {
+      "matchId": "espn-esp.1-401882792",
+      "teams": [
+        [
+          "Espanyol"
+        ],
+        [
+          "Getafe"
+        ]
+      ],
+      "contentKey": "match:espn-esp.1-401882792",
+      "kickoffUtc": "2026-11-30T20:00Z",
+      "expiresAt": "2026-11-30T22:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {

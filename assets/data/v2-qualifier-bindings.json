@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-26T08:54:09.787Z",
+  "generatedAt": "2026-11-26T21:56:00.639Z",
   "window": {
-    "start": "2026-11-26",
-    "end": "2026-11-29"
+    "start": "2026-11-27",
+    "end": "2026-11-30"
   },
   "source": "filgoal+goal-fallback",
   "variant": "Vega",
@@ -32,9 +32,11 @@
       "channel": "beIN Sports 3",
       "playbackChannelId": "v2-bein-sports-3",
       "streamId": "3653",
-      "observedLabel": "beIN SPORTS 3",
-      "sourceHref": "https://www.goal.com/ar-sa/%D8%A7%D9%84%D9%85%D8%A8%D8%A7%D8%B1%D8%A7%D8%A9/x/pjw69zCVF_BRxct4EnnJ6",
-      "expiresAt": "2026-11-27T22:45:00.000Z"
+      "observedLabel": "beIN SPORTS 3 HD",
+      "sourceHref": "/matches/375515/مباراة-ليفانتي-راسينج-سانتاندير-في-الدوري-الإسباني",
+      "expiresAt": "2026-11-27T21:45:00.000Z",
+      "broadcastKickoffUtc": "2026-11-27T19:00:00.000Z",
+      "kickoffDifferenceMinutes": -60
     },
     {
       "matchId": "espn-esp.1-401882796",
