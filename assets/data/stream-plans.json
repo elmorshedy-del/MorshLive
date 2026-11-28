@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-11-27T21:38:20.250Z",
+  "updatedAt": "2026-11-28T20:34:29.067Z",
   "plans": [
     {
       "matchId": "espn-eng.1-401879298",
@@ -1200,196 +1200,6 @@
       "verifiedAt": "2026-11-13T14:32:13.578Z"
     },
     {
-      "matchId": "espn-esp.1-401882796",
-      "teams": [
-        [
-          "Real Betis"
-        ],
-        [
-          "Rayo Vallecano"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882796",
-      "kickoffUtc": "2026-11-28T12:00:00.000Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-27T21:38:20.250Z",
-      "expiresAt": "2026-11-28T13:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3651",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3651/index.m3u8",
-          "contentKey": "match:espn-esp.1-401882796",
-          "status": "operator",
-          "verifiedAt": "2026-11-27T21:38:20.250Z",
-          "expiresAt": "2026-11-28T13:45:00.000Z",
-          "label": "beIN Sports 5 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 5 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-eng.1-401879227",
-      "teams": [
-        [
-          "Leeds United"
-        ],
-        [
-          "Coventry City"
-        ]
-      ],
-      "contentKey": "match:espn-eng.1-401879227",
-      "kickoffUtc": "2026-11-28T14:00:00.000Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-27T21:38:20.250Z",
-      "expiresAt": "2026-11-28T16:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3650",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3650/index.m3u8",
-          "contentKey": "match:espn-eng.1-401879227",
-          "status": "operator",
-          "verifiedAt": "2026-11-27T21:38:20.250Z",
-          "expiresAt": "2026-11-28T16:45:00.000Z",
-          "label": "beIN Sports 6 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 6 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-eng.1-401879226",
-      "teams": [
-        [
-          "Manchester United"
-        ],
-        [
-          "Brentford"
-        ]
-      ],
-      "contentKey": "match:espn-eng.1-401879226",
-      "kickoffUtc": "2026-11-28T14:00:00.000Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-27T21:38:20.250Z",
-      "expiresAt": "2026-11-28T16:45:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3645",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
-          "contentKey": "match:espn-eng.1-401879226",
-          "status": "operator",
-          "verifiedAt": "2026-11-27T21:38:20.250Z",
-          "expiresAt": "2026-11-28T16:45:00.000Z",
-          "label": "beIN Sports 1 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 1 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-esp.1-401882790",
-      "teams": [
-        [
-          "Málaga"
-        ],
-        [
-          "Athletic Club"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882790",
-      "kickoffUtc": "2026-11-28T14:15:00.000Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-27T21:38:20.250Z",
-      "expiresAt": "2026-11-28T16:00:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3651",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3651/index.m3u8",
-          "contentKey": "match:espn-esp.1-401882790",
-          "status": "operator",
-          "verifiedAt": "2026-11-27T21:38:20.250Z",
-          "expiresAt": "2026-11-28T16:00:00.000Z",
-          "label": "beIN Sports 5 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 5 HD"
-        }
-      ]
-    },
-    {
-      "matchId": "espn-esp.1-401882793",
-      "teams": [
-        [
-          "Elche"
-        ],
-        [
-          "Atlético Madrid"
-        ]
-      ],
-      "contentKey": "match:espn-esp.1-401882793",
-      "kickoffUtc": "2026-11-28T16:30:00.000Z",
-      "status": "operator",
-      "verifiedAt": "2026-11-27T21:38:20.250Z",
-      "expiresAt": "2026-11-28T19:15:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": [
-        {
-          "id": "v2-bein-3651",
-          "role": "primary",
-          "kind": "hls",
-          "profile": "hls-direct-v1",
-          "url": "https://mist-v2.korazero.com/hls/iptv-3651/index.m3u8",
-          "contentKey": "match:espn-esp.1-401882793",
-          "status": "operator",
-          "verifiedAt": "2026-11-27T21:38:20.250Z",
-          "expiresAt": "2026-11-28T19:15:00.000Z",
-          "label": "beIN Sports 5 · V2 Vega",
-          "note": "Published broadcaster binding: beIN SPORTS 5 HD"
-        }
-      ]
-    },
-    {
       "matchId": "espn-fra.1-401876387",
       "teams": [
         [
@@ -1846,27 +1656,42 @@
       ]
     },
     {
-      "matchId": "espn-eng.1-401878752",
+      "matchId": "espn-eng.1-401879221",
       "teams": [
         [
-          "Ipswich Town"
+          "Coventry City"
         ],
         [
-          "Aston Villa"
+          "Ipswich Town"
         ]
       ],
-      "contentKey": "match:espn-eng.1-401878752",
-      "kickoffUtc": "2026-11-28T17:30Z",
-      "expiresAt": "2026-11-28T20:15:00.000Z",
+      "contentKey": "match:espn-eng.1-401879221",
+      "kickoffUtc": "2026-12-01T20:00Z",
+      "status": "operator",
+      "verifiedAt": "2026-11-28T20:34:29.067Z",
+      "expiresAt": "2026-12-01T22:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
       "policy": {
         "sameContentOnly": true,
         "allowAutoHeal": false,
         "allowUnverifiedFallback": false,
         "allowLegacy": false
       },
-      "sources": []
+      "sources": [
+        {
+          "id": "v2-bein-3645",
+          "role": "primary",
+          "kind": "hls",
+          "profile": "hls-direct-v1",
+          "url": "https://mist-v2.korazero.com/hls/iptv-3645/index.m3u8",
+          "contentKey": "match:espn-eng.1-401879221",
+          "status": "operator",
+          "verifiedAt": "2026-11-28T20:34:29.067Z",
+          "expiresAt": "2026-12-01T22:45:00.000Z",
+          "label": "beIN Sports 1 · V2 Vega",
+          "note": "Published broadcaster binding: beIN SPORTS 1"
+        }
+      ]
     },
     {
       "matchId": "espn-eng.1-401879224",
@@ -1881,29 +1706,6 @@
       "contentKey": "match:espn-eng.1-401879224",
       "kickoffUtc": "2026-11-29T14:05Z",
       "expiresAt": "2026-11-29T16:50:00.000Z",
-      "generatedBy": "v2-bein-qualifiers",
-      "status": "pending",
-      "policy": {
-        "sameContentOnly": true,
-        "allowAutoHeal": false,
-        "allowUnverifiedFallback": false,
-        "allowLegacy": false
-      },
-      "sources": []
-    },
-    {
-      "matchId": "espn-eng.1-401879221",
-      "teams": [
-        [
-          "Coventry City"
-        ],
-        [
-          "Ipswich Town"
-        ]
-      ],
-      "contentKey": "match:espn-eng.1-401879221",
-      "kickoffUtc": "2026-12-01T20:00Z",
-      "expiresAt": "2026-12-01T22:45:00.000Z",
       "generatedBy": "v2-bein-qualifiers",
       "status": "pending",
       "policy": {
